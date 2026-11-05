@@ -697,6 +697,8 @@ const CONFIG={
   firstArrival:5,            // oyun başında ilk müşteri (sn)
   busyPending:2,             // bu kadar bekleyen sipariş varsa yeni müşteri ertelenir
   busyRetry:12,
+  group:{p2:0.35,p4:0.15},
+  cap:{base:5,perBarista:3,perWaiter:2},   // aynı anda bekleyen en fazla sipariş: 5 + ek barista başına 3 + ek garson başına 2   // grup olasılıkları (geri kalanı tek kişi); 4'lük grup yalnızca boş 4 kişilik masa varsa
   tableCap:[{lv:1,n:4},{lv:4,n:5},{lv:8,n:6}],
   energy:{max:50,regenSec:60,cost:1},
   gemCost:{energy:6,bagPer10Min:1},   // elmasla anında: enerjiyi doldur / torba molasını bitir (kalan her 10 dk için 1 elmas)
@@ -845,6 +847,13 @@ const PERSONA={
   Gece:{pref:{drink:2,dessert:2,main:1},eat:1.0,tip:0.3,look:0.5,line:'Etrafı izlemeyi sever'},
   Pamuk:{pref:{drink:1,dessert:3,main:1},eat:0.8,tip:0.2,look:0.25,line:'Tatlı düşkünü'},
   Tarçın:{pref:{drink:2,dessert:1,main:2},eat:1.1,tip:0.15,look:0.3,line:'Neşeli ve sakin'},
+  Fıstık:{pref:{drink:2,dessert:2,main:1},eat:1.0,tip:0.2,look:0.3,line:'Her şeyi merak eder'},
+  Bal:{pref:{drink:1,dessert:3,main:1},eat:0.9,tip:0.25,look:0.2,line:'Tatlıya dayanamaz'},
+  Kömür:{pref:{drink:3,dessert:1,main:1},eat:1.0,tip:0.12,look:0.4,line:'Sessiz bir kahve tutkunu'},
+  Lokum:{pref:{drink:1,dessert:2,main:2},eat:1.1,tip:0.22,look:0.3,line:'Arkadaşlarıyla gelmeyi sever'},
+  Biber:{pref:{drink:1,dessert:1,main:3},eat:1.2,tip:0.15,look:0.25,line:'İştahı her zaman yerinde'},
+  Mavi:{pref:{drink:2,dessert:1,main:2},eat:1.0,tip:0.18,look:0.35,line:'Pencere kenarını sever'},
+  Badem:{pref:{drink:2,dessert:2,main:2},eat:1.0,tip:0.2,look:0.3,line:'Her şeyden biraz'},
   VIP:{pref:{drink:1,dessert:2,main:2},eat:1.1,tip:1,look:0.45,line:'Kafeleri gezen ünlü bir gurme',vip:true}};
 
 // ---------- işe alım: rol başına en fazla (3 garson, 2 barista, 2 kasiyer) ve her ek eleman için seviye + altın ----------
@@ -1120,6 +1129,15 @@ const LOOKS=[
   {name:'Gece',W:[78,74,82],B:[36,34,40],A:[232,186,72],xs:0.96,hat:(h,n)=>{for(let i=0;i<5;i++){const a=i/5*Math.PI*2;acc(h,new THREE.SphereGeometry(0.035,8,6),0xf6a6c0,0.17+Math.cos(a)*0.04,0.27+Math.sin(a)*0.04,0.05)}acc(h,new THREE.SphereGeometry(0.03,8,6),0xffe066,0.17,0.27,0.07)}},
   {name:'Pamuk',W:[252,250,248],B:[232,214,196],A:[150,110,190],xs:1.02,hat:(h,n)=>{acc(h,new THREE.TorusGeometry(0.16,0.015,6,20,Math.PI),0xb08ad0,0,0.3,0,0,0,0);for(const s of [-1,1]){const e=acc(h,new THREE.CapsuleGeometry(0.045,0.22,4,10),0xffffff,s*0.07,0.55,-0.01,0,0,s*-0.15);acc(e,new THREE.CapsuleGeometry(0.022,0.16,4,8),0xf6b3c2,0,0,0.03)}}},
   {name:'Tarçın',W:[244,230,206],B:[110,72,52],A:[110,160,120],xs:1.0,hat:(h,n)=>{acc(h,new THREE.ConeGeometry(0.08,0.22,14),0xe36a6a,0,0.47,0,-0.15,0,0);acc(h,new THREE.SphereGeometry(0.03,8,6),0xffe066,0,0.585,-0.016)}}];
+// gruplar için daha çok müşteri çeşidi (her biri kendi kürk rengi ve gündelik üstüyle)
+LOOKS.push(
+  {name:'Fıstık',W:[250,238,214],B:[186,140,92],A:[214,96,84],xs:1.0,hat:(h,n)=>{acc(h,new THREE.SphereGeometry(0.05,10,8),0xf2b134,0.12,0.3,0.06)}},
+  {name:'Bal',W:[255,232,190],B:[226,160,70],A:[96,150,120],xs:1.02,hat:(h,n)=>{const b=acc(h,new THREE.CylinderGeometry(0.16,0.18,0.05,18),0x5f8a3a,0,0.33,-0.01);acc(h,new THREE.BoxGeometry(0.16,0.02,0.1),0x5f8a3a,0,0.31,0.14)}},
+  {name:'Kömür',W:[70,66,72],B:[34,32,38],A:[240,200,90],xs:0.98,hat:(h,n)=>{}},
+  {name:'Lokum',W:[255,246,246],B:[236,196,206],A:[110,140,200],xs:1.0,hat:(h,n)=>{for(const s of [-1,1])acc(h,new THREE.ConeGeometry(0.04,0.08,6),0xe86aa8,s*0.05,0.34,0.1,0,0,s*Math.PI/2)}},
+  {name:'Biber',W:[236,226,214],B:[150,84,60],A:[60,90,140],xs:1.04,hat:(h,n)=>{}},
+  {name:'Mavi',W:[188,200,214],B:[110,124,146],A:[236,150,90],xs:0.98,hat:(h,n)=>{const b=acc(h,new THREE.SphereGeometry(0.15,14,8),0xd9534f,0,0.34,-0.02);b.scale.y=0.4}},
+  {name:'Badem',W:[246,232,212],B:[170,120,84],A:[150,110,190],xs:1.0,hat:(h,n)=>{}});
 // VIP gurme: altın taç, mor yelek (önlük yok)
 const VIP_LOOK={name:'VIP',W:[252,246,236],B:[190,150,110],A:[120,72,150],xs:1.03,vip:true,top:{c:[250,246,240],kind:'vest',v:[118,70,150]},bt:'bt_navy',
   hat:(h,n)=>{const g=new THREE.Group();g.position.set(0,0.34,-0.01);h.add(g);acc(g,new THREE.CylinderGeometry(0.1,0.11,0.07,18,1,true),0xf2b134,0,0,0);
@@ -1427,34 +1445,64 @@ const posaLoop=()=>{};   // eski ad
 function freeTables(){return TABLES.filter(t=>!t.occupant)}
 const PENDING=new Set(['WAITING_TO_ORDER','ORDER_TAKEN','WAITING_FOR_FOOD']);
 function nextArrival(){const b=pickBand(CONFIG.arrival,S.lvl);spawnT=b.min+Math.random()*(b.max-b.min)}
+// müşteri grupları: 1, 2 ya da 4 kişi birlikte gelir; masa grubun tamamına ayrılır (başka grup oturamaz)
+const GROUP_COLS=[0xf2b134,0x86b8d8,0xe86aa8,0x8fae58,0xb48fd6,0xf08a5d];let groupSeq=0;
+function pendingGroups(){return new Set(customers.filter(c=>PENDING.has(c.state)).map(c=>c.group)).size}
 function arrivalTick(dt){if(tutHoldArrivals())return;spawnT-=dt;if(spawnT>0)return;
   if(!freeTables().length||customers.some(c=>c.state==='ENTERING')){spawnT=5;return}
-  if(customers.filter(c=>PENDING.has(c.state)).length>=CONFIG.busyPending){spawnT=CONFIG.busyRetry;return}
-  spawnCustomer();nextArrival()}
-function spawnCustomer(forceSeat){
+  if(pendingGroups()>=CONFIG.busyPending){spawnT=CONFIG.busyRetry;return}
+  const p=pickGroup();if(!p){spawnT=5;return}
+  // ekip kapasitesi: bekleyen sipariş sayısı ekibin kaldırabileceğini aşmasın (grup gerekirse küçülür)
+  const pend=customers.filter(c=>PENDING.has(c.state)||c.state==='ENTERING'||c.state==='WALKING_TO_TABLE').length,cap=servingCap();
+  while(p.size>1&&pend+p.size>cap)p.size=p.size===4?2:1;if(pend>0&&pend+p.size>cap){spawnT=CONFIG.busyRetry;return}
+  spawnGroup(p.size,p.table);nextArrival()}
+const servingCap=()=>CONFIG.cap.base+CONFIG.cap.perBarista*(S.staff.barista-1)+CONFIG.cap.perWaiter*(S.staff.waiter-1);
+function pickGroup(){const free=freeTables();if(!free.length)return null;const G=CONFIG.group,r=Math.random();
+  let size=r<G.p4?4:r<G.p4+G.p2?2:1;if(S.tut!=='done')size=1;
+  while(size>1&&!free.some(t=>t.seats.length>=size))size=size===4?2:1;
+  // en küçük uygun masa: 4 kişilik gruplar büyük masaları boşa harcamasın diye tekler önce 2'liklere
+  const fit=free.filter(t=>t.seats.length>=size).sort((a,b)=>a.seats.length-b.seats.length);const cap=fit[0].seats.length;const pool=fit.filter(t=>t.seats.length===cap);
+  return {size,table:pool[Math.floor(Math.random()*pool.length)]}}
+function spawnGroup(size,t){if(!t||t.occupant)return null;const seats=[...t.seats].sort(()=>Math.random()-0.5).slice(0,size);
+  const g={id:++groupSeq,size,members:[],table:t,leader:null,color:GROUP_COLS[groupSeq%GROUP_COLS.length]};t.occupant=g;
+  seats.forEach((st,i)=>spawnCustomer(st,g,i));return g}
+function spawnCustomer(forceSeat,g0,idx=0){
   const free=freeTables();if(!free.length&&!forceSeat)return null;const t=forceSeat?forceSeat.table:free[Math.floor(Math.random()*free.length)];
-  const used=new Set(customers.map(c=>c.look));const looks=LOOKS.filter(l=>!used.has(l));const look=(looks.length?looks:LOOKS)[Math.floor(Math.random()*(looks.length||LOOKS.length))];
-  const vip=wantVIP();const look2=vip?VIP_LOOK:look;
+  const g=g0||{id:++groupSeq,size:1,members:[],table:t,leader:null,color:GROUP_COLS[groupSeq%GROUP_COLS.length]};if(!g0)t.occupant=g;
+  const used=new Set(customers.map(c=>c.look).concat(g.members.map(m=>m.look)));const looks=LOOKS.filter(l=>!used.has(l));const look=(looks.length?looks:LOOKS)[Math.floor(Math.random()*(looks.length||LOOKS.length))];
+  const vip=g.size===1&&wantVIP();const look2=vip?VIP_LOOK:look;
   const seat=forceSeat||t.seats[Math.floor(Math.random()*t.seats.length)];const P=PERSONA[look2.name]||{pref:{drink:1,dessert:1,main:1},eat:1,tip:CONFIG.tipChanceBase,look:0.2};
   const ch=new Char(cloneLook(look2.tex),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;attachAcc(ch.o,(h,n)=>look2.hat(h,n));
-  ch.pos.set(OUTSIDE.x,0,OUTSIDE.z);ch.o.rotation.y=Math.PI/2;
-  const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip};custTag(c);t.occupant=c;seat.occupant=c;customers.push(c);
+  ch.pos.set(OUTSIDE.x-idx*0.7,0,OUTSIDE.z+(idx%2?0.25:-0.1));ch.o.rotation.y=Math.PI/2;   // grup arka arkaya, birlikte yürür
+  const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip,group:g};g.members.push(c);if(!g.leader)g.leader=c;
+  custTag(c);seat.occupant=c;customers.push(c);
   customerLife(c);return c}
+// masadan kalkan her üye koltuğunu boşaltır; son üye kalkınca masa yeni gruba açılır
+function freeSeat(c){if(c.seatFree)return;c.seatFree=true;c.seat.occupant=null;const g=c.group;if(g.members.every(m=>m.seatFree)&&c.table.occupant===g){c.table.occupant=null;groupRing(g,false)}}
+const groupReady=g=>g.members.length===g.size&&g.members.every(m=>m.state==='WAITING_TO_ORDER'&&!m.orderQueued);
+function groupRing(g,on){if(on){if(g.ring||g.size<2)return;const m=new THREE.Mesh(new THREE.TorusGeometry(1.18,0.035,6,48),new THREE.MeshBasicMaterial({color:g.color,transparent:true,opacity:0.75}));
+    m.rotation.x=Math.PI/2;m.position.set(g.table.center.x,0.03,g.table.center.z);scene.add(m);g.ring=m}else if(g.ring){scene.remove(g.ring);g.ring=null}}
 function menuCard(c){const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(0.075,0.004,0.095),MAT.cream);g.add(b);const s=new THREE.Mesh(new THREE.BoxGeometry(0.075,0.005,0.018),MAT.straw);s.position.z=-0.03;g.add(s);
   const p=c.seat.spot;g.position.set(p.x,c.table.topY+0.003,p.z);g.rotation.y=c.seat.frame.yaw+0.25;scene.add(g);return g}
-async function customerLife(c){const ch=c.char;
-  await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});sfx('door');
+async function customerLife(c){const ch=c.char,g=c.group;
+  await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});if(c===g.leader)sfx('door');
   c.state='WALKING_TO_TABLE';await ch.sitAt(c.seat);
   ch.look=c.persona.look;ch.acts.Chair_Sit_Idle_F.timeScale=0.85+Math.random()*0.3;
-  c.state='WAITING_TO_ORDER';c.menu=menuCard(c);c.taken=new Promise(r=>c._taken=r);await c.taken;
+  c.state='WAITING_TO_ORDER';c.menu=menuCard(c);if(g.size>1&&g.members.every(m=>m.state==='WAITING_TO_ORDER'))groupRing(g,true);c.taken=new Promise(r=>c._taken=r);await c.taken;
   c.state='WAITING_FOR_FOOD';c.served=new Promise(r=>c._served=r);await c.served;
   c.state='EATING';c.bubble='heart';sfx('meow');await sleep(1.2);c.bubble='yum';
   await consume(c.order,6*c.persona.eat);if(c.order.steam){steamOff(c.order.steam);c.order.steam=null}
-  if(willRun(c)){await runAway(c);return}
-  // kasada ödeme: sırada yer açılınca kalkar, masa hemen boşalır
+  c.ate=true;
+  if(g.size===1&&willRun(c)){await runAway(c);return}
+  // grup: herkes bitirene kadar masada bekler; sonra birlikte kalkar. Hesabı grubun başı öder, diğerleri kapıya yürür
+  if(!g.members.every(m=>m.ate)){c.state='WAITING_FOR_GROUP';c.bubble='heart';while(!g.members.every(m=>m.ate))await sleep(0.3);c.bubble=null}
+  if(c!==g.leader){c.state='WAITING_TO_PAY';while(g.leader.state==='WAITING_TO_PAY'||g.leader.state==='WAITING_FOR_GROUP'||g.leader.state==='EATING')await sleep(0.3);
+    ch.look=0;ch.acts.Chair_Sit_Idle_F.timeScale=1;await sleep(0.2+Math.random()*0.5);await ch.standUp();if(c.order&&c.order.mesh)fadeOut(c.order.mesh);freeSeat(c);
+    c.state='LEAVING';await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});scene.remove(ch.o);customers.splice(customers.indexOf(c),1);return}
+  // kasada ödeme: sırada yer açılınca kalkar
   c.state='WAITING_TO_PAY';c.bubble=null;while(payCount()>=QLINE.length+REGS.length)await sleep(0.3);
   CASH.queue.push(c);ch.look=0;ch.acts.Chair_Sit_Idle_F.timeScale=1;await ch.standUp();
-  if(c.order&&c.order.mesh){fadeOut(c.order.mesh)}c.table.occupant=null;c.seat.occupant=null;
+  if(c.order&&c.order.mesh){fadeOut(c.order.mesh)}freeSeat(c);
   c.state='WALKING_TO_PAY';let idx=-2,R=null;
   while(true){
     if(!R&&CASH.queue[0]===c){const f=REGS.find(r=>!r.cust&&CSTAFF[r.i]&&CSTAFF[r.i].ready);if(f){R=f;R.cust=c;CASH.queue.shift();
@@ -1475,13 +1523,14 @@ async function cashierServe(R,c){const k=CSTAFF[R.i]||CSTAFF[0];while(k.chasing)
   ca.doFor('Wave_One_Hand',1.2).then(()=>ca.face(0));R.busy=false}
 function chooseRecipe(c){const av=availableRecipes();const rq=S.req&&av.find(r=>r.id===S.req.rid);if(rq&&Math.random()<0.55)return rq;
   const w=av.map(r=>(c.persona.pref[r.cat]||1)*(c.vip?r.price:1));let s=w.reduce((a,b)=>a+b,0)*Math.random();for(let i=0;i<av.length;i++){s-=w[i];if(s<=0)return av[i]}return av[av.length-1]}
-function takeOrder(c){if(c.state!=='WAITING_TO_ORDER'||c.orderQueued)return;c.orderQueued=true;
+// grubun siparişi tek seferde alınır: garson masaya bir kez gelir, her üye için ayrı ürün yazılır
+function takeOrder(c0){const g=c0.group||{members:[c0],size:1,leader:c0};if(!groupReady(g))return;const M=g.members;for(const m of M)m.orderQueued=true;const c=g.leader;
   enqueue('take',async w=>{const ch=w.ch;const s=c.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);
-    c.bubble='think';await ch.doFor('Talk_with_Hands_Open',1.8);
-    const item=chooseRecipe(c);
-    const o={id:'S'+(++orderSeq),customer:c,table:c.table,seat:c.seat,item,state:'TAKEN',paid:false,mesh:null,slot:-1};orders.push(o);c.order=o;
-    if(c.menu){scene.remove(c.menu);c.menu=null}sfx('order');
-    c.bubble=null;c.state='ORDER_TAKEN';c._taken()})}
+    for(const m of M)m.bubble='think';await ch.doFor('Talk_with_Hands_Open',1.8+0.6*(M.length-1));
+    for(const m of M){const item=(window.__force&&RECIPE[window.__force])||chooseRecipe(m);
+      const o={id:'S'+(++orderSeq),customer:m,table:m.table,seat:m.seat,item,state:'TAKEN',paid:false,mesh:null,slot:-1};orders.push(o);m.order=o;
+      if(m.menu){scene.remove(m.menu);m.menu=null}m.bubble=null;m.state='ORDER_TAKEN';m._taken()}
+    sfx('order')})}
 function submitOrder(o){if(o.state!=='TAKEN'||o.submitQueued)return;o.submitQueued=true;
   enqueue('submit',async w=>{const ch=w.ch;const k=await claimSpot('prep',w);const P=PREP_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Talk_with_Hands_Open',1.2);
     o.state='WAITING_FOR_PREPARATION';baristaQ.push(o);sfx('chime')})}
@@ -1500,12 +1549,14 @@ function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueu
 async function consume(o,dur){const m=o.mesh;
   await tween(dur,u=>{if(m.userData.fill){const f=m.userData.fill,k=Math.max(0.03,1-u);f.scale.y=k;f.position.y=f.userData.base+f.userData.h*k/2;m.rotation.z=Math.sin(u*Math.PI*6)*0.08*(1-u)}
     else if(m.userData.body){const k=Math.max(0.001,1-u);m.userData.body.scale.set(k,k,k)}})}
-function pay(c,R,at){const o=c.order;if(!o||o.paid)return;o.paid=true;o.state='COMPLETED';const rx=R?R.rx:CASH.reg.x;const p=at||new THREE.Vector3(rx,CASH.h+0.55,CASH.z);
-  const price=priceOf(o.item);addCoins(price);floatCoin(price,p);
+// hesap: grubun tüm siparişleri tek ödemede (her sipariş yalnızca bir kez ödenir)
+function pay(c,R,at){const g=c.group||{members:[c]};const os=g.members.map(m=>m.order).filter(o=>o&&!o.paid);if(!os.length)return;const o=os[0];
+  for(const x of os){x.paid=true;x.state='COMPLETED'}const rx=R?R.rx:CASH.reg.x;const p=at||new THREE.Vector3(rx,CASH.h+0.55,CASH.z);
+  const price=os.reduce((a,x)=>a+priceOf(x.item),0);addCoins(price);floatCoin(price,p);
   const tipCh=c.vip?1:c.persona.tip+tipBonus()+0.1*regTier(c.look.name);
   if(Math.random()<tipCh){let tip=1+Math.floor(price*0.2);if(c.vip)tip=tip*2+3;o.tip=tip;setTimeout(()=>{addCoins(tip);sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true);if(c.vip)toast(`<b>VIP gurme memnun kaldı!</b><br>+${tip} bahşiş bıraktı`,ic('star'),2600)},450)}
-  addXP(CONFIG.xp.complete+Math.round(o.item.price*CONFIG.xp.perPrice));
-  if(!c.vip&&!c.ranAway)addVisit(c);reqServed(o.item);bump('orders')}
+  addXP(os.reduce((a,x)=>a+CONFIG.xp.complete+Math.round(x.item.price*CONFIG.xp.perPrice),0));
+  for(const m of g.members)if(!m.vip&&!m.ranAway)addVisit(m);for(const x of os)reqServed(x.item);bump('orders',os.length)}
 function fadeOut(m){m.traverse(x=>{if(x.material){x.material=x.material.clone();x.material.transparent=true}});tween(0.6,u=>m.traverse(x=>{if(x.material)x.material.opacity=1-u})).then(()=>scene.remove(m))}
 
 // ================= KARAKTER ÖZELLEŞTİRME MOTORU =================
@@ -1857,7 +1908,7 @@ function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.class
 const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin')};
 function updateUI(){for(const e of els.values())e._seen=false;
   for(const c of customers){const head=new THREE.Vector3();c.char.head.getWorldPosition(head);head.y+=0.42;
-    if(c.state==='WAITING_TO_ORDER'&&!c.orderQueued)place(el('take'+c.id,'act',`${ic('menu')}Sipariş al`,()=>takeOrder(c)),new THREE.Vector3(c.table.center.x,1.05,c.table.center.z));
+    if(c.group&&c===c.group.leader&&groupReady(c.group))place(el('take'+c.id,'act',`${ic('menu')}Sipariş al${c.group.size>1?` · ${c.group.size}`:''}`,()=>takeOrder(c)),new THREE.Vector3(c.table.center.x,1.05,c.table.center.z));
     let b=c.bubble?BUB[c.bubble]:null;if(!b&&c.order&&(c.state==='ORDER_TAKEN'||c.state==='WAITING_FOR_FOOD'))b=`<img src="${productThumb(c.order.item.id)}" alt="${c.order.item.name}">`;
     if(b)place(el('bub'+c.id,'bubble',b),head)}
   const taken=orders.filter(o=>o.state==='TAKEN'&&!o.submitQueued);taken.forEach((o,i)=>place(el('prep'+o.id,'act prep',`${ic('chef')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Hazırla`,()=>submitOrder(o)),PREP_ANCHOR,-i*44));
@@ -1869,7 +1920,7 @@ function updateUI(){for(const e of els.values())e._seen=false;
   let hint='';
   const NM=S.chars||{waiter:{name:'Yosun'},barista:{name:'Poşa'},cashier:{name:'Fındık'}};
   if(ready.length)hint='Sipariş hazır! Tezgahtaki “Teslim al”a dokun';else if(taken.length)hint='Siparişi baristaya iletmek için “Hazırla”ya dokun';
-  else if(customers.some(c=>c.state==='WAITING_TO_ORDER'&&!c.orderQueued))hint='Masadaki “Sipariş al”a dokun';else if(customers.some(c=>c.state==='ENTERING'||c.state==='WALKING_TO_TABLE'))hint='Yeni bir müşteri geldi';
+  else if(customers.some(c=>c.group&&c===c.group.leader&&groupReady(c.group)))hint='Masadaki “Sipariş al”a dokun';else if(customers.some(c=>c.state==='WAITING_TO_ORDER'&&!c.orderQueued))hint='Grup yerleşiyor…';else if(customers.some(c=>c.state==='ENTERING'||c.state==='WALKING_TO_TABLE'))hint='Yeni bir müşteri geldi';
   if(S.auto&&(ready.length||taken.length||customers.some(c=>c.state==='WAITING_TO_ORDER')))hint=WSTAFF.length>1?'Otomatik mod: garsonlar işleri kendileri yapıyor':`Otomatik mod: ${NM.waiter.name} işleri kendisi yapıyor`;
   else if(baristaQ.length||BSTAFF.some(b=>b.job))hint=BSTAFF.length>1?'Baristalar hazırlıyor…':`${NM.barista.name} hazırlıyor…`;else if(customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='PAYING'))hint=`${CSTAFF.length>1?'Müşteri kasada ödüyor':'Müşteri kasada ödüyor · kasiyer '+NM.cashier.name}`;else if(!customers.length)hint=WSTAFF.length>1?'Garsonlar müşteri bekliyor…':`${NM.waiter.name} müşteri bekliyor…`;
   $('hint').textContent=hint}
@@ -2940,6 +2991,7 @@ function addVisit(c){const n=c.look.name;if(!PERSONA[n]||n==='VIP')return;const 
   if(t1>t0){if(t1===1)bump('regular');setTimeout(()=>toast(t1===1?`<b>${n} artık müdavimin!</b><br>Daha sık bahşiş bırakacak`:`<b>${n} sadık müdavimin oldu!</b><br>Bahşişleri daha da arttı`,ic('heart'),3200),900)}}
 function wantVIP(){return S.created&&S.tut==='done'&&S.lvl>=3&&!customers.some(c=>c.vip)&&Math.random()<CONFIG.vipChance}
 function custTag(c){if(c.vip){c.tag=`${ic('star')}VIP gurme`;toast('<b>VIP gurme geldi!</b><br>Onu iyi ağırla; cömert bahşiş bırakır',ic('star'),3000);sfx('chime');return}
+  if(c.group&&c.group.size>1){if(c===c.group.leader)c.tag=`${ic('paw')}${c.group.size} kişilik grup`;return}
   const t=regTier(c.look.name);if(t)c.tag=`${ic('heart')}${c.look.name}${t===2?' · sadık':''}`}
 
 // ---------- Poşa ile Yosun boşta muhabbet eder ----------
@@ -2956,7 +3008,7 @@ function willRun(c){const t=regTier(c.look.name);return S.created&&S.tut==='done
 function pickCashier(auto){let best=null,bd=1e9;for(const k of CSTAFF){if(k.chasing||cashMoving)continue;const R=REGS[k.i];if(auto&&R&&(R.busy||R.cust))continue;if(auto&&!k.ready)continue;
     const d=R?(R.busy?5:0)+(R.cust?2:0):0;if(d<bd){bd=d;best=k}}return best}
 async function runAway(c){const ch=c.char;c.ranAway=true;c.state='RUNNING';c.bubble=null;ch.look=0;ch.acts.Chair_Sit_Idle_F.timeScale=1;await ch.standUp();
-  if(c.order&&c.order.mesh)fadeOut(c.order.mesh);c.table.occupant=null;c.seat.occupant=null;bump('dashes');
+  if(c.order&&c.order.mesh)fadeOut(c.order.mesh);freeSeat(c);bump('dashes');
   sfx('nope');toast(`<b>${c.look.name} ödemeden kaçıyor!</b><br>Kasiyer görmezse “Yakala!”ya dokun`,ic('alert'),3200);
   (async()=>{await sleep(CONFIG.dash.notice);if(c.state==='RUNNING'&&!c.chaser&&Math.random()<CONFIG.dash.noticeChance){const k=pickCashier(true);if(k)chase(c,k)}})();
   ch.speed=0.95;
