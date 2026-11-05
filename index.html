@@ -258,10 +258,10 @@ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 game.insertBefore(renderer.domElement,game.firstChild);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9ad4f0);scene.fog=new THREE.Fog(0xcfe9f5,22,60);
 const camera=new THREE.PerspectiveCamera(44,1,0.1,120);
-camera.position.set(9.98,14.83,1.66);   // kasa da görünsün diye hafif sağa ve geri
+camera.position.set(11.8,17.6,5.1);   // dört masanın hepsi ve deniz görünsün
 const controls=new OrbitControls(camera,renderer.domElement);
-controls.target.set(-0.15,0.2,-0.5);controls.enableDamping=true;controls.dampingFactor=.08;controls.enablePan=false;
-controls.minDistance=6;controls.maxDistance=20;controls.minPolarAngle=0.45;controls.maxPolarAngle=0.95;
+controls.target.set(0.25,0.2,0.75);controls.enableDamping=true;controls.dampingFactor=.08;controls.enablePan=false;
+controls.minDistance=6;controls.maxDistance=25;controls.minPolarAngle=0.45;controls.maxPolarAngle=0.95;
 controls.minAzimuthAngle=0.12;controls.maxAzimuthAngle=1.6;   // yalnızca açık taraflardan (ön/sağ) bak: duvarlar hep arkada
 controls.update();
 
@@ -294,34 +294,6 @@ function sph(r,mat,x,y,z){const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,1
 // ---------- ENGELLER (yol bulma) ----------
 const OBST=[];const SEATS=[];const CLICKABLE=[];
 function obst(minX,maxX,minZ,maxZ){OBST.push({minX,maxX,minZ,maxZ})}
-
-// ---------- KASABA (dış mekân) ----------
-{const ground=new THREE.Mesh(new THREE.CircleGeometry(60,48),new THREE.MeshToonMaterial({color:0x9bc46a,gradientMap:grad}));ground.rotation.x=-Math.PI/2;ground.position.y=-0.25;ground.receiveShadow=true;scene.add(ground);
- const sea=new THREE.Mesh(new THREE.PlaneGeometry(140,60),new THREE.MeshToonMaterial({color:0x3f9ad0,gradientMap:grad}));sea.rotation.x=-Math.PI/2;sea.position.set(0,-0.3,-42);scene.add(sea);
- const sand=new THREE.Mesh(new THREE.PlaneGeometry(140,4),new THREE.MeshToonMaterial({color:0xeedcb0,gradientMap:grad}));sand.rotation.x=-Math.PI/2;sand.position.set(0,-0.28,-13.5);scene.add(sand);
- // kafe çevresi taş teras
- const terrace=new THREE.Mesh(new THREE.BoxGeometry(ROOM_W+4,0.08,ROOM_D+4),new THREE.MeshToonMaterial({color:0xd9c3a0,gradientMap:grad}));terrace.position.y=-0.22;terrace.receiveShadow=true;scene.add(terrace);
- // yol
- const road=new THREE.Mesh(new THREE.RingGeometry(9,11.5,64),new THREE.MeshToonMaterial({color:0xc8b899,gradientMap:grad}));road.rotation.x=-Math.PI/2;road.position.y=-0.24;scene.add(road);
- const pal=[0xfff3df,0xf7d6c4,0xfde8a8,0xd8ecf7,0xf2c7d2,0xe6f0c8];const roofs=[0xc9653a,0xd9534f,0x8a5529,0x6f8a3a];
- function house(x,z,w,d,h,ry){const g=new THREE.Group();g.position.set(x,-0.25,z);g.rotation.y=ry;
-   const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshToonMaterial({color:pal[Math.floor(Math.random()*pal.length)],gradientMap:grad}));body.position.y=h/2;body.castShadow=true;body.receiveShadow=true;g.add(body);
-   const roof=new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*0.78,h*0.6,4),new THREE.MeshToonMaterial({color:roofs[Math.floor(Math.random()*roofs.length)],gradientMap:grad}));roof.position.y=h+h*0.3;roof.rotation.y=Math.PI/4;roof.castShadow=true;g.add(roof);
-   for(let i=0;i<Math.floor(w);i++){const win=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.5,0.05),M.sky);win.position.set(-w/2+0.7+i*1.0,h*0.55,d/2+0.01);g.add(win)}
-   const door=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.9,0.05),M.woodDark);door.position.set(w/2-0.6,0.45,d/2+0.01);g.add(door);
-   scene.add(g)}
- function tree(x,z,sc=1){const y0=-0.25;cyl(0.12*sc,0.18*sc,1.0*sc,M.woodDark,x,y0+0.5*sc,z,8);const c=sph(0.75*sc,M.leaf,x,y0+1.55*sc,z);c.scale.y=1.2;sph(0.5*sc,M.leaf,x+0.4*sc,y0+1.85*sc,z+0.2*sc)}
- function cypress(x,z){const c=new THREE.Mesh(new THREE.ConeGeometry(0.45,2.8,8),new THREE.MeshToonMaterial({color:0x4f7d3a,gradientMap:grad}));c.position.set(x,-0.25+1.4,z);c.castShadow=true;scene.add(c)}
- // evler: kafenin açık taraflarından uzakta (sağ +x ve ön +z), arka tarafta deniz
- const H=[[-14,-2,3.2,2.8,2.6,0.2],[-13,4,2.6,2.4,2.2,-0.3],[-11,9,3.4,3,2.8,0.4],[-5,12,3,2.6,2.4,0],[2,13,3.6,3,3,-0.2],[9,11,2.8,2.6,2.3,0.5],[13,5,3.2,3,2.6,-0.4],[14,-3,2.6,2.4,2.2,0.3],[12,-9,3,2.8,2.5,0.1],[-6,-11,2.8,2.4,2.2,0.6],[5,-11,3.4,2.8,2.6,-0.5],[-16,-9,3,2.6,2.4,0],[18,0,3,3,2.8,0.2],[-2,17,3,2.6,2.3,0.1],[8,17,3.2,2.8,2.6,-0.3]];
- for(const [x,z,w,d,h,ry] of H)house(x,z,w,d,h,ry);
- for(const [x,z,sc] of [[-9,-6,1],[-9,1,1.2],[-8,7,1],[-2,9.5,1.1],[6,9,1],[10,2,1.2],[10,-5,1],[7,-8,1.1],[-12,12,1],[16,-7,1.2],[1,-9,1],[-15,4,1]])tree(x,z,sc);
- for(const [x,z] of [[-7,-8.5],[-6.4,-8.5],[9.5,-2.5],[9.5,-1.5],[-9.5,10],[5.5,15]])cypress(x,z);
- // iskele + tekne
- box(1.2,0.15,6,M.woodDark,4,-0.2,-16);{const b=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.5,2.6),M.cream);b.position.set(6.5,-0.1,-18);scene.add(b);const mast=cyl(0.04,0.04,2.2,M.woodDark,6.5,1,-18,6);const sail=new THREE.Mesh(new THREE.BoxGeometry(0.03,1.4,1.0),M.cream);sail.position.set(6.5,1.3,-17.5);scene.add(sail)}
- // bulutlar
- for(const [x,y,z,sc] of [[-12,9,-14,1.4],[6,10,-18,1.8],[16,9,-6,1.2],[-18,8.5,2,1.5],[2,11,16,1.6]]){for(let i=0;i<3;i++){const c=sph(sc*(0.7+i*0.15),new THREE.MeshBasicMaterial({color:0xffffff}),x+i*sc*0.9,y+(i%2)*0.3,z);c.castShadow=false}}
-}
 
 // ---------- KAFE: ZEMİN ----------
 const floorStrips=[];
@@ -364,6 +336,78 @@ box(ROOM_W,0.18,0.06,M.green,0,0.09,-ROOM_D/2+0.03);
  // çan: duvardan çıkan dirsek + kısa ip
  box(0.24,0.03,0.03,M.woodDark,x0+0.12,dh+0.5,dz-dw/2-0.3);cyl(0.006,0.006,0.06,M.dark,x0+0.22,dh+0.46,dz-dw/2-0.3,6);cyl(0.06,0.09,0.12,M.gold,x0+0.22,dh+0.37,dz-dw/2-0.3,12);
 }
+// ---------- SAHİL (dış mekân): kafe denize uzanan bir terasta; solda sahil kasabası, arkada / önde / sağda deniz ----------
+const ENV={sea:null,seaTex:null,boats:[],gulls:[],t:0};
+{const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
+ // gökyüzü: pastel mavi → ufukta şeftali-pembe
+ scene.background=new THREE.Color(0xbfe2f3);scene.fog=new THREE.Fog(0xf6e4d8,30,95);
+ {const g=new THREE.SphereGeometry(110,32,16);const m=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,
+    uniforms:{top:{value:new THREE.Color(0x8fcdee)},mid:{value:new THREE.Color(0xcfe9f6)},hor:{value:new THREE.Color(0xfbe1d4)}},
+    vertexShader:'varying vec3 vp;void main(){vp=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+    fragmentShader:'uniform vec3 top,mid,hor;varying vec3 vp;void main(){float h=vp.y;vec3 c=h>0.18?mix(mid,top,smoothstep(0.18,0.7,h)):mix(hor,mid,smoothstep(-0.05,0.18,h));gl_FragColor=vec4(c,1.0);}'});
+  const sky=new THREE.Mesh(g,m);sky.renderOrder=-10;scene.add(sky)}
+ // deniz: dalga çizgili doku yavaşça kayar
+ {const cv=document.createElement('canvas');cv.width=cv.height=256;const x=cv.getContext('2d');x.fillStyle='#4aa7d8';x.fillRect(0,0,256,256);
+  for(let i=0;i<46;i++){const px=Math.random()*256,py=Math.random()*256,w=18+Math.random()*34;x.strokeStyle=i%3?'rgba(255,255,255,.22)':'rgba(170,225,245,.5)';x.lineWidth=2;x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+w/2,py-4,px+w,py);x.stroke()}
+  const tex=new THREE.CanvasTexture(cv);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(26,26);tex.colorSpace=THREE.SRGBColorSpace;ENV.seaTex=tex;
+  const sea=new THREE.Mesh(new THREE.PlaneGeometry(220,220),new THREE.MeshToonMaterial({color:0xffffff,map:tex,gradientMap:grad}));sea.rotation.x=-Math.PI/2;sea.position.y=-0.46;sea.receiveShadow=true;scene.add(sea);ENV.sea=sea}
+ // sığ su (turkuaz) ve kum: kafenin terasını saran yuvarlatılmış burun + soldaki kıyı şeridi
+ const blob=(cx,cz,rx,rz,y,mat,seg=48)=>{const sh=new THREE.Shape();for(let i=0;i<=seg;i++){const a=i/seg*Math.PI*2;const r=1+0.05*Math.sin(a*5)+0.03*Math.cos(a*9);const px=cx+Math.cos(a)*rx*r,pz=cz+Math.sin(a)*rz*r;i?sh.lineTo(px,-pz):sh.moveTo(px,-pz)}
+   const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),mat);m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;scene.add(m);return m};
+ blob(-3,-0.9,12.0,8.6,-0.44,T(0x7fd3dc));               // sığ su halkası
+ blob(-3,-0.9,10.4,6.9,-0.4,T(0xf1dfb4));                 // kum (ince sahil şeridi)
+ {const s=new THREE.Mesh(new THREE.PlaneGeometry(60,40),T(0xf1dfb4));s.rotation.x=-Math.PI/2;s.position.set(-40,-0.4,2);s.receiveShadow=true;scene.add(s)}   // sol kıyı kumu
+ {const g=new THREE.Mesh(new THREE.PlaneGeometry(56,44),T(0xa9c47a));g.rotation.x=-Math.PI/2;g.position.set(-42,-0.36,0);g.receiveShadow=true;scene.add(g)}  // kasaba yamacı (çimen)
+ // köşeleri yuvarlatılmış taş teras
+ {const terrace=new THREE.Mesh(new RoundedBoxGeometry(13.15,0.3,10.15,3,0.35),T(0xe8d6b4));terrace.position.set(-0.175,-0.3,0.15);terrace.receiveShadow=true;scene.add(terrace);
+  for(let i=0;i<14;i++){const st=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.02,0.5),T(i%2?0xdcc6a0:0xd2b98f));st.position.set(-6.2+(i%2)*0.5,-0.14,-2+i*0.62);st.receiveShadow=true;scene.add(st)}}
+ // kapıya giden tahta iskele yolu (soldan)
+ box(9,0.08,1.6,T(0xb98c5a),-11.2,-0.16,DOOR.z);for(let i=0;i<20;i++)box(0.05,0.085,1.6,T(0x8a5f36),-15.4+i*0.45,-0.155,DOOR.z,{shadow:false});
+ // terasın deniz tarafında beyaz ahşap korkuluk (ön +z ve sağ +x; kapı tarafı açık)
+ {const post=T(0xfbf6ec),rail=T(0xfbf6ec);const X0=-6.6,X1=6.25,Z0=-4.85,Z1=5.05;
+  const line=(ax,az,bx,bz)=>{const L=Math.hypot(bx-ax,bz-az),n=Math.max(2,Math.round(L/1.1));for(let i=0;i<=n;i++){const t=i/n;cyl(0.04,0.045,0.72,post,ax+(bx-ax)*t,0.2,az+(bz-az)*t,8)}
+    const r=box(L,0.06,0.07,rail,(ax+bx)/2,0.55,(az+bz)/2);r.rotation.y=-Math.atan2(bz-az,bx-ax);const r2=box(L,0.04,0.05,rail,(ax+bx)/2,0.28,(az+bz)/2);r2.rotation.y=r.rotation.y};
+  line(X0+1.4,Z1,X1,Z1);line(X1,Z1,X1,Z0);line(X1,Z0,-1.5,Z0)}
+ // saksılarda begonvil ve lavanta (terasta, yolları kapatmadan)
+ const bush=(x,z,c,s=1)=>{const p=cyl(0.22*s,0.17*s,0.36*s,M.terracotta,x,0.02,z,12);for(let i=0;i<4;i++){const b=sph((0.22+0.05*(i%2))*s,T(c),x+Math.cos(i*1.7)*0.12*s,0.36*s+(i%2)*0.1*s,z+Math.sin(i*1.7)*0.12*s);b.castShadow=true}};
+ for(const [x,z,c] of [[5.7,4.5,0xe86aa8],[5.7,-1.2,0xb48fd6],[2.4,4.6,0xf2a6c0],[-2.2,4.6,0xe86aa8],[5.7,1.8,0xf6c453],[-5.9,-4.4,0xe86aa8],[4.2,-4.5,0xb48fd6]])bush(x,z,c);
+ // ağaçlar: zeytin (gri-yeşil), selvi, birkaç palmiye
+ const olive=(x,z,s=1)=>{cyl(0.1*s,0.16*s,1.1*s,M.woodDark,x,-0.4+0.55*s,z,8);for(let i=0;i<5;i++){const c=sph((0.55+0.15*(i%3))*s,T(i%2?0x9aae73:0x86a064),x+Math.cos(i*1.3)*0.45*s,-0.4+1.45*s+(i%2)*0.25*s,z+Math.sin(i*1.3)*0.45*s);c.scale.y=0.75}};
+ const cypress=(x,z,s=1)=>{const c=new THREE.Mesh(new THREE.ConeGeometry(0.42*s,2.9*s,8),T(0x4f7d3a));c.position.set(x,-0.4+1.45*s,z);c.castShadow=true;scene.add(c)};
+ const palm=(x,z,s=1)=>{const g=new THREE.Group();g.position.set(x,-0.4,z);scene.add(g);for(let i=0;i<6;i++){const seg=new THREE.Mesh(new THREE.CylinderGeometry(0.1*s,0.13*s,0.5*s,8),M.woodDark);seg.position.set(i*0.06*s,0.25*s+i*0.48*s,0);seg.castShadow=true;g.add(seg)}
+   for(let i=0;i<7;i++){const a=i/7*Math.PI*2;const f=new THREE.Mesh(new THREE.ConeGeometry(0.16*s,1.6*s,4),T(0x6f9a3e));f.position.set(0.36*s+Math.cos(a)*0.7*s,3.0*s,Math.sin(a)*0.7*s);f.rotation.set(Math.sin(a)*1.25,0,-Math.cos(a)*1.25);f.castShadow=true;g.add(f)}};
+ for(const [x,z,s] of [[-9,-5,1.1],[-8.5,6.5,1],[-13,-1,1.2],[-16,7,1],[-11,10,0.9]])olive(x,z,s);
+ for(const [x,z] of [[-10.5,-7.5],[-9.8,-8.2],[-14,4],[-18,-4]])cypress(x,z);
+ for(const [x,z,s] of [[-7.6,4.6,1],[-7.8,-4.6,0.9],[6.9,-5.4,0.9]])palm(x,z,s);
+ // Akdeniz kasabası: beyaz evler, kiremit çatı, mavi panjur (solda, yamaçta)
+ const house=(x,z,w,d,h,ry,roof)=>{const g=new THREE.Group();g.position.set(x,-0.36,z);g.rotation.y=ry;scene.add(g);
+   const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),T(0xfbf6ec));body.position.y=h/2;body.castShadow=true;body.receiveShadow=true;g.add(body);
+   if(roof){const r=new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*0.75,h*0.45,4),T(0xd0703f));r.position.y=h+h*0.22;r.rotation.y=Math.PI/4;r.castShadow=true;g.add(r)}
+   else{const r=new THREE.Mesh(new THREE.BoxGeometry(w+0.1,0.12,d+0.1),T(0xece2d0));r.position.y=h+0.06;g.add(r)}
+   for(let i=0;i<Math.max(1,Math.floor(w/1.1));i++){const wx=-w/2+0.6+i*1.1;const win=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.5,0.05),T(0x4f86c6));win.position.set(wx,h*0.6,d/2+0.02);g.add(win);
+     const sh=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.5,0.06),T(0x3a6fa8));sh.position.set(wx-0.29,h*0.6,d/2+0.03);g.add(sh)}
+   const door=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.95,0.05),T(0x3a6fa8));door.position.set(w/2-0.55,0.47,d/2+0.02);g.add(door)};
+ for(const [x,z,w,d,h,ry,rf] of [[-15,-6,3.2,2.6,2.6,0.25,1],[-19,-1.5,2.8,2.4,2.2,0.1,0],[-15.5,9,3.4,2.8,2.8,-0.3,1],[-21,5,3,2.6,3.2,0.2,1],[-24,-6,3.6,3,2.4,0,0],[-25.5,1.5,2.6,2.4,3.6,-0.1,1],[-20,12,3,2.6,2.4,0.4,0]])house(x,z,w,d,h,ry,rf);
+ // ufuk: adacıklar ve kayalık üstünde deniz feneri
+ for(const [x,z,rx,rz,c] of [[24,-34,9,4,0x9ab86e],[-6,-46,14,5,0xa7c27c],[40,10,7,3.5,0x9ab86e],[16,40,10,4,0xa7c27c]]){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,10),T(c));m.scale.set(rx,2.2,rz);m.position.set(x,-1.2,z);scene.add(m)}
+ {const g=new THREE.Group();g.position.set(18,-0.46,-22);scene.add(g);const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(2.2,0),T(0xb8ab98));rock.scale.y=0.45;g.add(rock);
+  for(let i=0;i<4;i++){const s=new THREE.Mesh(new THREE.CylinderGeometry(0.62-i*0.06,0.68-i*0.06,1.0,16),T(i%2?0xd9534f:0xfbf6ec));s.position.y=0.9+i*1.0;s.castShadow=true;g.add(s)}
+  const lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.6,12),new THREE.MeshBasicMaterial({color:0xfff0c0}));lamp.position.y=4.7;g.add(lamp);
+  const cap=new THREE.Mesh(new THREE.ConeGeometry(0.6,0.7,12),T(0xd9534f));cap.position.y=5.35;g.add(cap)}
+ // yelkenliler (hafifçe sallanır)
+ const boat=(x,z,ry,c)=>{const g=new THREE.Group();g.position.set(x,-0.4,z);g.rotation.y=ry;scene.add(g);const hull=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.45,0.9),T(0xfbf6ec));hull.position.y=0.15;g.add(hull);
+   const stripe=new THREE.Mesh(new THREE.BoxGeometry(2.42,0.08,0.92),T(c));stripe.position.y=0.3;g.add(stripe);const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,2.6,6),M.woodDark);mast.position.y=1.5;g.add(mast);
+   const sail=new THREE.Mesh(new THREE.ConeGeometry(0.9,2.1,3),T(0xfff6e8));sail.scale.z=0.08;sail.position.set(0.45,1.55,0);g.add(sail);ENV.boats.push({g,ph:Math.random()*6,y0:-0.4})};
+ boat(11,-11,0.4,0x4f86c6);boat(-2,-13,-0.2,0xd9534f);boat(11.5,8,1.2,0x8fae58);boat(4,14,0.7,0xf2a6a0);
+ // bulutlar
+ for(const [x,y,z,sc] of [[-12,10,-20,1.6],[8,12,-26,2],[22,10,-8,1.4],[-24,9,4,1.6],[4,12,22,1.8],[26,11,14,1.5]]){for(let i=0;i<4;i++){const c=sph(sc*(0.7+(i%3)*0.18),new THREE.MeshBasicMaterial({color:0xffffff,fog:false}),x+i*sc*0.85,y+(i%2)*0.35,z);c.castShadow=false}}
+ // martılar
+ for(let i=0;i<3;i++){const g=new THREE.Group();const m=new THREE.MeshBasicMaterial({color:0xffffff});for(const s of [-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.03,0.12),m);w.position.x=s*0.24;w.rotation.z=s*0.35;g.add(w)}scene.add(g);ENV.gulls.push({g,r:7+i*3,h:6+i*0.8,sp:0.15+i*0.04,ph:i*2.1,cx:6-i*4,cz:-8+i*6})}
+}
+function envTick(dt){ENV.t+=dt;const t=ENV.t;if(ENV.seaTex){ENV.seaTex.offset.x=t*0.012;ENV.seaTex.offset.y=Math.sin(t*0.2)*0.02}
+  for(const b of ENV.boats){b.g.position.y=b.y0+Math.sin(t*1.1+b.ph)*0.06;b.g.rotation.z=Math.sin(t*0.9+b.ph)*0.05}
+  for(const q of ENV.gulls){const a=t*q.sp+q.ph;q.g.position.set(q.cx+Math.cos(a)*q.r,q.h+Math.sin(t*0.7+q.ph)*0.3,q.cz+Math.sin(a)*q.r);q.g.rotation.y=-a;q.g.children.forEach((w,k)=>w.rotation.z=(k?1:-1)*(0.25+Math.sin(t*6+q.ph)*0.25))}}
+
 // ---------- MUTFAK: arka dolap + tezgah (sol arka, geniş çalışma alanı) ----------
 // İstasyonlar ayrı gruplar halinde: ekipman yükseltmesinde yalnızca o grup değişir.
 const KIT={bx:-ROOM_W/2+1.9,bw:3.4,bz:-ROOM_D/2+0.35,bd:0.6,bh:0.62,cx:-ROOM_W/2+1.9,cz:-ROOM_D/2+2.0,cw:3.4,cd:0.7,ch:0.66};
@@ -479,6 +523,8 @@ function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,pa
 // ---- masa tipleri (hepsi doğrulanmış masa dairesinin içinde) ----
 const TABLE_STYLE={
   t_round:{top:M.wood,leg:M.woodDark,flower:M.pink},
+  t_four:{top:M.wood,leg:M.woodDark,cloth:M.cream,flower:M.pink},
+  t_four_cafe:{top:M.cream,leg:M.woodDark,cloth:toon(0x8fae58),flower:toon(0xffffff)},
   t_square:{top:toon(0xdca468),leg:M.woodDark,flower:M.gold,square:true},
   t_cafe:{top:M.cream,leg:M.woodDark,cloth:M.red,flower:toon(0xffffff)},
   t_premium:{top:toon(0xf6f1e8),leg:M.gold,rim:M.gold,flower:M.pink,stand:true}};
@@ -511,6 +557,17 @@ function lampMeshes(parent){const g=new THREE.Group();parent.add(g);
 function buildSetGroup(type,chair,colIdx,withLamp=true){const G=new THREE.Group();
   tableMeshes(G,SET_LOCAL.A,type);chairMeshes(G,SET_LOCAL.A,chair,colIdx);chairMeshes(G,SET_LOCAL.B,chair,colIdx);
   if(withLamp)lampMeshes(G);return G}
+
+// ---------- dört kişilik masa: aynı doğrulanmış koltuk zarfı masanın çevresinde 90° adımlarla (fırıldak düzeni) ----------
+// Her koltuğun yan yaklaşma noktası boş kalır; garson komşu sandalyeye denk gelmesin diye çapraz köşeden servis yapar.
+const APPROACH4={x:1.0,z:-0.4},SERVE4={x:0.92,z:-0.66};
+const isFour=id=>!!(CAT[id]&&CAT[id].seats===4);
+function seatData4(f,center){const d=SEAT_D;const sv=f.w(SERVE4.x,SERVE4.z);return {frame:f,O:f.w(0,0),A:f.w(APPROACH4.x,APPROACH4.z),serve:sv,serveYaw:Math.atan2(center.x-sv.x,center.z-sv.z),rootY:-d.footY*YS,spot:f.w(d.tCx,d.tCz-0.17),occupant:null}}
+function set4Frames(cx,cz,yaw){const d=SEAT_D;const F=[];for(let i=0;i<4;i++){const th=yaw+i*Math.PI/2,c=Math.cos(th),s=Math.sin(th);const ox=(c*d.tCx+s*d.tCz)*YS,oz=(-s*d.tCx+c*d.tCz)*YS;F.push(frame(cx-ox,cz-oz,th))}return F}
+function set4World(cx,cz,yaw){const d=SEAT_D;const F=set4Frames(cx,cz,yaw);const center={x:cx,z:cz};
+  return {frames:F,boxes:[tableBox(F[0]),...F.map(chairBox)],seats:F.map(f=>seatData4(f,center)),center:F[0].w(d.tCx,d.tCz),topY:(d.tTop-d.footY)*YS}}
+function buildSet4Group(type,chair,colIdx,withLamp=true){const G=new THREE.Group();const F=set4Frames(0,0,0);
+  tableMeshes(G,F[0],type);for(const f of F)chairMeshes(G,f,chair,colIdx);if(withLamp)lampMeshes(G);return G}
 
 // ---------- kapı önü basamağı (dış teras ile kafe zemini aynı seviyede) ----------
 box(1.9,0.2,1.5,M.steel,-ROOM_W/2-0.95-0.2,-0.1,DOOR.z);
@@ -605,7 +662,7 @@ const CONFIG={
   firstArrival:5,            // oyun başında ilk müşteri (sn)
   busyPending:2,             // bu kadar bekleyen sipariş varsa yeni müşteri ertelenir
   busyRetry:12,
-  tableCap:[{lv:1,n:3},{lv:3,n:4},{lv:6,n:5},{lv:10,n:6}],
+  tableCap:[{lv:1,n:4},{lv:4,n:5},{lv:8,n:6}],
   energy:{max:100,regenSec:60,cost:1},   // tek sınır: enerji (torbaların bekleme süresi kaldırıldı)
   bag:{limit:10,cooldownSec:300},
   board:{w:6,h:6},
@@ -682,6 +739,8 @@ const recipeByDisc=Object.fromEntries(RECIPES.map(r=>[r.disc,r]));
 // ================= YAPI PAZARI KATALOĞU =================
 // kind: table | chair | wall | floor | decor(floor) | walldecor | equip
 const CATALOG=[
+ {id:'t_four',kind:'table',seats:4,name:'Dört kişilik aile masası',price:110,lvl:1,desc:'Dört sandalyeli yuvarlak ahşap masa; 1–4 kişilik gruplar oturabilir. Masa sınırı içinde yeni masa yeri açar.'},
+ {id:'t_four_cafe',kind:'table',seats:4,name:'Dört kişilik bahçe masası',price:160,lvl:4,desc:'Zeytin yeşili örtülü dört kişilik masa.'},
  {id:'t_round',kind:'table',name:'Küçük yuvarlak ahşap masa',price:45,lvl:1,desc:'İki kişilik sıcak bir köşe. Masa sınırı içinde yeni masa yeri açar.'},
  {id:'t_square',kind:'table',name:'Kare ahşap masa',price:60,lvl:3,desc:'Açık renk ahşap, köşeleri yuvarlatılmış.'},
  {id:'t_cafe',kind:'table',name:'Şık kafe masası',price:85,lvl:5,desc:'Kırmızı örtülü, beyaz çiçekli klasik kafe masası.'},
@@ -1108,13 +1167,13 @@ let TABLES=[];                     // müşteri masaları (yalnızca yerleştiri
 const yawOf=r=>(r||0)*Math.PI/2;
 function decorBoxes(rec){const c=CAT[rec.id];if(!c.half||c.flat)return [];let [hx,hz]=c.half;if((rec.rot||0)%2)[hx,hz]=[hz,hx];return [{minX:rec.x-hx,maxX:rec.x+hx,minZ:rec.z-hz,maxZ:rec.z+hz}]}
 function buildFurnGroup(rec){const c=CAT[rec.id];
-  if(c.kind==='table')return buildSetGroup(rec.id,rec.chair||'c_cushion',rec.col||0);
+  if(c.kind==='table')return (c.seats===4?buildSet4Group:buildSetGroup)(rec.id,rec.chair||'c_cushion',rec.col||0);
   if(c.kind==='decor')return DECOR_BUILD[rec.id]();
   if(c.kind==='walldecor')return WALL_BUILD[rec.id]()}
 function placeGroup(G,rec){const c=CAT[rec.id];if(c.kind==='walldecor'){const s=WALL_SLOTS[rec.slot];G.position.set(s.x,s.y,s.z);G.rotation.y=s.ry}else{G.position.set(rec.x,0,rec.z);G.rotation.y=yawOf(rec.rot)}}
 function spawnFurn(rec){const c=CAT[rec.id];const G=buildFurnGroup(rec);placeGroup(G,rec);scene.add(G);G.traverse(m=>{if(m.isMesh){m.castShadow=m.castShadow!==false;m.receiveShadow=true}});G.userData.uid=rec.uid;
   const R={rec,group:G,boxes:[]};
-  if(c.kind==='table'){const W=setWorld(rec.x,rec.z,yawOf(rec.rot));R.boxes=W.boxes;R.table={id:rec.uid,uid:rec.uid,center:W.center,topY:W.topY,seats:W.seats,occupant:null};
+  if(c.kind==='table'){const W=(c.seats===4?set4World:setWorld)(rec.x,rec.z,yawOf(rec.rot));R.boxes=W.boxes;R.table={id:rec.uid,uid:rec.uid,center:W.center,topY:W.topY,seats:W.seats,occupant:null,cap:W.seats.length};
     W.seats.forEach(s=>s.table=R.table)}
   else if(c.kind==='decor')R.boxes=decorBoxes(rec);
   FURN.set(rec.uid,R);return R}
@@ -1129,7 +1188,7 @@ function allChars(){const a=[];if(yosun)a.push(yosun);if(posa)a.push(posa);if(ca
 // --- yerleştirme doğrulaması ---
 const ovl=(a,b,m=0)=>a.minX<b.maxX+m&&a.maxX>b.minX-m&&a.minZ<b.maxZ+m&&a.maxZ>b.minZ-m;
 const inside=(p,b,m=0)=>p.x>b.minX-m&&p.x<b.maxX+m&&p.z>b.minZ-m&&p.z<b.maxZ+m;
-function candidateInfo(rec){const c=CAT[rec.id];if(c.kind==='table'){const W=setWorld(rec.x,rec.z,yawOf(rec.rot));return {boxes:W.boxes,points:W.seats.flatMap(s=>[s.A,s.serve])}}
+function candidateInfo(rec){const c=CAT[rec.id];if(c.kind==='table'){const W=(c.seats===4?set4World:setWorld)(rec.x,rec.z,yawOf(rec.rot));return {boxes:W.boxes,points:W.seats.flatMap(s=>[s.A,s.serve])}}
   return {boxes:decorBoxes(rec),points:[]}}
 function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
   if(c.kind==='walldecor'){if(rec.slot==null||rec.slot<0||rec.slot>=WALL_SLOTS.length)return 'Duvarda boş yer yok';for(const [u,R] of FURN)if(u!==exUid&&CAT[R.rec.id].kind==='walldecor'&&R.rec.slot===rec.slot)return 'Bu duvar yeri dolu';return null}
@@ -1154,6 +1213,7 @@ function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
 
 // ================= OYUN DURUMU + KAYIT =================
 const SAVE_KEY='posa-yosun-kafe-kayit-v3';
+const START_TABLES=[[-1.3,0.5],[1.2,0.5],[-0.1,2.7],[2.4,2.7]];   // başlangıçta 4 dört kişilik masa
 let GLTF=null,TEMPLATE=null,yosun=null,posa=null,cashier=null,orderSeq=0,custSeq=0,spawnT=CONFIG.firstArrival,started=false;
 const customers=[],orders=[],jobs=[],baristaQ=[];
 let posaJob=null;   // eski ad: ilk baristanın işi (UI uyumu)
@@ -1166,14 +1226,14 @@ function defaultBoard(){const b=Array(CONFIG.board.w*CONFIG.board.h).fill(null);
   b[24]='kahve1';b[25]='kahve1';b[28]='un1';b[29]='seker1';return b}
 function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.id]=true;
   const recipes={};for(const r of RECIPES)if(r.def)recipes[r.id]=true;const unlocked={...recipes},menu={...recipes};
-  return {v:4,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:2,
-    furniture:[{uid:1,id:'t_round',x:0.35,z:0.6,rot:1,chair:'c_cushion',col:0},{uid:2,id:'t_round',x:2.45,z:0.6,rot:1,chair:'c_cushion',col:1}],
+  return {v:7,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:4,
+    furniture:START_TABLES.map((p,i)=>({uid:i+1,id:'t_four',x:p[0],z:p[1],rot:0,chair:'c_cushion',col:i})),
     wall:'w_cream',floor:'f_classic',equip:{espresso:1,kettle:1,vitrine:1,oven:1},recipes,unlocked,menu,items:{},board:defaultBoard(),
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
     staff:{waiter:1,barista:1,cashier:1},seen:{},tr:null,navMin:false,
-    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:false,lastSeen:Date.now()}}
+    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,lastSeen:Date.now()}}
 let S=defaultState();
 function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e){}
   if(!raw)return false;try{const d=JSON.parse(raw);const base=defaultState();
@@ -1192,6 +1252,8 @@ function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e
     if(d.tut===undefined)S.tut='auto';   // eski oyuncular: yalnızca otomatik garson tanıtımı
     // v4: kasa için tezgah yanı boşaltıldı — eski varsayılan masalar halının iki yanına simetrik taşınır
     if(!(d.v>=4)){const near=(f,x,z)=>Math.hypot(f.x-x,f.z-z)<0.05;for(const f of S.furniture){if(f.uid===1&&near(f,0.8,-1.9)){f.x=0.35;f.z=0.6;f.rot=1}else if(f.uid===2&&near(f,1.2,1.4)){f.x=2.45;f.z=0.6;f.rot=1}}S.v=4}
+    // v7: başlangıç düzeni 4 × dört kişilik masa (16 kişi). Eski masalar depoya kaldırılır, istenirse yeniden yerleştirilir
+    if(!(d.v>=7)){for(const f of S.furniture)if(CAT[f.id]&&CAT[f.id].kind==='table')f.stored=true;START_TABLES.forEach((p,i)=>S.furniture.push({uid:++S.uid,id:'t_four',x:p[0],z:p[1],rot:0,chair:S.chairDefault||'c_cushion',col:i}));S.v=7;S.giftTable=true;S._moved7=true}
     return true}catch(e){console.warn('kayıt okunamadı',e);return false}}
 let saveTimer=0;
 let RESETTING=false;
@@ -1330,11 +1392,11 @@ function arrivalTick(dt){if(tutHoldArrivals())return;spawnT-=dt;if(spawnT>0)retu
   if(!freeTables().length||customers.some(c=>c.state==='ENTERING')){spawnT=5;return}
   if(customers.filter(c=>PENDING.has(c.state)).length>=CONFIG.busyPending){spawnT=CONFIG.busyRetry;return}
   spawnCustomer();nextArrival()}
-function spawnCustomer(){
-  const free=freeTables();if(!free.length)return null;const t=free[Math.floor(Math.random()*free.length)];
+function spawnCustomer(forceSeat){
+  const free=freeTables();if(!free.length&&!forceSeat)return null;const t=forceSeat?forceSeat.table:free[Math.floor(Math.random()*free.length)];
   const used=new Set(customers.map(c=>c.look));const looks=LOOKS.filter(l=>!used.has(l));const look=(looks.length?looks:LOOKS)[Math.floor(Math.random()*(looks.length||LOOKS.length))];
   const vip=wantVIP();const look2=vip?VIP_LOOK:look;
-  const seat=t.seats[Math.floor(Math.random()*2)];const P=PERSONA[look2.name]||{pref:{drink:1,dessert:1,main:1},eat:1,tip:CONFIG.tipChanceBase,look:0.2};
+  const seat=forceSeat||t.seats[Math.floor(Math.random()*t.seats.length)];const P=PERSONA[look2.name]||{pref:{drink:1,dessert:1,main:1},eat:1,tip:CONFIG.tipChanceBase,look:0.2};
   const ch=new Char(cloneLook(look2.tex),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;attachAcc(ch.o,(h,n)=>look2.hat(h,n));
   ch.pos.set(OUTSIDE.x,0,OUTSIDE.z);ch.o.rotation.y=Math.PI/2;
   const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip};custTag(c);t.occupant=c;seat.occupant=c;customers.push(c);
@@ -1667,7 +1729,7 @@ function renderThumb(obj,{dir=[1,0.85,1.2],pad=1.08}={}){const {r,sc,cam}=TH;sc.
 function thumb(key,build,opt){const C=TH.cache;if(C.has(key))return C.get(key);let url='';try{url=renderThumb(build(),opt)}catch(e){console.warn('thumb',key,e)}C.set(key,url);return url}
 const productThumb=id=>thumb('p:'+id,()=>makeProduct(RECIPE[id]),{dir:[1,1.1,1.3],pad:1.0});
 function furnThumb(id){const c=CAT[id];return thumb('f:'+id,()=>{
-  if(c.kind==='table')return buildSetGroup(id,'c_cushion',0,false);
+  if(c.kind==='table')return (c.seats===4?buildSet4Group:buildSetGroup)(id,'c_cushion',0,false);
   if(c.kind==='chair'){const g=new THREE.Group();chairMeshes(g,frame(0,0,0),id,0);return g}
   if(c.kind==='decor')return DECOR_BUILD[id]();
   if(c.kind==='walldecor')return WALL_BUILD[id]();
@@ -1774,7 +1836,7 @@ function updateUI(){for(const e of els.values())e._seen=false;
   $('hint').textContent=hint}
 
 // ================= YAPI PAZARI =================
-const placedTables=()=>S.furniture.filter(f=>CAT[f.id].kind==='table').length;
+const placedTables=()=>S.furniture.filter(f=>CAT[f.id].kind==='table'&&!f.stored).length;
 function revertPreview(){if(!UI.preview)return;applyWall(S.wall);applyFloor(S.floor);UI.preview=null}
 function renderMarket(){const tabs=$('mkTabs');tabs.innerHTML=MK_TABS.map(t=>`<button class="tab" role="tab" type="button" data-tab="${t.id}" aria-selected="${t.id===UI.tab}">${ic(t.icon)}${t.name}</button>`).join('');
   tabs.onclick=e=>{const b=e.target.closest('[data-tab]');if(!b)return;revertPreview();UI.tab=b.dataset.tab;UI.sel=null;renderMarket()};
@@ -1792,7 +1854,7 @@ function previewSurface(id){const c=CAT[id];if(!c||(c.kind!=='wall'&&c.kind!=='f
 function renderDetail(){const d=$('mkDetail');const sel=UI.sel;if(!sel){d.hidden=true;return}d.hidden=false;if(UI.tab==='clothes')return clothDetail(d,sel);if(UI.tab==='upg')return upgDetail(d,sel);
   if(sel[0]==='u'){const rec=S.furniture.find(f=>f.uid===+sel.slice(1));if(!rec){d.hidden=true;return}const c=CAT[rec.id];
     d.innerHTML=`<div class="th"><img src="${itemThumb(rec.id)}" alt=""></div><div class="tx"><b>${c.name}</b><p>Depodan ücretsiz yerleştir.</p><div class="row"><button class="btn green" type="button" id="dAct">${ic('move')}Yerleştir</button></div></div>`;
-    $('dAct').onclick=()=>{if(c.kind==='walldecor'){const s=freeSlot();if(s<0)return toast('Duvarda boş yer kalmadı',ic('lock'));rec.slot=s}startPlacement({rec,isNew:false,price:0,fromStore:true})};return}
+    $('dAct').onclick=()=>{if(c.kind==='table'&&placedTables()>=tableCap(S.lvl)){sfx('nope');return toast(`Masa sınırı dolu (${tableCap(S.lvl)}). Önce bir masayı depoya kaldır.`,ic('table'))}if(c.kind==='walldecor'){const s=freeSlot();if(s<0)return toast('Duvarda boş yer kalmadı',ic('lock'));rec.slot=s}startPlacement({rec,isNew:false,price:0,fromStore:true})};return}
   const c=CAT[sel];const lock=S.lvl<c.lvl,owned=S.owned[c.id],afford=S.coins>=c.price;let btn='',note=c.desc||'';
   if(lock){btn=`<button class="btn" type="button" disabled>${ic('lock')}Seviye ${c.lvl} gerekli</button>`}
   else if(c.kind==='table'){const cap=tableCap(S.lvl),n=placedTables();note=`${c.desc} Masa sınırı: ${n}/${cap}.`;btn=n>=cap?`<button class="btn" type="button" disabled>Sınır dolu · Seviye ${CONFIG.tableCap.find(t=>t.n>cap)?.lv||'—'} ile artar</button>`:`<button class="btn" type="button" id="dAct" ${afford?'':'disabled'}>${ic('coin')}${c.price} · Satın al ve yerleştir</button>`}
@@ -1872,7 +1934,7 @@ function drawEditBar(){const pb=$('placebar');pb.hidden=false;if(selRing){scene.
   if(!R){$('placeMsg').className='msg';$('placeMsg').textContent='Düzenlemek istediğin eşyaya dokun';$('placeRow').innerHTML=`<button class="btn light" type="button" id="edMk">${ic('market')}Market</button><button class="btn green" type="button" id="edDone">${ic('check')}Bitti</button>`;
     $('edMk').onclick=()=>setMode('market');$('edDone').onclick=()=>setMode('cafe');return}
   const c=CAT[R.rec.id];const busy=R.table&&R.table.occupant;
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(c.kind==='table'?0.95:c.kind==='walldecor'?0.42:0.45,0.025,8,40),new THREE.MeshBasicMaterial({color:0xf2b134}));
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(c.kind==='table'?(c.seats===4?1.2:0.95):c.kind==='walldecor'?0.42:0.45,0.025,8,40),new THREE.MeshBasicMaterial({color:0xf2b134}));
   if(c.kind==='walldecor'){const s=WALL_SLOTS[R.rec.slot];ring.position.set(s.x+(s.ry?0.02:0),s.y,s.z+(s.ry?0:0.02));ring.rotation.y=s.ry}else{ring.rotation.x=Math.PI/2;ring.position.set(R.rec.x,0.03,R.rec.z)}
   scene.add(ring);selRing=ring;
   $('placeMsg').className='msg'+(busy?' bad':'');$('placeMsg').textContent=busy?`${c.name} · masada müşteri var, şimdi değiştirilemez`:c.name;
@@ -2478,7 +2540,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <p>${tagb('plus','Yeni eleman ekle','g')} ile ekibini büyüt: en fazla 3 garson, 2 barista, 2 kasiyer. Her yeni eleman bir seviye ve altın ister; işler aralarında paylaşılır.</p>
      <p>Market’teki ${tagb('shirt','Kıyafet','l')} sekmesinde önlük, üst, şort, papyon, atkı, şapka ve takımlar var. Önce kedinin üstünde dene, sonra satın al; aldığın kıyafet kalıcı olarak senin.</p>`},
    {t:'Küçük ipuçları',art:`${ic('heart')}${ic('music')}${ic('speaker')}`,body:`<ul class="gsteps"><li>${ic('clock')}<span>Menü, Market, Tarifler, Birleştir ya da Ekip açıkken kafede zaman durur; telaşlanma.</span></li>
-     <li>${ic('table')}<span>Başta 2 masan var; ilk müşteriden sonra bir masa hediye! Seviye atladıkça daha fazla masa koyabilirsin.</span></li><li>${ic('music')}<span>Sağ üstteki düğmelerle müziği ve sesleri açıp kapatabilirsin.</span></li>
+     <li>${ic('table')}<span>Kafen deniz kenarında, 4 dört kişilik masayla (16 kişi) açılır; seviye atladıkça daha fazla masa koyabilirsin.</span></li><li>${ic('music')}<span>Sağ üstteki düğmelerle müziği ve sesleri açıp kapatabilirsin.</span></li>
      <li>${ic('auto')}<span>Sağ alttaki <b>Otomatik garson</b> düğmesiyle garsonun işleri kendisi yapar; tekrar dokununca kontrol yine sende.</span></li>
      <li>${ic('help')}<span>Bu rehberi istediğin zaman sağ üstteki <b>?</b> düğmesinden tekrar açabilirsin.</span></li><li>${ic('box')}<span>Oyunun bu cihazda otomatik kaydedilir.</span></li></ul>`}]}
 const GD={i:0,prev:'cafe'};
@@ -2949,6 +3011,7 @@ function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equ
       if(ok)moved++;else{Object.assign(rec,o);rec.stored=true;stored++;continue}}
     spawnFurn(rec)}
   refreshWorld();if(moved||stored){markDirty();setTimeout(()=>toast(`Kasa için yer açıldı: ${moved?moved+' eşya taşındı':''}${moved&&stored?', ':''}${stored?stored+' eşya depoya kaldırıldı':''}`,ic('box'),4200),1500)}
+  if(S._moved7){delete S._moved7;markDirty();setTimeout(()=>toast('<b>Kafen yenilendi!</b><br>Artık 4 dört kişilik masan var (16 kişi). Eski masaların Market → Depom’da.',ic('table'),5200),2500)}
   hudXP();hudCoins();hudGoal();hudGems()}
 async function init(){
   try{
@@ -3007,6 +3070,7 @@ function simStep(dt){lastDt=dt;gameT+=dt;
 function loop(){requestAnimationFrame(loop);const raw=Math.min(clock.getDelta(),0.1);
   if(started&&!paused()){simStep(raw);updateUI()}
   else lastDt=0;
+  envTick(raw);
   if(started){tutTick();tut2Tick()}
   controls.update();renderer.render(scene,camera)}
 init();loop();
