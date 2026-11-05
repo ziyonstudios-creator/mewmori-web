@@ -697,7 +697,7 @@ const CONFIG={
   firstArrival:5,            // oyun başında ilk müşteri (sn)
   busyPending:2,             // bu kadar bekleyen sipariş varsa yeni müşteri ertelenir
   busyRetry:12,
-  group:{p2:0.35,p4:0.15},
+  group:{p2:0.3,p3:0.13,p4:0.12},
   cap:{base:5,perBarista:3,perWaiter:2},   // aynı anda bekleyen en fazla sipariş: 5 + ek barista başına 3 + ek garson başına 2   // grup olasılıkları (geri kalanı tek kişi); 4'lük grup yalnızca boş 4 kişilik masa varsa
   tableCap:[{lv:1,n:4},{lv:4,n:5},{lv:8,n:6}],
   energy:{max:50,regenSec:60,cost:1},
@@ -1088,7 +1088,9 @@ class Char{
           // yürürken başka bir kedinin içinden geçmesin: yana doğru küçük bir adım (yalnızca boş zemine)
           if(this.avoidOf&&!this.direct&&rem>0.6){const ux=d.x/dist,uz=d.z/dist;for(const o of this.avoidOf()){if(o===this||o.seat||o.trans)continue;const ox=this.pos.x-o.pos.x,oz=this.pos.z-o.pos.z,od=Math.hypot(ox,oz);
             if(od>0.5||od<1e-4)continue;const ahead=-(ox*ux+oz*uz);if(ahead<-0.15)continue;let px=-uz,pz=ux;if(px*ox+pz*oz<0){px=-px;pz=-pz}
-            const k=Math.min(0.5-od,0.1)*Math.min(1,dt*8),nx=this.pos.x+px*k,nz=this.pos.z+pz*k;if(!blocked(...cellOf(nx,nz))){this.pos.x=nx;this.pos.z=nz}}}
+            const k=Math.min(0.5-od,0.1)*Math.min(1,dt*8),nx=this.pos.x+px*k,nz=this.pos.z+pz*k;if(!blocked(...cellOf(nx,nz))){this.pos.x=nx;this.pos.z=nz;this._av=true}}
+            // yana adım attıysa rota kısa süre sonra yeniden hesaplanır: düz çizgi artık bir mobilyanın içinden geçebilir
+            if(this._av){this._avT=(this._avT||0)+dt;if(this._avT>0.2){this._av=false;this._avT=0;this.repath()}}}
           const ang=Math.atan2(d.x,d.z);let df=ang-this.o.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));this.o.rotation.y+=df*Math.min(1,dt*10)}}}
     else if(this.turn){let df=this.turn.to-this.o.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));if(Math.abs(df)<0.03){this.o.rotation.y=this.turn.to;const r=this.turn.res;this.turn=null;r()}else this.o.rotation.y+=df*Math.min(1,dt*9)}
     // otomatik animasyon seçimi (tek kaynak: aynı anda tek ana animasyon)
@@ -1267,7 +1269,7 @@ function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
 
 // ================= OYUN DURUMU + KAYIT =================
 const SAVE_KEY='posa-yosun-kafe-kayit-v3';
-const START_TABLES=[[-1.3,0.5],[1.2,0.5],[-0.1,2.7],[2.4,2.7]];   // başlangıçta 4 dört kişilik masa
+const START_TABLES=[[-1.3,0.5,'t_four',0],[1.2,0.5,'t_four',0],[-0.1,2.8,'t_round',1],[2.4,2.8,'t_round',1]];   // başlangıç: 2 dört kişilik + 2 iki kişilik masa (12 kişi)
 let GLTF=null,TEMPLATE=null,yosun=null,posa=null,cashier=null,orderSeq=0,custSeq=0,spawnT=CONFIG.firstArrival,started=false;
 const customers=[],orders=[],jobs=[],baristaQ=[];
 let posaJob=null;   // eski ad: ilk baristanın işi (UI uyumu)
@@ -1281,7 +1283,7 @@ function defaultBoard(){const b=Array(CONFIG.board.w*CONFIG.board.h).fill(null);
 function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.id]=true;
   const recipes={};for(const r of RECIPES)if(r.def)recipes[r.id]=true;const unlocked={...recipes},menu={...recipes};
   return {v:7,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:4,
-    furniture:START_TABLES.map((p,i)=>({uid:i+1,id:'t_four',x:p[0],z:p[1],rot:0,chair:'c_cushion',col:i})),
+    furniture:START_TABLES.map((p,i)=>({uid:i+1,id:p[2],x:p[0],z:p[1],rot:p[3],chair:'c_cushion',col:i})),
     wall:'w_cream',floor:'f_classic',equip:{espresso:1,kettle:1,vitrine:1,oven:1},recipes,unlocked,menu,items:{},board:defaultBoard(),
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
@@ -1307,7 +1309,7 @@ function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e
     // v4: kasa için tezgah yanı boşaltıldı — eski varsayılan masalar halının iki yanına simetrik taşınır
     if(!(d.v>=4)){const near=(f,x,z)=>Math.hypot(f.x-x,f.z-z)<0.05;for(const f of S.furniture){if(f.uid===1&&near(f,0.8,-1.9)){f.x=0.35;f.z=0.6;f.rot=1}else if(f.uid===2&&near(f,1.2,1.4)){f.x=2.45;f.z=0.6;f.rot=1}}S.v=4}
     // v7: başlangıç düzeni 4 × dört kişilik masa (16 kişi). Eski masalar depoya kaldırılır, istenirse yeniden yerleştirilir
-    if(!(d.v>=7)){for(const f of S.furniture)if(CAT[f.id]&&CAT[f.id].kind==='table')f.stored=true;START_TABLES.forEach((p,i)=>S.furniture.push({uid:++S.uid,id:'t_four',x:p[0],z:p[1],rot:0,chair:S.chairDefault||'c_cushion',col:i}));S.v=7;S.giftTable=true;S._moved7=true}
+    if(!(d.v>=7)){for(const f of S.furniture)if(CAT[f.id]&&CAT[f.id].kind==='table')f.stored=true;START_TABLES.forEach((p,i)=>S.furniture.push({uid:++S.uid,id:p[2],x:p[0],z:p[1],rot:p[3],chair:S.chairDefault||'c_cushion',col:i}));S.v=7;S.giftTable=true;S._moved7=true}
     return true}catch(e){console.warn('kayıt okunamadı',e);return false}}
 let saveTimer=0;
 let RESETTING=false;
@@ -1454,12 +1456,12 @@ function arrivalTick(dt){if(tutHoldArrivals())return;spawnT-=dt;if(spawnT>0)retu
   const p=pickGroup();if(!p){spawnT=5;return}
   // ekip kapasitesi: bekleyen sipariş sayısı ekibin kaldırabileceğini aşmasın (grup gerekirse küçülür)
   const pend=customers.filter(c=>PENDING.has(c.state)||c.state==='ENTERING'||c.state==='WALKING_TO_TABLE').length,cap=servingCap();
-  while(p.size>1&&pend+p.size>cap)p.size=p.size===4?2:1;if(pend>0&&pend+p.size>cap){spawnT=CONFIG.busyRetry;return}
+  while(p.size>1&&pend+p.size>cap)p.size--;if(pend>0&&pend+p.size>cap){spawnT=CONFIG.busyRetry;return}
   spawnGroup(p.size,p.table);nextArrival()}
 const servingCap=()=>CONFIG.cap.base+CONFIG.cap.perBarista*(S.staff.barista-1)+CONFIG.cap.perWaiter*(S.staff.waiter-1);
 function pickGroup(){const free=freeTables();if(!free.length)return null;const G=CONFIG.group,r=Math.random();
-  let size=r<G.p4?4:r<G.p4+G.p2?2:1;if(S.tut!=='done')size=1;
-  while(size>1&&!free.some(t=>t.seats.length>=size))size=size===4?2:1;
+  let size=r<G.p4?4:r<G.p4+G.p3?3:r<G.p4+G.p3+G.p2?2:1;if(S.tut!=='done')size=1;
+  while(size>1&&!free.some(t=>t.seats.length>=size))size--;
   // en küçük uygun masa: 4 kişilik gruplar büyük masaları boşa harcamasın diye tekler önce 2'liklere
   const fit=free.filter(t=>t.seats.length>=size).sort((a,b)=>a.seats.length-b.seats.length);const cap=fit[0].seats.length;const pool=fit.filter(t=>t.seats.length===cap);
   return {size,table:pool[Math.floor(Math.random()*pool.length)]}}
@@ -1911,8 +1913,13 @@ const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin')};
 function updateUI(){for(const e of els.values())e._seen=false;
   for(const c of customers){const head=new THREE.Vector3();c.char.head.getWorldPosition(head);head.y+=0.42;
     if(c.group&&c===c.group.leader&&groupReady(c.group))place(el('take'+c.id,'act',`${ic('menu')}Sipariş al${c.group.size>1?` · ${c.group.size}`:''}`,()=>takeOrder(c)),new THREE.Vector3(c.table.center.x,1.05,c.table.center.z));
-    let b=c.bubble?BUB[c.bubble]:null;if(!b&&c.order&&(c.state==='ORDER_TAKEN'||c.state==='WAITING_FOR_FOOD'))b=`<img src="${productThumb(c.order.item.id)}" alt="${c.order.item.name}">`;
-    if(b)place(el('bub'+c.id,'bubble',b),head)}
+    // sipariş verildi: ürün görseli yerine bekleme simgesi; grupta masa başına tek balon (servis edilen / toplam)
+    const g=c.group,multi=g&&g.size>1,waitSt=st=>st==='ORDER_TAKEN'||st==='WAITING_FOR_FOOD';
+    if(multi&&c===g.leader){const M=g.members;const think=M.some(m=>m.bubble==='think');
+      if(think)place(el('gb'+g.id,'bubble',BUB.think),new THREE.Vector3(g.table.center.x,1.45,g.table.center.z));
+      else if(M.some(m=>waitSt(m.state)))place(el('gb'+g.id,'bubble wait',`${UI_IC.wait}<small>${M.filter(m=>m.order&&m.order.state==='SERVED').length}/${M.length}</small>`),new THREE.Vector3(g.table.center.x,1.45,g.table.center.z))}
+    let b=c.bubble?BUB[c.bubble]:null;if(multi&&c.bubble==='think')b=null;if(!b&&!multi&&c.order&&waitSt(c.state))b=`<span class="wait1">${UI_IC.wait}</span>`;
+    if(b)place(el('bub'+c.id,'bubble'+(b.includes('wait1')?' wait':''),b),head)}
   const taken=orders.filter(o=>o.state==='TAKEN'&&!o.submitQueued);taken.forEach((o,i)=>place(el('prep'+o.id,'act prep',`${ic('chef')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Hazırla`,()=>submitOrder(o)),PREP_ANCHOR,-i*44));
   const ready=orders.filter(o=>o.state==='READY'&&!o.pickupQueued);ready.forEach((o,i)=>place(el('pick'+o.id,'act pick',`${ic('tray')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Teslim al`,()=>pickupOrder(o)),PICKUP_ANCHOR,-i*44));
   for(const b of BSTAFF)if(b.job){const hp=new THREE.Vector3();b.ch.head.getWorldPosition(hp);hp.y+=0.55;const k=Math.min(1,b.job.done/b.job.total);
@@ -2634,7 +2641,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <p>${tagb('plus','Yeni eleman ekle','g')} ile ekibini büyüt: en fazla 3 garson, 2 barista, 2 kasiyer. Her yeni eleman bir seviye ve altın ister; işler aralarında paylaşılır.</p>
      <p>Market’teki ${tagb('shirt','Kıyafet','l')} sekmesinde önlük, üst, şort, papyon, atkı, şapka ve takımlar var. Önce kedinin üstünde dene, sonra satın al; aldığın kıyafet kalıcı olarak senin.</p>`},
    {t:'Küçük ipuçları',art:`${ic('heart')}${ic('music')}${ic('speaker')}`,body:`<ul class="gsteps"><li>${ic('clock')}<span>Menü, Market, Tarifler, Birleştir ya da Ekip açıkken kafede zaman durur; telaşlanma.</span></li>
-     <li>${ic('table')}<span>Kafen deniz kenarında, 4 dört kişilik masayla (16 kişi) açılır; seviye atladıkça daha fazla masa koyabilirsin.</span></li><li>${ic('music')}<span>Sağ üstteki düğmelerle müziği ve sesleri açıp kapatabilirsin.</span></li>
+     <li>${ic('table')}<span>Kafen 2 dört kişilik ve 2 iki kişilik masayla (12 kişi) açılır; müşteriler tek, 2, 3 ya da 4 kişilik gruplar halinde gelir; seviye atladıkça daha fazla masa koyabilirsin.</span></li><li>${ic('music')}<span>Sağ üstteki düğmelerle müziği ve sesleri açıp kapatabilirsin.</span></li>
      <li>${ic('auto')}<span>Sağ alttaki <b>Otomatik garson</b> düğmesiyle garsonun işleri kendisi yapar; tekrar dokununca kontrol yine sende.</span></li>
      <li>${ic('help')}<span>Bu rehberi istediğin zaman sağ üstteki <b>?</b> düğmesinden tekrar açabilirsin.</span></li><li>${ic('box')}<span>Oyunun bu cihazda otomatik kaydedilir.</span></li></ul>`}]}
 const GD={i:0,prev:'cafe'};
@@ -3137,6 +3144,12 @@ function openRecover(kind,bag){if($('recModal'))return;UI.modal=true;const md=do
 #board .it .cd{top:-8px;transform:translateX(-50%);font-size:11px;padding:3px 6px;z-index:2;filter:none}
 `;document.head.appendChild(st)}
 
+// bekleme simgesi (kum saati) — müşteri siparişini bekliyor
+UI_IC.wait=SV(`<path d="M18 8h28M18 56h28" stroke-width="5"/><path d="M21 9c0 14 22 16 22 23S21 41 21 55h22c0-14-22-16-22-23S43 23 43 9z" fill="#fbf6ec"/><path d="M26 18h12c-2 5-6 7-6 9 0-2-4-4-6-9zM24 52c1-6 8-8 8-12 0 4 7 6 8 12z" fill="#f2b134" stroke="none"/>`);
+{const st=document.createElement('style');st.textContent=`.bubble.wait{display:flex;align-items:center;gap:3px}.bubble.wait svg{width:26px;height:26px;display:block}
+.bubble.wait small{font-family:var(--font-display);font-weight:800;font-size:13px;line-height:1}
+.bubble.wait svg{animation:hg 2.4s ease-in-out infinite}@keyframes hg{0%,70%{transform:rotate(0)}85%,100%{transform:rotate(180deg)}}`;document.head.appendChild(st)}
+
 // ================= AŞAMA 4: PAKET SERVİS (Seviye 5'te açılır) =================
 // Telefon kasanın yanında çalar → oyuncu dokunur → sipariş paneli → kabul → barista hazırlar → paketlenir → kurye götürür → ödeme gelir.
 Object.assign(CONFIG,{dlv:{lvl:5,first:20,gap:[150,240],ring:30,trip:[26,38],fee:6,maxItems:3}});
@@ -3255,7 +3268,7 @@ function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equ
       if(ok)moved++;else{Object.assign(rec,o);rec.stored=true;stored++;continue}}
     spawnFurn(rec)}
   refreshWorld();if(moved||stored){markDirty();setTimeout(()=>toast(`Kasa için yer açıldı: ${moved?moved+' eşya taşındı':''}${moved&&stored?', ':''}${stored?stored+' eşya depoya kaldırıldı':''}`,ic('box'),4200),1500)}
-  if(S._moved7){delete S._moved7;markDirty();setTimeout(()=>toast('<b>Kafen yenilendi!</b><br>Artık 4 dört kişilik masan var (16 kişi). Eski masaların Market → Depom’da.',ic('table'),5200),2500)}
+  if(S._moved7){delete S._moved7;markDirty();setTimeout(()=>toast('<b>Kafen yenilendi!</b><br>Artık 2 dört kişilik ve 2 iki kişilik masan var (12 kişi). Eski masaların Market → Depom’da.',ic('table'),5200),2500)}
   hudXP();hudCoins();hudGoal();hudGems()}
 async function init(){
   try{
