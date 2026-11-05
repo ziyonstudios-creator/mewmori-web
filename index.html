@@ -1287,7 +1287,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
     staff:{waiter:1,barista:1,cashier:1},seen:{},tr:null,navMin:false,
-    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,lastSeen:Date.now()}}
+    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},lastSeen:Date.now()}}
 let S=defaultState();
 function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e){}
   if(!raw)return false;try{const d=JSON.parse(raw);const base=defaultState();
@@ -1902,7 +1902,9 @@ function el(key,cls,html,onTap){let e=els.get(key);if(!e){e=document.createEleme
   if(e._html!==html){e.innerHTML=html;e._html=html}e._seen=true;return e}
 const _p=new THREE.Vector3();
 function place(e,wp,dy=0){_p.copy(wp).project(camera);const r=renderer.domElement.getBoundingClientRect();const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;e.style.display=vis?'':'none';
-  e.style.transform=`translate(${((_p.x+1)/2*r.width).toFixed(1)}px,${((1-_p.y)/2*r.height+dy).toFixed(1)}px) translate(-50%,-100%)`}
+  // ekran kenarına taşmasın: yarı genişlik kadar içeride tut
+  let px=(_p.x+1)/2*r.width;if(vis&&e.offsetWidth){const hw=e.offsetWidth/2+6;px=Math.min(Math.max(px,hw),r.width-hw)}
+  e.style.transform=`translate(${px.toFixed(1)}px,${((1-_p.y)/2*r.height+dy).toFixed(1)}px) translate(-50%,-100%)`}
 function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.className='coin-pop'+(tip?' tip':'');e.innerHTML=`+${n} ${ic('coin')}${tip?' bahşiş':''}`;ui.appendChild(e);const t0=performance.now();
   const f=()=>{const k=(performance.now()-t0)/1300;if(k>=1){e.remove();return}place(e,wp,-k*50);e.style.opacity=String(1-k*k);requestAnimationFrame(f)};f()}
 const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin')};
@@ -1915,7 +1917,7 @@ function updateUI(){for(const e of els.values())e._seen=false;
   const ready=orders.filter(o=>o.state==='READY'&&!o.pickupQueued);ready.forEach((o,i)=>place(el('pick'+o.id,'act pick',`${ic('tray')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Teslim al`,()=>pickupOrder(o)),PICKUP_ANCHOR,-i*44));
   for(const b of BSTAFF)if(b.job){const hp=new THREE.Vector3();b.ch.head.getWorldPosition(hp);hp.y+=0.55;const k=Math.min(1,b.job.done/b.job.total);
     place(el(b.i?'posa'+b.i:'posa','progress',`<img src="${productThumb(b.job.o.item.id)}" alt=""><i style="width:${(k*62).toFixed(0)}px"></i>`),hp)}
-  fxUI();
+  fxUI();dlvUI();
   for(const [k,e] of els)if(!e._seen){e.remove();els.delete(k)}
   let hint='';
   const NM=S.chars||{waiter:{name:'Yosun'},barista:{name:'Poşa'},cashier:{name:'Fındık'}};
@@ -3135,6 +3137,115 @@ function openRecover(kind,bag){if($('recModal'))return;UI.modal=true;const md=do
 #board .it .cd{top:-8px;transform:translateX(-50%);font-size:11px;padding:3px 6px;z-index:2;filter:none}
 `;document.head.appendChild(st)}
 
+// ================= AŞAMA 4: PAKET SERVİS (Seviye 5'te açılır) =================
+// Telefon kasanın yanında çalar → oyuncu dokunur → sipariş paneli → kabul → barista hazırlar → paketlenir → kurye götürür → ödeme gelir.
+Object.assign(CONFIG,{dlv:{lvl:5,first:20,gap:[150,240],ring:30,trip:[26,38],fee:6,maxItems:3}});
+const COURIER_IDLE={x:1.45,z:-2.85},COURIER_YAW=-Math.PI/2;
+const DLV={call:null,active:null,cd:0,seq:0,ringT:0,say:null};let COURIER=null,PHONE=null;
+const COURIER_CFG={name:'Pati',look:{...LOOK_DEF,fur1:2,fur2:6},wear:{apron:'ap_sun',top:'polo_stripe',neck:'nk_none',hat:'hat_beret_red',bottom:'bt_navy'}};
+const DLV_STREETS=['Lavanta Sk.','Martı Cd.','Begonvil Sk.','Zeytin Sk.','Fener Yolu','Kiraz Sk.','Liman Cd.','Papatya Sk.'];
+const dlvState=()=>S.dlv||(S.dlv={on:false,intro:false});
+const dlvRate=()=>1;   // Aşama 5: kafenin memnuniyet puanına bağlanacak
+// ---------- telefon (kasanın sağ ucunda) ----------
+function buildPhone(){const g=new THREE.Group();const {x,z,h}=CASH;g.position.set(x+0.5,h,z-0.08);g.rotation.y=-0.35;
+  const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
+  const base=new THREE.Mesh(new RoundedBoxGeometry(0.15,0.05,0.12,2,0.02),T(0xd9534f));base.position.y=0.025;g.add(base);
+  const dial=new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.032,0.012,16),T(0xfbf6ec));dial.position.set(0,0.055,0.018);g.add(dial);
+  const hs=new THREE.Group();hs.position.set(0,0.075,-0.02);g.add(hs);const bar=new THREE.Mesh(new THREE.CylinderGeometry(0.014,0.014,0.17,8),T(0xd9534f));bar.rotation.z=Math.PI/2;hs.add(bar);
+  for(const s of [-1,1]){const e=new THREE.Mesh(new THREE.SphereGeometry(0.026,10,8),T(0xd9534f));e.scale.y=0.7;e.position.x=s*0.08;hs.add(e)}
+  g.traverse(o=>{if(o.isMesh)o.castShadow=true});g.visible=false;scene.add(g);PHONE={g,hs};}
+// ---------- kurye ----------
+function spawnCourier(walkIn){if(COURIER)return COURIER;const cfg=S.chars.courier||(S.chars.courier=JSON.parse(JSON.stringify(COURIER_CFG)));
+  const r=SkeletonUtils.clone(TEMPLATE);const ch=new Char(r,{run:false,xs:1});applyLook(r,cfg,1024);ch.o.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});
+  ch.tray=makeTray();ch.avoidOf=walkersNear;COURIER={key:'courier',ch,i:2,busy:false};
+  if(walkIn){ch.pos.set(DOOR_IN.x,0,DOOR_IN.z);ch.o.rotation.y=Math.PI/2;(async()=>{COURIER.busy=true;await ch.walkTo(COURIER_IDLE.x,COURIER_IDLE.z);await ch.face(COURIER_YAW);await ch.doFor('Wave_One_Hand',1.4);COURIER.busy=false})()}
+  else{ch.pos.set(COURIER_IDLE.x,0,COURIER_IDLE.z);ch.o.rotation.y=COURIER_YAW}
+  courierIdle();return COURIER}
+async function courierIdle(){let t=0;while(COURIER){await sleep(0.5);if(COURIER.busy)continue;t+=0.5;if(t>14){t=0;await COURIER.ch.doFor('Idle_12',1.6)}}}
+function courierSay(text,dur=2.6){if(COURIER)DLV.say={text,until:gameT+dur}}
+// ---------- açılış: kısa tanıtım ----------
+function dlvUnlock(){const D=dlvState();D.on=true;markDirty();spawnCourier(true);if(PHONE)PHONE.g.visible=true;
+  UI.modal=true;const md=document.createElement('div');md.className='modal';md.id='dlvIntro';
+  md.innerHTML=`<div class="lvcard" role="dialog" aria-label="Paket servis açıldı"><div class="star">${UI_IC.bike||UI_IC.coin}</div><h3>Paket servis açıldı!</h3><p>Kuryen <b>${S.chars.courier.name}</b> ekibe katıldı. Artık mahalleden telefonla sipariş gelecek.</p>
+    <div class="unl"><div>${ic('bell')}<span>Kasanın yanındaki telefon çalınca ona dokun</span></div><div>${ic('menu')}<span>Siparişi kabul et; baristan hazırlar</span></div><div>${ic('box')}<span>Hazır olunca paketlenir, kurye götürür ve parasını getirir</span></div></div>
+    <button class="btn" id="dlvOk" type="button">${ic('check')}Harika!</button></div>`;
+  $('game').appendChild(md);sfx('levelup');$('dlvOk').onclick=()=>{md.remove();UI.modal=false;D.intro=true;markDirty();DLV.cd=CONFIG.dlv.first;if(lvQueue.length)showLevelUp()};$('dlvOk').focus()}
+// ---------- arama / sipariş ----------
+function newCall(){const av=availableRecipes();if(!av.length)return;const n=1+Math.floor(Math.random()*Math.min(CONFIG.dlv.maxItems,av.length+1));const items=[];
+  for(let i=0;i<n;i++)items.push(av[Math.floor(Math.random()*av.length)]);const who=LOOKS[Math.floor(Math.random()*LOOKS.length)].name;
+  DLV.call={id:++DLV.seq,who,addr:`${DLV_STREETS[Math.floor(Math.random()*DLV_STREETS.length)]} No ${2+Math.floor(Math.random()*40)}`,items,left:CONFIG.dlv.ring};sfx('chime');DLV.ringT=0}
+const callTotal=c=>c.items.reduce((a,r)=>a+priceOf(r),0)+CONFIG.dlv.fee;
+function openCall(){const c=DLV.call;if(!c||$('dlvPanel'))return;UI.modal=true;const md=document.createElement('div');md.className='modal';md.id='dlvPanel';
+  const rows=c.items.map(r=>`<li><img src="${productThumb(r.id)}" alt=""><span>${r.name}</span><b>${ic('coin')}${priceOf(r)}</b></li>`).join('');
+  md.innerHTML=`<div class="lvcard dlvcard" role="dialog" aria-label="Paket sipariş"><div class="star">${UI_IC.bell||UI_IC.coin}</div><h3>Paket sipariş</h3><p><b>${c.who}</b> · ${c.addr}</p>
+    <ul class="dlvlist">${rows}<li class="fee"><span>Paket ücreti</span><b>${ic('coin')}${CONFIG.dlv.fee}</b></li><li class="tot"><span>Toplam</span><b>${ic('coin')}${callTotal(c)}</b></li></ul>
+    <div class="row"><button class="btn light" id="dlvNo" type="button">${ic('close')}Reddet</button><button class="btn green" id="dlvYes" type="button">${ic('check')}Siparişi al</button></div></div>`;
+  $('game').appendChild(md);sfx('tap');let done=false;
+  const close=()=>{md.remove();UI.modal=false};
+  $('dlvNo').onclick=()=>{if(done)return;done=true;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);close();toast('Sipariş reddedildi',ic('close'),1600)};
+  $('dlvYes').onclick=()=>{if(done)return;done=true;close();acceptCall(c)}}
+const dRnd=([a,b])=>a+Math.random()*(b-a);
+function acceptCall(c){if(DLV.call!==c||DLV.active)return;DLV.call=null;const d={id:c.id,who:c.who,addr:c.addr,items:c.items,orders:[],total:callTotal(c),paid:false,state:'PREP'};DLV.active=d;
+  for(const r of c.items){const o={id:'D'+(++orderSeq),customer:null,delivery:d,table:null,seat:null,item:r,state:'WAITING_FOR_PREPARATION',paid:false,mesh:null,slot:-1,pickupQueued:true,submitQueued:true};orders.push(o);d.orders.push(o);baristaQ.push(o)}
+  sfx('order');courierSay('Siparişi hazırlayın!');toast(`<b>Paket sipariş alındı</b><br>${c.items.length} ürün · ${c.who}`,ic('box'),2400);bump('dlvAccepted')}
+// ---------- paketleme + teslimat ----------
+async function courierRun(d){const ch=COURIER.ch;COURIER.busy=true;d.state='PACK';
+  const k=await claimSpot('pick',COURIER);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);
+  // ürünler kraft kutuya girer
+  const slots=d.orders.map(o=>o.slot).filter(s=>s>=0);const at=PICKUP_SLOTS[slots[0]]||PICKUP_SLOTS[0];
+  const bx=new THREE.Group();const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});const body=new THREE.Mesh(new RoundedBoxGeometry(0.2,0.12,0.16,2,0.015),T(0xc9a06a));body.position.y=0.06;bx.add(body);
+  const tape=new THREE.Mesh(new THREE.BoxGeometry(0.205,0.02,0.04),T(0xd9534f));tape.position.y=0.115;bx.add(tape);bx.position.copy(at);bx.scale.setScalar(0.01);scene.add(bx);
+  await tween(0.25,u=>bx.scale.setScalar(0.01+0.99*u));
+  for(const o of d.orders){if(o.slot>=0){slotUsed[o.slot]=null;o.slot=-1}if(o.mesh){const m=o.mesh,f=m.position.clone(),s0=m.scale.clone();await tween(0.3,u=>{m.position.lerpVectors(f,at,u);m.position.y+=Math.sin(u*Math.PI)*0.08;m.scale.copy(s0).multiplyScalar(1-0.9*u)});scene.remove(m);o.mesh=null}o.state='PACKED'}
+  sfx('clink');await ch.doFor('Idle_12',0.35);const tray=ch.tray;tray.visible=false;ch.carry=tray;await sleep(0.4);tray.visible=true;tray.add(bx);bx.position.set(0,tray.userData.top,0);bx.rotation.set(0,0,0);
+  freeSpot('pick',COURIER);d.state='TRIP';courierSay('Yola çıkıyorum!',1.8);
+  await ch.walkTo(DOOR_IN.x,DOOR_IN.z);sfx('door');await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});ch.o.visible=false;
+  d.tripT=dRnd(CONFIG.dlv.trip)+d.items.length*3;d.tripTotal=d.tripT;while(d.tripT>0){await sleep(0.25);d.tripT-=0.25}
+  tray.remove(bx);ch.carry=null;tray.visible=false;ch.o.visible=true;d.state='BACK';
+  await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});dlvPay(d,new THREE.Vector3(DOOR_IN.x+0.4,1.3,DOOR_IN.z));
+  await ch.walkTo(COURIER_IDLE.x,COURIER_IDLE.z);await ch.face(COURIER_YAW);DLV.active=null;DLV.cd=dRnd(CONFIG.dlv.gap)/dlvRate();COURIER.busy=false}
+function dlvPay(d,p){if(d.paid)return;d.paid=true;for(const o of d.orders){o.paid=true;o.state='COMPLETED'}addCoins(d.total);floatCoin(d.total,p);sfx('register');
+  const tip=Math.random()<0.35?2+Math.floor(d.total*0.1):0;if(tip)setTimeout(()=>{addCoins(tip);sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true)},450);
+  addXP(d.orders.reduce((a,o)=>a+CONFIG.xp.complete+Math.round(o.item.price*CONFIG.xp.perPrice),0));for(const o of d.orders)reqServed(o.item);bump('deliveries');
+  toast(`<b>Paket teslim edildi!</b><br>${d.who} · +${d.total}${tip?` +${tip} bahşiş`:''}`,ic('coin'),2600)}
+// ---------- her kare ----------
+function dlvTick(dt){const D=dlvState();
+  if(!D.on){if(S.created&&S.tut==='done'&&S.lvl>=CONFIG.dlv.lvl&&UI.mode==='cafe'&&!UI.modal&&!lvQueue.length)dlvUnlock();return}
+  if(!COURIER)spawnCourier(false);if(PHONE&&!PHONE.g.visible)PHONE.g.visible=true;if(!D.intro)return;
+  if(DLV.call){DLV.call.left-=dt;DLV.ringT+=dt;if(DLV.ringT>1.6){DLV.ringT=0;sfx('chime')}
+    if(PHONE){PHONE.hs.position.y=0.075+Math.abs(Math.sin(gameT*22))*0.02;PHONE.g.rotation.z=Math.sin(gameT*40)*0.04}
+    if(DLV.call.left<=0){const c=DLV.call;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);toast(`Cevapsız arama: ${c.who}`,ic('bell'),2200);bump('dlvMissed');if($('dlvPanel')){$('dlvPanel').remove();UI.modal=false}}}
+  else if(PHONE){PHONE.hs.position.y=0.075;PHONE.g.rotation.z=0}
+  const d=DLV.active;if(d&&d.state==='PREP'&&d.orders.every(o=>o.state==='READY')&&!COURIER.busy)courierRun(d);
+  if(!DLV.call&&!DLV.active){DLV.cd-=dt*dlvRate();if(DLV.cd<=0)newCall()}}
+// ---------- arayüz: telefon düğmesi, kurye konuşma balonu, durum çipi ----------
+{const r=document.createElement('div');r.className='goal dlvchip';r.id='dlvChip';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;$('req').after(r);r.onclick=()=>{if(DLV.call)openCall()}}
+function dlvUI(){const hp=new THREE.Vector3();
+  if(DLV.call&&PHONE){PHONE.g.getWorldPosition(hp);hp.y+=0.25;place(el('phone','act phone',`${ic('bell')}Telefon!`,()=>openCall()),hp)}
+  if(DLV.say&&COURIER&&gameT<DLV.say.until&&COURIER.ch.o.visible){COURIER.ch.head.getWorldPosition(hp);hp.y+=0.5;place(el('csay','say',DLV.say.text),hp)}
+  const e=$('dlvChip');if(!e)return;let h='';const d=DLV.active;
+  if(DLV.call)h=`${ic('bell')}<span><b>Telefon çalıyor!</b> Dokun</span><em>${fmtT(DLV.call.left)}</em>`;
+  else if(d&&d.state==='PREP')h=`${ic('box')}<span>Paket hazırlanıyor</span><em>${d.orders.filter(o=>o.state==='READY').length}/${d.orders.length}</em>`;
+  else if(d&&d.state==='PACK')h=`${ic('box')}<span>Paketleniyor</span>`;
+  else if(d&&d.state==='TRIP')h=`${UI_IC.bike?`<span class="ic">${UI_IC.bike}</span>`:ic('paw')}<span>Kurye yolda · ${d.who}</span><em>${fmtT(Math.max(0,d.tripT))}</em>`;
+  else if(d&&d.state==='BACK')h=`${ic('coin')}<span>Kurye dönüyor</span>`;
+  e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',!!DLV.call)}
+UI_IC.bell=SV(`<path d="M32 10c-9 0-15 7-15 16v10l-5 8h40l-5-8V26c0-9-6-16-15-16z" fill="#f6c453"/><circle cx="32" cy="50" r="5" fill="#d9534f"/>`);
+UI_IC.box=SV(`<path d="M12 22 32 12l20 10v22L32 54 12 44z" fill="#c9a06a"/><path d="M12 22l20 10 20-10M32 32v22" fill="none"/><path d="M22 17l20 10v8" fill="none" stroke="#d9534f" stroke-width="4"/>`);
+UI_IC.bike=SV(`<circle cx="18" cy="42" r="10" fill="none"/><circle cx="46" cy="42" r="10" fill="none"/><path d="M18 42l10-16h12l6 16M28 26l6 16h12M24 20h8" fill="none"/><rect x="36" y="14" width="14" height="10" rx="2" fill="#c9a06a"/>`);
+{const st=document.createElement('style');st.textContent=`
+.act.phone{background:#e0574f;color:#fff;animation:ringb .5s ease-in-out infinite alternate}@keyframes ringb{to{box-shadow:0 0 0 6px rgba(224,87,79,.35),0 3px 0 var(--ink);filter:brightness(1.1)}}
+.say{position:absolute;left:0;top:0;pointer-events:none;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:4px 10px;font-family:var(--font-display);font-weight:800;font-size:13px;white-space:nowrap;box-shadow:0 2px 0 var(--ink)}
+.goal.dlvchip{cursor:pointer;pointer-events:auto;background:#eef6ff;gap:6px}.goal.dlvchip.ring{background:#ffe3df;border-color:#b8342d;animation:blink2 .8s ease-in-out infinite alternate}@keyframes blink2{to{filter:brightness(1.08)}}
+.goal.dlvchip>span:not(.ic){flex:1;min-width:0}.goal.dlvchip em{opacity:1}
+.dlvlist{list-style:none;margin:6px 0 10px;padding:0;display:flex;flex-direction:column;gap:5px;text-align:left}
+.dlvlist li{display:flex;align-items:center;gap:8px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:4px 8px;font-weight:800;font-size:13px}
+.dlvlist li img{width:30px;height:30px}.dlvlist li span{flex:1}.dlvlist li b{display:inline-flex;align-items:center;gap:2px}.dlvlist li b .ic{width:15px;height:15px}
+.dlvlist li.fee{background:transparent;border-style:dashed}.dlvlist li.tot{background:#fff3d6;font-family:var(--font-display);font-size:15px}
+.dlvcard .row{display:flex;gap:8px;justify-content:center}
+`;document.head.appendChild(st)}
+buildPhone();
+
 // ================= BAŞLAT =================
 function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]>1)setEquip(k,S.equip[k]);
   let moved=0,stored=0;
@@ -3164,7 +3275,7 @@ async function init(){
     introReady(()=>authGate(()=>{started=true;startStaffLoops();if(!S.created)offerSetup(!hadSave);setTimeout(offlineCheck,700)}));
   }catch(e){$('load').hidden=false;const it=$('intro');if(it)it.remove();$('loadmsg').textContent='Yükleme hatası: '+(e.message||e);console.error(e)}
 }
-const walkersNear=()=>{const a=WSTAFF.map(w=>w.ch);for(const c of customers)a.push(c.char);return a};
+const walkersNear=()=>{const a=WSTAFF.map(w=>w.ch);for(const c of customers)a.push(c.char);if(COURIER&&COURIER.ch.o.visible)a.push(COURIER.ch);return a};
 // ---------- ekip: anahtarlar, oluşturma, döngüler ----------
 const allStaffKeys=()=>{const out=[];for(const role of ['waiter','barista','cashier'])for(let n=1;n<=S.staff[role];n++)out.push(staffKey(role,n));return out};
 function newHireCfg(key){const role=roleOfKey(key);return {name:HIRE_NAMES[key]||ROLE_DEF[role].name,look:randomLook(),wear:JSON.parse(JSON.stringify(ROLE_DEF[role].wear)),freeEdits:1}}
@@ -3197,7 +3308,8 @@ function simStep(dt){lastDt=dt;gameT+=dt;
     tickWaiters();
     autoTick(dt);
     fxTick(dt);
-    for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)k.ch.update(dt);for(const c of customers)c.char.update(dt);
+    dlvTick(dt);
+    for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)k.ch.update(dt);for(const c of customers)c.char.update(dt);if(COURIER)COURIER.ch.update(dt);
     cashLayoutTick();
     steamUpdate(dt)}
 function loop(){requestAnimationFrame(loop);const raw=Math.min(clock.getDelta(),0.1);
