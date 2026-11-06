@@ -1289,7 +1289,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
     staff:{waiter:1,barista:1,cashier:1},seen:{},tr:null,navMin:false,
-    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},lastSeen:Date.now()}}
+    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
 let S=defaultState();
 function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e){}
   if(!raw)return false;try{const d=JSON.parse(raw);const base=defaultState();
@@ -1323,7 +1323,6 @@ function addXP(n){if(!(n>0))return;S.xp+=Math.round(n);let up=false;while(S.xp>=
 function addCoins(n){S.coins+=n;hudCoins(true);markDirty()}
 function unlocksAt(L){const out=[];
   if(tableCap(L)>tableCap(L-1))out.push({kind:'cap',text:`Masa sınırı ${tableCap(L)} oldu`});
-  const a0=pickBand(CONFIG.arrival,L-1),a1=pickBand(CONFIG.arrival,L);if(a0!==a1)out.push({kind:'arr',text:'Müşteriler biraz daha sık uğrayacak'});
   for(const r of RECIPES)if(r.lvl===L&&!S.unlocked[r.id])out.push({kind:'recipe',r,text:S.recipes[r.id]?`Açılabilir ürün: ${r.name} · Tarifler’den aç`:`Keşfedilebilir tarif: ${r.name}`});
   for(const k in HIRE)HIRE[k].forEach((h,j)=>{if(h.lv===L)out.push({kind:'hire',text:`Yeni ${ROLE_NAME[k].toLowerCase()} alınabilir · Ekip’ten`})});
   for(const c of CATALOG)if(c.lvl===L&&!c.own)out.push({kind:'item',c,text:`Markette: ${c.name}`});return out}
@@ -1371,7 +1370,7 @@ const atSpot=(ch,p,e=0.05)=>!ch.path.length&&Math.hypot(ch.pos.x-p.x,ch.pos.z-p.
 async function waiterLoop(w){let idle=0;const ch=w.ch;
   while(true){const P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);
     if(w.i===0&&!jobs.length&&idle>16&&atSpot(ch,P)&&await idleChat(w)){idle=0;continue}
-    if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();await j.run(w);freeSpot('prep',w);freeSpot('pick',w)}
+    if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w)}   // bir iş hata verse de garson çalışmaya devam eder
     else if(!atSpot(ch,P)){const ok=await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(ok&&!jobs.length)await ch.face(yaw)}
     else{await sleep(0.1);idle+=0.1;if(idle>18+w.i*5&&!jobs.length){idle=0;await ch.doFor('Talk_with_Hands_Open',1.2);if(!jobs.length)await ch.face(yaw)}}}}
 const yosunLoop=()=>{};   // eski ad (artık her garson kendi döngüsünde)
@@ -1446,7 +1445,8 @@ const posaLoop=()=>{};   // eski ad
 // ================= MÜŞTERİLER =================
 function freeTables(){return TABLES.filter(t=>!t.occupant)}
 const PENDING=new Set(['WAITING_TO_ORDER','ORDER_TAKEN','WAITING_FOR_FOOD']);
-function nextArrival(){const b=pickBand(CONFIG.arrival,S.lvl);spawnT=b.min+Math.random()*(b.max-b.min)}
+// müşteri sıklığı kafenin puanına bağlı (seviyeye değil); ekip kapasitesi ve boş masa ayrıca sınırlar
+function nextArrival(){const b=repBand().arr;spawnT=b[0]+Math.random()*(b[1]-b[0])}
 // müşteri grupları: 1, 2 ya da 4 kişi birlikte gelir; masa grubun tamamına ayrılır (başka grup oturamaz)
 const GROUP_COLS=[0xf2b134,0x86b8d8,0xe86aa8,0x8fae58,0xb48fd6,0xf08a5d];let groupSeq=0;
 function pendingGroups(){return new Set(customers.filter(c=>PENDING.has(c.state)).map(c=>c.group)).size}
@@ -1490,15 +1490,16 @@ async function customerLife(c){const ch=c.char,g=c.group;
   await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});if(c===g.leader)sfx('door');
   c.state='WALKING_TO_TABLE';await ch.sitAt(c.seat);
   ch.look=c.persona.look;ch.acts.Chair_Sit_Idle_F.timeScale=0.85+Math.random()*0.3;
-  c.state='WAITING_TO_ORDER';c.menu=menuCard(c);if(g.size>1&&g.members.every(m=>m.state==='WAITING_TO_ORDER'))groupRing(g,true);c.taken=new Promise(r=>c._taken=r);await c.taken;
-  c.state='WAITING_FOR_FOOD';c.served=new Promise(r=>c._served=r);await c.served;
+  c.state='WAITING_TO_ORDER';c.menu=menuCard(c);if(g.size>1&&g.members.every(m=>m.state==='WAITING_TO_ORDER'))groupRing(g,true);c.taken=new Promise(r=>c._taken=r);await c.taken;if(c.angry){await angryLeave(c);return}
+  c.state='WAITING_FOR_FOOD';c.served=new Promise(r=>c._served=r);await c.served;if(c.angry){await angryLeave(c);return}
   c.state='EATING';c.bubble='heart';sfx('meow');await sleep(1.2);c.bubble='yum';
   await consume(c.order,6*c.persona.eat);if(c.order.steam){steamOff(c.order.steam);c.order.steam=null}
   c.ate=true;
   if(g.size===1&&willRun(c)){await runAway(c);return}
   // grup: herkes bitirene kadar masada bekler; sonra birlikte kalkar. Hesabı grubun başı öder, diğerleri kapıya yürür
   if(!g.members.every(m=>m.ate)){c.state='WAITING_FOR_GROUP';c.bubble='heart';while(!g.members.every(m=>m.ate))await sleep(0.3);c.bubble=null}
-  if(c!==g.leader){c.state='WAITING_TO_PAY';while(g.leader.state==='WAITING_TO_PAY'||g.leader.state==='WAITING_FOR_GROUP'||g.leader.state==='EATING')await sleep(0.3);
+  if(c!==g.leader){c.state='WAITING_TO_PAY';while(g.leader!==c&&(g.leader.state==='WAITING_TO_PAY'||g.leader.state==='WAITING_FOR_GROUP'||g.leader.state==='EATING'))await sleep(0.3)}
+  if(c!==g.leader){
     ch.look=0;ch.acts.Chair_Sit_Idle_F.timeScale=1;await sleep(0.2+Math.random()*0.5);await ch.standUp();if(c.order&&c.order.mesh)fadeOut(c.order.mesh);freeSeat(c);
     c.state='LEAVING';await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});scene.remove(ch.o);customers.splice(customers.indexOf(c),1);return}
   // kasada ödeme: sırada yer açılınca kalkar
@@ -1526,22 +1527,23 @@ async function cashierServe(R,c){const k=CSTAFF[R.i]||CSTAFF[0];while(k.chasing)
 function chooseRecipe(c){const av=availableRecipes();const rq=S.req&&av.find(r=>r.id===S.req.rid);if(rq&&Math.random()<0.55)return rq;
   const w=av.map(r=>(c.persona.pref[r.cat]||1)*(c.vip?r.price:1));let s=w.reduce((a,b)=>a+b,0)*Math.random();for(let i=0;i<av.length;i++){s-=w[i];if(s<=0)return av[i]}return av[av.length-1]}
 // grubun siparişi tek seferde alınır: garson masaya bir kez gelir, her üye için ayrı ürün yazılır
-function takeOrder(c0){const g=c0.group||{members:[c0],size:1,leader:c0};if(!groupReady(g))return;const M=g.members;for(const m of M)m.orderQueued=true;const c=g.leader;
+function takeOrder(c0){const g=c0.group||{members:[c0],size:1,leader:c0};if(!groupReady(g))return;const M=g.members.filter(m=>!m.gone);for(const m of M)m.orderQueued=true;const c=g.leader;
   enqueue('take',async w=>{const ch=w.ch;const s=c.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);
     for(const m of M)m.bubble='think';await ch.doFor('Talk_with_Hands_Open',1.8+0.6*(M.length-1));
     for(const m of M){const item=(window.__force&&RECIPE[window.__force])||chooseRecipe(m);
-      const o={id:'S'+(++orderSeq),customer:m,table:m.table,seat:m.seat,item,state:'TAKEN',paid:false,mesh:null,slot:-1};orders.push(o);m.order=o;
+      if(m.gone)continue;const o={id:'S'+(++orderSeq),customer:m,table:m.table,seat:m.seat,item,price:priceOf(item),state:'TAKEN',paid:false,mesh:null,slot:-1};orders.push(o);m.order=o;
       if(m.menu){scene.remove(m.menu);m.menu=null}m.bubble=null;m.state='ORDER_TAKEN';m._taken()}
     sfx('order')})}
 function submitOrder(o){if(o.state!=='TAKEN'||o.submitQueued)return;o.submitQueued=true;
   enqueue('submit',async w=>{const ch=w.ch;const k=await claimSpot('prep',w);const P=PREP_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Talk_with_Hands_Open',1.2);
-    o.state='WAITING_FOR_PREPARATION';baristaQ.push(o);sfx('chime')})}
+    if(o.cancel){o.state='CANCELLED';o.cleared=true;return}o.state='WAITING_FOR_PREPARATION';baristaQ.push(o);sfx('chime')})}
 function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueued=true;
-  enqueue('serve',async w=>{const ch=w.ch;const k=await claimSpot('pick',w);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Idle_12',0.35);
+  enqueue('serve',async w=>{if(o.cancel||!o.mesh)return;const ch=w.ch;const k=await claimSpot('pick',w);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Idle_12',0.35);if(o.cancel||!o.mesh)return;
     const tray=ch.tray;tray.visible=false;ch.carry=tray;await sleep(0.45);   // önce tepsi tutma pozu otursun, sonra tepsi görünsün
     slotUsed[o.slot]=null;o.slot=-1;tray.visible=true;tray.add(o.mesh);o.mesh.position.set(0,tray.userData.top,0);o.mesh.rotation.set(0,0,0);o.state='PICKED_UP';sfx('clink');
     freeSpot('pick',w);
     const s=o.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);await sleep(0.25);
+    if(o.cancel){if(o.mesh){scene.attach(o.mesh);fadeOut(o.mesh);o.mesh=null}ch.carry=null;tray.visible=false;o.state='CANCELLED';o.cleared=true;return}   // müşteri gitmiş: tabak geri götürülür
     const from=new THREE.Vector3();o.mesh.getWorldPosition(from);scene.attach(o.mesh);const to=new THREE.Vector3(s.spot.x,o.table.topY,s.spot.z);
     await tween(0.5,u=>{o.mesh.position.lerpVectors(from,to,u);o.mesh.position.y+=Math.sin(u*Math.PI)*0.08});o.mesh.position.copy(to);
     ch.carry=null;tray.visible=false;sfx('clink');
@@ -1552,9 +1554,9 @@ async function consume(o,dur){const m=o.mesh;
   await tween(dur,u=>{if(m.userData.fill){const f=m.userData.fill,k=Math.max(0.03,1-u);f.scale.y=k;f.position.y=f.userData.base+f.userData.h*k/2;m.rotation.z=Math.sin(u*Math.PI*6)*0.08*(1-u)}
     else if(m.userData.body){const k=Math.max(0.001,1-u);m.userData.body.scale.set(k,k,k)}})}
 // hesap: grubun tüm siparişleri tek ödemede (her sipariş yalnızca bir kez ödenir)
-function pay(c,R,at){const g=c.group||{members:[c]};const os=g.members.map(m=>m.order).filter(o=>o&&!o.paid);if(!os.length)return;const o=os[0];
+function pay(c,R,at){const g=c.group||{members:[c]};const os=g.members.map(m=>m.order).filter(o=>o&&!o.paid&&!o.cancel);if(!os.length)return;const o=os[0];
   for(const x of os){x.paid=true;x.state='COMPLETED'}const rx=R?R.rx:CASH.reg.x;const p=at||new THREE.Vector3(rx,CASH.h+0.55,CASH.z);
-  const price=os.reduce((a,x)=>a+priceOf(x.item),0);addCoins(price);floatCoin(price,p);
+  const price=os.reduce((a,x)=>a+(x.price||priceOf(x.item)),0);addCoins(price);floatCoin(price,p);rateGroup(c.group);
   const tipCh=c.vip?1:c.persona.tip+tipBonus()+0.1*regTier(c.look.name);
   if(Math.random()<tipCh){let tip=1+Math.floor(price*0.2);if(c.vip)tip=tip*2+3;o.tip=tip;setTimeout(()=>{addCoins(tip);sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true);if(c.vip)toast(`<b>VIP gurme memnun kaldı!</b><br>+${tip} bahşiş bıraktı`,ic('star'),2600)},450)}
   addXP(os.reduce((a,x)=>a+CONFIG.xp.complete+Math.round(x.item.price*CONFIG.xp.perPrice),0));
@@ -1909,17 +1911,18 @@ function place(e,wp,dy=0){_p.copy(wp).project(camera);const r=renderer.domElemen
   e.style.transform=`translate(${px.toFixed(1)}px,${((1-_p.y)/2*r.height+dy).toFixed(1)}px) translate(-50%,-100%)`}
 function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.className='coin-pop'+(tip?' tip':'');e.innerHTML=`+${n} ${ic('coin')}${tip?' bahşiş':''}`;ui.appendChild(e);const t0=performance.now();
   const f=()=>{const k=(performance.now()-t0)/1300;if(k>=1){e.remove();return}place(e,wp,-k*50);e.style.opacity=String(1-k*k);requestAnimationFrame(f)};f()}
-const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin')};
+const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin'),get angry(){return UI_IC.angry}};
 function updateUI(){for(const e of els.values())e._seen=false;
   for(const c of customers){const head=new THREE.Vector3();c.char.head.getWorldPosition(head);head.y+=0.42;
-    if(c.group&&c===c.group.leader&&groupReady(c.group))place(el('take'+c.id,'act',`${ic('menu')}Sipariş al${c.group.size>1?` · ${c.group.size}`:''}`,()=>takeOrder(c)),new THREE.Vector3(c.table.center.x,1.05,c.table.center.z));
+    if(c.group&&c===c.group.leader&&groupReady(c.group)){const e=el('take'+c.id,'act',`${ic('menu')}Sipariş al${c.group.size>1?` · ${c.group.size}`:''}`,()=>takeOrder(c));patBtn(e,c.group);place(e,new THREE.Vector3(c.table.center.x,1.05,c.table.center.z))}
     // sipariş verildi: ürün görseli yerine bekleme simgesi; grupta masa başına tek balon (servis edilen / toplam)
     const g=c.group,multi=g&&g.size>1,waitSt=st=>st==='ORDER_TAKEN'||st==='WAITING_FOR_FOOD';
     if(multi&&c===g.leader){const M=g.members;const think=M.some(m=>m.bubble==='think');
       if(think)place(el('gb'+g.id,'bubble',BUB.think),new THREE.Vector3(g.table.center.x,1.45,g.table.center.z));
-      else if(M.some(m=>waitSt(m.state)))place(el('gb'+g.id,'bubble wait',`${UI_IC.wait}<small>${M.filter(m=>m.order&&m.order.state==='SERVED').length}/${M.length}</small>`),new THREE.Vector3(g.table.center.x,1.45,g.table.center.z))}
-    let b=c.bubble?BUB[c.bubble]:null;if(multi&&c.bubble==='think')b=null;if(!b&&!multi&&c.order&&waitSt(c.state))b=`<span class="wait1">${UI_IC.wait}</span>`;
-    if(b)place(el('bub'+c.id,'bubble'+(b.includes('wait1')?' wait':''),b),head)}
+      else if(M.some(m=>waitSt(m.state))){const e=el('gbw'+g.id,'bubble wait',waitHTML(`${M.filter(m=>m.order&&m.order.state==='SERVED').length}/${M.filter(m=>!m.gone).length}`));patStyle(e,g);place(e,new THREE.Vector3(g.table.center.x,1.45,g.table.center.z))}}
+    let b=c.bubble?BUB[c.bubble]:null;if(multi&&c.bubble==='think')b=null;
+    if(!b&&!multi&&c.order&&waitSt(c.state)){const e=el('bubw'+c.id,'bubble wait',waitHTML());patStyle(e,g);place(e,head)}
+    else if(b)place(el('bub'+c.id,'bubble',b),head)}
   const taken=orders.filter(o=>o.state==='TAKEN'&&!o.submitQueued);taken.forEach((o,i)=>place(el('prep'+o.id,'act prep',`${ic('chef')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Hazırla`,()=>submitOrder(o)),PREP_ANCHOR,-i*44));
   const ready=orders.filter(o=>o.state==='READY'&&!o.pickupQueued);ready.forEach((o,i)=>place(el('pick'+o.id,'act pick',`${ic('tray')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Teslim al`,()=>pickupOrder(o)),PICKUP_ANCHOR,-i*44));
   for(const b of BSTAFF)if(b.job){const hp=new THREE.Vector3();b.ch.head.getWorldPosition(hp);hp.y+=0.55;const k=Math.min(1,b.job.done/b.job.total);
@@ -2077,12 +2080,12 @@ function renderBook(){$('rbTabs').innerHTML=RCAT.map(t=>`<button class="tab" rol
  const sec=document.createElement('section');sec.className='screen';sec.id='menuScr';sec.hidden=true;sec.setAttribute('aria-label','Menü');
  sec.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${UI_IC.menu}</span><h2>Menü</h2><button class="iconbtn" id="mnClose" type="button" aria-label="Kapat">${UI_IC.close}</button></div><div class="scroll"><div class="mlist" id="menuList"></div></div>`;
  $('game').insertBefore(sec,$('nav'));$('mnClose').onclick=()=>setMode('cafe')}
-function renderMenu(){const L=$('menuList');const on=RECIPES.filter(r=>S.menu[r.id]).length;
-  L.innerHTML=`<div class="mhead">Müşteriler yalnızca menündeki ürünlerden sipariş verir. Ürünleri <b>Tarifler</b>’de açarsın; burada menüye ekleyip çıkarırsın. Menüde ${on} ürün var.</div>`+
+function renderMenu(){const L=$('menuList');if(menuTab==='price')return renderPrices(L);const on=RECIPES.filter(r=>S.menu[r.id]).length;
+  L.innerHTML=`<div class="mtabs"><button type="button" data-mt="menu" aria-pressed="true">Menü</button><button type="button" data-mt="price">Fiyatlar</button></div><div class="mhead">Müşteriler yalnızca menündeki ürünlerden sipariş verir. Ürünleri <b>Tarifler</b>’de açarsın; burada menüye ekleyip çıkarırsın. Menüde ${on} ürün var.</div>`+
    RCAT.map(c=>{const rs=RECIPES.filter(r=>r.cat===c.id&&S.unlocked[r.id]);
     return `<div class="mcat">${ic(c.icon)}${c.name}</div>`+(rs.length?rs.map(r=>{const m=!!S.menu[r.id];return `<div class="mi2" data-mi="${r.id}"><img src="${productThumb(r.id)}" alt=""><div class="tx"><b>${r.name}</b><span>${ic('coin')}${priceOf(r)} · ${r.prep} sn${S.req&&S.req.rid===r.id?' · <b class="rqtag">Özel istek</b>':''}</span></div>
       <button class="tgl" type="button" data-tg="${r.id}" aria-pressed="${m}">${m?'Menüde ✓':'Menüye ekle'}</button></div>`}).join(''):`<div class="mempty">Henüz açılmış ürün yok · Tarifler’den keşfet ve aç</div>`)}).join('');
-  L.onclick=e=>{const b=e.target.closest('[data-tg]');if(!b)return;const id=b.dataset.tg,want=!S.menu[id];
+  L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;renderMenu();return}const b=e.target.closest('[data-tg]');if(!b)return;const id=b.dataset.tg,want=!S.menu[id];
     if(!setMenu(id,want)){sfx('nope');toast('Menüde en az bir ürün kalmalı',ic('menu'),2000);return}sfx(want?'place':'tap');toast(want?`${RECIPE[id].name} menüye eklendi`:`${RECIPE[id].name} menüden çıkarıldı`,`<img src="${productThumb(id)}" alt="">`,1600);renderMenu();if(typeof tut2Event==='function')tut2Event('menu',id)}}
 
 // ================= BİRLEŞTİRME TAHTASI =================
@@ -2632,6 +2635,9 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <li><span class="ic" style="width:30px;height:30px">${itemArt('kahve1')}</span><span>Aynı iki malzemeyi sürükleyip üst üste bırak: bir üst seviye olur. Uyanlar yeşil yanar.</span></li>
      <li><span class="ic" style="width:30px;height:30px">${itemArt('c_latte')}</span><span>Bazı farklı malzemeler de birleşir ve yeni tarif keşfettirir (ör. espresso shot + süt köpüğü = latte).</span></li>
      <li>${ic('target')}<span>Tarifler’de bir tarife ${tagb('target','Hedefle','l')} dersen torbalar o tarifin malzemelerini çok daha sık verir.</span></li></ul><p>Uymayan iki malzeme sadece yer değiştirir; hiçbir şey kaybolmaz.</p>`},
+   {t:'Puan, fiyat ve sabır',art:`${UI_IC.starF}${ic('coin')}${UI_IC.wait}`,body:`<ul class="gsteps"><li>${UI_IC.starF}<span><b>Kafe puanı</b> (sağ üstteki yıldız): son ziyaretlerin ortalaması. Puan yükseldikçe daha sık müşteri ve paket sipariş gelir; düşerse kafe sessizleşir. Yıldıza dokununca yorumları görürsün.</span></li>
+     <li>${ic('coin')}<span><b>Fiyatlar:</b> Menü → Fiyatlar’da her ürünün fiyatını ±1 altınla ayarla. Ucuz fiyat müşteriyi mutlu eder ama kârı azaltır; pahalı fiyat kârı artırır, kalite yetmezse puanı düşürür.</span></li>
+     <li>${ic('clock')}<span><b>Sabır:</b> masadaki halka müşterinin sabrını gösterir: önce siparişin alınmasını, sonra yemeğini bekler. Halka kırmızıya dönmeden yetiş; yetişemezsen müşteri kızıp gider ve puanın düşer. Hızlı servis puanı yükseltir.</span></li></ul>`},
    {t:'İstekler, VIP ve müdavimler',art:`${ic('star')}${ic('heart')}${ic('clock')}`,body:`<ul class="gsteps"><li>${ic('clock')}<span><b>Özel istek:</b> bazen bir kedi menünde olmayan bir ürünü ister. Süre bitmeden ürünü keşfet, aç ve menüye ekle; satınca büyük ödül kazanırsın. İsteğe dokununca nereye gideceğini gösterir.</span></li>
      <li>${ic('star')}<span><b>VIP gurme:</b> taçlı misafir. Pahalı ürünleri sever ve her zaman cömert bahşiş bırakır.</span></li>
      <li>${ic('heart')}<span><b>Müdavimler:</b> aynı kedi 6 kez gelirse müdavimin olur, 20 kez gelirse sadık müdavim. Müdavimler daha sık bahşiş bırakır, nadiren kaçar; sadık müdavim hiç kaçmaz.</span></li>
@@ -2758,7 +2764,7 @@ function toggleAuto(){S.auto=!S.auto;markDirty();drawAuto();const n=NMs().waiter
 const AUTO_T=new Map();
 function autoTick(dt){if(!S.auto)return;const due=(key,ok)=>{if(!ok){AUTO_T.delete(key);return false}const t=(AUTO_T.get(key)||0)+dt;AUTO_T.set(key,t);if(t>=0.9){AUTO_T.delete(key);return true}return false};
   for(const c of customers)if(due('t'+c.id,c.state==='WAITING_TO_ORDER'&&!c.orderQueued))takeOrder(c);
-  for(const o of orders){if(due('s'+o.id,o.state==='TAKEN'&&!o.submitQueued))submitOrder(o);if(due('p'+o.id,o.state==='READY'&&!o.pickupQueued))pickupOrder(o)}}
+  for(const o of orders){if(due('s'+o.id,o.state==='TAKEN'&&!o.submitQueued))submitOrder(o);if(due('p'+o.id,o.state==='READY'&&!o.pickupQueued&&!o.cancel))pickupOrder(o)}}
 
 // ================= İKİNCİ ÖĞRETİCİLER: Ekip ilk açılış · Tarifler → Birleştir → Tarifler → Menü =================
 {const st=document.createElement('style');st.textContent=`.cell.tuthl{box-shadow:0 0 0 4px var(--gold) inset;border-radius:12px;animation:tuthl 1s ease-in-out infinite}@keyframes tuthl{50%{box-shadow:0 0 0 7px var(--gold) inset}}
@@ -2936,12 +2942,12 @@ Object.assign(CONFIG,{vipChance:0.08,dash:{lvl:2,chance:0.08,notice:0.7,noticeCh
 
 // ---------- kafe geliştirmeleri (Market → Geliştir) ----------
 const UPG=[
- {id:'price',name:'Lezzetli Tarifler',icon:'coin',desc:'Ürünlerin daha lezzetli: her seviye satış fiyatını %10 artırır.',max:3,cost:[60,150,320],lv:[2,4,7],fx:l=>`ürün fiyatı +%${l*10}`},
+ {id:'price',name:'Usta Dokunuş',icon:'star',desc:'Ürünlerin kalitesi artar: müşteriler aynı fiyattan daha memnun kalır ve daha yüksek fiyatı kabul eder.',max:3,cost:[60,150,320],lv:[2,4,7],fx:l=>`ürün kalitesi +${(l*0.3).toFixed(1)} yıldız`},
  {id:'speed',name:'Hızlı Eller',icon:'chef',desc:'Baristalar daha çevik: her seviye hazırlama süresini %12 kısaltır.',max:3,cost:[50,130,280],lv:[2,4,6],fx:l=>`hazırlama süresi −%${l*12}`},
  {id:'tip',name:'Güler Yüz',icon:'heart',desc:'Ekibin daha sıcak karşılar: her seviye bahşiş şansını 8 puan artırır.',max:3,cost:[40,110,240],lv:[1,3,6],fx:l=>`bahşiş şansı +${l*8} puan`},
  {id:'energy',name:'Büyük Enerji Deposu',icon:'bolt',desc:'Birleştirme enerjisinin üst sınırı her seviyede 10 artar.',max:2,cost:[90,220],lv:[3,6],fx:l=>`enerji sınırı ${CONFIG.energy.max+l*10}`}];
 const upgLv=id=>(S.upg&&S.upg[id])|0;
-const priceOf=r=>Math.round(r.price*(1+0.1*upgLv('price')));
+const priceOf=r=>{const p=S.prices&&S.prices[r.id];return p!=null?p:r.price};   // oyuncunun belirlediği fiyat (Menü → Fiyatlar)
 const prepMul=()=>1-0.12*upgLv('speed');
 const tipBonus=()=>0.08*upgLv('tip');
 const energyMax=()=>CONFIG.energy.max+10*upgLv('energy');
@@ -3055,7 +3061,7 @@ function giftTable(){if(placedTables()>=tableCap(S.lvl))return false;const rec={
 
 // ---------- çevrimdışı kazanç ----------
 function offlineCheck(){if(!started||!S.created||S.tut!=='done'||UI.modal||$('offModal'))return;const last=S.lastSeen||Date.now();const mins=(Date.now()-last)/60000;S.lastSeen=Date.now();
-  if(mins<CONFIG.offline.minMin)return;const m=Math.min(mins,CONFIG.offline.capMin);const b=pickBand(CONFIG.arrival,S.lvl);const perMin=60/((b.min+b.max)/2)*Math.min(1,placedTables()/2);
+  if(mins<CONFIG.offline.minMin)return;const m=Math.min(mins,CONFIG.offline.capMin);const b=repBand().arr;const perMin=60/((b[0]+b[1])/2)*Math.min(1,placedTables()/2);
   const av=availableRecipes();const avg=av.reduce((a,r)=>a+priceOf(r),0)/av.length;const served=Math.max(1,Math.round(m*perMin*CONFIG.offline.eff));const coins=Math.round(served*avg);if(coins<2)return;
   const N=S.chars||{waiter:{name:'Yosun'}};const h=Math.floor(m/60),mm=Math.round(m%60);const dur=(h?h+' saat ':'')+(mm?mm+' dakika':'');
   UI.modal=true;const md=document.createElement('div');md.className='modal';md.id='offModal';
@@ -3144,11 +3150,20 @@ function openRecover(kind,bag){if($('recModal'))return;UI.modal=true;const md=do
 #board .it .cd{top:-8px;transform:translateX(-50%);font-size:11px;padding:3px 6px;z-index:2;filter:none}
 `;document.head.appendChild(st)}
 
-// bekleme simgesi (kum saati) — müşteri siparişini bekliyor
-UI_IC.wait=SV(`<path d="M18 8h28M18 56h28" stroke-width="5"/><path d="M21 9c0 14 22 16 22 23S21 41 21 55h22c0-14-22-16-22-23S43 23 43 9z" fill="#fbf6ec"/><path d="M26 18h12c-2 5-6 7-6 9 0-2-4-4-6-9zM24 52c1-6 8-8 8-12 0 4 7 6 8 12z" fill="#f2b134" stroke="none"/>`);
-{const st=document.createElement('style');st.textContent=`.bubble.wait{display:flex;align-items:center;gap:3px}.bubble.wait svg{width:26px;height:26px;display:block}
-.bubble.wait small{font-family:var(--font-display);font-weight:800;font-size:13px;line-height:1}
-.bubble.wait svg{animation:hg 2.4s ease-in-out infinite}@keyframes hg{0%,70%{transform:rotate(0)}85%,100%{transform:rotate(180deg)}}`;document.head.appendChild(st)}
+// bekleme simgesi: kedi kulaklı servis kapağı (yemeğin geliyor) + sırayla yanan üç nokta; halka = kalan sabır
+UI_IC.wait=SV(`<ellipse cx="32" cy="50" rx="25" ry="5" fill="#e8d6b4"/><path d="M11 48a21 21 0 0 1 42 0z" fill="#fbf6ec"/>
+  <path d="M18 34 15 19l12 9zM46 34l3-15-12 9z" fill="#fbf6ec"/><path d="M18.5 29l-1.6-6.5 5.4 4zM45.5 29l1.6-6.5-5.4 4z" fill="#f2a6a0" stroke="none"/>
+  <circle cx="32" cy="25" r="3.6" fill="#f2b134"/><path d="M19 42a14 14 0 0 1 7-9" stroke="#fff" stroke-width="3.5"/>`);
+{const st=document.createElement('style');st.textContent=`
+.bubble.wait{display:flex;align-items:center;gap:4px;padding:5px 9px 5px 6px;border-radius:999px;--p:1;--pc:#7fae4a;background:radial-gradient(closest-side,var(--paper) 86%,transparent 88%),conic-gradient(var(--pc) calc(var(--p)*360deg),rgba(74,46,28,.14) 0)}
+.bubble.wait .wi{position:relative;display:block;width:34px;height:34px}.bubble.wait .wi svg{width:34px;height:34px;display:block;transform-origin:50% 85%;animation:cl 2.6s ease-in-out infinite}
+@keyframes cl{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-7deg)}80%{transform:rotate(6deg)}90%{transform:rotate(-3deg)}}
+.bubble.wait .dots{display:flex;gap:2px}.bubble.wait .dots i{width:5px;height:5px;border-radius:50%;background:var(--ink);opacity:.25;animation:dt 1.2s infinite}
+.bubble.wait .dots i:nth-child(2){animation-delay:.2s}.bubble.wait .dots i:nth-child(3){animation-delay:.4s}@keyframes dt{30%{opacity:1;transform:translateY(-2px)}60%{opacity:.25;transform:none}}
+.bubble.wait small{font-family:var(--font-display);font-weight:800;font-size:13px;line-height:1;margin-left:2px}
+.bubble.wait.low .wi svg{animation:shk .5s ease-in-out infinite}@keyframes shk{25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+`;document.head.appendChild(st)}
+const waitHTML=(txt='')=>`<span class="wi">${UI_IC.wait}</span>${txt?`<small>${txt}</small>`:'<span class="dots"><i></i><i></i><i></i></span>'}`;
 
 // ================= AŞAMA 4: PAKET SERVİS (Seviye 5'te açılır) =================
 // Telefon kasanın yanında çalar → oyuncu dokunur → sipariş paneli → kabul → barista hazırlar → paketlenir → kurye götürür → ödeme gelir.
@@ -3158,7 +3173,7 @@ const DLV={call:null,active:null,cd:0,seq:0,ringT:0,say:null};let COURIER=null,P
 const COURIER_CFG={name:'Pati',look:{...LOOK_DEF,fur1:2,fur2:6},wear:{apron:'ap_sun',top:'polo_stripe',neck:'nk_none',hat:'hat_beret_red',bottom:'bt_navy'}};
 const DLV_STREETS=['Lavanta Sk.','Martı Cd.','Begonvil Sk.','Zeytin Sk.','Fener Yolu','Kiraz Sk.','Liman Cd.','Papatya Sk.'];
 const dlvState=()=>S.dlv||(S.dlv={on:false,intro:false});
-const dlvRate=()=>1;   // Aşama 5: kafenin memnuniyet puanına bağlanacak
+const dlvRate=()=>repBand().dl;   // paket sipariş sıklığı kafenin puanına bağlı
 // ---------- telefon (kasanın sağ ucunda) ----------
 function buildPhone(){const g=new THREE.Group();const {x,z,h}=CASH;g.position.set(x+0.5,h,z-0.08);g.rotation.y=-0.35;
   const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
@@ -3198,7 +3213,7 @@ function openCall(){const c=DLV.call;if(!c||$('dlvPanel'))return;UI.modal=true;c
   $('dlvNo').onclick=()=>{if(done)return;done=true;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);close();toast('Sipariş reddedildi',ic('close'),1600)};
   $('dlvYes').onclick=()=>{if(done)return;done=true;close();acceptCall(c)}}
 const dRnd=([a,b])=>a+Math.random()*(b-a);
-function acceptCall(c){if(DLV.call!==c||DLV.active)return;DLV.call=null;const d={id:c.id,who:c.who,addr:c.addr,items:c.items,orders:[],total:callTotal(c),paid:false,state:'PREP'};DLV.active=d;
+function acceptCall(c){if(DLV.call!==c||DLV.active)return;DLV.call=null;const d={id:c.id,who:c.who,addr:c.addr,items:c.items,orders:[],total:callTotal(c),paid:false,state:'PREP',acceptT:gameT};DLV.active=d;
   for(const r of c.items){const o={id:'D'+(++orderSeq),customer:null,delivery:d,table:null,seat:null,item:r,state:'WAITING_FOR_PREPARATION',paid:false,mesh:null,slot:-1,pickupQueued:true,submitQueued:true};orders.push(o);d.orders.push(o);baristaQ.push(o)}
   sfx('order');courierSay('Siparişi hazırlayın!');toast(`<b>Paket sipariş alındı</b><br>${c.items.length} ürün · ${c.who}`,ic('box'),2400);bump('dlvAccepted')}
 // ---------- paketleme + teslimat ----------
@@ -3219,7 +3234,7 @@ async function courierRun(d){const ch=COURIER.ch;COURIER.busy=true;d.state='PACK
   await ch.walkTo(COURIER_IDLE.x,COURIER_IDLE.z);await ch.face(COURIER_YAW);DLV.active=null;DLV.cd=dRnd(CONFIG.dlv.gap)/dlvRate();COURIER.busy=false}
 function dlvPay(d,p){if(d.paid)return;d.paid=true;for(const o of d.orders){o.paid=true;o.state='COMPLETED'}addCoins(d.total);floatCoin(d.total,p);sfx('register');
   const tip=Math.random()<0.35?2+Math.floor(d.total*0.1):0;if(tip)setTimeout(()=>{addCoins(tip);sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true)},450);
-  addXP(d.orders.reduce((a,o)=>a+CONFIG.xp.complete+Math.round(o.item.price*CONFIG.xp.perPrice),0));for(const o of d.orders)reqServed(o.item);bump('deliveries');
+  addXP(d.orders.reduce((a,o)=>a+CONFIG.xp.complete+Math.round(o.item.price*CONFIG.xp.perPrice),0));for(const o of d.orders)reqServed(o.item);bump('deliveries');rateDelivery(d,true);
   toast(`<b>Paket teslim edildi!</b><br>${d.who} · +${d.total}${tip?` +${tip} bahşiş`:''}`,ic('coin'),2600)}
 // ---------- her kare ----------
 function dlvTick(dt){const D=dlvState();
@@ -3227,9 +3242,9 @@ function dlvTick(dt){const D=dlvState();
   if(!COURIER)spawnCourier(false);if(PHONE&&!PHONE.g.visible)PHONE.g.visible=true;if(!D.intro)return;
   if(DLV.call){DLV.call.left-=dt;DLV.ringT+=dt;if(DLV.ringT>1.6){DLV.ringT=0;sfx('chime')}
     if(PHONE){PHONE.hs.position.y=0.075+Math.abs(Math.sin(gameT*22))*0.02;PHONE.g.rotation.z=Math.sin(gameT*40)*0.04}
-    if(DLV.call.left<=0){const c=DLV.call;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);toast(`Cevapsız arama: ${c.who}`,ic('bell'),2200);bump('dlvMissed');if($('dlvPanel')){$('dlvPanel').remove();UI.modal=false}}}
+    if(DLV.call.left<=0){const c=DLV.call;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);toast(`Cevapsız arama: ${c.who}`,ic('bell'),2200);bump('dlvMissed');rateDelivery(c,false);if($('dlvPanel')){$('dlvPanel').remove();UI.modal=false}}}
   else if(PHONE){PHONE.hs.position.y=0.075;PHONE.g.rotation.z=0}
-  const d=DLV.active;if(d&&d.state==='PREP'&&d.orders.every(o=>o.state==='READY')&&!COURIER.busy)courierRun(d);
+  const d=DLV.active;if(d&&d.state==='PREP'&&d.orders.every(o=>o.state==='READY')&&!COURIER.busy){d.readyT=gameT;courierRun(d)}
   if(!DLV.call&&!DLV.active){DLV.cd-=dt*dlvRate();if(DLV.cd<=0)newCall()}}
 // ---------- arayüz: telefon düğmesi, kurye konuşma balonu, durum çipi ----------
 {const r=document.createElement('div');r.className='goal dlvchip';r.id='dlvChip';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;$('req').after(r);r.onclick=()=>{if(DLV.call)openCall()}}
@@ -3258,6 +3273,124 @@ UI_IC.bike=SV(`<circle cx="18" cy="42" r="10" fill="none"/><circle cx="46" cy="4
 .dlvcard .row{display:flex;gap:8px;justify-content:center}
 `;document.head.appendChild(st)}
 buildPhone();
+
+// ================= AŞAMA 5–7: İTİBAR · FİYATLANDIRMA · SABIR =================
+// Müşteri trafiği seviyeye değil kafenin ortalama puanına bağlıdır. Puanı hız, ürün kalitesi ve fiyat/değer belirler.
+// Not: hepsi cihazda çalışan yerel bir prototiptir; üretimde puan ve ödemeler sunucuda doğrulanmalıdır.
+Object.assign(CONFIG,{
+  rep:{window:40,seed:3.6,
+    bands:[{min:0,name:'Çok düşük',arr:[40,58],dl:0.45},{min:2,name:'Düşük',arr:[30,45],dl:0.7},{min:3,name:'Orta',arr:[22,34],dl:1},{min:4,name:'Yüksek',arr:[16,26],dl:1.3},{min:4.6,name:'Çok yüksek',arr:[12,20],dl:1.6}]},
+  patience:{A:45,Aper:5,B:70,Bper:18,easyLvl:2,easyMul:1.5},
+  price:{minK:0.625,maxK:1.375,costK:0.35}});
+const repState=()=>S.rep||(S.rep={hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]});
+// ---------- fiyatlar ----------
+function priceRange(r){const d=r.price,mn=Math.max(1,Math.round(d*CONFIG.price.minK)),mx=Math.max(d+1,Math.round(d*CONFIG.price.maxK));return {def:d,min:mn,max:mx,cost:Math.max(1,Math.round(d*CONFIG.price.costK)),step:1}}
+function setPrice(id,v){const r=RECIPE[id];if(!r)return false;const R=priceRange(r);v=Math.round(v);if(v<R.min||v>R.max)return false;if(!S.prices)S.prices={};if(v===R.def)delete S.prices[id];else S.prices[id]=v;markDirty();return true}
+const quality=()=>3+0.3*upgLv('price');   // Aşama 8'de tedarikçi kalitesi de eklenecek
+function fairness(r,p){const q=quality();return p/(r.price*(1+0.12*(q-3)))}
+function priceScore(f){return f<=0.8?5:f<=0.95?4.5:f<=1.05?4:f<=1.15?3.2:f<=1.3?2.3:1.5}
+function priceLabel(r){const f=fairness(r,priceOf(r));return f<=0.8?['Çok ucuz','#5b9a3a']:f<=0.95?['Ucuz','#7fae4a']:f<=1.05?['Uygun','#4f86c6']:f<=1.15?['Biraz pahalı','#e0a33a']:f<=1.3?['Pahalı','#e07a3a']:['Çok pahalı','#d0453c']}
+// ---------- itibar ----------
+// başlangıç puanı 8 ziyaretlik bir ön kabul gibi davranır: ilk birkaç yorum puanı bir anda uçurmaz
+function repAvg(){const H=repState().hist;let s=CONFIG.rep.seed*8,w=8;for(const h of H){s+=h.s*h.w;w+=h.w}return s/w}
+function repBand(){const a=repAvg();let b=CONFIG.rep.bands[0];for(const x of CONFIG.rep.bands)if(a>=x.min)b=x;return b}
+function addReview(rv){const R=repState();rv.t=Date.now();R.hist.push({s:rv.s,w:rv.w||1});while(R.hist.length>CONFIG.rep.window)R.hist.shift();
+  R.reviews.unshift(rv);if(R.reviews.length>30)R.reviews.length=30;if(rv.comp){R.comp.push(rv.comp);if(R.comp.length>CONFIG.rep.window)R.comp.shift()}
+  if(rv.s<2.5)R.unhappy+=rv.w||1;markDirty();hudRep()}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function reviewText(comp,item){const d={sp:comp.sp-3.6,q:comp.q-3.6,pr:comp.pr-3.6};const k=Object.keys(d).sort((a,b)=>Math.abs(d[b])-Math.abs(d[a]))[0];const pos=d[k]>=0;
+  const T={sp:pos?['Servis çok hızlıydı!','Hiç bekletmediler, harika!']:['Siparişim çok geç geldi.','Biraz fazla bekledim.'],
+    q:pos?[`${item} çok lezzetliydi!`,`Böyle ${item.toLowerCase()} içmedim/yemedim!`]:[`${item} pek iyi değildi.`,'Lezzet ortalamaydı.'],
+    pr:pos?['Fiyatına göre harika!','Hem lezzetli hem uygun!']:['Fiyatlar biraz yüksek.','Bu fiyata biraz pahalı.']}[k];return T[Math.floor(Math.random()*T.length)]}
+// başarılı ziyaret: grubun ödemesinde tek yorum (grup büyüklüğü kadar ağırlık)
+function rateGroup(g){if(!g||g.rated||!S.created)return;g.rated=true;const live=g.members.filter(m=>!m.gone&&m.order&&!m.order.cancel);if(!live.length)return;
+  const pa=g.pat||{};const rA=pa.aMax?clamp(pa.aT/pa.aMax,0,1):0.3,rB=pa.bMax?clamp(pa.bT/pa.bMax,0,1):0.4;
+  const sp=clamp(5-3.2*(0.35*rA+0.65*rB),1.5,5),q=clamp(quality(),1,5);const pr=live.reduce((a,m)=>a+priceScore(fairness(m.order.item,m.order.price||priceOf(m.order.item))),0)/live.length;
+  const s=clamp(0.4*sp+0.3*q+0.3*pr,1,5);const comp={sp,q,pr};const item=live[0].order.item.name;
+  addReview({s,w:live.length,who:g.leader.look.name+(live.length>1?` ve ${live.length-1} arkadaşı`:''),txt:reviewText(comp,item),comp,kind:'cafe'});repState().served+=live.length}
+function rateDelivery(d,ok){if(ok){const prep=(d.readyT||0)-(d.acceptT||0),exp=20+12*d.items.length;const sp=clamp(5-2*Math.max(0,prep/exp-0.6),2,5);const pr=d.items.reduce((a,r)=>a+priceScore(fairness(r,priceOf(r))),0)/d.items.length;
+    const comp={sp,q:clamp(quality(),1,5),pr};addReview({s:clamp(0.4*sp+0.3*comp.q+0.3*pr,1,5),w:1,who:d.who+' (paket)',txt:sp>=4?'Paket sıcacık ve hızlı geldi!':reviewText(comp,d.items[0].name),comp,kind:'dlv'})}
+  else addReview({s:1.5,w:1,who:d.who+' (telefon)',txt:'Telefonu açan olmadı.',kind:'dlv'})}
+// ---------- sabır: A = sipariş verilene kadar, B = yemek gelene kadar ----------
+function patMul(){return (S.lvl<=CONFIG.patience.easyLvl?CONFIG.patience.easyMul:1)}
+function serviceTick(dt){if(!S.created||S.tut!=='done')return;
+  const groups=new Set(customers.map(c=>c.group).filter(Boolean));
+  for(const g of groups){const M=g.members.filter(m=>!m.gone);if(!M.length)continue;const P=g.pat||(g.pat={aT:0,bT:0,aMax:0,bMax:0});
+    const waitingOrder=M.length===g.size&&M.every(m=>m.state==='WAITING_TO_ORDER')&&g.members.every(m=>m.state!=='WALKING_TO_TABLE'&&m.state!=='ENTERING');
+    const waitingFood=M.filter(m=>m.state==='ORDER_TAKEN'||m.state==='WAITING_FOR_FOOD');
+    if(waitingOrder){if(!P.aMax)P.aMax=(CONFIG.patience.A+CONFIG.patience.Aper*g.size)*patMul();P.aT+=dt;if(P.aT>=P.aMax)groupGiveUp(g,M,'order')}
+    else if(waitingFood.length&&M.every(m=>m.state!=='WAITING_TO_ORDER')){if(!P.bMax)P.bMax=(CONFIG.patience.B+CONFIG.patience.Bper*g.size)*patMul();P.bT+=dt;if(P.bT>=P.bMax)groupGiveUp(g,waitingFood,'food')}}
+  // vazgeçilen siparişler: hazır olunca tabak toplanır; masaya konmuşsa kaldırılır
+  for(const o of orders){if(!o.cancel||o.cleared)continue;
+    if(o.state==='READY'){if(o.slot>=0){slotUsed[o.slot]=null;o.slot=-1}if(o.mesh)fadeOut(o.mesh);o.mesh=null;o.state='CANCELLED';o.cleared=true;o.pickupQueued=true}
+    else if(o.state==='SERVED'){if(o.steam){steamOff(o.steam);o.steam=null}if(o.mesh)fadeOut(o.mesh);o.mesh=null;o.state='CANCELLED';o.cleared=true}
+    else if(o.state==='WAITING_FOR_PREPARATION'){const i=baristaQ.indexOf(o);if(i>=0){baristaQ.splice(i,1);o.state='CANCELLED';o.cleared=true}}   // barista aldıysa hazır olunca toplanır
+    else if(o.state==='TAKEN'&&!o.submitQueued){o.state='CANCELLED';o.cleared=true}}}
+function groupGiveUp(g,leavers,why){if(g.gaveUp&&why==='order')return;const n=leavers.length;if(!n)return;
+  for(const m of leavers){m.angry=why;m.gone=true;if(m.order){m.order.cancel=true;m.order.pickupQueued=m.order.state==='READY'?true:m.order.pickupQueued}
+    if(m._taken&&m.state==='WAITING_TO_ORDER'){m.orderQueued=true;m._taken()}else if(m._served)m._served()}
+  if(g.leader.gone){const nl=g.members.find(m=>!m.gone);if(nl)g.leader=nl}
+  if(g.members.every(m=>m.gone))g.gaveUp=true;
+  const R=repState();R.lost+=n;bump('lost',n);sfx('nope');
+  addReview({s:1,w:n,who:leavers[0].look.name+(n>1?` ve ${n-1} arkadaşı`:''),txt:why==='order'?'Kimse siparişimizi almadı, gittik.':'Yemeğimiz gelmedi, beklemekten vazgeçtik.',kind:'lost'});
+  toast(`<b>${n>1?n+' müşteri':leavers[0].look.name} kızıp gitti</b><br>${why==='order'?'Siparişi zamanında alınmadı':'Siparişi çok gecikti'} · puanın düştü`,ic('sleepy'),2800)}
+async function angryLeave(c){const ch=c.char;c.state='LEAVING';c.bubble='angry';c.ate=true;ch.look=0;ch.acts.Chair_Sit_Idle_F.timeScale=1;
+  if(c.menu){scene.remove(c.menu);c.menu=null}await ch.standUp();freeSeat(c);await sleep(0.4);c.bubble=null;
+  await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});scene.remove(ch.o);const i=customers.indexOf(c);if(i>=0)customers.splice(i,1)}
+// sabır göstergesi: balonun çevresindeki halka (yeşil → sarı → kırmızı)
+function patStyle(e,g){const P=g&&g.pat;let k=1;if(P){if(P.bMax)k=1-P.bT/P.bMax;else if(P.aMax)k=1-P.aT/P.aMax}k=clamp(k,0,1);
+  e.style.setProperty('--p',k.toFixed(3));e.style.setProperty('--pc',k>0.5?'#7fae4a':k>0.25?'#f2b134':'#e0574f');e.classList.toggle('low',k<0.25)}
+function patBtn(e,g){const P=g&&g.pat;if(!P||!P.aMax){e.style.removeProperty('--p');return}const k=clamp(1-P.aT/P.aMax,0,1);e.classList.add('patb');e.style.setProperty('--p',k.toFixed(3));e.style.setProperty('--pc',k>0.5?'#7fae4a':k>0.25?'#f2b134':'#e0574f');e.classList.toggle('low',k<0.25)}
+// ---------- HUD: puan çipi + memnuniyet paneli ----------
+{const p=document.createElement('button');p.type='button';p.className='pill reppill';p.id='repPill';p.setAttribute('aria-label','Kafe puanı');const g=$('gemPill')||document.querySelector('.hud-r .pill:last-child');(g?g.parentNode:document.querySelector('.hud')).insertBefore(p,g?g.nextSibling:null);p.onclick=()=>openRep()}
+UI_IC.starF=SV(`<path d="M32 8l7 15 16 2-12 11 3 16-14-8-14 8 3-16L9 25l16-2z" fill="#f6c453"/>`);
+function hudRep(){const p=$('repPill');if(!p)return;const a=repAvg();p.innerHTML=`${UI_IC.starF}<b>${a.toFixed(1)}</b>`;p.title=`Kafe puanı ${a.toFixed(1)} · talep: ${repBand().name}`}
+const stars=v=>{let h='';for(let i=1;i<=5;i++)h+=`<i class="st${v>=i-0.25?' on':v>=i-0.75?' half':''}"></i>`;return `<span class="stars">${h}</span>`};
+function openRep(){if($('repModal'))return;UI.modal=true;const R=repState(),a=repAvg(),b=repBand();const C=R.comp;const avg=k=>C.length?C.reduce((s,c)=>s+c[k],0)/C.length:null;
+  const bar=(t,v)=>`<div class="rbar"><span>${t}</span><i style="--w:${v==null?0:(v/5*100).toFixed(0)}%"></i><b>${v==null?'—':v.toFixed(1)}</b></div>`;
+  const md=document.createElement('div');md.className='modal';md.id='repModal';
+  md.innerHTML=`<div class="lvcard repcard" role="dialog" aria-label="Müşteri memnuniyeti"><h3>Müşteri memnuniyeti</h3>
+    <div class="rtop"><b>${a.toFixed(1)}</b>${stars(a)}<span>Talep: <b>${b.name}</b></span></div>
+    <p class="rnote">Puan son ${CONFIG.rep.window} ziyaretin ortalaması. Puan yükseldikçe daha sık müşteri ve paket siparişi gelir.</p>
+    ${bar('Servis hızı',avg('sp'))}${bar('Ürün kalitesi',avg('q'))}${bar('Fiyat / değer',avg('pr'))}
+    <div class="rstats"><div><b>${R.served}</b><span>mutlu müşteri</span></div><div><b>${R.unhappy}</b><span>mutsuz</span></div><div><b>${R.lost}</b><span>kızıp giden</span></div></div>
+    <h4>Son yorumlar</h4><ul class="rlist">${R.reviews.slice(0,8).map(r=>`<li>${stars(r.s)}<div><b>${r.who}</b><span>“${r.txt}”</span></div></li>`).join('')||'<li class="none">Henüz yorum yok</li>'}</ul>
+    <button class="btn" id="repOk" type="button">${ic('check')}Tamam</button></div>`;
+  $('game').appendChild(md);sfx('tap');$('repOk').onclick=()=>{md.remove();UI.modal=false}}
+// ---------- Menü ekranı: Fiyatlar sekmesi ----------
+let menuTab='menu';
+function renderPrices(L){const rs=RECIPES.filter(r=>S.unlocked[r.id]);const q=quality();
+  L.innerHTML=`<div class="mtabs"><button type="button" data-mt="menu">Menü</button><button type="button" data-mt="price" aria-pressed="true">Fiyatlar</button></div>
+    <div class="mhead">Fiyatı ±1 altınla ayarla. Ucuz fiyat müşteriyi mutlu eder ama kâr düşer; pahalı fiyat kârı artırır, kalite yetmezse puan düşer. Şu anki ürün kalitesi: <b>${q.toFixed(1)}</b> ★</div>`+
+    rs.map(r=>{const R=priceRange(r),p=priceOf(r),[lb,col]=priceLabel(r);return `<div class="pi" data-pi="${r.id}"><img src="${productThumb(r.id)}" alt=""><div class="tx"><b>${r.name}${S.menu[r.id]?'':' <em>(menüde değil)</em>'}</b>
+      <span>Varsayılan ${R.def} · aralık ${R.min}–${R.max} · maliyet ~${R.cost} · kâr <b>${p-R.cost}</b></span><span class="plb" style="--c:${col}">${lb}</span></div>
+      <div class="pst"><button class="iconbtn" type="button" data-pd="-1" aria-label="${r.name} fiyatını düşür" ${p<=R.min?'disabled':''}>−</button><b>${ic('coin')}${p}</b><button class="iconbtn" type="button" data-pd="1" aria-label="${r.name} fiyatını artır" ${p>=R.max?'disabled':''}>+</button></div></div>`}).join('')+
+    `<p class="mfoot">Malzeme maliyeti şimdilik tahmini; toptancı sistemiyle birlikte gerçek alış fiyatına bağlanacak.</p>`;
+  L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;renderMenu();return}const b=e.target.closest('[data-pd]');if(!b)return;const id=b.closest('[data-pi]').dataset.pi;
+    if(setPrice(id,priceOf(RECIPE[id])+(+b.dataset.pd))){sfx('tap');renderMenu()}else sfx('nope')}}
+{const st=document.createElement('style');st.textContent=`
+.pill.reppill{cursor:pointer;display:inline-flex;flex-direction:row;align-items:center;gap:4px;white-space:nowrap;font:inherit;font-family:var(--font-display);font-weight:800;color:var(--ink)}.pill.reppill svg{width:20px;height:20px;flex:none}
+.repcard{text-align:left;max-height:86vh;overflow:auto}.repcard h3{text-align:center}.repcard h4{margin:10px 0 4px;font-family:var(--font-display)}
+.rtop{display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap}.rtop>b{font-family:var(--font-display);font-size:34px;line-height:1}.rtop span{font-size:13px;font-weight:800}
+.rnote{font-size:12px!important;opacity:.75;text-align:center}
+.stars{display:inline-flex;gap:1px}.stars .st{width:14px;height:14px;background:rgba(74,46,28,.18);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.stars .st.on{background:#f2b134}.stars .st.half{background:linear-gradient(90deg,#f2b134 50%,rgba(74,46,28,.18) 50%)}.rtop .stars .st{width:22px;height:22px}
+.rbar{display:grid;grid-template-columns:96px 1fr 30px;align-items:center;gap:6px;font-size:12.5px;font-weight:800;margin:4px 0}.rbar i{height:10px;border-radius:6px;background:linear-gradient(90deg,#7fae4a var(--w),rgba(74,46,28,.14) var(--w));border:2px solid var(--ink)}.rbar b{text-align:right}
+.rstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}.rstats div{background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:4px;text-align:center;display:flex;flex-direction:column}.rstats b{font-family:var(--font-display);font-size:18px}.rstats span{font-size:11px;font-weight:800;opacity:.75}
+.rlist{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:5px}.rlist li{display:flex;gap:8px;align-items:flex-start;background:var(--paper);border:2px solid var(--ink);border-radius:12px;padding:5px 8px;font-size:12.5px}
+.rlist li div{display:flex;flex-direction:column;min-width:0}.rlist li span{font-weight:700;opacity:.85}.rlist li.none{justify-content:center;opacity:.6}
+.mtabs{display:flex;gap:6px;margin:0 0 8px}.mtabs button{flex:1;font:inherit;font-family:var(--font-display);font-weight:800;font-size:15px;padding:6px;border:3px solid var(--ink);border-radius:12px;background:var(--paper);color:var(--ink);cursor:pointer}
+.mtabs button[aria-pressed="true"]{background:var(--gold)}
+.pi{display:flex;align-items:center;gap:8px;background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:6px 8px;margin:6px 0}
+.pi img{width:44px;height:44px;flex:none}.pi .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.pi .tx>b{font-family:var(--font-display);font-size:15px}.pi .tx em{font-style:normal;font-size:11px;opacity:.6}
+.pi .tx span{font-size:11.5px;font-weight:700;opacity:.85}.pi .plb{align-self:flex-start;opacity:1!important;color:#fff;background:var(--c);border-radius:999px;padding:1px 8px;font-weight:800!important}
+.pst{display:flex;align-items:center;gap:4px;flex:none}.pst b{display:inline-flex;align-items:center;gap:2px;font-family:var(--font-display);font-size:17px;min-width:38px;justify-content:center}.pst b .ic{width:16px;height:16px}
+.pst .iconbtn{width:34px;height:34px;font-size:20px;font-weight:900;padding:0}.pst .iconbtn:disabled{opacity:.35}
+.mfoot{font-size:11.5px;opacity:.7;text-align:center}
+.act.patb{background:linear-gradient(90deg,var(--pc) calc(var(--p)*100%),#fff calc(var(--p)*100%)) bottom/100% 5px no-repeat,var(--paper)}.act.patb.low{animation:pulseb .6s ease-in-out infinite alternate}@keyframes pulseb{to{filter:brightness(1.12)}}
+`;document.head.appendChild(st)}
+setTimeout(hudRep,0);
+UI_IC.angry=SV(`<circle cx="32" cy="34" r="20" fill="#f08a6a"/><path d="M22 28l8 3M42 28l-8 3M24 44c4-4 12-4 16 0"/><path d="M44 10l4 6 6-2-3 6" stroke="#d0453c" stroke-width="3.5"/>`);
 
 // ================= BAŞLAT =================
 function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]>1)setEquip(k,S.equip[k]);
@@ -3322,6 +3455,7 @@ function simStep(dt){lastDt=dt;gameT+=dt;
     autoTick(dt);
     fxTick(dt);
     dlvTick(dt);
+    serviceTick(dt);
     for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)k.ch.update(dt);for(const c of customers)c.char.update(dt);if(COURIER)COURIER.ch.update(dt);
     cashLayoutTick();
     steamUpdate(dt)}
