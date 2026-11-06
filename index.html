@@ -648,7 +648,7 @@ const NO_BUILD=[{minX:-ROOM_W/2,maxX:-2.9,minZ:0.95,maxZ:2.65},{minX:-ROOM_W/2,m
 function plant(x,z){cyl(0.22,0.17,0.35,M.terracotta,x,0.175,z,12);for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const l=sph(0.17,M.leaf,x+Math.cos(a)*0.15,0.45+(i%2)*0.12,z+Math.sin(a)*0.15);l.scale.set(1,0.7,1)}sph(0.2,M.leaf,x,0.6,z);obst(x-0.35,x+0.35,z-0.35,z+0.35)}
 plant(ROOM_W/2-0.5,-ROOM_D/2+0.5);plant(-ROOM_W/2+0.5,ROOM_D/2-0.5);plant(ROOM_W/2-0.5,ROOM_D/2-0.5);
 {const x=-3.65,z=-0.55;cyl(0.008,0.008,0.5,M.dark,x,WALL_H-0.25,z,6);const shade=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.2,0.17,16,1,true),M.cream.clone());shade.material.side=THREE.DoubleSide;shade.position.set(x,WALL_H-0.58,z);scene.add(shade);const bulb=sph(0.05,M.warmLight,x,WALL_H-0.64,z);bulb.castShadow=false;const pl=new THREE.PointLight(0xffd9a0,4,5);pl.position.set(x,WALL_H-0.7,z);scene.add(pl)}
-{const x=-ROOM_W/2+0.6,z=-ROOM_D/2+0.3;box(0.04,0.04,0.32,M.woodDark,x,3.0,-ROOM_D/2+0.16);cyl(0.008,0.008,0.14,M.dark,x,2.93,z,6);cyl(0.2,0.14,0.25,M.terracotta,x,2.75,z,10);for(let i=0;i<5;i++){const l=sph(0.12,M.leaf,x+(i-2)*0.08,2.55-i*0.14,z+0.2);l.scale.set(1,1.4,0.6)}}
+{const x=-ROOM_W/2+0.6,z=-ROOM_D/2+0.3;box(0.04,0.04,0.32,M.woodDark,x,3.0,-ROOM_D/2+0.16);cyl(0.008,0.008,0.14,M.dark,x,2.93,z,6);cyl(0.2,0.14,0.25,M.terracotta,x,2.75,z,10);cyl(0.17,0.17,0.02,M.woodDark,x,2.865,z,10);/* sarkan yeşil kaldırıldı */}
 // masa lambaları için ışık havuzu (sayı sabit: gölgelendirici yeniden derlenmez)
 const LAMP_POOL=[];for(let i=0;i<6;i++){const pl=new THREE.PointLight(0xffd9a0,0,5);pl.position.set(0,-5,0);scene.add(pl);LAMP_POOL.push(pl)}
 
@@ -1652,7 +1652,7 @@ function posMap(R){if(CM.maps[R])return CM.maps[R];const g=CM.geo,P=CM.P0,UV=g.a
     for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const px=x+0.5,py=y+0.5;const w0=((by-cy)*(px-cx)+(cx-bx)*(py-cy))/den,w1=((cy-ay)*(px-cx)+(ax-cx)*(py-cy))/den,w2=1-w0-w1;
       if(w0<-0.02||w1<-0.02||w2<-0.02)continue;const k=y*R+x;if(cov[k]===1)continue;cov[k]=1;for(let d=0;d<3;d++)pm[k*3+d]=w0*P[a*3+d]+w1*P[b*3+d]+w2*P[c*3+d]}}
   // boşlukları komşudan doldur (dikiş izi kalmasın)
-  for(let pass=0;pass<8;pass++){const nc=cov.slice();for(let y=0;y<R;y++)for(let x=0;x<R;x++){const k=y*R+x;if(cov[k])continue;
+  for(let pass=0;pass<20;pass++){const nc=cov.slice();for(let y=0;y<R;y++)for(let x=0;x<R;x++){const k=y*R+x;if(cov[k])continue;
     for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=R||yy>=R)continue;const q=yy*R+xx;if(cov[q]){pm[k*3]=pm[q*3];pm[k*3+1]=pm[q*3+1];pm[k*3+2]=pm[q*3+2];nc[k]=2;break}}}cov.set(nc)}
   const cv=document.createElement('canvas');cv.width=cv.height=R;const cx2=cv.getContext('2d',{willReadFrequently:true});cx2.drawImage(CM.img,0,0,R,R);const orig=cx2.getImageData(0,0,R,R).data;
   // piksel sınıfı: 1 kürk(beyaz) 2 kürk(kahve) 3 kürk(koyu çizgi) 4 önlük 5 pembe 6 göz(renkli) 7 koyu(göz/çizgi) 8 bıyık
@@ -1682,7 +1682,8 @@ const R_={head:(x,y,z)=>smooth(1.255,1.3,y),ear:(x,y,z)=>y>1.565&&Math.abs(x)>0.
   blaze:(x,y,z)=>z>0.04&&y>1.38&&y<1.66&&Math.abs(x)<0.026+(1.62-y)*0.12,torso:(x,y,z)=>y>0.7&&y<1.3&&Math.abs(x)<0.14,upperArm:(x,y,z)=>Math.abs(x)>=0.1&&Math.abs(x)<0.26&&y>0.93&&y<1.25};
 const LIGHT=[252,248,240];
 const furRGB=v=>Array.isArray(v)?v:CPAL.fur[v][1];
-const inShorts=(x,y,z)=>y>0.5&&y<0.95&&Math.abs(x)<0.2&&!(R_.tail(x,y,z)&&(z<-0.12||y<0.66));
+// şort/kot arkada kalçayı da tamamen örter; sadece aşağı sarkan kuyruk (y<0.66) kürk rengi kalır
+const inShorts=(x,y,z)=>y>0.5&&y<0.95&&Math.abs(x)<(y>0.84?0.14:0.2)&&!(R_.tail(x,y,z)&&y<0.66);
 function furColor(L,x,y,z,ocl,out){const f1=furRGB(L.fur1),f2=furRGB(L.fur2);let k=0,dark=false;
   const head=R_.head(x,y,z),tail=R_.tail(x,y,z);
   const placeOK=L.place==='all'?1:L.place==='head'?Math.max(head,tail?1:0):Math.max(head,(z<0.02&&y>0.75)?1:0,tail?1:0);
