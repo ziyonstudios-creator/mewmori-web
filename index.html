@@ -689,7 +689,7 @@ const CONFIG={
   arrival:[{lv:1,min:22,max:34},{lv:2,min:20,max:31},{lv:3,min:18,max:28},{lv:5,min:16,max:25},{lv:8,min:14,max:22},{lv:12,min:12,max:19}],   // müşteri geliş aralığı (sn)
   firstArrival:5,            // oyun başında ilk müşteri (sn)
   busyPending:2,             // bu kadar bekleyen sipariş varsa yeni müşteri ertelenir
-  busyRetry:12,
+  busyRetry:8,
   group:{p2:0.3,p3:0.13,p4:0.12},
   cap:{base:5,perBarista:3,perWaiter:2},   // aynı anda bekleyen en fazla sipariş: 5 + ek barista başına 3 + ek garson başına 2   // grup olasılıkları (geri kalanı tek kişi); 4'lük grup yalnızca boş 4 kişilik masa varsa
   tableCap:[{lv:1,n:4},{lv:4,n:5},{lv:8,n:6}],
@@ -1440,19 +1440,23 @@ const posaLoop=()=>{};   // eski ad
 function freeTables(){return TABLES.filter(t=>!t.occupant)}
 const PENDING=new Set(['WAITING_TO_ORDER','ORDER_TAKEN','WAITING_FOR_FOOD']);
 // müşteri sıklığı kafenin puanına bağlı (seviyeye değil); ekip kapasitesi ve boş masa ayrıca sınırlar
-function nextArrival(){const b=repBand().arr;spawnT=b[0]+Math.random()*(b[1]-b[0])}
+function nextArrival(){const b=repBand().arr;spawnT=(b[0]+Math.random()*(b[1]-b[0]))/demandMul()}
 // müşteri grupları: 1, 2 ya da 4 kişi birlikte gelir; masa grubun tamamına ayrılır (başka grup oturamaz)
 const GROUP_COLS=[0xf2b134,0x86b8d8,0xe86aa8,0x8fae58,0xb48fd6,0xf08a5d];let groupSeq=0;
 function pendingGroups(){return new Set(customers.filter(c=>PENDING.has(c.state)).map(c=>c.group)).size}
+// ARRS: neden müşteri gelemedi sayaçları (denge testleri için)
+// aynı anda bekleyen grup sınırı ekip büyüdükçe artar (fazladan her garson/barista +1)
+function busyLimit(){const s=S.staff||{};return CONFIG.busyPending+Math.max(0,(s.waiter||1)-1)+Math.max(0,(s.barista||1)-1)}
+const ARRS={ok:0,stock:0,table:0,enter:0,busy:0,pick:0,cap:0};
 function arrivalTick(dt){if(tutHoldArrivals()||S.closed)return;spawnT-=dt;if(spawnT>0)return;
-  if(!availableRecipes().length){spawnT=5;return}   // satılacak stok yok
-  if(!freeTables().length||customers.some(c=>c.state==='ENTERING')){spawnT=5;return}
-  if(pendingGroups()>=CONFIG.busyPending){spawnT=CONFIG.busyRetry;return}
-  const p=pickGroup();if(!p){spawnT=5;return}
+  if(!availableRecipes().length){spawnT=5;ARRS.stock++;return}   // satılacak stok yok
+  if(!freeTables().length){spawnT=5;ARRS.table++;return}if(customers.some(c=>c.state==='ENTERING')){spawnT=5;ARRS.enter++;return}
+  if(pendingGroups()>=busyLimit()){spawnT=CONFIG.busyRetry;ARRS.busy++;return}
+  const p=pickGroup();if(!p){spawnT=5;ARRS.pick++;return}
   // ekip kapasitesi: bekleyen sipariş sayısı ekibin kaldırabileceğini aşmasın (grup gerekirse küçülür)
   const pend=customers.filter(c=>PENDING.has(c.state)||c.state==='ENTERING'||c.state==='WALKING_TO_TABLE').length,cap=servingCap();
-  while(p.size>1&&pend+p.size>cap)p.size--;if(pend>0&&pend+p.size>cap){spawnT=CONFIG.busyRetry;return}
-  spawnGroup(p.size,p.table);nextArrival()}
+  while(p.size>1&&pend+p.size>cap)p.size--;if(pend>0&&pend+p.size>cap){spawnT=CONFIG.busyRetry;ARRS.cap++;return}
+  spawnGroup(p.size,p.table);ARRS.ok++;nextArrival()}
 const servingCap=()=>CONFIG.cap.base+CONFIG.cap.perBarista*(S.staff.barista-1)+CONFIG.cap.perWaiter*(S.staff.waiter-1);
 function pickGroup(){const free=freeTables();if(!free.length)return null;const G=CONFIG.group,r=Math.random();
   let size=r<G.p4?4:r<G.p4+G.p3?3:r<G.p4+G.p3+G.p2?2:1;if(S.tut!=='done')size=1;
@@ -2682,6 +2686,9 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
    {t:'Stok ve toptancılar',art:`${itemArt('kahve1')}${ic('box')}${itemArt('sut1')}`,body:`<ul class="gsteps"><li>${ic('box')}<span><b>Stok:</b> her ürün tarifindeki malzemelerden 1’er birim harcar (ör. kurabiye = 1 un + 1 şeker). Bir malzeme biterse onu kullanan ürün satılamaz; hiçbir ürün satılamıyorsa müşteri gelmez.</span></li>
      <li>${ic('market')}<span><b>Toptancılar:</b> Menü → Stok → <b>Toptancıdan sipariş ver</b>. 5 toptancı var: ucuz olanın kalitesi düşük, pahalı olanın kalitesi yüksek. Kalite müşteri puanını, alış fiyatı kârını belirler. 25’li pakette %5, 50’li pakette %10 indirim.</span></li>
      <li>${ic('clock')}<span><b>Teslimat:</b> sipariş gerçek zamanlı yola çıkar (oyun kapalıyken de). Toptancı kolileri kapının önüne bırakır; ${tagb('box','Kolileri al')} düğmesine dokununca stoğa eklenir. Önce eski stok kullanılır.</span></li></ul>`},
+   {t:'Kafe stratejisi',art:`${UI_IC.chart}${ic('coin')}${UI_IC.starF}`,body:`<ul class="gsteps"><li>${ic('coin')}<span><b>Ekonomik kafe:</b> ucuz toptancı + düşük fiyat. Çok müşteri gelir, müşteriler beklemeye daha hoşgörülüdür; ürün başı kâr düşüktür. Büyük ekip ve çok masa ile parlar.</span></li>
+     <li>${UI_IC.starF}<span><b>Lüks kafe:</b> kaliteli toptancı + yüksek fiyat. Daha az ama daha kârlı müşteri; hızlı servis ve yüksek kalite beklerler. Küçük kafede en verimli yol olabilir. Çok pahalı fiyat ise müşteriyi kaçırır.</span></li>
+     <li>${UI_IC.chart}<span><b>Dengeli kafe:</b> orta toptancı + uygun fiyat. İstikrarlı puan ve kâr. Hangisinin daha iyi olduğu ekibine, masalarına ve puanına göre değişir; İşletme raporundan takip et.</span></li></ul>`},
    {t:'Gün, dükkan ve sen yokken',art:`${ic('sun')}${ic('lock')}${ic('coin')}`,body:`<ul class="gsteps"><li>${ic('sun')}<span><b>Gün döngüsü:</b> kafede sabah, öğle, ikindi, akşam ve gece sırayla gelir (bir gün ~20 dakika). Akşam sokak lambaları yanar.</span></li>
      <li>${ic('lock')}<span><b>Dükkanı kapat:</b> sol alttaki düğmeyle dükkanı kapatırsın. Yeni müşteri ve telefon gelmez, içerideki müşteriler hesabını ödeyip çıkar. Mekânı rahatça düzenlemek için idealdir.</span></li>
      <li>${ic('coin')}<span><b>Sen yokken:</b> oyunu dükkan açıkken kapatırsan ekibin kafeyi işletmeye devam eder (en fazla 8 saat, normal hızın %70’i, stok yettiği kadar). Geri dönünce <b>Hasılatı topla</b>. Dükkan kapalıysa satış olmaz.</span></li></ul>`},
@@ -3213,7 +3220,7 @@ const DLV={call:null,active:null,cd:0,seq:0,ringT:0,say:null};let COURIER=null,P
 const COURIER_CFG={name:'Pati',look:{...LOOK_DEF,fur1:2,fur2:6},wear:{apron:'ap_sun',top:'polo_stripe',neck:'nk_none',hat:'hat_beret_red',bottom:'bt_navy'}};
 const DLV_STREETS=['Lavanta Sk.','Martı Cd.','Begonvil Sk.','Zeytin Sk.','Fener Yolu','Kiraz Sk.','Liman Cd.','Papatya Sk.'];
 const dlvState=()=>S.dlv||(S.dlv={on:false,intro:false});
-const dlvRate=()=>repBand().dl;   // paket sipariş sıklığı kafenin puanına bağlı
+const dlvRate=()=>repBand().dl*demandMul();   // paket sipariş sıklığı kafenin puanına bağlı
 // ---------- telefon (kasanın sağ ucunda) ----------
 function buildPhone(){const g=new THREE.Group();const {x,z,h}=CASH;g.position.set(x+0.5,h,z-0.08);g.rotation.y=-0.35;
   const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
@@ -3323,7 +3330,18 @@ Object.assign(CONFIG,{
   rep:{window:40,seed:3.6,
     bands:[{min:0,name:'Çok düşük',arr:[40,58],dl:0.45},{min:2,name:'Düşük',arr:[30,45],dl:0.7},{min:3,name:'Orta',arr:[22,34],dl:1},{min:4,name:'Yüksek',arr:[16,26],dl:1.3},{min:4.6,name:'Çok yüksek',arr:[12,20],dl:1.6}]},
   patience:{A:45,Aper:5,B:70,Bper:18,easyLvl:2,easyMul:1.5},
-  price:{minK:0.625,maxK:1.375,costK:0.35}});
+  price:{minK:0.625,maxK:1.375,costK:0.35},
+  // Aşama 10 — strateji dengesi: ucuz menü daha çok müşteri çeker (talep esnekliği), pahalı menü daha az ama kârlı müşteri getirir;
+  // pahalı kafenin müşterisi beklemeye daha az tahammül eder (hız beklentisi). Değerler ayarlanabilir.
+  demand:{elast:2.0,min:0.4,max:2.6},
+  expect:{hi:0.9,lo:0.4,q:2.5}});
+// menünün ortalama fiyat düzeyi (1 = önerilen fiyat)
+function priceIndex(){const rs=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]);if(!rs.length)return 1;return rs.reduce((a,r)=>a+priceOf(r)/r.price,0)/rs.length}
+function demandMul(){return clamp(Math.pow(priceIndex(),-CONFIG.demand.elast),CONFIG.demand.min,CONFIG.demand.max)}
+// fiyat düzeyi yükseldikçe müşteri hızlı servis bekler (aynı bekleme daha kötü puanlanır); ucuz yerde daha hoşgörülüdür
+// kalite beklentisi de fiyatla yükselir: ucuz yerde orta kalite yeter, pahalı yerde en iyisi beklenir
+function qualScore(q,pr){return clamp(q-CONFIG.expect.q*(pr-1),1,5)}
+function speedExpect(pr){return pr>1?1+CONFIG.expect.hi*(pr-1):1-CONFIG.expect.lo*(1-pr)}
 const repState=()=>S.rep||(S.rep={hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]});
 // ---------- fiyatlar ----------
 function priceRange(r){const d=r.price,mn=Math.max(1,Math.round(d*CONFIG.price.minK)),mx=Math.max(d+1,Math.round(d*CONFIG.price.maxK));return {def:d,min:mn,max:mx,cost:typeof recipeCost==='function'?Math.round(recipeCost(r)*10)/10:Math.max(1,Math.round(d*CONFIG.price.costK)),step:1}}
@@ -3355,11 +3373,11 @@ function reviewText(comp,item){const pick=a=>{const x=a[Math.floor(Math.random()
 // başarılı ziyaret: grubun ödemesinde tek yorum (grup büyüklüğü kadar ağırlık)
 function rateGroup(g){if(!g||g.rated||!S.created)return;g.rated=true;const live=g.members.filter(m=>!m.gone&&m.order&&!m.order.cancel);if(!live.length)return;
   const pa=g.pat||{};const rA=pa.aMax?clamp(pa.aT/pa.aMax,0,1):0.3,rB=pa.bMax?clamp(pa.bT/pa.bMax,0,1):0.4;
-  const sp=clamp(5-3.2*(0.35*rA+0.65*rB),1.5,5);const qs=live.map(m=>quality(m.order.item,m.order.qual));const q=qs.reduce((a,b)=>a+b,0)/qs.length;const pr=live.reduce((a,m,i)=>a+priceScore(fairness(m.order.item,m.order.price||priceOf(m.order.item),qs[i])),0)/live.length;
+  const prx=live.reduce((a,m)=>a+(m.order.price||priceOf(m.order.item))/m.order.item.price,0)/live.length;const sp=clamp(5-3.2*speedExpect(prx)*(0.35*rA+0.65*rB),1.5,5);const qs=live.map(m=>quality(m.order.item,m.order.qual));const q=live.reduce((a,m,i)=>a+qualScore(qs[i],(m.order.price||priceOf(m.order.item))/m.order.item.price),0)/live.length;const pr=live.reduce((a,m,i)=>a+priceScore(fairness(m.order.item,m.order.price||priceOf(m.order.item),qs[i])),0)/live.length;
   const s=clamp(0.4*sp+0.3*q+0.3*pr,1,5);const comp={sp,q,pr};const item=live[0].order.item.name;
   addReview({s,w:live.length,who:g.leader.look.name+(live.length>1?` ve ${live.length-1} arkadaşı`:''),txt:reviewText(comp,item),comp,kind:'cafe'});repState().served+=live.length}
 function rateDelivery(d,ok){if(ok){const prep=(d.readyT||0)-(d.acceptT||0),exp=20+12*d.items.length;const sp=clamp(5-2*Math.max(0,prep/exp-0.6),2,5);const qs=d.orders.map(o=>quality(o.item,o.qual));const pr=d.orders.reduce((a,o,i)=>a+priceScore(fairness(o.item,o.price||priceOf(o.item),qs[i])),0)/d.orders.length;
-    const comp={sp,q:qs.reduce((a,b)=>a+b,0)/qs.length,pr};addReview({s:clamp(0.4*sp+0.3*comp.q+0.3*pr,1,5),w:1,who:d.who+' (paket)',txt:sp>=4?'Paket sıcacık ve hızlı geldi!':reviewText(comp,d.items[0].name),comp,kind:'dlv'})}
+    const comp={sp,q:d.orders.reduce((a,o,i)=>a+qualScore(qs[i],(o.price||priceOf(o.item))/o.item.price),0)/d.orders.length,pr};addReview({s:clamp(0.4*sp+0.3*comp.q+0.3*pr,1,5),w:1,who:d.who+' (paket)',txt:sp>=4?'Paket sıcacık ve hızlı geldi!':reviewText(comp,d.items[0].name),comp,kind:'dlv'})}
   else{addReview({s:1.5,w:1,who:d.who+' (telefon)',txt:'Telefonu açan olmadı.',kind:'dlv'});finEv('dlvmiss',1)}}
 // ---------- sabır: A = sipariş verilene kadar, B = yemek gelene kadar ----------
 function patMul(){return (S.lvl<=CONFIG.patience.easyLvl?CONFIG.patience.easyMul:1)}
@@ -3403,7 +3421,7 @@ function openRep(){if($('repModal'))return;UI.modal=true;let filt='all';const md
     const bar=(t,v,k)=>`<div class="rbar"><span>${t}</span><i style="--w:${v==null?0:(v/5*100).toFixed(0)}%;--c:${v==null?'#ccc':v>=4?'#7fae4a':v>=3?'#e0a33a':'#d0453c'}"></i><b>${v==null?'—':v.toFixed(1)}</b></div>`;
     const E=finWindow(24*60);const oos=E.ev.oos||0,dok=E.ev.dlv||0,dmiss=E.ev.dlvmiss||0;
     const vs={sp:avg('sp'),q:avg('q'),pr:avg('pr')};const ks=Object.keys(vs).filter(k=>vs[k]!=null).sort((x,y)=>vs[x]-vs[y]);
-    const TIP={sp:'Servis yavaş: garson ya da barista işe al, Hız geliştirmesini yükselt, aynı anda çok masa açma.',q:'Kalite düşük: daha iyi bir toptancıdan malzeme al ya da Usta Dokunuş geliştirmesini yükselt.',pr:'Fiyatlar pahalı bulunuyor: Menü › Fiyatlar’dan biraz indir ya da kaliteyi artır.'};
+    const TIP={sp:'Servis yavaş: garson ya da barista işe al, Hız geliştirmesini yükselt, aynı anda çok masa açma.',q:'Kalite fiyatına göre düşük bulunuyor: daha iyi bir toptancıdan malzeme al, Usta Dokunuş’u yükselt ya da fiyatları biraz indir (pahalı yerde daha yüksek kalite beklenir).',pr:'Fiyatlar pahalı bulunuyor: Menü › Fiyatlar’dan biraz indir ya da kaliteyi artır.'};
     const GOOD={sp:'Müşteriler hızlı servisi seviyor.',q:'Ürün kalitesi beğeniliyor.',pr:'Fiyatlar adil bulunuyor.'};
     let ins='';if(ks.length){const lo=ks[0],hi=ks[ks.length-1];ins=`<div class="rins"><div class="bad">${ic('bulb')}<span><b>Puanı en çok düşüren:</b> ${TIP[lo]}</span></div><div class="good">${UI_IC.starF}<span><b>En güçlü yanın:</b> ${GOOD[hi]}</span></div>${oos?`<div class="bad">${ic('box')}<span><b>Stok:</b> son 24 saatte ${oos} müşteri istediği ürünü bulamadı.</span></div>`:''}${dmiss?`<div class="bad">${ic('bell')}<span><b>Paket servis:</b> ${dmiss} telefon cevapsız kaldı.</span></div>`:''}</div>`}
     const rv=R.reviews.filter(r=>filt==='all'||(filt==='good'?r.s>=3.5:r.s<3));
@@ -3411,7 +3429,7 @@ function openRep(){if($('repModal'))return;UI.modal=true;let filt='all';const md
     md.innerHTML=`<div class="lvcard repcard" role="dialog" aria-label="Müşteri memnuniyeti"><h3>Müşteri memnuniyeti</h3>
     <div class="rtop"><b>${a.toFixed(1)}</b>${stars(a)}${trH}</div>
     <p class="rnote">İtibar: <b>${b.name}</b> · Puan son ${CONFIG.rep.window} ziyaretin ortalaması. Puan yükseldikçe müşteri ve paket siparişi daha sık gelir.</p>
-    ${bar('Servis hızı',vs.sp)}${bar('Ürün kalitesi',vs.q)}${bar('Fiyat / değer',vs.pr)}
+    ${bar('Servis hızı',vs.sp)}${bar('Kalite (fiyatına göre)',vs.q)}${bar('Fiyat / değer',vs.pr)}
     <div class="rstats"><div><b>${R.served}</b><span>ağırlanan</span></div><div><b>${R.unhappy}</b><span>mutsuz</span></div><div><b>${R.lost}</b><span>kızıp giden</span></div></div>
     <div class="rstats r2"><div><b>${dok}</b><span>paket teslim (24 sa)</span></div><div><b>${dmiss}</b><span>cevapsız çağrı</span></div><div><b>${oos}</b><span>stok yüzünden</span></div></div>
     ${ins}
@@ -3424,7 +3442,8 @@ function openRep(){if($('repModal'))return;UI.modal=true;let filt='all';const md
 let menuTab='menu';
 function renderPrices(L){const rs=RECIPES.filter(r=>S.unlocked[r.id]);
   L.innerHTML=`${mtabsHTML()}
-    <div class="mhead">Fiyatı ±1 altınla ayarla. Ucuz fiyat müşteriyi mutlu eder ama kâr düşer; pahalı fiyat kârı artırır, kalite yetmezse puan düşer. Kalite, malzemenin geldiği toptancıya ve Usta Dokunuş geliştirmesine bağlıdır.</div>`+
+    <div class="mhead">Fiyatı ±1 altınla ayarla. <b>Ucuz menü</b> daha çok müşteri çeker ama ürün başı kâr düşer ve ekip yoğunlaşır. <b>Pahalı menü</b> ürün başı daha çok kazandırır ama daha az müşteri gelir; gelenler hızlı servis ve yüksek kalite bekler. Kalite toptancıya ve Usta Dokunuş’a bağlıdır.</div>
+    ${(()=>{const pi=priceIndex(),dm=demandMul(),eq=clamp(3+CONFIG.expect.q*(pi-1),1,5);return `<div class="pstrat"><div><span>Menü fiyat düzeyi</span><b>%${Math.round(pi*100)}</b></div><div><span>Müşteri talebi</span><b>×${dm.toFixed(2)}</b></div><div><span>Beklenen kalite</span><b>${eq.toFixed(1)}★</b></div></div>`})()}`+
     rs.map(r=>{const R=priceRange(r),p=priceOf(r),[lb,col]=priceLabel(r);return `<div class="pi" data-pi="${r.id}"><img src="${productThumb(r.id)}" alt=""><div class="tx"><b>${r.name}${S.menu[r.id]?'':' <em>(menüde değil)</em>'}</b>
       <span>Varsayılan ${R.def} · aralık ${R.min}–${R.max} · maliyet ${R.cost} · kâr <b>${+(p-R.cost).toFixed(1)}</b> · kalite ${quality(r).toFixed(1)}★</span><span class="plb" style="--c:${col}">${lb}</span></div>
       <div class="pst"><button class="iconbtn" type="button" data-pd="-1" aria-label="${r.name} fiyatını düşür" ${p<=R.min?'disabled':''}>−</button><b>${ic('coin')}${p}</b><button class="iconbtn" type="button" data-pd="1" aria-label="${r.name} fiyatını artır" ${p>=R.max?'disabled':''}>+</button></div></div>`}).join('')+
@@ -3904,7 +3923,7 @@ function openFin(){if($('finModal'))return;UI.modal=true;let win=60;const md=doc
 .rstats.r2 b{font-size:16px}
 .rins{display:flex;flex-direction:column;gap:5px;margin:8px 0}.rins>div{display:flex;gap:7px;align-items:flex-start;border:2px solid var(--ink);border-radius:12px;padding:6px 8px;font-size:12.5px;font-weight:700}
 .rins .bad{background:#fff1e6}.rins .good{background:#eef7e4}.rins svg{width:22px!important;height:22px!important;flex:none}.rins>div>svg,.rins .ic{flex:0 0 22px;width:22px;height:22px;display:inline-grid}.rins>div>span:not(.ic){flex:1;min-width:0}
-.rins span{text-align:left}.repcard .rlist li div{text-align:left;align-items:flex-start}.rfilt{display:flex;gap:6px;margin:0 0 6px}.rch{font-style:normal;display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}.rch em{font-style:normal;font-size:10.5px;font-weight:800;padding:0 6px;border-radius:8px}.rch em.ok{background:#dff0cf;color:#3f7a1f}.rch em.no{background:#ffe1dc;color:#b8342d}
+.rins span{text-align:left}.pstrat{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:0 0 8px}.pstrat div{background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:4px;text-align:center;display:flex;flex-direction:column}.pstrat span{font-size:10.5px;font-weight:800;opacity:.75}.pstrat b{font-family:var(--font-display);font-size:16px}.repcard .rlist li div{text-align:left;align-items:flex-start}.rfilt{display:flex;gap:6px;margin:0 0 6px}.rch{font-style:normal;display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}.rch em{font-style:normal;font-size:10.5px;font-weight:800;padding:0 6px;border-radius:8px}.rch em.ok{background:#dff0cf;color:#3f7a1f}.rch em.no{background:#ffe1dc;color:#b8342d}
 `;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
