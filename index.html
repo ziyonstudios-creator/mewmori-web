@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
-<title>MEWMORI</title>
+<title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
 <style>
@@ -367,7 +367,7 @@ const ENV={seaTex:null,boats:[],gulls:[],t:0,hide:{back:null,left:null},wallMesh
  for(let i=-6;i<=6;i++){box(1.4,0.02,0.18,T(0xfbf6ec),i*3.2,-0.3,ROOM_D/2+5.6,{shadow:false});box(0.18,0.02,1.4,T(0xfbf6ec),ROOM_W/2+5.8,-0.3,i*3.2,{shadow:false})}
  // kapı önüne çiçekli tente
  {const g=new THREE.Group();g.position.set(-ROOM_W/2-0.05,DOOR.h+0.55,DOOR.z);g.userData.wall='left';scene.add(g);for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.04,0.3),T(i%2?0xfbf6ec:0xd9534f));s.position.set(-0.42,-0.16,-0.75+i*0.3);s.rotation.z=-0.38;g.add(s)}}
- // sokak lambaları, banklar, ağaçlı saksılar, bisiklet, çeşme
+ // sokak lambaları, banklar, ağaçlı saksılar, çeşme
  const lamp=(x,z)=>{cyl(0.06,0.09,3.2,T(0x3e4a3a),x,1.3,z,8);cyl(0.16,0.2,0.08,T(0x3e4a3a),x,-0.12,z,10);const h=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.24,0.32,6),T(0x3e4a3a));h.position.set(x,3.05,z);scene.add(h);
    const gl=new THREE.Mesh(new THREE.SphereGeometry(0.15,10,8),new THREE.MeshBasicMaterial({color:0xfff0c0}));gl.position.set(x,2.84,z);scene.add(gl);(ENV.glows=ENV.glows||[]).push(gl)};
  const bench=(x,z,ry)=>{const g=new THREE.Group();g.position.set(x,-0.15,z);g.rotation.y=ry;scene.add(g);const W=T(0x9a6a3e),I=T(0x3e4a3a);
@@ -384,9 +384,6 @@ const ENV={seaTex:null,boats:[],gulls:[],t:0,hide:{back:null,left:null},wallMesh
  const parasol=(x,z,c)=>{cyl(0.035,0.035,2.1,T(0xfbf6ec),x,0.9,z,8);const u=new THREE.Mesh(new THREE.ConeGeometry(1.05,0.45,8),T(c));u.position.set(x,2.05,z);u.castShadow=true;scene.add(u);cyl(0.42,0.42,0.04,T(0xfbf6ec),x,0.55,z,16);cyl(0.04,0.06,0.55,T(0x3e4a3a),x,0.27,z,8);
    for(const a of [0,Math.PI]){const ch=box(0.36,0.05,0.36,T(0x9a6a3e),x+Math.cos(a)*0.62,0.32,z+Math.sin(a)*0.62)}};
  parasol(-6.1,-2.2,0xd9534f);parasol(5.0,-5.6,0x8fae58);
- // bisiklet (basit)
- {const g=new THREE.Group();g.position.set(-7.1,0,1.0);g.rotation.y=Math.PI/2;scene.add(g);const I=T(0x4f86c6);for(const sx of [-0.42,0.42]){const w=new THREE.Mesh(new THREE.TorusGeometry(0.3,0.03,6,20),T(0x3e4a3a));w.position.set(sx,0.18,0);g.add(w)}
-  const f=new THREE.Mesh(new THREE.BoxGeometry(0.85,0.05,0.05),I);f.position.set(0,0.38,0);g.add(f);const s=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.05,0.1),T(0x4a2e1c));s.position.set(-0.18,0.62,0);g.add(s);const b=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.25,0.2),T(0xc9a06a));b.position.set(0.42,0.55,0);g.add(b)}
  // meydan çeşmesi (sağ-arka köşede)
  {const x=12,z=12;cyl(1.5,1.6,0.45,T(0xe8dcc6),x,-0.05,z,24);const w=cyl(1.32,1.32,0.05,T(0x7fd3dc),x,0.15,z,24);w.castShadow=false;cyl(0.25,0.32,1.1,T(0xe8dcc6),x,0.6,z,12);cyl(0.55,0.4,0.18,T(0xe8dcc6),x,1.2,z,16);const s=sph(0.16,T(0x7fd3dc),x,1.4,z)}
  // binalar: meydanı çevreleyen pastel cepheler (kiremit ya da düz çatı, panjur, balkon, tente)
@@ -1097,7 +1094,7 @@ class Char{
       this.play(want)}
     this.acts.Handbag_Walk.timeScale=(this.carry&&!this.path.length&&!this.act)?0:1;
     if(this.act){this.act.t+=dt;if(this.act.t>=this.act.max)this.endAct()}
-    this.blend(dt);this.mixer.update(dt);
+    this.blend(dt);this.mixer.update(dt);if(this.post)this.post(dt);
     if(this.look>0&&this.seat&&!this.trans&&this.head){this.lt+=dt;this.head.rotation.y+=Math.sin(this.lt*0.55+this.lookPh)*0.32*this.look;this.head.rotation.x+=Math.sin(this.lt*0.31+this.lookPh)*0.05*this.look}
     if(!this.seat&&!this.trans&&this.feet.length){this.o.updateMatrixWorld(true);let low=Infinity;for(const b of this.feet){b.getWorldPosition(_v);if(_v.y<low)low=_v.y}
       const wantY=this.pos.y+(FLOOR_Y+FOOT_BONE_ABOVE_SOLE*YS-low);this.pos.y+=(wantY-this.pos.y)*Math.min(1,dt*20)}
@@ -1283,7 +1280,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
     staff:{waiter:1,barista:1,cashier:1},seen:{},tr:null,navMin:false,
-    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
+    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
 let S=defaultState();
 function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e){}
   if(!raw)return false;try{const d=JSON.parse(raw);const base=defaultState();
@@ -1449,7 +1446,7 @@ function pendingGroups(){return new Set(customers.filter(c=>PENDING.has(c.state)
 // aynı anda bekleyen grup sınırı ekip büyüdükçe artar (fazladan her garson/barista +1)
 function busyLimit(){const s=S.staff||{};return CONFIG.busyPending+Math.max(0,(s.waiter||1)-1)+Math.max(0,(s.barista||1)-1)}
 const ARRS={ok:0,stock:0,table:0,enter:0,busy:0,pick:0,cap:0};
-function arrivalTick(dt){if(tutHoldArrivals()||S.closed)return;spawnT-=dt;if(spawnT>0)return;
+function arrivalTick(dt){if(tutHoldArrivals()||S.closed||lastCallNow())return;spawnT-=dt;if(spawnT>0)return;
   if(!availableRecipes().length){spawnT=5;ARRS.stock++;return}   // satılacak stok yok
   if(!freeTables().length){spawnT=5;ARRS.table++;return}if(customers.some(c=>c.state==='ENTERING')){spawnT=5;ARRS.enter++;return}
   if(pendingGroups()>=busyLimit()){spawnT=CONFIG.busyRetry;ARRS.busy++;return}
@@ -1556,7 +1553,7 @@ async function consume(o,dur){const m=o.mesh;
 // hesap: grubun tüm siparişleri tek ödemede (her sipariş yalnızca bir kez ödenir)
 function pay(c,R,at){const g=c.group||{members:[c]};const os=g.members.map(m=>m.order).filter(o=>o&&!o.paid&&!o.cancel);if(!os.length)return;const o=os[0];
   for(const x of os){x.paid=true;x.state='COMPLETED'}const rx=R?R.rx:CASH.reg.x;const p=at||new THREE.Vector3(rx,CASH.h+0.55,CASH.z);
-  const price=os.reduce((a,x)=>a+(x.price||priceOf(x.item)),0);addCoins(price,'sale');floatCoin(price,p);rateGroup(c.group);afkEarn(price,os.length);finEv('srv',os.length);finEv('cogs',os.reduce((a,x)=>a+(x.cost||0),0));
+  const price=os.reduce((a,x)=>a+(x.price||priceOf(x.item)),0);addCoins(price,'sale');for(const x of os)finEv('sold:'+x.item.id,1);floatCoin(price,p);rateGroup(c.group);afkEarn(price,os.length);finEv('srv',os.length);finEv('cogs',os.reduce((a,x)=>a+(x.cost||0),0));
   const tipCh=c.vip?1:c.persona.tip+tipBonus()+0.1*regTier(c.look.name);
   if(Math.random()<tipCh){let tip=1+Math.floor(price*0.2);if(c.vip)tip=tip*2+3;o.tip=tip;setTimeout(()=>{addCoins(tip,'tip');sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true);if(c.vip)toast(`<b>VIP gurme memnun kaldı!</b><br>+${tip} bahşiş bıraktı`,ic('star'),2600)},450)}
   addXP(os.reduce((a,x)=>a+CONFIG.xp.complete+Math.round(x.item.price*CONFIG.xp.perPrice),0));
@@ -1643,8 +1640,45 @@ const isDefaultYosun=cfg=>false;   // iç çamaşırı katmanı her zaman boyan�
 // ---- konum haritası (bir kez) ----
 const CM={};
 function custPrepare(){if(CM.ready)return;let sm;TEMPLATE.traverse(o=>{if(o.isSkinnedMesh)sm=o});CM.mesh=sm;CM.geo=sm.geometry;CM.img=sm.material.map.image;
+  smoothNormals(CM.geo);
   const g=CM.geo,P=g.attributes.position.array,N=g.attributes.normal.array,UV=g.attributes.uv.array;CM.P0=new Float32Array(P);CM.N0=new Float32Array(N);
-  CM.maps={};CM.vclass=vertexClass();prepMorph();CM.ready=true}
+  CM.maps={};CM.vclass=vertexClass();prepMorph();CM.tailHide=tailVerts(sm);CM.hipsBone=Math.max(0,sm.skeleton.bones.findIndex(b=>b.name==='mixamorigHips'));CM.geoNT=hideTailGeo(CM.geo.clone());CM.ready=true}
+// Pürüzsüz gölgelendirme: modelde aynı noktada duran köşelerin normalleri farklıydı (sert kenarlar → "pötür pötür" yüzeyler).
+// Aynı konumdaki köşeler, aynı yöne bakan yüzlerin (alan ağırlıklı) ortalama normalini paylaşır; ters yüzler (ince parçaların arka yüzü) karışmaz.
+function smoothNormals(g){const P=g.attributes.position.array,N=g.attributes.normal.array,I=g.index.array,n=P.length/3;
+  const key=i=>Math.round(P[i*3]*1e4)+'_'+Math.round(P[i*3+1]*1e4)+'_'+Math.round(P[i*3+2]*1e4);const mp=new Map(),pid=new Int32Array(n);
+  for(let i=0;i<n;i++){const k=key(i);let v=mp.get(k);if(v==null){v=mp.size;mp.set(k,v)}pid[i]=v}
+  const fl=Array.from({length:mp.size},()=>[]);const FN=new Float32Array(I.length);
+  for(let t=0;t<I.length;t+=3){const a=I[t],b=I[t+1],c=I[t+2];const ux=P[b*3]-P[a*3],uy=P[b*3+1]-P[a*3+1],uz=P[b*3+2]-P[a*3+2],vx=P[c*3]-P[a*3],vy=P[c*3+1]-P[a*3+1],vz=P[c*3+2]-P[a*3+2];
+    FN[t]=uy*vz-uz*vy;FN[t+1]=uz*vx-ux*vz;FN[t+2]=ux*vy-uy*vx;fl[pid[a]].push(t);fl[pid[b]].push(t);fl[pid[c]].push(t)}
+  for(let i=0;i<n;i++){const ox=N[i*3],oy=N[i*3+1],oz=N[i*3+2];let sx=0,sy=0,sz=0;
+    for(const t of fl[pid[i]]){const fx=FN[t],fy=FN[t+1],fz=FN[t+2];if(fx*ox+fy*oy+fz*oz>0){sx+=fx;sy+=fy;sz+=fz}}
+    const l=Math.hypot(sx,sy,sz);if(l>1e-12){N[i*3]=sx/l;N[i*3+1]=sy/l;N[i*3+2]=sz/l}}
+  g.attributes.normal.needsUpdate=true}
+// Kuyruk köşeleri: modelde kuyruğun ayrı kemiği yok, sol uyluğa bağlı. Sol uyluğa bağlı olup sağ uylukta aynası olmayan köşeler kuyruktur.
+function tailVerts(sm){const g=CM.geo,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight,P=CM.P0,n=P.length/3;const B=sm.skeleton.bones.map(b=>b.name);
+  const dom=new Int16Array(n);for(let i=0;i<n;i++){let bi=-1,bw=0;for(let k=0;k<4;k++){const w=SW.getComponent(i,k);if(w>bw){bw=w;bi=SI.getComponent(i,k)}}dom[i]=bi}
+  const L=B.indexOf('mixamorigLeftUpLeg'),R=B.indexOf('mixamorigRightUpLeg');const cs=0.02,H=new Map(),hk=(x,y,z)=>Math.floor(x/cs)+'_'+Math.floor(y/cs)+'_'+Math.floor(z/cs);
+  for(let i=0;i<n;i++)if(dom[i]===R){const k=hk(P[i*3],P[i*3+1],P[i*3+2]);if(!H.has(k))H.set(k,[]);H.get(k).push(i)}
+  const out=new Uint8Array(n);for(let i=0;i<n;i++){if(dom[i]!==L)continue;const x=-P[i*3],y=P[i*3+1],z=P[i*3+2];let near=false;
+    for(let dx=-1;dx<=1&&!near;dx++)for(let dy=-1;dy<=1&&!near;dy++)for(let dz=-1;dz<=1&&!near;dz++){const a=H.get(Math.floor(x/cs+dx)+'_'+Math.floor(y/cs+dy)+'_'+Math.floor(z/cs+dz));if(a)for(const j of a)if(Math.hypot(P[j*3]-x,P[j*3+1]-y,P[j*3+2]-z)<0.02){near=true;break}}
+    if(!near&&z<-0.04)out[i]=1}
+  // kuyruğun kalçaya yaslanan üst kısmı kalça kemiğine bağlı: işaretli kuyruğa komşu, arkada (z<-0.1) duran kalça köşelerini de ekle
+  const I=g.index.array,Hb=B.indexOf('mixamorigHips');const key=i=>Math.round(P[i*3]*1e4)+'_'+Math.round(P[i*3+1]*1e4)+'_'+Math.round(P[i*3+2]*1e4);const grp=new Map(),pid=new Int32Array(n);
+  for(let i=0;i<n;i++){const k=key(i);let v=grp.get(k);if(v==null){v=grp.size;grp.set(k,v)}pid[i]=v}
+  const mem=Array.from({length:grp.size},()=>[]);for(let i=0;i<n;i++)mem[pid[i]].push(i);
+  const adj=Array.from({length:grp.size},()=>new Set());for(let t=0;t<I.length;t+=3){const a=pid[I[t]],b=pid[I[t+1]],c=pid[I[t+2]];adj[a].add(b).add(c);adj[b].add(a).add(c);adj[c].add(a).add(b)}
+  const inT=new Uint8Array(grp.size);for(let i=0;i<n;i++)if(out[i])inT[pid[i]]=1;
+  let fr=[];for(let v=0;v<grp.size;v++)if(inT[v])fr.push(v);
+  for(let it=0;it<40&&fr.length;it++){const nx=[];for(const v of fr)for(const w of adj[v]){if(inT[w])continue;const i=mem[w][0];if(dom[i]!==Hb&&dom[i]!==L)continue;if(P[i*3+2]>-0.1||P[i*3+1]>0.93||Math.abs(P[i*3])>0.07)continue;inT[w]=1;nx.push(w)}fr=nx}
+  for(let i=0;i<n;i++)if(inT[pid[i]])out[i]=1;
+  return out}
+// şort/pantolon giyen karakterde kuyruk gizlenir: kuyruk köşeleri kalçanın içindeki tek bir noktaya toplanır (görünmez)
+const TAIL_HIDE_AT=[0,0.84,0.02];
+// köşeler tek bir kemiğe (kalça) bağlanır; yoksa animasyonda farklı ağırlıklarla dağılıp şerit gibi görünürler
+function hideTailGeo(g){const P=g.attributes.position.array,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight,T=CM.tailHide,h=CM.hipsBone;
+  for(let i=0;i<T.length;i++)if(T[i]){P[i*3]=TAIL_HIDE_AT[0];P[i*3+1]=TAIL_HIDE_AT[1];P[i*3+2]=TAIL_HIDE_AT[2];SI.setXYZW(i,h,h,h,h);SW.setXYZW(i,1,0,0,0)}
+  g.attributes.position.needsUpdate=true;SI.needsUpdate=true;SW.needsUpdate=true;g.computeBoundingSphere();return g}
 function posMap(R){if(CM.maps[R])return CM.maps[R];const g=CM.geo,P=CM.P0,UV=g.attributes.uv.array,I=g.index.array;
   const pm=new Float32Array(R*R*3),cov=new Uint8Array(R*R);
   for(let t=0;t<I.length;t+=3){const a=I[t],b=I[t+1],c=I[t+2];const ax=UV[a*2]*R,ay=UV[a*2+1]*R,bx=UV[b*2]*R,by=UV[b*2+1]*R,cx=UV[c*2]*R,cy=UV[c*2+1]*R;
@@ -1683,8 +1717,8 @@ const R_={head:(x,y,z)=>smooth(1.255,1.3,y),ear:(x,y,z)=>y>1.565&&Math.abs(x)>0.
   blaze:(x,y,z)=>z>0.04&&y>1.38&&y<1.66&&Math.abs(x)<0.026+(1.62-y)*0.12,torso:(x,y,z)=>y>0.7&&y<1.3&&Math.abs(x)<0.14,upperArm:(x,y,z)=>Math.abs(x)>=0.1&&Math.abs(x)<0.26&&y>0.93&&y<1.25};
 const LIGHT=[252,248,240];
 const furRGB=v=>Array.isArray(v)?v:CPAL.fur[v][1];
-// şort/kot arkada kalçayı da tamamen örter; sadece aşağı sarkan kuyruk (y<0.66) kürk rengi kalır
-const inShorts=(x,y,z)=>y>0.5&&y<0.95&&Math.abs(x)<(y>0.84?0.14:0.2)&&!(R_.tail(x,y,z)&&y<0.66);
+// şort/kot arkada kalçayı tamamen örter (kuyruk şortla gizlendiği için arkada istisna yok)
+const inShorts=(x,y,z)=>y>0.5&&y<0.95&&Math.abs(x)<(y>0.84?0.14:0.2);
 function furColor(L,x,y,z,ocl,out){const f1=furRGB(L.fur1),f2=furRGB(L.fur2);let k=0,dark=false;
   const head=R_.head(x,y,z),tail=R_.tail(x,y,z);
   const placeOK=L.place==='all'?1:L.place==='head'?Math.max(head,tail?1:0):Math.max(head,(z<0.02&&y>0.75)?1:0,tail?1:0);
@@ -1842,8 +1876,8 @@ function fitHat(root,g){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!s
 function applyLook(root,cfg,R=1024){custPrepare();let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});
   const tex=(isDefaultYosun(cfg))?CM.mesh.material.map:composeTexture(cfg,R);
   const old=sm.material;sm.material=old.clone();sm.material.map=tex;sm.material.needsUpdate=true;
-  const L=cfg.look;const needGeo=L.earShape!=='pointed'||L.earSize!=='normal'||L.tailLen!=='normal'||L.tailFluff||L.whisk!=='long';
-  sm.geometry=needGeo?morphGeometry(L):CM.geo;
+  const L=cfg.look;const hideT=!!(cfg.wear&&cfg.wear.bottom);const needGeo=L.earShape!=='pointed'||L.earSize!=='normal'||L.tailLen!=='normal'||L.tailFluff||L.whisk!=='long';
+  sm.geometry=needGeo?(hideT?hideTailGeo(morphGeometry(L)):morphGeometry(L)):(hideT?CM.geoNT:CM.geo);
   const xs=BODY_XS[L.body]||1;root.scale.set(YS*xs,YS,YS);applyAccessories(root,cfg.wear);return xs}
 function randomLook(){const pick=a=>a[Math.floor(Math.random()*a.length)][0];const L={...LOOK_DEF};
   for(const k in LOOK_OPTS)L[k]=pick(LOOK_OPTS[k]);L.fur1=Math.floor(Math.random()*CPAL.fur.length);do{L.fur2=Math.floor(Math.random()*CPAL.fur.length)}while(L.fur2===L.fur1);
@@ -2331,35 +2365,54 @@ UI_IC.off=SV(`<path d="M12 12 L52 52" stroke="#d9534f" stroke-width="6"/>`);
    b.onclick=()=>{auInit();SET[key]=!SET[key];saveSet();draw();if(key==='music'){SET.music?musicStart():musicStop()}else if(AU.sfx){AU.sfx.gain.value=SET.sfx?0.7:0;if(SET.sfx)sfx('tap')}};row.appendChild(b)};
  mk('music','Müzik','music');mk('sfx','Ses efektleri','speaker')}
 
-// ================= MEWMORI LOGO + AÇILIŞ =================
-// Logo: yuvarlak, oyuncu harfler; ilk M'de kedi kulakları, O yerine pati, son harfin altından kıvrılan kuyruk, küçük parıltı.
-const LOGO_LETTERS=[['M',52,'#c98a4e'],['E',118,'#c98a4e'],['W',190,'#c98a4e'],['M',272,'#8a9a3b'],['O',340,null],['R',398,'#8a9a3b'],['I',443,'#8a9a3b']];
-function logoSVG(cls=''){const L=LOGO_LETTERS.map(([ch,x,c],i)=>ch==='O'
-    ?`<g transform="translate(${x} 72)"><g class="lg-l" style="--i:${i}"><circle r="27" fill="#fbf3e4" stroke="${INK}" stroke-width="7"/><ellipse cx="0" cy="7" rx="11" ry="9" fill="#f2a6a0"/><circle cx="-12" cy="-8" r="5" fill="#f2a6a0"/><circle cx="0" cy="-14" r="5" fill="#f2a6a0"/><circle cx="12" cy="-8" r="5" fill="#f2a6a0"/></g></g>`
-    :`<text class="lg-l" style="--i:${i}" x="${x}" y="100" text-anchor="middle" fill="${c}" stroke="${INK}" stroke-width="9" stroke-linejoin="round" paint-order="stroke" font-family="'Baloo 2',Nunito,system-ui,sans-serif" font-weight="800" font-size="96">${ch}</text>`).join('');
-  return `<svg class="logo ${cls}" viewBox="0 0 500 150" role="img" aria-label="MEWMORI">
-   <g transform="translate(52 26)"><g class="lg-ears"><path d="M-30 18 L-24 -14 L-6 8 Z" fill="#c98a4e" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/><path d="M-24 10 L-21 -4 L-12 6 Z" fill="#f2a6a0"/>
-     <path d="M30 18 L24 -14 L6 8 Z" fill="#c98a4e" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/><path d="M24 10 L21 -4 L12 6 Z" fill="#f2a6a0"/></g></g>
-   ${L}
-   <path class="lg-tail" d="M452 104 C470 112 478 92 468 78 C460 66 472 52 486 58" fill="none" stroke="${INK}" stroke-width="15" stroke-linecap="round"/>
-   <path class="lg-tail" d="M452 104 C470 112 478 92 468 78 C460 66 472 52 486 58" fill="none" stroke="#8a9a3b" stroke-width="8" stroke-linecap="round"/>
-   <path class="lg-spark" d="M478 14 l4 11 11 4 -11 4 -4 11 -4 -11 -11 -4 11 -4z" fill="#f2b134" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
-  </svg>`}
+// ================= TABBYCHEF LOGO + AÇILIŞ =================
+// Logo: alnında tekir "M" çizgileri olan turuncu bir kedi şef; başına aşçı şapkası kurulur, altında iki renkli "Tabby·Chef" yazısı.
+// Açılışta: kedi başı zıplayarak gelir, şapka tepeden iner ve yaylanır, harfler düşer, şapkadan buhar kıvrılır, kaşık parıldar.
+function catChef(){const O='#e9a25a',S='#9a5a2c',P='#f2a6a0';return `
+  <g class="lg-head">
+   <path d="M-58 -6 L-50 -62 L-14 -36 Z" fill="${O}" stroke="${INK}" stroke-width="7" stroke-linejoin="round"/><path d="M-48 -18 L-45 -46 L-26 -32 Z" fill="${P}"/>
+   <path d="M58 -6 L50 -62 L14 -36 Z" fill="${O}" stroke="${INK}" stroke-width="7" stroke-linejoin="round"/><path d="M48 -18 L45 -46 L26 -32 Z" fill="${P}"/>
+   <ellipse cx="0" cy="4" rx="66" ry="56" fill="${O}" stroke="${INK}" stroke-width="7"/>
+   <path d="M-22 -40 L-12 -24 L0 -40 L12 -24 L22 -40" fill="none" stroke="${S}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+   <path d="M-62 -2 h16 M-63 12 h14 M62 -2 h-16 M63 12 h-14" stroke="${S}" stroke-width="5" stroke-linecap="round"/>
+   <ellipse cx="0" cy="26" rx="30" ry="22" fill="#fbf3e4"/>
+   <g class="lg-eyes"><ellipse cx="-24" cy="2" rx="8" ry="10" fill="${INK}"/><ellipse cx="24" cy="2" rx="8" ry="10" fill="${INK}"/><circle cx="-21" cy="-2" r="3" fill="#fff"/><circle cx="27" cy="-2" r="3" fill="#fff"/></g>
+   <ellipse cx="-40" cy="20" rx="9" ry="5.5" fill="${P}" opacity=".8"/><ellipse cx="40" cy="20" rx="9" ry="5.5" fill="${P}" opacity=".8"/>
+   <path d="M-6 16 h12 l-6 7 z" fill="${P}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+   <path d="M0 23 q-5 9 -12 4 M0 23 q5 9 12 4" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>
+   <path d="M-30 22 L-62 16 M-30 28 L-60 32 M30 22 L62 16 M30 28 L60 32" stroke="${INK}" stroke-width="2.5" stroke-linecap="round" opacity=".75"/>
+  </g>
+  <g class="lg-hat"><g transform="translate(0 -47)">
+   <path d="M-38 6 h76 v-20 h-76 z" fill="#fff8ec" stroke="${INK}" stroke-width="7" stroke-linejoin="round"/>
+   <path d="M-40 -14 C-62 -18 -60 -54 -34 -50 C-34 -74 -4 -78 2 -62 C10 -82 42 -74 38 -50 C62 -54 64 -18 40 -14 Z" fill="#fff8ec" stroke="${INK}" stroke-width="7" stroke-linejoin="round"/>
+   <path d="M-14 -18 v-14 M14 -18 v-14" stroke="#e6d8c2" stroke-width="5" stroke-linecap="round"/>
+   <path d="M-38 -4 h76" stroke="#f2b134" stroke-width="5"/>
+  </g></g>
+  <path class="lg-steam" d="M44 -128 c-10 -8 8 -16 -2 -26 c-8 -8 6 -14 0 -22" fill="none" stroke="#f2a6a0" stroke-width="6" stroke-linecap="round"/>`}
+function logoSVG(cls=''){const row=/tlogo/.test(cls);
+  const words=(x,y,anchor,fs,len)=>`<text class="lg-w" style="--i:0" x="${x}" y="${y}" text-anchor="${anchor}" textLength="${len}" lengthAdjust="spacingAndGlyphs" fill="#c98a4e" stroke="${INK}" stroke-width="${fs*0.11}" stroke-linejoin="round" paint-order="stroke" font-family="'Baloo 2',Nunito,system-ui,sans-serif" font-weight="800" font-size="${fs}" letter-spacing="1">Tabby<tspan fill="#8a9a3b">Chef</tspan></text>`;
+  const spoon=(x,y)=>`<g transform="translate(${x} ${y})"><g class="lg-spark"><path d="M0 0 l5 13 13 5 -13 5 -5 13 -5 -13 -13 -5 13 -5z" fill="#f2b134" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/></g></g>`;
+  if(row)return `<svg class="logo ${cls}" viewBox="0 0 520 150" role="img" aria-label="TabbyChef"><g transform="translate(78 100) scale(.62)">${catChef()}</g>${words(150,100,'start',72,330)}${spoon(492,30)}</svg>`;
+  return `<svg class="logo ${cls}" viewBox="0 0 460 300" role="img" aria-label="TabbyChef"><g transform="translate(230 160)">${catChef()}</g>${words(230,282,'middle',78,400)}${spoon(372,52)}</svg>`}
 const PAW=`<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="26" rx="9" ry="7.5" fill="currentColor"/><circle cx="9" cy="15" r="4" fill="currentColor"/><circle cx="17" cy="9" r="4" fill="currentColor"/><circle cx="26" cy="10" r="4" fill="currentColor"/><circle cx="32" cy="17" r="3.6" fill="currentColor"/></svg>`;
 {const st=document.createElement('style');st.textContent=`
 #intro{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--cream);
   background-image:radial-gradient(circle at 12px 12px,rgba(201,138,78,.12) 2px,transparent 2.5px);background-size:24px 24px;transition:opacity .5s ease;cursor:pointer;padding:20px;box-sizing:border-box}
 #intro.out{opacity:0;pointer-events:none}
-#intro .logo{width:min(86vw,440px);height:auto;overflow:visible}
-.lg-l{opacity:0;transform-box:fill-box;transform-origin:50% 100%;animation:lgDrop .62s cubic-bezier(.3,1.6,.5,1) forwards;animation-delay:calc(1.15s + var(--i)*.08s)}
-@keyframes lgDrop{0%{opacity:0;transform:translateY(-60px) scale(.6)}60%{opacity:1}100%{opacity:1;transform:none}}
-.lg-ears{opacity:0;transform-box:fill-box;transform-origin:50% 100%;animation:lgEar .5s cubic-bezier(.3,1.8,.5,1) 1.85s forwards}
-@keyframes lgEar{0%{opacity:0;transform:scale(.2)}100%{opacity:1;transform:none}}
-.lg-tail{stroke-dasharray:120;stroke-dashoffset:120;animation:lgTail .7s ease-out 2.25s forwards}
-@keyframes lgTail{to{stroke-dashoffset:0}}
-.lg-spark{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:lgSpark .9s ease-out 2.85s forwards}
+#intro .logo{width:min(80vw,380px);height:auto;overflow:visible}
+.lg-head{opacity:0;transform-box:fill-box;transform-origin:50% 100%;animation:lgHead .7s cubic-bezier(.3,1.6,.5,1) 1.1s forwards}
+@keyframes lgHead{0%{opacity:0;transform:translateY(40px) scale(.4)}100%{opacity:1;transform:none}}
+.lg-hat{opacity:0;transform-box:fill-box;transform-origin:50% 100%;animation:lgHat .8s cubic-bezier(.25,1.5,.5,1) 1.7s forwards}
+@keyframes lgHat{0%{opacity:0;transform:translateY(-120px) rotate(-14deg)}55%{opacity:1;transform:translateY(6px) scaleY(.82) scaleX(1.1)}100%{opacity:1;transform:none}}
+.lg-eyes{transform-box:fill-box;transform-origin:50% 50%;animation:lgBlink 4.5s ease-in-out 3.2s infinite}
+@keyframes lgBlink{0%,92%,100%{transform:none}95%{transform:scaleY(.1)}}
+.lg-w{opacity:0;transform-box:fill-box;transform-origin:50% 100%;animation:lgDrop .62s cubic-bezier(.3,1.6,.5,1) 2.2s forwards}
+@keyframes lgDrop{0%{opacity:0;transform:translateY(-50px) scale(.7)}60%{opacity:1}100%{opacity:1;transform:none}}
+.lg-steam{stroke-dasharray:90;stroke-dashoffset:90;opacity:0;animation:lgSteam 1.6s ease-out 2.5s forwards}
+@keyframes lgSteam{0%{opacity:0;stroke-dashoffset:90}20%{opacity:1}100%{opacity:.9;stroke-dashoffset:0}}
+.lg-spark{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:lgSpark .9s ease-out 2.9s forwards}
 @keyframes lgSpark{0%{opacity:0;transform:scale(0) rotate(-40deg)}50%{opacity:1;transform:scale(1.3) rotate(10deg)}100%{opacity:1;transform:scale(1)}}
-.logo.still .lg-l,.logo.still .lg-ears,.logo.still .lg-spark{animation:none;opacity:1;transform:none}.logo.still .lg-tail{animation:none;stroke-dashoffset:0}
+.logo.still .lg-head,.logo.still .lg-hat,.logo.still .lg-w,.logo.still .lg-spark{animation:none;opacity:1;transform:none}.logo.still .lg-steam{animation:none;opacity:.9;stroke-dashoffset:0}
 .paws{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .paws span{position:absolute;width:34px;height:34px;color:#e9b98f;opacity:0;animation:pawIn 1.2s ease forwards}
 .paws span:nth-child(even){color:#f2a6a0}
@@ -2372,13 +2425,13 @@ const PAW=`<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="26" 
 #intro .ld small{font-size:12px;font-weight:800;opacity:.7}
 #intro .skip{position:absolute;bottom:calc(16px + var(--sab));font-size:12px;font-weight:800;opacity:.55}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.lg-l,.lg-ears,.lg-spark{animation-duration:.01s!important;animation-delay:0s!important}.lg-tail{animation:none;stroke-dashoffset:0}.paws{display:none}}
+@media (prefers-reduced-motion:reduce){.lg-head,.lg-hat,.lg-w,.lg-spark{animation-duration:.01s!important;animation-delay:0s!important}.lg-steam{animation:none;opacity:.9;stroke-dashoffset:0}.lg-eyes{animation:none}.paws{display:none}}
 `;document.head.appendChild(st)}
 const INTRO={done:false,ready:false,cb:null,el:null};
 function startIntro(){const el=document.createElement('div');el.id='intro';el.setAttribute('role','presentation');
   const pts=[[8,82,-20],[18,74,-10],[27,68,-25],[37,61,-12],[47,57,-28],[57,52,-15]];
   el.innerHTML=`<div class="paws">${pts.map(([x,y,r],i)=>`<span style="left:${x}%;top:${y}%;--r:rotate(${r+(i%2?14:-6)}deg);animation-delay:${i*0.17}s">${PAW}</span>`).join('')}</div>
-    ${logoSVG()}<div class="sub">Kedilerin dünyasına hoş geldin</div><div class="ld" hidden><div><i id="introBar"></i></div><small>Kafe hazırlanıyor…</small></div><div class="skip">Geçmek için dokun</div>`;
+    ${logoSVG()}<div class="sub">Kedi şefin sıcacık kafesine hoş geldin</div><div class="ld" hidden><div><i id="introBar"></i></div><small>Kafe hazırlanıyor…</small></div><div class="skip">Geçmek için dokun</div>`;
   $('game').appendChild(el);INTRO.el=el;
   // yumuşak sesler (ses motoru açıksa): pati, harf, parıltı — yankısız
   if(AU.ctx&&AU.ctx.state==='running'&&SET.sfx){const t0=AU.ctx.currentTime;pts.forEach((_,i)=>introBlip(t0+i*0.17+0.05,260-i*6,0.06));for(let i=0;i<7;i++)introBlip(t0+1.2+i*0.08,520+i*45,0.05,'triangle');[1568,2093].forEach((f,i)=>introBlip(t0+2.9+i*0.09,f,0.04))}
@@ -2532,11 +2585,11 @@ function renderCEOpts(){const o=$('ceOpts');let h='';const L=CE.cfg.look;
   if(CE.tab==='look'){switch(CE.cat){
     case 'fur':h=swRow('Ana kürk rengi','look.fur1',CPAL.fur)+swRow('İkinci renk (desen ve işaretler)','look.fur2',CPAL.fur);break;
     case 'pattern':h=chRow('Desen tipi','look.pattern',LOOK_OPTS.pattern)+(['tabby','spots','bicolor'].includes(L.pattern)?chRow('Desenin yeri','look.place',LOOK_OPTS.place):'');break;
-    case 'marks':h=chRow('Yüz işareti','look.face',LOOK_OPTS.face)+chRow('Pati işareti','look.paws',LOOK_OPTS.paws)+chRow('Kuyruk deseni','look.tail',LOOK_OPTS.tail);break;
+    case 'marks':h=chRow('Yüz işareti','look.face',LOOK_OPTS.face)+chRow('Pati işareti','look.paws',LOOK_OPTS.paws);break;   // kuyruk şortla gizli: kuyruk seçenekleri gösterilmez
     case 'eyes':h=swRow('Göz rengi','look.eye',CPAL.eye)+chRow('Göz çeşidi','look.odd',[[false,'İki göz aynı'],[true,'Farklı renkli gözler']]);break;
     case 'ears':h=chRow('Kulak şekli','look.earShape',LOOK_OPTS.earShape)+chRow('Kulak boyu','look.earSize',LOOK_OPTS.earSize)+swRow('Kulak içi rengi','look.inner',CPAL.pink);break;
     case 'face':h=swRow('Burun rengi','look.nose',CPAL.pink)+chRow('Yanak','look.cheek',LOOK_OPTS.cheek)+chRow('Bıyık','look.whisk',LOOK_OPTS.whisk)+chRow('Bıyık rengi','look.whiskCol',LOOK_OPTS.whiskCol);break;
-    case 'body':h=chRow('Vücut','look.body',LOOK_OPTS.body)+chRow('Kuyruk boyu','look.tailLen',LOOK_OPTS.tailLen)+chRow('Kuyruk','look.tailFluff',[[false,'İnce'],[true,'Pofuduk']]);break}}
+    case 'body':h=chRow('Vücut','look.body',LOOK_OPTS.body);break}}
   else{const slot=CE.cat;const items=CLOTHES.filter(c=>c.slot===slot&&c.roles.includes(CE.role));const W=CE.cfg.wear;
     const isOn=c=>c.set?Object.entries(c.set).every(([k,v])=>W[k]===v):W[slot]===c.id;
     h=`<div class="ce-row"><div class="wrap">${items.map(c=>{const own=ownsCloth(c.id);return `<button class="cl" type="button" data-w="${c.id}" aria-pressed="${isOn(c)}"><span class="ic">${clothIcon(c.id)}</span>${own?'<span class="ow" title="Sende"></span>':''}${c.name}${own?'':`<span class="pr">${c.gems?ic('gem')+c.gems:ic('coin')+c.price}</span>`}</button>`}).join('')}</div></div>`;
@@ -2654,14 +2707,14 @@ function clothDetail(d,id){const c=CLO[id];if(!c){d.hidden=true;return}const own
 .gnav{display:flex;gap:8px;justify-content:space-between;align-items:center}
 `;document.head.appendChild(st)}
 {const g=document.createElement('section');g.className='screen';g.id='guide';g.hidden=true;g.setAttribute('aria-label','Rehber');
- g.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${UI_IC.book}</span><h2>MEWMORI Rehberi</h2><button class="iconbtn" id="gdClose" type="button" aria-label="Kapat">${UI_IC.close}</button></div><div class="scroll"><div class="gwrap" id="gdBody"></div><div class="gwrap" style="padding-top:0"><div class="acct" id="gdAcct"></div><button class="btn red" type="button" id="gdReset" style="align-self:center">${ic('trash')}Kaydı sil, baştan başla</button></div></div>`;
+ g.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${UI_IC.book}</span><h2>TabbyChef Rehberi</h2><button class="iconbtn" id="gdClose" type="button" aria-label="Kapat">${UI_IC.close}</button></div><div class="scroll"><div class="gwrap" id="gdBody"></div><div class="gwrap" style="padding-top:0"><div class="acct" id="gdAcct"></div><button class="btn red" type="button" id="gdReset" style="align-self:center">${ic('trash')}Kaydı sil, baştan başla</button></div></div>`;
  $('game').insertBefore(g,$('nav'));$('gdClose').onclick=()=>closeGuide()}
 UI_IC.help=SV(`<circle cx="32" cy="32" r="24" fill="#fde9b8"/><path d="M24 26 Q24 16 32 16 Q41 16 41 24 Q41 30 34 33 Q32 34 32 39" stroke-width="5"/><circle cx="32" cy="47" r="3.5" fill="${INK}"/>`);
 const tagb=(i,t,cls='')=>`<span class="tagb ${cls}">${ic(i)}${t}</span>`;
 function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Poşa'},cashier:{name:'Fındık'}};const w=N.waiter.name,b=N.barista.name,c=N.cashier.name;
   const th=r=>{try{return `<img src="${charThumb(r)}" alt="">`}catch(e){return ic('paw')}};
   return [
-   {t:'Hoş geldin!',art:`<div style="width:min(78%,320px)">${logoSVG('still')}</div>`,body:`<p class="lead">MEWMORI, kedilerin dünyası! Bu sıcacık dünyada kedilerin yaşar, çalışır ve misafir ağırlar. Sen de onların kafesini işletiyorsun: müşterilere servis yap, para kazan, kafeni büyüt ve yeni tarifler keşfet. Acele yok; kedilerin dünyasında her şey kendi hızında akar.</p>`},
+   {t:'Hoş geldin!',art:`<div style="width:min(78%,320px)">${logoSVG('still')}</div>`,body:`<p class="lead">TabbyChef, kedi şeflerin dünyası! Bu sıcacık dünyada kedilerin yaşar, çalışır ve misafir ağırlar. Sen de onların kafesini işletiyorsun: müşterilere servis yap, para kazan, kafeni büyüt ve yeni tarifler keşfet. Acele yok; kedilerin dünyasında her şey kendi hızında akar.</p>`},
    {t:'Ekibin',art:`${th('waiter')}${th('barista')}${th('cashier')}`,body:`<ul class="gsteps"><li>${ic('tray')}<span><b>${w}</b> garsondur: siparişleri alır, tepsiyle servis yapar. Boşken köşesinde ayakta bekler.</span></li>
      <li>${ic('chef')}<span><b>${b}</b> baristadır: tezgah arkasında kahve, çay, tatlı ve yemekleri hazırlar.</span></li><li>${ic('coin')}<span><b>${c}</b> kasiyerdir: yemeğini bitiren müşteriler kasaya gelip ona öder.</span></li></ul>`},
    {t:'Servis nasıl yapılır?',art:`${ic('menu')}<span class="ar">→</span>${ic('chef')}<span class="ar">→</span>${ic('tray')}<span class="ar">→</span>${ic('coin')}`,body:`<ul class="gsteps">
@@ -2691,12 +2744,13 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <li>${UI_IC.chart}<span><b>İşletme raporu:</b> sağ üstteki altına dokun. Son 60 dakikanın (ya da 24 saatin) gelirini, giderini, net kârını, ağırlanan ve kaybedilen müşteriyi görürsün. Yıldıza dokununca yorumlar ve puanı neyin düşürdüğü çıkar.</span></li></ul>`},
    {t:'Stok ve toptancılar',art:`${itemArt('kahve1')}${ic('box')}${itemArt('sut1')}`,body:`<ul class="gsteps"><li>${ic('box')}<span><b>Stok:</b> her ürün tarifindeki malzemelerden 1’er birim harcar (ör. kurabiye = 1 un + 1 şeker). Bir malzeme biterse onu kullanan ürün satılamaz; hiçbir ürün satılamıyorsa müşteri gelmez.</span></li>
      <li>${ic('market')}<span><b>Toptancılar:</b> Menü → Stok → <b>Toptancıdan sipariş ver</b>. 5 toptancı var: ucuz olanın kalitesi düşük, pahalı olanın kalitesi yüksek. Kalite müşteri puanını, alış fiyatı kârını belirler. 25’li pakette %5, 50’li pakette %10 indirim.</span></li>
-     <li>${ic('clock')}<span><b>Teslimat:</b> sipariş gerçek zamanlı yola çıkar (oyun kapalıyken de). Toptancı kolileri kapının önüne bırakır; ${tagb('box','Kolileri al')} düğmesine dokununca stoğa eklenir. Önce eski stok kullanılır.</span></li></ul>`},
+     <li>${ic('clock')}<span><b>Teslimat:</b> sipariş gerçek zamanlı yola çıkar (oyun kapalıyken de). Toptancı kolileri kapının önüne bırakır; kurye (boşsa) ya da bir garson alıp tezgaha taşır ve stoğa ekler. Önce eski stok kullanılır.</span></li>
+     <li>${ic('box')}<span><b>Otomatik tedarik:</b> Menü › Stok › Otomatik tedarik. İstediğin malzemeleri seç, her biri için toptancıyı (kaliteyi) belirle; stok azalınca sipariş kendiliğinden verilir. Toptancıyı istediğin an değiştirebilirsin.</span></li></ul>`},
    {t:'Kafe stratejisi',art:`${UI_IC.chart}${ic('coin')}${UI_IC.starF}`,body:`<ul class="gsteps"><li>${ic('coin')}<span><b>Ekonomik kafe:</b> ucuz toptancı + düşük fiyat. Çok müşteri gelir, müşteriler beklemeye daha hoşgörülüdür; ürün başı kâr düşüktür. Büyük ekip ve çok masa ile parlar.</span></li>
      <li>${UI_IC.starF}<span><b>Lüks kafe:</b> kaliteli toptancı + yüksek fiyat. Daha az ama daha kârlı müşteri; hızlı servis ve yüksek kalite beklerler. Küçük kafede en verimli yol olabilir. Çok pahalı fiyat ise müşteriyi kaçırır.</span></li>
      <li>${UI_IC.chart}<span><b>Dengeli kafe:</b> orta toptancı + uygun fiyat. İstikrarlı puan ve kâr. Hangisinin daha iyi olduğu ekibine, masalarına ve puanına göre değişir; İşletme raporundan takip et.</span></li></ul>`},
-   {t:'Gün, dükkan ve sen yokken',art:`${ic('sun')}${ic('lock')}${ic('coin')}`,body:`<ul class="gsteps"><li>${ic('sun')}<span><b>Gün döngüsü:</b> kafede sabah, öğle, ikindi, akşam ve gece sırayla gelir (bir gün ~20 dakika). Akşam sokak lambaları yanar.</span></li>
-     <li>${ic('lock')}<span><b>Dükkanı kapat:</b> sol alttaki düğmeyle dükkanı kapatırsın. Yeni müşteri ve telefon gelmez, içerideki müşteriler hesabını ödeyip çıkar. Mekânı rahatça düzenlemek için idealdir.</span></li>
+   {t:'Gün, dükkan ve sen yokken',art:`${ic('sun')}${ic('lock')}${ic('coin')}`,body:`<ul class="gsteps"><li>${ic('sun')}<span><b>Gün döngüsü:</b> sabah, öğle, ikindi ve akşam sırayla gelir (bir gün ~20 dakika). Akşamın sonunda son siparişler alınır; gece dükkan kendiliğinden kapanır ve günün hasılat tablosu çıkar. <b>Tamam</b> deyince gece hızla geçer, sabah dükkan yeniden açılır.</span></li>
+     <li>${ic('lock')}<span><b>Dükkanı kapat:</b> üstte seviye kartının yanındaki AÇIK/KAPALI tabelasına dokun. Yeni müşteri ve telefon gelmez, içerideki müşteriler hesabını ödeyip çıkar. Mekânı rahatça düzenlemek için idealdir.</span></li>
      <li>${ic('coin')}<span><b>Sen yokken:</b> oyunu dükkan açıkken kapatırsan ekibin kafeyi işletmeye devam eder (en fazla 8 saat, normal hızın %70’i, stok yettiği kadar). Geri dönünce <b>Hasılatı topla</b>. Dükkan kapalıysa satış olmaz.</span></li></ul>`},
    {t:'İstekler, VIP ve müdavimler',art:`${ic('star')}${ic('heart')}${ic('clock')}`,body:`<ul class="gsteps"><li>${ic('clock')}<span><b>Özel istek:</b> bazen bir kedi menünde olmayan bir ürünü ister. Süre bitmeden ürünü keşfet, aç ve menüye ekle; satınca büyük ödül kazanırsın. İsteğe dokununca nereye gideceğini gösterir.</span></li>
      <li>${ic('star')}<span><b>VIP gurme:</b> taçlı misafir. Pahalı ürünleri sever ve her zaman cömert bahşiş bırakır.</span></li>
@@ -2939,7 +2993,7 @@ const validEmail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 const AU2={mode:'signup',busy:false,done:null};
 function authBuild(){if($('auth'))return;const el=document.createElement('div');el.id='auth';el.hidden=true;
   el.innerHTML=`<form class="acard" id="aForm" novalidate>
-    <div class="alogo">${logoSVG('still')}</div><p class="asub">Kedilerin dünyasına katıl</p>
+    <div class="alogo">${logoSVG('still')}</div><p class="asub">Kedi şeflerin dünyasına katıl</p>
     <div class="atabs" role="tablist"><button type="button" role="tab" data-am="signup">Kayıt ol</button><button type="button" role="tab" data-am="login">Giriş yap</button></div>
     <label>E-posta<div class="inp"><input id="aEmail" type="email" autocomplete="email" inputmode="email" placeholder="ornek@eposta.com" required></div></label>
     <label>Şifre<div class="inp"><input id="aPass" type="password" autocomplete="new-password" placeholder="En az 6 karakter" required minlength="6"><button class="eye" type="button" id="aEye">Göster</button></div></label>
@@ -3287,7 +3341,7 @@ async function courierRun(d){const ch=COURIER.ch;COURIER.busy=true;d.state='PACK
   await rideOut(ch);while(d.tripT>8)await sleep(0.25);d.state='BACK';await rideBack(ch);riding=false;d.tripT=0;
   await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});dlvPay(d,new THREE.Vector3(DOOR_IN.x+0.4,1.3,DOOR_IN.z));
   await ch.walkTo(COURIER_IDLE.x,COURIER_IDLE.z);await ch.face(COURIER_YAW);DLV.active=null;DLV.cd=dRnd(CONFIG.dlv.gap)/dlvRate();COURIER.busy=false}
-function dlvPay(d,p){if(d.paid)return;d.paid=true;for(const o of d.orders){o.paid=true;o.state='COMPLETED'}addCoins(d.total,'dlv');finEv('dlv',1);finEv('cogs',d.orders.reduce((a,o)=>a+(o.cost||0),0));floatCoin(d.total,p);sfx('register');
+function dlvPay(d,p){if(d.paid)return;d.paid=true;for(const o of d.orders){o.paid=true;o.state='COMPLETED'}addCoins(d.total,'dlv');for(const o of d.orders)finEv('sold:'+o.item.id,1);finEv('dlv',1);finEv('cogs',d.orders.reduce((a,o)=>a+(o.cost||0),0));floatCoin(d.total,p);sfx('register');
   const tip=Math.random()<0.35?2+Math.floor(d.total*0.1):0;if(tip)setTimeout(()=>{addCoins(tip,'tip');sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true)},450);
   addXP(d.orders.reduce((a,o)=>a+CONFIG.xp.complete+Math.round(o.item.price*CONFIG.xp.perPrice),0));for(const o of d.orders)reqServed(o.item);bump('deliveries');afkEarn(d.total,1);rateDelivery(d,true);
   toast(`<b>Paket teslim edildi!</b><br>${d.who} · +${d.total}${tip?` +${tip} bahşiş`:''}`,ic('coin'),2600)}
@@ -3300,7 +3354,7 @@ function dlvTick(dt){const D=dlvState();
     if(DLV.call.left<=0){const c=DLV.call;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);toast(`Cevapsız arama: ${c.who}`,ic('bell'),2200);bump('dlvMissed');rateDelivery(c,false);if($('dlvPanel')){$('dlvPanel').remove();UI.modal=false}}}
   else if(PHONE){PHONE.hs.position.y=0.075;PHONE.g.rotation.z=0}
   const d=DLV.active;if(d&&d.state==='PREP'&&d.orders.every(o=>o.state==='READY')&&!COURIER.busy){d.readyT=gameT;courierRun(d)}
-  if(!DLV.call&&!DLV.active&&shopOpen()){DLV.cd-=dt*dlvRate();if(DLV.cd<=0)newCall()}}
+  if(!DLV.call&&!DLV.active&&shopOpen()&&!lastCallNow()){DLV.cd-=dt*dlvRate();if(DLV.cd<=0)newCall()}}
 // ---------- arayüz: telefon düğmesi, kurye konuşma balonu, durum çipi ----------
 {const r=document.createElement('div');r.className='goal dlvchip';r.id='dlvChip';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;$('req').after(r);r.onclick=()=>{if(DLV.call)openCall()}}
 function dlvUI(){const hp=new THREE.Vector3();
@@ -3493,7 +3547,7 @@ const DAY_KEYS=[
  {t:0.67,name:'Gece',top:0x27305e,mid:0x434882,hor:0x87678c,sun:0x9fb0ff,si:0.45,hemi:0.5,hc:0xb8c4ff,exp:0.92,fog:0x3e4370,lamp:1,bg:0x2f3566},
  {t:0.88,name:'Gece',top:0x222a56,mid:0x3c4178,hor:0x7a6086,sun:0x9fb0ff,si:0.42,hemi:0.48,hc:0xb8c4ff,exp:0.92,fog:0x3a3f6a,lamp:1,bg:0x2a305e},
  {t:1.00,name:'Sabah',top:0x8fb8e0,mid:0xf3d6c8,hor:0xffc59a,sun:0xffc890,si:1.15,hemi:0.7,hc:0xfff1dc,exp:0.97,fog:0xf3d2c0,lamp:0.35,bg:0xd9c9d6}];
-const dayPhase=()=>((nowT()/1000)/CONFIG.day.len)%1;
+const dayPhase=()=>(((nowT()/1000+(S.dayOff||0))/CONFIG.day.len)%1+1)%1;   // dayOff: gece hızlı sarılınca kayar
 let dayLast=-1,_dc1=new THREE.Color(),_dc2=new THREE.Color();
 function dayTick(force){const t=dayPhase();if(!force&&Math.abs(t-dayLast)<0.0008)return;dayLast=t;let i=0;while(i<DAY_KEYS.length-2&&DAY_KEYS[i+1].t<=t)i++;const A=DAY_KEYS[i],B=DAY_KEYS[i+1];
   const u0=(t-A.t)/Math.max(1e-6,B.t-A.t),u=u0*u0*(3-2*u0);const mix=(k)=>_dc1.set(A[k]).lerp(_dc2.set(B[k]),u);const num=k=>A[k]+(B[k]-A[k])*u;
@@ -3504,7 +3558,7 @@ function dayTick(force){const t=dayPhase();if(!force&&Math.abs(t-dayLast)<0.0008
   for(const g of ENV.glows||[])g.material.color.setRGB(0.55+0.45*L,0.5+0.44*L,0.42+0.33*L);
   for(const pl of LAMP_POOL)if(pl.position.y>-1)pl.intensity=2.2+3.2*L;
   if(ENV.headlight)ENV.headlight.material.opacity=0.25+0.75*L;
-  const nm=(t>=0.62||t<0.04)?'Gece':(B.t-t<0.02?B.name:A.name);const e=$('dayPill');if(e&&e._n!==nm){e._n=nm;e.innerHTML=`${nm==='Gece'?UI_IC.moon:UI_IC.sun}<span>${nm}</span>`}}
+  const nm=(t>=0.67||t<0.02)?'Gece':(B.t-t<0.02?B.name:A.name);const lbl=`${S.dayN>1?S.dayN+'. gün · ':''}${nm}`;const e=$('dayPill');if(e&&e._n!==lbl){e._n=lbl;e.innerHTML=`${nm==='Gece'?UI_IC.moon:UI_IC.sun}<span>${lbl}</span>`}}
 UI_IC.sun=SV(`<circle cx="32" cy="32" r="11" fill="#f6c453"/><path d="M32 8v8M32 48v8M8 32h8M48 32h8M15 15l6 6M43 43l6 6M15 49l6-6M43 21l6-6"/>`);
 UI_IC.moon=SV(`<path d="M40 10a22 22 0 1 0 14 34A18 18 0 0 1 40 10z" fill="#f6e3a0"/><circle cx="20" cy="18" r="2" fill="#fff" stroke="none"/><circle cx="50" cy="16" r="1.6" fill="#fff" stroke="none"/>`);
 // ---------- dükkanı aç / kapat ----------
@@ -3513,11 +3567,13 @@ function setShop(open){if(shopOpen()===open)return;S.closed=!open;markDirty();sf
   if(open)toast('<b>Dükkan açıldı!</b><br>Müşteriler yeniden gelmeye başlayacak',ic('door'),2400);
   else toast('<b>Dükkan kapandı</b><br>İçerideki müşteriler hesabı ödeyip çıkacak; yeni müşteri ve paket sipariş gelmez. Market → Düzenle ile mekânını rahatça düzenleyebilirsin.',ic('lock'),4200);
   if(!open&&DLV.call){DLV.call=null;const p=$('dlvPanel');if(p){p.remove();UI.modal=false}}}
-{const b=document.createElement('button');b.type='button';b.className='autobtn shopbtn';b.id='shopBtn';$('game').insertBefore(b,$('nav'));b.onclick=()=>{if(!S.created||S.tut!=='done')return;setShop(!shopOpen())}
+// dükkan tabelası: üstte seviye kartının sağında (asılı ahşap tabela gibi)
+{const b=document.createElement('button');b.type='button';b.className='shoptop';b.id='shopBtn';const lv=document.querySelector('.hud-l .lvl');const row=document.createElement('div');row.className='lvlrow';lv.parentNode.insertBefore(row,lv);row.appendChild(lv);row.appendChild(b);
+ b.onclick=()=>{if(!S.created||S.tut!=='done')return;if(!shopOpen()&&typeof inNight==='function'&&inNight()){sfx('nope');toast('<b>Gece</b><br>Dükkan sabah açılır · günün hasılatına bakıp sabaha geçebilirsin',UI_IC.moon,2600);return}setShop(!shopOpen())}
  const d=document.createElement('div');d.className='pill daypill';d.id='dayPill';d.setAttribute('aria-label','Günün saati');const r=$('repPill');if(r)r.after(d)}
 UI_IC.door=UI_IC.door||SV(`<rect x="16" y="8" width="32" height="50" rx="3" fill="#c98a4e"/><circle cx="40" cy="34" r="3" fill="#f6c453"/>`);
 function hudShop(){const b=$('shopBtn');if(!b)return;const o=shopOpen();b.hidden=!(S.created&&S.tut==='done');b.classList.toggle('closed',!o);
-  const html=`<span class="dot"></span>${o?'Dükkan açık':'Dükkan kapalı'}`;if(b._h!==html){b.innerHTML=html;b._h=html}b.setAttribute('aria-pressed',String(!o));
+  const html=`<span class="hook"></span><span class="sign"><i class="dot"></i><b>${o?'AÇIK':'KAPALI'}</b></span>`;if(b._h!==html){b.innerHTML=html;b._h=html}b.setAttribute('aria-pressed',String(!o));b.setAttribute('aria-label',o?'Dükkan açık · kapatmak için dokun':'Dükkan kapalı · açmak için dokun');
   if(DOOR_SIGN)DOOR_SIGN.draw(o)}
 // kapının iç yüzünde AÇIK / KAPALI tabelası
 const DOOR_SIGN=(()=>{const cv=document.createElement('canvas');cv.width=256;cv.height=128;const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;
@@ -3576,10 +3632,22 @@ async function rideBack(ch){const g=SCOOT.g;g.visible=true;ch.o.visible=true;g.p
   const g2=SCOOT.g;g2.rotation.y=SCOOT.park.yaw;scootRider();await sleep(0.3);dismount(ch);ch.pos.set(g2.position.x+0.45,0,g2.position.z-0.1)}
 UI_IC.bike=SV(`<circle cx="16" cy="46" r="8" fill="#3e3a3a"/><circle cx="48" cy="46" r="8" fill="#3e3a3a"/><path d="M18 40h20l6-14h6" fill="none"/><path d="M14 40c0-8 6-12 14-12h6l4 12z" fill="#d9534f"/><rect x="10" y="18" width="14" height="10" rx="2" fill="#c9a06a"/><path d="M44 22h8" />`);
 // ---------- her kare ----------
-function extrasTick(dt){afkTick(dt);hudShop();stockTick(dt);doorTick(dt)}
+function extrasTick(dt){afkTick(dt);hudShop();stockTick(dt);doorTick(dt);dayEndTick()}
 {const st=document.createElement('style');st.textContent=`
-.shopbtn{right:auto!important;left:max(12px,env(safe-area-inset-left,0px));padding:5px 12px!important}.shopbtn .dot{width:14px;height:14px;border-radius:50%;background:#5b9a3a;border:2.5px solid var(--ink)}.shopbtn.closed{background:#ffe3df}.shopbtn.closed .dot{background:#d0453c}
+/*eski*/.shopbtn_old{right:auto!important;left:max(12px,env(safe-area-inset-left,0px));padding:5px 12px!important}.shopbtn .dot{width:14px;height:14px;border-radius:50%;background:#5b9a3a;border:2.5px solid var(--ink)}.shopbtn.closed{background:#ffe3df}.shopbtn.closed .dot{background:#d0453c}
 .pill.daypill{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-display);font-weight:800;font-size:12px;padding:3px 8px}.pill.daypill svg{width:18px;height:18px}
+
+.lvlrow{display:flex;align-items:flex-start;gap:5px}.hud-l{min-width:0}
+.shoptop{position:relative;display:flex;flex-direction:column;align-items:center;padding:0;border:0;background:none;cursor:pointer;font:inherit;pointer-events:auto;margin-top:2px}
+.shoptop[hidden]{display:none}
+.shoptop .hook{width:26px;height:9px;border:2.5px solid var(--ink);border-bottom:0;border-radius:14px 14px 0 0;margin-bottom:-2px}
+.shoptop .sign{display:flex;align-items:center;gap:4px;background:linear-gradient(#d29a5c,#b8783f);border:3px solid var(--ink);border-radius:12px;padding:3px 7px 3px 5px;box-shadow:0 3px 0 var(--ink);transform-origin:50% -8px;animation:signSway 4s ease-in-out infinite}
+.shoptop .sign b{font-family:var(--font-display);font-size:12px;color:#fff8ec;letter-spacing:.06em;text-shadow:0 1.5px 0 rgba(74,46,28,.6)}
+.shoptop .dot{width:9px;height:9px;border-radius:50%;background:#7fd35a;border:2.5px solid var(--ink);box-shadow:0 0 6px #b7f28f}
+.shoptop.closed .sign{background:linear-gradient(#a98a7a,#8a6b5c)}.shoptop.closed .dot{background:#e2574c;box-shadow:none}
+.shoptop:active .sign{transform:scale(.95)}.shoptop:focus-visible .sign{outline:3px solid var(--gold);outline-offset:2px}
+@keyframes signSway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@media (prefers-reduced-motion:reduce){.shoptop .sign{animation:none}}
 `;document.head.appendChild(st)}
 setInterval(()=>dayTick(false),1000);setTimeout(()=>{dayTick(true);hudShop()},0);
 
@@ -3636,27 +3704,29 @@ function ledger(k,v){if(!v)return;const L=S.led||(S.led={});const h=Math.floor(n
 // ---------- toptancı siparişi ----------
 const packPrice=(sp,k,pi)=>{const P=PACKS[pi];return Math.max(1,Math.round(STOCK_COST[k]*sp.mul*P.n*(1-P.d)))};
 function cartTotal(sp,cart){let t=0;for(const k in cart)t+=packPrice(sp,k,cart[k]);return t}
-function placeSupOrder(sp,cart){const ks=Object.keys(cart);if(!ks.length)return false;const tot=cartTotal(sp,cart);
+function placeSupOrder(sp,cart,auto=false){const ks=Object.keys(cart);if(!ks.length)return false;const tot=cartTotal(sp,cart);
   if(S.coins<tot){sfx('nope');toast('Yeterli altının yok',ic('coin'),2000);return false}
   for(const k of ks)if(stockN(k)+pendN(k)+PACKS[cart[k]].n>CONFIG.stock.cap){sfx('nope');toast(`${STOCK_NAME[k]} deposu dolu (en fazla ${CONFIG.stock.cap})`,ic('box'),2200);return false}
   const T=stockS();const items={},unit={};for(const k of ks){items[k]=PACKS[cart[k]].n;unit[k]=Math.round(packPrice(sp,k,cart[k])/PACKS[cart[k]].n*100)/100}
   addCoins(-tot,'stock');bump('buys',1);T.pend.push({id:++T.seq,sup:sp.id,items,unit,q:sp.q,total:tot,eta:nowT()+sp.eta*1000});saveNow();sfx('coin');
-  toast(`<b>${sp.name}</b><br>Sipariş verildi · ${fmtT(sp.eta)} sonra kapıda`,ic('box'),2600);return true}
+  toast(auto?`<b>Otomatik sipariş · ${sp.name}</b><br>${ks.map(k=>STOCK_NAME[k]).join(', ')} · ${tot} altın · ${fmtT(sp.eta)} sonra kapıda`:`<b>${sp.name}</b><br>Sipariş verildi · ${fmtT(sp.eta)} sonra kapıda`,ic('box'),2600);return true}
 // teslim alınan koliler stoğa lot olarak eklenir
-function collectBoxes(){const T=stockS();if(!T.arr.length)return 0;let n=0;
+function collectBoxes(who){const T=stockS();if(!T.arr.length)return 0;let n=0;
   for(const p of T.arr){for(const k in p.items){T.b[k].push({n:p.items[k],q:p.q,c:p.unit[k]});n+=p.items[k]}}T.arr=[];saveNow();sfxSafe('place');
-  toast(`<b>Koliler depoya kondu</b><br>+${n} malzeme stoğa eklendi`,ic('box'),2200);supBoxes();if(UI.mode==='menu'&&menuTab==='stock')renderMenu();return n}
+  toast(`<b>Koliler depoya kondu</b><br>${who?who+' taşıdı · ':''}+${n} malzeme stoğa eklendi`,ic('box'),2200);supBoxes();if(UI.mode==='menu'&&menuTab==='stock')renderMenu();return n}
 const sfxSafe=k=>{try{sfx(k)}catch(e){}};
 
 // ---------- toptancı kedisi: koliyi kapının önüne bırakır ----------
-const SUP_DROP={x:-5.45,z:0.7},SUP_ENTRY=[{x:-8.9,z:9.6},{x:-8.9,z:3.7},{x:-6.1,z:1.05}];
+const SUP_DROP={x:-5.45,z:0.7},SUP_ENTRY=[{x:-8.9,z:9.6},{x:-8.9,z:3.7},{x:-6.05,z:0.85}],SUP_STAND={x:-6.0,z:0.82};
+// koliler tezgahın sol ucuna taşınır (müşteri tarafı), sonra stoğa girer
+const BOX_COUNTER={stand:{x:-4.38,z:-1.1},top:{x:-4.43,y:0.72,z:-1.95}};   // duvar dibindeki boş tezgah ucu
 const SUPC_CFG={name:'Tuğra',look:{...LOOK_DEF,fur1:5,fur2:1},wear:{apron:'ap_olive',top:'vest_brown',neck:'nk_none',hat:'hat_cap',bottom:'bt_olive'}};
 let SUPC=null,SUPBOX=null;
 function boxMesh(s=1){const bx=new THREE.Group();const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
   const body=new THREE.Mesh(new RoundedBoxGeometry(0.34*s,0.24*s,0.28*s,2,0.02),T(0xc9a06a));body.position.y=0.12*s;body.castShadow=true;bx.add(body);
   const tape=new THREE.Mesh(new THREE.BoxGeometry(0.345*s,0.025*s,0.06*s),T(0xe8d7b5));tape.position.y=0.24*s;bx.add(tape);
   const lab=new THREE.Mesh(new THREE.BoxGeometry(0.1*s,0.07*s,0.005),T(0xffffff));lab.position.set(0.06*s,0.13*s,0.141*s);bx.add(lab);return bx}
-function supBoxes(){const n=Math.min(3,stockS().arr.length?1+Math.min(2,stockS().arr.length):0);
+function supBoxes(){const n=FETCH.picked?0:Math.min(3,stockS().arr.length?1+Math.min(2,stockS().arr.length):0);
   if(!SUPBOX){SUPBOX=new THREE.Group();SUPBOX.position.set(SUP_DROP.x,0,SUP_DROP.z);scene.add(SUPBOX)}
   if(SUPBOX.children.length===n)return;while(SUPBOX.children.length)SUPBOX.remove(SUPBOX.children[0]);
   const P=[[0,0,0,0.1],[0.36,0,0.05,-0.15],[0.16,0.25,0.02,0.3]];for(let i=0;i<n;i++){const b=boxMesh();b.position.set(P[i][0],P[i][1],P[i][2]);b.rotation.y=P[i][3];SUPBOX.add(b)}}
@@ -3665,9 +3735,9 @@ async function supArrive(p){const T=stockS();
   ch.tray=makeTray();ch.avoidOf=walkersNear;SUPC={ch,p};const st=SUP_ENTRY[0];ch.pos.set(st.x,0,st.z);ch.o.rotation.y=Math.PI;
   try{const bx=boxMesh(0.8);ch.carry=ch.tray;ch.tray.add(bx);bx.position.set(0,ch.tray.userData.top,0);
     for(const q of SUP_ENTRY.slice(1))await ch.walkTo(q.x,q.z,{direct:true});await ch.faceTo(SUP_DROP.x,SUP_DROP.z);
-    await ch.doFor('Idle_12',0.5);ch.tray.remove(bx);ch.carry=null;ch.tray.visible=false;
-    const i=T.pend.indexOf(p);if(i>=0)T.pend.splice(i,1);T.arr.push(p);supBoxes();saveNow();sfxSafe('place');
-    toast(`<b>Toptancı geldi!</b><br>${SUP(p.sup).name} kolileri kapıya bıraktı · dokun ve depoya koy`,ic('box'),3000);
+    // eğilip koliyi yere bırakır: koli tepsiden yere iner
+    await bend(ch,1.1,()=>{ch.tray.remove(bx);ch.carry=null;ch.tray.visible=false;const i=T.pend.indexOf(p);if(i>=0)T.pend.splice(i,1);T.arr.push(p);supBoxes();sfxSafe('place')});saveNow();
+    toast(`<b>Toptancı geldi!</b><br>${SUP(p.sup).name} kolileri kapının önüne bıraktı`,ic('box'),2600);
     await ch.doFor('Wave_One_Hand',1.2);
     for(const q of SUP_ENTRY.slice(0,2).reverse())await ch.walkTo(q.x,q.z,{direct:true});
   }catch(e){console.warn('supArrive',e);const i=T.pend.indexOf(p);if(i>=0){T.pend.splice(i,1);T.arr.push(p);supBoxes()}}
@@ -3677,7 +3747,7 @@ function stockTick(dt){if(!S.created)return;const T=stockS(),now=nowT();if(SUPC)
   for(const p of T.pend.slice()){if(p.eta>now)continue;
     if(now-p.eta>CONFIG.stock.skipAnimAfter*1000){T.pend.splice(T.pend.indexOf(p),1);T.arr.push(p);supBoxes();markDirty();continue}
     if(!SUPC){supArrive(p);break}}
-  if(!SUPBOX||(SUPBOX.children.length>0)!==(T.arr.length>0))supBoxes();lowStockWarn()}
+  if(!SUPBOX||(SUPBOX.children.length>0)!==(T.arr.length>0&&!FETCH.picked))supBoxes();lowStockWarn();supAutoTick(dt);fetchTick(dt)}
 let lowWarned={};
 function lowStockWarn(){if(S.tut!=='done')return;const mb=menuBases();for(const k of mb){const n=stockN(k);if(n>0&&n<=CONFIG.stock.low&&!lowWarned[k]&&!pendN(k)){lowWarned[k]=1;toast(`<b>${STOCK_NAME[k]} azalıyor</b> · ${n} kaldı`,itemArt(k+'1'),2200)}if(n>CONFIG.stock.low)lowWarned[k]=0}}
 // AFK: sen yokken satılabilecek müşteri sayısı stokla sınırlıdır (yoldaki koliler önce depoya girer)
@@ -3686,6 +3756,24 @@ function afkStockLimit(served){const T=stockS();for(const p of T.pend.slice())if
   let n=0,i=0;const av0=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]);if(!av0.length)return 0;
   while(n<served){let ok=false;for(let j=0;j<av0.length;j++){const r=av0[(i+j)%av0.length];if(stockOk(r)){finEv('cogs',stockUse(r).c);ok=true;i=(i+j+1);break}}if(!ok)break;n++}
   return n}
+
+// ---------- kolileri içeri taşıma: kurye (boştaysa) ya da bir garson alır, tezgaha götürür ----------
+const FETCH={on:false,picked:false,who:'',t:0};
+function fetchTick(dt){const T=stockS();if(!T.arr.length||FETCH.on||SUPC){FETCH.t=0;return}FETCH.t+=dt;if(FETCH.t<1)return;
+  if(typeof COURIER!=='undefined'&&COURIER&&!COURIER.busy&&!DLV.active&&!DLV.call){const ch=COURIER.ch;FETCH.on=true;FETCH.who=COURIER_CFG.name;COURIER.busy=true;
+    (async()=>{try{await fetchRun(ch)}catch(e){console.warn('koli',e)}finally{await ch.walkTo(COURIER_IDLE.x,COURIER_IDLE.z);await ch.face(COURIER_YAW);COURIER.busy=false}})();return}
+  if(WSTAFF.length&&!FETCH.queued){FETCH.queued=true;enqueue('koli',async w=>{FETCH.queued=false;if(!stockS().arr.length)return;FETCH.on=true;FETCH.who=(S.chars[w.key]||{}).name||'Garson';try{await fetchRun(w.ch)}catch(e){console.warn('koli',e)}})}}
+async function fetchRun(ch){const T=stockS();let stack=null;try{
+  await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(SUP_STAND.x,SUP_STAND.z,{direct:true});await ch.faceTo(SUP_DROP.x,SUP_DROP.z);
+  // eğilip kolileri tepsiye alır
+  const n=Math.min(3,1+Math.min(2,T.arr.length));stack=new THREE.Group();for(let i=0;i<n;i++){const b=boxMesh(0.62);b.position.set(i===2?0:(i?0.1:-0.1)*0.9,i===2?0.15:0,0);b.rotation.y=i*0.4;stack.add(b)}
+  await bend(ch,1.1,()=>{FETCH.picked=true;supBoxes();ch.tray.visible=true;ch.carry=ch.tray;ch.tray.add(stack);stack.position.set(0,ch.tray.userData.top,0);sfxSafe('place')});
+  await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});
+  await ch.walkTo(BOX_COUNTER.stand.x,BOX_COUNTER.stand.z);await ch.faceTo(BOX_COUNTER.top.x,BOX_COUNTER.top.z);
+  // tezgaha bırakır; kısa süre orada durur, sonra stoğa girer
+  await bend(ch,0.9,()=>{ch.tray.remove(stack);ch.carry=null;ch.tray.visible=false;stack.position.set(BOX_COUNTER.top.x,BOX_COUNTER.top.y,BOX_COUNTER.top.z);stack.scale.setScalar(0.765);scene.add(stack);sfxSafe('place');
+    const who=FETCH.who;collectBoxes(who);setTimeout(()=>scene.remove(stack),2500)});
+  }finally{if(stack&&stack.parent===ch.tray){ch.tray.remove(stack);ch.carry=null;ch.tray.visible=false}FETCH.on=false;FETCH.picked=false;supBoxes()}}
 
 // ---------- arayüz ----------
 function mtabsHTML(){const t=[['menu','Menü'],['price','Fiyatlar'],['stock','Stok']];
@@ -3696,18 +3784,18 @@ function stockTag(r){if(S.tut!=='done')return '';const miss=needsOf(r).filter(k=
 function renderStock(L){const T=stockS(),mb=menuBases(),now=nowT();
   const rows=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a))||(stockN(a)-stockN(b))).map(k=>{const n=stockN(k),l=headLot(k),used=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]&&needsOf(r).includes(k)).length,pn=pendN(k);
     const cls=!mb.has(k)?'off':n<1?'out':n<=CONFIG.stock.low?'low':'';const w=Math.min(100,n/60*100);
-    return `<div class="sk ${cls}"><span class="ii">${itemArt(k+'1')}</span><div class="tx"><b>${STOCK_NAME[k]}<em>${n}</em></b><i class="sbar" style="--w:${w}%"></i>
+    return `<div class="sk ${cls}"><span class="ii">${itemArt(k+'1')}</span><div class="tx"><b>${STOCK_NAME[k]}${(autoS()[k]||{}).on?`<i class="oto">OTO · ${'★'.repeat(Math.round(SUP(autoS()[k].sup).q))}</i>`:''}<em>${n}</em></b><i class="sbar" style="--w:${w}%"></i>
       <span>${l?`Kalite ${stars(l.q)} · birim ${l.c}`:'Stok yok'}${pn?` · <b class="pn">+${pn} yolda</b>`:''}</span><span>${used?`Menüde ${used} üründe kullanılıyor`:'Menüdeki ürünlerde kullanılmıyor'}</span></div></div>`}).join('');
   const pend=T.pend.map(p=>`<div class="spend">${ic('box')}<span><b>${SUP(p.sup).name}</b> · ${Object.keys(p.items).length} çeşit</span><em data-eta="${p.eta}">${p.eta<=now?'Geliyor…':fmtT(Math.ceil((p.eta-now)/1000))}</em></div>`).join('');
   L.innerHTML=`${mtabsHTML()}<div class="mhead">Her ürün tarifindeki malzemelerden <b>1’er birim</b> harcar. Malzeme bitince o ürün satılamaz. Kaliteyi toptancı belirler; kalite müşteri puanını etkiler.</div>
-    ${T.arr.length?`<button class="btn sgo" type="button" data-col>${ic('box')}Koliler kapıda · depoya koy</button>`:''}
-    <button class="btn sgo alt" type="button" data-sup>${ic('market')}Toptancıdan sipariş ver</button>${pend?`<div class="spends">${pend}</div>`:''}<div class="sks">${rows}</div>
+    ${T.arr.length?`<div class="spend">${ic('box')}<span><b>Koliler geldi</b> · ${FETCH.on?FETCH.who+' tezgaha taşıyor':'birazdan alınacak'}</span></div>`:''}
+    <div class="sbtns"><button class="btn sgo alt" type="button" data-sup>${ic('market')}Sipariş ver</button><button class="btn sgo alt" type="button" data-auto>${ic('box')}Otomatik tedarik</button></div>${pend?`<div class="spends">${pend}</div>`:''}<div class="sks">${rows}</div>
     <p class="mfoot">Depo sınırı malzeme başına ${CONFIG.stock.cap}. Önce eski stok kullanılır.</p>`;
   L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return}
-    if(e.target.closest('[data-sup]')){openSup();return}if(e.target.closest('[data-col]')){collectBoxes();renderMenu()}}}
+    if(e.target.closest('[data-sup]')){openSup();return}if(e.target.closest('[data-auto]')){openAuto();return}}}
 // pencere açıkken geri sayımları güncelle
 setInterval(()=>{if(UI.mode!=='menu'||menuTab!=='stock')return;const now=nowT();let ref=false;document.querySelectorAll('#menuList [data-eta]').forEach(e=>{const t=+e.dataset.eta;if(t<=now){e.textContent='Geliyor…'}else e.textContent=fmtT(Math.ceil((t-now)/1000))});
-  if(stockS().arr.length&&!document.querySelector('#menuList [data-col]'))renderMenu()},1000);
+},1000);
 
 function openSup(){if($('supModal'))return;UI.modal=true;let sp=null,cart={};const md=document.createElement('div');md.className='modal';md.id='supModal';$('game').appendChild(md);sfx('tap');
   const close=()=>{md.remove();UI.modal=false;if(UI.mode==='menu')renderMenu()};
@@ -3730,11 +3818,10 @@ function openSup(){if($('supModal'))return;UI.modal=true;let sp=null,cart={};con
 
 // HUD: stok uyarısı / toptancı durumu / kapıdaki koliler
 {const r=document.createElement('div');r.className='goal stkchip';r.id='stkChip';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;($('dlvChip')||$('req')).after(r);
-  r.onclick=()=>{if(stockS().arr.length){collectBoxes();return}menuTab='stock';setMode('menu')}}
+  r.onclick=()=>{menuTab='stock';setMode('menu')}}
 function stockUI(){const e=$('stkChip');if(!e||!S.created)return;const T=stockS();let h='';
-  if(SUPBOX&&T.arr.length&&SUPBOX.children.length){const hp=new THREE.Vector3();SUPBOX.getWorldPosition(hp);hp.y+=0.75;place(el('stkcol','act',`${ic('box')}Kolileri al`,()=>collectBoxes()),hp)}
   if(S.tut!=='done'){e.hidden=true;return}
-  if(T.arr.length)h=`${ic('box')}<span><b>Koliler kapıda!</b> Dokun, depoya koy</span>`;
+  if(T.arr.length)h=`${ic('box')}<span><b>Koliler geldi</b> · ${FETCH.on?(FETCH.picked?FETCH.who+' tezgaha taşıyor':FETCH.who+' almaya gidiyor'):'birazdan alınacak'}</span>`;
   else if(SUPC)h=`${ic('box')}<span>Toptancı geliyor…</span>`;
   else if(T.pend.length){const p=T.pend.reduce((a,b)=>a.eta<b.eta?a:b);h=`${ic('box')}<span>Toptancı yolda · ${SUP(p.sup).name.split(' ')[0]}</span><em>${fmtT(Math.max(0,Math.ceil((p.eta-nowT())/1000)))}</em>`}
   else{const mb=[...menuBases()];const out=mb.filter(k=>stockN(k)<1),low=mb.filter(k=>stockN(k)>=1&&stockN(k)<=CONFIG.stock.low);
@@ -3852,7 +3939,7 @@ function buildBackShelf(bx,bw){const g=new THREE.Group();scene.add(g);const zw=-
     for(const [vx,len] of [[-0.05,7],[0.05,5]])for(let j=0;j<len;j++)add(new THREE.SphereGeometry(0.03,8,6),j%2?lf:lf2,x+vx+Math.sin(j*1.3)*0.02,y1+0.02-j*0.06,zw+0.31,{sh:false})}
   // üst rafın üstünde küçük ahşap tabela
   {const cv=document.createElement('canvas');cv.width=512;cv.height=128;const c=cv.getContext('2d');c.fillStyle='#7a4a2c';c.fillRect(0,0,512,128);c.strokeStyle='#f2c46b';c.lineWidth=8;c.strokeRect(10,10,492,108);
-    c.fillStyle='#fbf6ec';c.font='800 70px "Baloo 2",Nunito,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('MEWMORI',256,68);const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;
+    c.fillStyle='#fbf6ec';c.font='800 64px "Baloo 2",Nunito,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('TabbyChef',256,68);const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;
     add(new THREE.PlaneGeometry(0.8,0.2),new THREE.MeshBasicMaterial({map:tx}),bx,2.52,zw+0.03,{sh:false});
     // ışık zinciri (alt raf kenarında)
     for(let i=0;i<14;i++){const t=i/13,x=bx-bw/2+0.15+t*(bw-0.3),y=levels[0]-0.06-Math.sin(t*Math.PI*3)*0.03;const b=add(new THREE.SphereGeometry(0.016,8,6),new THREE.MeshBasicMaterial({color:[0xffe08a,0xffb38a,0xfff3c4][i%3]}),x,y,zw+0.3,{sh:false})}}
@@ -3932,6 +4019,104 @@ function openFin(){if($('finModal'))return;UI.modal=true;let win=60;const md=doc
 .rins span{text-align:left}.pstrat{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:0 0 8px}.pstrat div{background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:4px;text-align:center;display:flex;flex-direction:column}.pstrat span{font-size:10.5px;font-weight:800;opacity:.75}.pstrat b{font-family:var(--font-display);font-size:16px}.repcard .rlist li div{text-align:left;align-items:flex-start}.rfilt{display:flex;gap:6px;margin:0 0 6px}.rch{font-style:normal;display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}.rch em{font-style:normal;font-size:10.5px;font-weight:800;padding:0 6px;border-radius:8px}.rch em.ok{background:#dff0cf;color:#3f7a1f}.rch em.no{background:#ffe1dc;color:#b8342d}
 `;document.head.appendChild(st)}
 
+// ================= GÜN SONU · OTOMATİK TEDARİK · KOLİ TAŞIMA =================
+// Gün akışı: Sabah → Öğle → İkindi → Akşam. Akşamın sonunda "son siparişler" (yeni müşteri ve paket alınmaz),
+// gece olunca dükkan kendiliğinden kapanır; içeride kimse kalmayınca günün hasılat tablosu açılır, "Tamam" deyince
+// gece hızlıca sarılır ve sabah dükkan yeniden açılır.
+Object.assign(CONFIG.day,{lastCall:0.62,night:0.67,morning:0.02});
+const dayFlags=()=>{const F=S.dayFlags||(S.dayFlags={});if(F.n!==S.dayN){S.dayFlags={n:S.dayN}}return S.dayFlags};
+function inNight(t=dayPhase()){return t>=CONFIG.day.night||t<CONFIG.day.morning}
+function lastCallNow(){if(!S.created||S.tut!=='done'||window.__noDayEnd)return false;const t=dayPhase();return t>=CONFIG.day.lastCall||t<CONFIG.day.morning}
+let dayRepOpen=false;
+// __noDayEnd yalnız otomatik testlerde açılır
+function dayEndTick(){if(!S.created||S.tut!=='done'||window.__noDayEnd)return;if(!S.dayStart)S.dayStart=nowT();const t=dayPhase(),F=dayFlags();
+  if(t>=CONFIG.day.lastCall&&t<CONFIG.day.night&&!F.lc){F.lc=1;markDirty();toast('<b>Akşam oluyor · son siparişler</b><br>Yeni müşteri ve paket sipariş alınmıyor; içerdekilere servis sürüyor.',UI_IC.moon,3600)}
+  // gece raporu açılamadan sabah olduysa (ör. oyun gece kapalıydı) yeni güne sessizce geç
+  if(F.nc&&!inNight(t)&&t<CONFIG.day.lastCall&&!dayRepOpen){const reopen=F.wasOpen!==false;S.dayN=(S.dayN||1)+1;S.dayStart=nowT();S.dayFlags={n:S.dayN};if(reopen)S.closed=false;hudShop();markDirty();return}
+  if(inNight(t)){if(!F.nc){F.nc=1;F.wasOpen=shopOpen();if(shopOpen()){S.closed=true;hudShop()}markDirty();
+      toast('<b>Gece oldu · dükkan kapandı</b><br>Son müşteriler çıkınca günün hasılatını göreceksin.',UI_IC.moon,3200)}
+    const busy=customers.length>0||DLV.active||(typeof FETCH!=='undefined'&&FETCH.on);
+    if(!busy&&!F.rep&&!UI.modal&&!dayRepOpen)showDayReport()}}
+// günün özeti: gün başından bu yana gerçek kasa hareketleri
+function showDayReport(){dayRepOpen=true;const F=dayFlags();const mins=Math.max(1,(nowT()-S.dayStart)/60000),W=finWindow(mins),E=W.ev,net=W.rev-W.cost;
+  const sold=Object.keys(E).filter(k=>k.startsWith('sold:')).map(k=>[k.slice(5),E[k]]).filter(([id])=>RECIPE[id]).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const f=v=>Math.round(v).toLocaleString('tr-TR');const a=repAvg();UI.modal=true;sfx('levelup');
+  const md=document.createElement('div');md.className='modal';md.id='dayModal';
+  md.innerHTML=`<div class="lvcard daycard" role="dialog" aria-label="Gün sonu"><div class="dhead">${UI_IC.moon}<div><small>${S.dayN}. gün bitti</small><h3>Günün hasılatı</h3></div></div>
+    <div class="dnet ${net>=0?'pos':'neg'}"><span>Net kâr</span><b>${net>=0?'+':'−'}${f(Math.abs(net))} ${ic('coin')}</b></div>
+    <div class="ftiles"><div class="ft in"><span>Gelir</span><b>+${f(W.rev)}</b></div><div class="ft out"><span>Gider</span><b>−${f(W.cost)}</b></div><div class="ft"><span>Puan</span><b>${a.toFixed(1)} ★</b></div><div class="ft cash"><span>Kasa</span><b>${f(S.coins)}</b></div></div>
+    <div class="ftiles t2 d3"><div class="ft"><span>Ağırlanan</span><b>${E.srv||0}</b></div><div class="ft"><span>Kaybedilen</span><b>${E.lost||0}</b></div><div class="ft"><span>Paket teslim</span><b>${E.dlv||0}</b></div></div>
+    ${sold.length?`<h4>En çok satanlar</h4><div class="dsold">${sold.map(([id,n],i)=>`<div><img src="${productThumb(id)}" alt=""><span>${RECIPE[id].name}</span><b>${n}</b></div>`).join('')}</div>`:''}
+    <h4>Gelir kalemleri</h4>${Object.keys(W.inc).length?Object.keys(W.inc).sort((x,y)=>W.inc[y]-W.inc[x]).map(k=>`<div class="frow"><span>${FIN_IN[k]||k}</span><b class="pos">+${f(W.inc[k])}</b></div>`).join(''):'<div class="frow none"><span>Bugün gelir yok</span></div>'}
+    ${Object.keys(W.exp).length?`<h4>Gider kalemleri</h4>${Object.keys(W.exp).sort((x,y)=>W.exp[y]-W.exp[x]).map(k=>`<div class="frow"><span>${FIN_OUT[k]||k}</span><b class="neg">−${f(W.exp[k])}</b></div>`).join('')}`:''}
+    <button class="btn" id="dayOk" type="button">${UI_IC.sun}Tamam · sabaha geç</button></div>`;
+  $('game').appendChild(md);let done=false;
+  $('dayOk').onclick=()=>{if(done)return;done=true;F.rep=1;md.remove();nightSkip(F.wasOpen!==false)}}
+// gece hızlıca sarılır: ekran lacivertten sabaha döner, yeni gün başlar
+function nightSkip(reopen){const ov=document.createElement('div');ov.className='nightov';ov.innerHTML=`<div class="nsky"><i class="moon">${UI_IC.moon}</i><i class="sun">${UI_IC.sun}</i></div><b>${S.dayN+1}. gün</b><span>Günaydın!</span>`;$('game').appendChild(ov);
+  sfx('tap');setTimeout(()=>{const t=dayPhase(),len=CONFIG.day.len;if(inNight(t)||t>=CONFIG.day.lastCall){const ahead=((CONFIG.day.morning+0.005-t+1)%1)*len;S.dayOff=(S.dayOff||0)+ahead}
+    S.dayN=(S.dayN||1)+1;S.dayStart=nowT();S.dayFlags={n:S.dayN};if(reopen)S.closed=false;hudShop();dayTick(true);saveNow();nextArrival()},900);
+  setTimeout(()=>{ov.classList.add('out')},1900);setTimeout(()=>{ov.remove();UI.modal=false;dayRepOpen=false;toast(`<b>${S.dayN}. gün başladı</b><br>${S.closed?'Dükkan kapalı; açmak için üstteki tabelaya dokun.':'Dükkan açık, müşteriler gelmeye başlıyor!'}`,UI_IC.sun,2600)},2500)}
+
+// ---------- otomatik tedarik: oyuncunun seçtiği malzemeler seçtiği toptancıdan kendiliğinden alınır ----------
+Object.assign(CONFIG.stock,{autoAt:14,autoPack:1});   // stok+yoldaki 14'ün altına düşünce 25'lik paket
+const autoS=()=>{const T=stockS();if(!T.auto)T.auto={};return T.auto};
+let autoWarnT=0,autoT=0;
+function supAutoTick(dt){if(!S.created||S.tut!=="done")return;autoT+=dt;if(autoT<2)return;autoT=0;const A=autoS(),carts={};
+  for(const k in A){const a=A[k];if(!a||!a.on)continue;const sp=SUP(a.sup);if(!sp||sp.miss.includes(k))continue;
+    if(stockN(k)+pendN(k)>=CONFIG.stock.autoAt)continue;if(stockN(k)+pendN(k)+PACKS[CONFIG.stock.autoPack].n>CONFIG.stock.cap)continue;(carts[sp.id]=carts[sp.id]||{})[k]=CONFIG.stock.autoPack}
+  for(const id in carts){const sp=SUP(id),cart=carts[id],tot=cartTotal(sp,cart);
+    if(S.coins<tot){if(nowT()-autoWarnT>60000){autoWarnT=nowT();toast(`<b>Otomatik tedarik bekliyor</b><br>${sp.name} siparişi için ${tot} altın gerekli`,ic('coin'),2600)}continue}
+    placeSupOrder(sp,cart,true)}}
+function openAuto(){if($('autoModal'))return;UI.modal=true;const md=document.createElement('div');md.className='modal';md.id='autoModal';$('game').appendChild(md);sfx('tap');
+  const draw=()=>{const A=autoS(),mb=menuBases();const ks=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a)));const sc=md.querySelector('.supcard'),st=sc?sc.scrollTop:0;
+    md.innerHTML=`<div class="lvcard supcard${draw.n++?' noanim':''}" role="dialog" aria-label="Otomatik tedarik"><h3>Otomatik tedarik</h3>
+      <p class="rnote">Seçtiğin malzeme ${CONFIG.stock.autoAt}’ün altına düşünce seçtiğin toptancıdan ${PACKS[CONFIG.stock.autoPack].n}’lik paket kendiliğinden sipariş edilir. Toptancıyı (kaliteyi) istediğin zaman değiştirebilirsin.</p>
+      <div class="sitems">${ks.map(k=>{const a=A[k]||{};const on=!!a.on;const cur=a.sup||'bereket';const ok=SUPPLIERS.filter(s=>!s.miss.includes(k));const sel=ok.some(s=>s.id===cur)?cur:ok[0].id;
+        return `<div class="si au${mb.has(k)?'':' off'}"><span class="ii">${itemArt(k+'1')}</span><div class="tx"><b>${STOCK_NAME[k]}</b><span>Depoda ${stockN(k)}${mb.has(k)?'':' · menüde yok'}</span></div>
+          <select data-as="${k}" aria-label="${STOCK_NAME[k]} toptancısı">${ok.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${'★'.repeat(Math.round(s.q))} ${s.name.split(' ')[0]} · %${Math.round(s.mul*100)}</option>`).join('')}</select>
+          <button type="button" class="tgl" data-at="${k}" aria-pressed="${on}" aria-label="${STOCK_NAME[k]} otomatik"><i></i></button></div>`}).join('')}</div>
+      <div class="sbtns"><button class="btn alt" type="button" id="autoAll">Menüdekilerin hepsi</button><button class="btn" type="button" id="autoOk">${ic('check')}Tamam</button></div></div>`;
+    const c=md.querySelector('.supcard');if(c)c.scrollTop=st};draw.n=0;draw();
+  md.onchange=e=>{const s=e.target.closest('[data-as]');if(!s)return;const A=autoS(),k=s.dataset.as;A[k]={...(A[k]||{}),sup:s.value};markDirty();sfx('tap')};
+  md.onclick=e=>{const b=e.target.closest('[data-at]');if(b){const A=autoS(),k=b.dataset.at;const sel=md.querySelector(`[data-as="${k}"]`);A[k]={...(A[k]||{}),sup:sel?sel.value:'bereket',on:!(A[k]&&A[k].on)};markDirty();sfx('tap');draw();return}
+    if(e.target.closest('#autoAll')){const A=autoS();for(const k of menuBases()){const sel=md.querySelector(`[data-as="${k}"]`);A[k]={...(A[k]||{}),sup:sel?sel.value:'bereket',on:true}}markDirty();sfx('tap');draw();return}
+    if(e.target.closest('#autoOk')){md.remove();UI.modal=false;saveNow();if(UI.mode==='menu')renderMenu()}}}
+
+// ---------- eğilme (koli bırakma / alma): animasyonun üstüne omurgayı öne büker ----------
+function bend(ch,dur,onMid){return new Promise(res=>{const sp=[ch.o.getObjectByName('mixamorigSpine'),ch.o.getObjectByName('mixamorigSpine1'),ch.o.getObjectByName('mixamorigSpine2')].filter(Boolean);
+  const hips=ch.o.getObjectByName('mixamorigHips');let t=0,mid=false;
+  ch.post=dt=>{t+=dt;const u=Math.min(1,t/dur),a=Math.sin(Math.PI*u);for(const b of sp)b.rotation.x+=0.42*a;if(hips)hips.position.y-=4*a;
+    if(!mid&&u>=0.5){mid=true;try{onMid&&onMid()}catch(e){console.warn(e)}}if(u>=1){ch.post=null;res()}}})}
+
+{const st=document.createElement('style');st.textContent=`
+.daycard{text-align:left;max-height:88vh;overflow:auto;width:min(94vw,400px);padding-top:14px}.daycard h4{margin:12px 0 4px;font-family:var(--font-display)}
+.dhead{display:flex;align-items:center;gap:10px;justify-content:center}.dhead>svg{width:44px!important;height:44px!important;flex:none}.dhead small{display:block;font-weight:800;opacity:.7}.dhead h3{margin:0}
+.dnet{display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px;padding:8px 14px;border:3px solid var(--ink);border-radius:16px;background:#fff3d6}
+.dnet span{font-weight:800}.dnet b{font-family:var(--font-display);font-size:26px;display:inline-flex;align-items:center;gap:4px}.dnet b svg{width:24px;height:24px}
+.ftiles.d3{grid-template-columns:repeat(3,1fr)}
+.dsold{display:flex;flex-direction:column;gap:5px}.dsold div{display:flex;align-items:center;gap:8px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:3px 10px 3px 4px;font-weight:800}
+.dsold img{width:34px;height:34px;object-fit:contain}.dsold span{flex:1}.dsold b{font-family:var(--font-display);font-size:16px}
+#dayOk{width:100%;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px}#dayOk svg{width:24px;height:24px}
+.nightov{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#fff8ec;
+  background:linear-gradient(#1f2550,#3a3f7a);animation:nightIn .9s ease forwards;transition:opacity .6s ease}
+.nightov.out{opacity:0}.nightov b{font-family:var(--font-display);font-size:34px}.nightov span{font-weight:800;font-size:16px;opacity:.9}
+.nsky{position:relative;width:90px;height:90px}.nsky i{position:absolute;inset:0;display:grid;place-items:center}.nsky svg{width:72px;height:72px}
+.nsky .moon{animation:moonOut 1.8s ease forwards}.nsky .sun{opacity:0;animation:sunIn 1.8s ease forwards}
+@keyframes nightIn{0%{opacity:0}100%{opacity:1}}
+@keyframes moonOut{0%,35%{transform:translateY(0);opacity:1}70%,100%{transform:translateY(40px);opacity:0}}
+@keyframes sunIn{0%,45%{transform:translateY(40px);opacity:0}85%,100%{transform:translateY(0);opacity:1}}
+.nightov{animation:nightIn .5s ease forwards}
+.nightov.out{background:linear-gradient(#bfe2f3,#ffe6c7)}
+.si.au .tx{min-width:56px}.si.au select{font:inherit;font-size:11.5px;font-weight:800;max-width:112px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);padding:3px 4px}
+.tgl{flex:none;width:46px;height:28px;border:2.5px solid var(--ink);border-radius:999px;background:#e5d8c4;position:relative;cursor:pointer;padding:0}
+.tgl i{position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;border:2px solid var(--ink);transition:left .15s ease}
+.tgl[aria-pressed="true"]{background:#7fae4a}.tgl[aria-pressed="true"] i{left:20px}
+.sk .oto{font-style:normal;font-family:var(--font-body);font-size:10px;font-weight:800;background:#dff0cf;color:#3f7a1f;border:1.5px solid #3f7a1f;border-radius:8px;padding:0 5px;margin-left:6px;vertical-align:middle}
+.sks~.sbtns,.mhead~.sbtns{margin-bottom:8px}.sbtns .sgo{margin:0}
+@media (prefers-reduced-motion:reduce){.nsky i,.nightov{animation:none}.nsky .sun{opacity:1}.nsky .moon{opacity:0}}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]>1)setEquip(k,S.equip[k]);
   let moved=0,stored=0;
@@ -3983,7 +4168,8 @@ let cashMoving=false;
 function cashLayoutTick(){const n=Math.min(2,CSTAFF.length);if(cashMoving||REGS.length===n||REGS.some(r=>r.cust)||CSTAFF.some(k=>k.chasing))return;cashMoving=true;
   for(const k of CSTAFF)k.ready=false;layoutRegisters(n);
   Promise.all(CSTAFF.map(async k=>{const st=REGS[k.i].stand;await k.ch.walkTo(st.x,st.z,{direct:true});await k.ch.face(0);k.ready=true})).then(()=>{cashMoving=false})}
-function cloneLook(tex){const r=SkeletonUtils.clone(TEMPLATE);r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true}});return r}
+// müşteriler de şort giyer: kuyruksuz (pürüzsüz normalli) ortak geometri
+function cloneLook(tex){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true;if(o.isSkinnedMesh)o.geometry=CM.geoNT}});return r}
 function resize(){const w=game.clientWidth,h=game.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 resize();addEventListener('resize',resize);visualViewport&&visualViewport.addEventListener('resize',resize);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveNow();else if(started)setTimeout(offlineCheck,300);clock.getDelta()});
