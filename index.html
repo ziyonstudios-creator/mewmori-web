@@ -7,14 +7,15 @@
 /* Layout: full-screen WebGL café (primary screen). Top: level/XP card + goal chip (left), coins (right). Bottom: hint line + 4-tab nav.
    Market = bottom sheet over the café (café stays visible for previews); Recipes and Merge = full panels above the nav. Single warm theme by design. */
 :root{--cream:#fbf3e4;--paper:#fff8ec;--ink:#4a2e1c;--gold:#f2b134;--olive:#8a9a3b;--pink:#f2a6a0;--wood:#c98a4e;--wood2:#b87a42;--mint:#bfe39a;--red:#d9534f;--sky:#bfe3f5;
+  --sab:env(safe-area-inset-bottom,0px);--sat:env(safe-area-inset-top,0px);   /* Claude uygulaması :root'u zaten bu kadar boşlukla açarsa JS bunları 0 yapar */
   --navh:66px;--font-display:"Baloo 2","Nunito",system-ui,sans-serif;--font-body:"Nunito",system-ui,sans-serif;color-scheme:light}
-html,body{height:100%}
+html{height:100%;box-sizing:border-box}body{height:100%}
 body{margin:0;background:#2b1a10;color:var(--ink);font-family:var(--font-body);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:none}
-#game{position:relative;width:100%;height:100%;height:100dvh;overflow:hidden;background:#2b1a10}
+#game{position:relative;width:100%;height:100%;overflow:hidden;background:#2b1a10}   /* 100dvh değil: sayfa çerçevenin güvenli alan boşluğunun içine sığmalı */
 canvas{display:block;width:100%;height:100%;touch-action:none}
 button{font:inherit;color:inherit}
 svg.i{display:block;width:100%;height:100%}
-.hud{position:absolute;left:0;right:0;top:0;z-index:4;display:flex;align-items:flex-start;gap:10px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-top:max(10px,env(safe-area-inset-top,0px));pointer-events:none}
+.hud{position:absolute;left:0;right:0;top:0;z-index:4;display:flex;align-items:flex-start;gap:10px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-top:max(10px,var(--sat));pointer-events:none}
 .hud-l{display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}
 .pill{background:var(--paper);border:3px solid var(--ink);border-radius:999px;padding:4px 12px;font-family:var(--font-display);font-weight:800;font-size:16px;box-shadow:0 3px 0 var(--ink)}
 .pill.coins{margin-left:auto;display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums;font-size:18px;line-height:1.2;transition:transform .15s}
@@ -31,10 +32,10 @@ svg.i{display:block;width:100%;height:100%}
 .goal{display:flex;align-items:center;gap:6px;max-width:min(62vw,260px);background:rgba(255,248,236,.94);border:2.5px solid var(--ink);border-radius:12px;padding:3px 9px 3px 5px;font-size:12px;font-weight:800;line-height:1.2;box-shadow:0 2px 0 var(--ink)}
 .goal .ic{width:18px;height:18px;flex:none}
 .goal em{font-style:normal;opacity:.7;font-variant-numeric:tabular-nums;white-space:nowrap}
-.bottom{position:absolute;left:0;right:0;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 6px);z-index:4;padding-inline:16px;pointer-events:none}
+.bottom{position:absolute;left:0;right:0;bottom:calc(var(--navh) + var(--sab) + 6px);z-index:4;padding-inline:16px;pointer-events:none}
 .hint{text-align:center;font-family:var(--font-display);font-weight:800;font-size:14px;color:var(--cream);text-shadow:0 2px 0 var(--ink),0 0 10px var(--ink)}
 /* alt gezinme */
-.nav{position:absolute;left:0;right:0;bottom:0;z-index:8;display:flex;justify-content:center;gap:6px;height:var(--navh);padding:6px max(10px,env(safe-area-inset-left,0px)) env(safe-area-inset-bottom,0px);box-sizing:content-box;
+.nav{position:absolute;left:0;right:0;bottom:0;z-index:8;display:flex;justify-content:center;gap:6px;height:var(--navh);padding:6px max(10px,env(safe-area-inset-left,0px)) var(--sab);box-sizing:content-box;
   background:repeating-linear-gradient(90deg,var(--wood) 0 46px,var(--wood2) 46px 48px);border-top:3px solid var(--ink)}
 .nav button{flex:1;max-width:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:0 3px 0 var(--ink);font-family:var(--font-display);font-weight:800;font-size:12px;line-height:1;padding:4px 2px;cursor:pointer;height:54px}
 .nav button .ic{width:28px;height:28px}
@@ -76,7 +77,7 @@ svg.i{display:block;width:100%;height:100%}
 .tab[aria-selected="true"]{background:var(--gold);box-shadow:0 2px 0 var(--ink)}
 .empty{padding:20px;text-align:center;font-weight:800;opacity:.7}
 /* market (alt sayfa) */
-.sheet{position:absolute;left:0;right:0;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 9px);z-index:7;height:min(60%,520px);display:flex;flex-direction:column;background:var(--cream);border-top:3px solid var(--ink);border-radius:22px 22px 0 0;overflow:hidden;transform:translateY(115%);transition:transform .28s ease;visibility:hidden}
+.sheet{position:absolute;left:0;right:0;bottom:calc(var(--navh) + var(--sab) + 9px);z-index:7;height:min(60%,520px);display:flex;flex-direction:column;background:var(--cream);border-top:3px solid var(--ink);border-radius:22px 22px 0 0;overflow:hidden;transform:translateY(115%);transition:transform .28s ease;visibility:hidden}
 .sheet.open{transform:none;visibility:visible}
 .grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;padding:6px 14px 16px;align-content:start;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .card{appearance:none;position:relative;display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:6px;box-shadow:0 3px 0 var(--ink);cursor:pointer;min-width:0}
@@ -100,16 +101,16 @@ svg.i{display:block;width:100%;height:100%}
 .detail .row{display:flex;gap:6px;flex-wrap:wrap}
 .detail .btn{font-size:14px;padding:7px 12px}
 /* yerleştirme / düzenleme çubuğu */
-.placebar{position:absolute;left:0;right:0;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 16px);z-index:7;display:flex;flex-direction:column;align-items:center;gap:8px;padding-inline:16px;pointer-events:none}
+.placebar{position:absolute;left:0;right:0;bottom:calc(var(--navh) + var(--sab) + 16px);z-index:7;display:flex;flex-direction:column;align-items:center;gap:8px;padding-inline:16px;pointer-events:none}
 .placebar[hidden]{display:none}
 .placebar .msg{pointer-events:none;max-width:340px;text-align:center;background:rgba(255,248,236,.96);border:3px solid var(--ink);border-radius:14px;padding:6px 12px;font-size:13px;font-weight:800;line-height:1.25;box-shadow:0 3px 0 var(--ink)}
 .placebar .msg.bad{background:#fde0dc}
 .placebar .row{pointer-events:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 /* tam ekran paneller */
-.screen{position:absolute;left:0;right:0;top:0;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 9px);z-index:7;display:flex;flex-direction:column;background:var(--cream);
+.screen{position:absolute;left:0;right:0;top:0;bottom:calc(var(--navh) + var(--sab) + 9px);z-index:7;display:flex;flex-direction:column;background:var(--cream);
   background-image:radial-gradient(circle at 12px 12px,rgba(201,138,78,.10) 2px,transparent 2.5px);background-size:24px 24px}
 .screen[hidden]{display:none}
-.screen .panel-head{padding-top:max(10px,env(safe-area-inset-top,0px))}
+.screen .panel-head{padding-top:max(10px,var(--sat))}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 /* tarif defteri */
 .rlist{display:flex;flex-direction:column;gap:10px;padding:6px 14px 18px;max-width:560px;margin:0 auto}
@@ -163,7 +164,7 @@ svg.i{display:block;width:100%;height:100%}
 .info .box .tx b{display:block;font-family:var(--font-display);font-size:15px;line-height:1.1;margin-bottom:2px}
 .info .box .btn{font-size:13px;padding:6px 10px}
 /* bildirimler ve seviye */
-.toasts{position:absolute;left:50%;top:calc(max(10px,env(safe-area-inset-top,0px)) + 104px);transform:translateX(-50%);z-index:12;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:min(92vw,360px)}
+.toasts{position:absolute;left:50%;top:calc(max(10px,var(--sat)) + 104px);transform:translateX(-50%);z-index:12;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:min(92vw,360px)}
 .toast{display:flex;align-items:center;gap:8px;background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:6px 12px 6px 6px;font-size:13px;font-weight:800;line-height:1.25;box-shadow:0 3px 0 var(--ink);animation:tin .3s ease}
 .toast .ic,.toast img{width:30px;height:30px;flex:none}
 .toast.out{opacity:0;transform:translateY(-6px);transition:all .3s}
@@ -1857,6 +1858,10 @@ const CUST_BT=['bt_navy','bt_brown','bt_navy','bt_olive','bt_brown'];
 // müşteriler önlük giymez (önlük yalnızca çalışanlarda): kendi renklerinde gündelik bir üst giyerler
 function customerTex(L,i){const top=L.top||{c:L.A,kind:i%2?'stripe':'shirt',c2:[250,246,238]};return composeTexture({look:{...LOOK_DEF,fur1:L.W,fur2:L.B},wear:{apron:null,top:{top},bottom:L.bt||CUST_BT[i%CUST_BT.length]}},512)}
 
+// güvenli alan: sayfayı açan çerçeve :root'a zaten üst/alt boşluk veriyorsa aynı boşluğu ikinci kez ekleme
+function fitSafeArea(){const cs=getComputedStyle(document.documentElement),R=document.documentElement.style;
+  R.setProperty('--sab',parseFloat(cs.paddingBottom)>0?'0px':'env(safe-area-inset-bottom,0px)');R.setProperty('--sat',parseFloat(cs.paddingTop)>0?'0px':'env(safe-area-inset-top,0px)')}
+fitSafeArea();addEventListener('resize',fitSafeArea);
 // ================= KÜÇÜK RESİMLER (ikinci, küçük çizici: aynı ışık/ton) =================
 const TH=(()=>{const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setPixelRatio(1);r.setSize(192,192,false);r.outputColorSpace=THREE.SRGBColorSpace;r.toneMapping=THREE.ACESFilmicToneMapping;r.setClearColor(0x000000,0);
   const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xfff1dc,0x6b4a2a,1.1));const d=new THREE.DirectionalLight(0xffe4bf,1.9);d.position.set(3,6,4);sc.add(d);
@@ -1907,20 +1912,20 @@ const NAV=[{id:'book',icon:'book',name:'Tarifler'},{id:'menu',icon:'menu',name:'
 .nav button.navbig span:last-child{color:#b8342d}
 .nav button.navbig[aria-pressed="true"]{background:var(--gold);transform:translateY(-6px)}
 .nav button.navbig:active{transform:translateY(0);box-shadow:0 1px 0 #9c2f2a,0 0 0 3px #f6c453}
-#game .bottom{bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 22px)}
+#game .bottom{bottom:calc(var(--navh) + var(--sab) + 22px)}
 @keyframes navGlow{50%{box-shadow:0 3px 0 #9c2f2a,0 0 0 3px #f6c453,0 0 14px 4px rgba(246,196,83,.75)}}
 @media (prefers-reduced-motion:reduce){.nav button.navbig{animation:none}}`;document.head.appendChild(st)}
 UI_IC.paw=SV(`<ellipse cx="32" cy="41" rx="13" ry="11" fill="#f2a6a0"/><circle cx="15" cy="27" r="6.5" fill="#f2a6a0"/><circle cx="26" cy="17" r="6.5" fill="#f2a6a0"/><circle cx="39" cy="17" r="6.5" fill="#f2a6a0"/><circle cx="50" cy="27" r="6" fill="#f2a6a0"/>`);UI_IC.shirt=SV(`<path d="M22 10 L10 18 L14 30 L20 28 V56 H44 V28 L50 30 L54 18 L42 10 Q32 18 22 10 Z" fill="#bfe3f5"/>`);
 $('nav').innerHTML=NAV.map(n=>`<button type="button" data-nav="${n.id}" aria-pressed="false"${n.big?' class="navbig"':''}>${ic(n.icon)}<span>${n.name}</span></button>`).join('');
 // yatay ekranda alt menüyü gizle / göster (tercih kayıtta tutulur)
 {const st=document.createElement('style');st.textContent=`
-.nonav{--navh:0px}.nonav #nav{display:none!important}.nonav .sheet{bottom:calc(env(safe-area-inset-bottom,0px) + 6px)}
+.nonav{--navh:0px}.nonav #nav{display:none!important}.nonav .sheet{bottom:calc(var(--sab) + 6px)}
 #navHide,#navShow{display:none}
 @media (orientation:landscape){
   #navHide{display:grid;place-items:center;position:absolute;right:max(10px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:38px;height:38px;border:3px solid var(--ink);border-radius:50%;background:var(--paper);box-shadow:0 3px 0 var(--ink);cursor:pointer;padding:6px}
   #navHide .ic,#navShow .ic{width:100%;height:100%}
   .navmin{--navh:0px}.navmin #nav{display:none!important}
-  .navmin:not(.nonav) #navShow{display:flex;align-items:center;gap:6px;position:absolute;z-index:8;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 10px);border:3px solid var(--ink);border-radius:999px;background:var(--paper);box-shadow:0 3px 0 var(--ink);padding:5px 12px 5px 6px;font-family:var(--font-display);font-weight:800;font-size:13px;cursor:pointer}
+  .navmin:not(.nonav) #navShow{display:flex;align-items:center;gap:6px;position:absolute;z-index:8;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(var(--sab) + 10px);border:3px solid var(--ink);border-radius:999px;background:var(--paper);box-shadow:0 3px 0 var(--ink);padding:5px 12px 5px 6px;font-family:var(--font-display);font-weight:800;font-size:13px;cursor:pointer}
   .navmin:not(.nonav) #navShow .ic{width:24px;height:24px}}`;document.head.appendChild(st)}
 UI_IC.chevDown=SV(`<path d="M18 26 L32 40 L46 26" stroke-width="6"/>`);UI_IC.chevUp=SV(`<path d="M18 38 L32 24 L46 38" stroke-width="6"/>`);
 {const h=document.createElement('button');h.type='button';h.id='navHide';h.setAttribute('aria-label','Alt menüyü gizle');h.innerHTML=ic('chevDown');$('nav').appendChild(h);
@@ -2365,7 +2370,7 @@ const PAW=`<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="26" 
 #intro .ld div{width:min(60vw,240px);height:10px;border:3px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff8ec}
 #intro .ld i{display:block;height:100%;width:0;background:var(--gold)}
 #intro .ld small{font-size:12px;font-weight:800;opacity:.7}
-#intro .skip{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));font-size:12px;font-weight:800;opacity:.55}
+#intro .skip{position:absolute;bottom:calc(16px + var(--sab));font-size:12px;font-weight:800;opacity:.55}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.lg-l,.lg-ears,.lg-spark{animation-duration:.01s!important;animation-delay:0s!important}.lg-tail{animation:none;stroke-dashoffset:0}.paws{display:none}}
 `;document.head.appendChild(st)}
@@ -2749,7 +2754,7 @@ UI_IC.auto=SV(`<circle cx="32" cy="32" r="24" fill="#bfe39a"/><path d="M20 34 A1
 @keyframes poke{50%{transform:translate(0,-9px)}}
 #coach .ring{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:4px solid var(--gold);pointer-events:none;animation:ringP 1.2s ease-out infinite}
 @keyframes ringP{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.4);opacity:0}}
-.autobtn{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 34px);z-index:6;display:flex;align-items:center;gap:6px;border:3px solid var(--ink);border-radius:999px;background:var(--paper);box-shadow:0 3px 0 var(--ink);padding:5px 12px 5px 5px;font-family:var(--font-display);font-weight:800;font-size:13px;line-height:1;cursor:pointer}
+.autobtn{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--navh) + var(--sab) + 34px);z-index:6;display:flex;align-items:center;gap:6px;border:3px solid var(--ink);border-radius:999px;background:var(--paper);box-shadow:0 3px 0 var(--ink);padding:5px 12px 5px 5px;font-family:var(--font-display);font-weight:800;font-size:13px;line-height:1;cursor:pointer}
 .autobtn .ic{width:28px;height:28px}.autobtn[aria-pressed="true"]{background:var(--mint)}
 .autobtn[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){#coach .chand .in,#coach .ring{animation:none}}
@@ -2765,12 +2770,12 @@ function coachOff(){const box=$('coach');box.hidden=true;CO.target=null;cancelAn
 function targetRect(t){if(!t)return null;const v=typeof t==='function'?t():t;if(!v)return null;if(v.getBoundingClientRect){if(!v.isConnected||v.offsetParent===null&&getComputedStyle(v).position!=='fixed')return null;const r=v.getBoundingClientRect();if(!r.width&&!r.height)return null;return r}
   if(v.isVector3){const p=v.clone().project(camera);const r=renderer.domElement.getBoundingClientRect();if(p.z>1)return null;const x=(p.x+1)/2*r.width,y=(1-p.y)/2*r.height;return {left:x-20,top:y-20,width:40,height:40}}return null}
 function coachFrame(){CO.raf=requestAnimationFrame(coachFrame);const box=$('coach');const hand=box.querySelector('.chand'),ring=box.querySelector('.ring'),bub=box.querySelector('.cbub');const g=$('game').getBoundingClientRect();
-  const r=targetRect(CO.target);if(!r){hand.hidden=true;ring.hidden=true;if(CO.place==='head'){bub.style.bottom='';bub.style.top='58px'}else if(!CO.center){bub.style.top='';bub.style.bottom=`calc(var(--navh) + env(safe-area-inset-bottom,0px) + 70px)`}return}
+  const r=targetRect(CO.target);if(!r){hand.hidden=true;ring.hidden=true;if(CO.place==='head'){bub.style.bottom='';bub.style.top='58px'}else if(!CO.center){bub.style.top='';bub.style.bottom=`calc(var(--navh) + var(--sab) + 70px)`}return}
   hand.hidden=false;ring.hidden=false;const cx=r.left-g.left+r.width/2,cy=r.top-g.top+r.height/2;ring.style.left=cx+'px';ring.style.top=cy+'px';
   const below=cy<g.height*0.55;  // hedef üstteyse el aşağıdan yukarıyı gösterir
   const hx=cx-27*0.8,hy=below?cy+r.height/2+2:cy-r.height/2-55;hand.style.transform=`translate(${hx}px,${hy}px) rotate(${below?0:180}deg)`;
   if(CO.place==='head'){bub.style.bottom='';bub.style.top='58px';return}
-  if(!CO.center){const bh=bub.offsetHeight||120;const topSpace=cy-r.height/2-70;if(CO.place==='top'||(CO.place!=='bottom'&&cy>g.height*0.5&&topSpace>bh)){bub.style.bottom='';bub.style.top=`max(${Math.max(12,Math.min(topSpace-bh,g.height-bh-160))}px, env(safe-area-inset-top,0px))`}
+  if(!CO.center){const bh=bub.offsetHeight||120;const topSpace=cy-r.height/2-70;if(CO.place==='top'||(CO.place!=='bottom'&&cy>g.height*0.5&&topSpace>bh)){bub.style.bottom='';bub.style.top=`max(${Math.max(12,Math.min(topSpace-bh,g.height-bh-160))}px, var(--sat))`}
     else{bub.style.top='';const want=g.height-(cy+r.height/2+70);bub.style.bottom=Math.max(12,Math.min(want-bh,g.height-bh-40))+'px'}}}
 // ---------- karakter tasarımı aşaması ----------
 const ROLE_TUT={
