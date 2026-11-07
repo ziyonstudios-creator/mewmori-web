@@ -1640,10 +1640,34 @@ const isDefaultYosun=cfg=>false;   // iç çamaşırı katmanı her zaman boyan�
 
 // ---- konum haritası (bir kez) ----
 const CM={};
-function custPrepare(){if(CM.ready)return;let sm;TEMPLATE.traverse(o=>{if(o.isSkinnedMesh)sm=o});CM.mesh=sm;CM.geo=sm.geometry;CM.img=sm.material.map.image;
+function custPrepare(){if(CM.ready)return;let sm;TEMPLATE.traverse(o=>{if(o.isSkinnedMesh)sm=o});CM.mesh=sm;sm.geometry=fixUVOverlap(sm.geometry);CM.geo=sm.geometry;CM.img=sm.material.map.image;
   smoothNormals(CM.geo);
   const g=CM.geo,P=g.attributes.position.array,N=g.attributes.normal.array,UV=g.attributes.uv.array;CM.P0=new Float32Array(P);CM.N0=new Float32Array(N);
   CM.maps={};CM.vclass=vertexClass();prepMorph();CM.tailHide=tailVerts(sm);CM.hipsBone=Math.max(0,sm.skeleton.bones.findIndex(b=>b.name==='mixamorigHips'));CM.geoNT=hideTailGeo(CM.geo.clone());CM.ready=true}
+// UV çakışması: modelde bazı (çoğu ince) üçgenler dokuda başka bir bölgenin piksellerini kullanıyor; boyanınca o bölgenin rengini alıp
+// gömlekte beyaz kıymık, kulakta renkli kırık gibi görünüyorlar. Bu üçgenlere kendi köşe kopyaları verilip UV'leri 3B'de en yakın
+// sağlam üçgenin doku noktasına bağlanır; böylece bulundukları yerin rengini alırlar.
+function fixUVOverlap(g){const R=1024,P=g.attributes.position.array,UV=g.attributes.uv.array,I=g.index.array,nt=I.length/3;const own=new Int32Array(R*R).fill(-1);
+  const cen=new Float32Array(nt*3);for(let t=0;t<nt;t++)for(let e=0;e<3;e++){const v=I[t*3+e];cen[t*3]+=P[v*3]/3;cen[t*3+1]+=P[v*3+1]/3;cen[t*3+2]+=P[v*3+2]/3}
+  for(let t=0;t<nt;t++){const a=I[t*3],b=I[t*3+1],c=I[t*3+2];const ax=UV[a*2]*R,ay=UV[a*2+1]*R,bx=UV[b*2]*R,by=UV[b*2+1]*R,cx=UV[c*2]*R,cy=UV[c*2+1]*R;
+    const x0=Math.max(0,Math.floor(Math.min(ax,bx,cx))),x1=Math.min(R-1,Math.ceil(Math.max(ax,bx,cx))),y0=Math.max(0,Math.floor(Math.min(ay,by,cy))),y1=Math.min(R-1,Math.ceil(Math.max(ay,by,cy)));
+    const d=(by-cy)*(ax-cx)+(cx-bx)*(ay-cy);if(Math.abs(d)<1e-9)continue;
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const px=x+0.5,py=y+0.5;const w0=((by-cy)*(px-cx)+(cx-bx)*(py-cy))/d,w1=((cy-ay)*(px-cx)+(ax-cx)*(py-cy))/d,w2=1-w0-w1;if(w0<-0.02||w1<-0.02||w2<-0.02)continue;const k=y*R+x;if(own[k]<0)own[k]=t}}
+  const bad=new Uint8Array(nt);let nb=0;const far=(t,o)=>Math.hypot(cen[t*3]-cen[o*3],cen[t*3+1]-cen[o*3+1],cen[t*3+2]-cen[o*3+2])>0.045;
+  for(let t=0;t<nt;t++){const vs=[I[t*3],I[t*3+1],I[t*3+2]];const uc=[(UV[vs[0]*2]+UV[vs[1]*2]+UV[vs[2]*2])/3,(UV[vs[0]*2+1]+UV[vs[1]*2+1]+UV[vs[2]*2+1])/3];
+    const smp=[uc,...vs.map(v=>[UV[v*2]*0.7+uc[0]*0.3,UV[v*2+1]*0.7+uc[1]*0.3])];let hits=0;
+    const ua=Math.abs((UV[vs[1]*2]-UV[vs[0]*2])*(UV[vs[2]*2+1]-UV[vs[0]*2+1])-(UV[vs[2]*2]-UV[vs[0]*2])*(UV[vs[1]*2+1]-UV[vs[0]*2+1]))*R*R;
+    for(const [u,v] of smp){const x=Math.min(R-1,Math.max(0,Math.floor(u*R))),y=Math.min(R-1,Math.max(0,Math.floor(v*R)));const o=own[y*R+x];if((o>=0&&o!==t&&far(t,o))||o<0)hits++}
+    if(ua<1e-4)hits=9;   // dokuda alanı olmayan (sıfır UV) üçgenler de yanlış piksel okur
+    if(hits>=2){bad[t]=1;nb++}}
+  if(!nb)return g;
+  const ng=g.clone();const n0=g.attributes.position.count;const extra=nb*3;const attrs=Object.keys(ng.attributes);
+  for(const nm of attrs){const A=ng.attributes[nm],sz=A.itemSize;const arr=new A.array.constructor((n0+extra)*sz);arr.set(A.array);ng.setAttribute(nm,new THREE.BufferAttribute(arr,sz,A.normalized))}
+  const NI=Array.from(I);let nv=n0;
+  for(let t=0;t<nt;t++){if(!bad[t])continue;let bd=1e9,bo=-1;for(let o=0;o<nt;o++){if(bad[o])continue;const dd=(cen[t*3]-cen[o*3])**2+(cen[t*3+1]-cen[o*3+1])**2+(cen[t*3+2]-cen[o*3+2])**2;if(dd<bd){bd=dd;bo=o}}
+    const ou=[0,0];for(let e=0;e<3;e++){const v=I[bo*3+e];ou[0]+=UV[v*2]/3;ou[1]+=UV[v*2+1]/3}
+    for(let e=0;e<3;e++){const v=I[t*3+e];for(const nm of attrs){const A=ng.attributes[nm],sz=A.itemSize;for(let q=0;q<sz;q++)A.array[nv*sz+q]=A.array[v*sz+q]}ng.attributes.uv.array[nv*2]=ou[0];ng.attributes.uv.array[nv*2+1]=ou[1];NI[t*3+e]=nv;nv++}}
+  ng.setIndex(NI);ng.computeBoundingSphere();CM.uvFixed=nb;return ng}
 // Pürüzsüz gölgelendirme: modelde aynı noktada duran köşelerin normalleri farklıydı (sert kenarlar → "pötür pötür" yüzeyler).
 // Aynı konumdaki köşeler, aynı yöne bakan yüzlerin (alan ağırlıklı) ortalama normalini paylaşır; ters yüzler (ince parçaların arka yüzü) karışmaz.
 function smoothNormals(g){const P=g.attributes.position.array,N=g.attributes.normal.array,I=g.index.array,n=P.length/3;
@@ -1744,10 +1768,15 @@ function posMap(R){if(CM.maps[R])return CM.maps[R];const g=CM.geo,P=tailSnapP(),
   const f3=new Float32Array(R*R);{const W=R+1,S3=new Int32Array(W*W),SC=new Int32Array(W*W);for(let y=0;y<R;y++){let a=0,b=0;for(let x=0;x<R;x++){const c=cls[y*R+x];a+=c===3?1:0;b+=(c>=1&&c<=3)?1:0;S3[(y+1)*W+x+1]=S3[y*W+x+1]+a;SC[(y+1)*W+x+1]=SC[y*W+x+1]+b}}
     const h=Math.max(2,Math.round(R/170));for(let y=0;y<R;y++)for(let x=0;x<R;x++){const k=y*R+x;if(cls[k]!==3)continue;const x0=Math.max(0,x-h),y0=Math.max(0,y-h),x1=Math.min(R,x+h+1),y1=Math.min(R,y+h+1);
       const n=SC[y1*W+x1]-SC[y0*W+x1]-SC[y1*W+x0]+SC[y0*W+x0];f3[k]=n?(S3[y1*W+x1]-S3[y0*W+x1]-S3[y1*W+x0]+S3[y0*W+x0])/n:1}}
+  // kafada (yüz dışı) kahve zemin içindeki küçük beyaz adacıklar: 3B'de yakın komşuların çoğunluğu kahveyse kahve say
+  const clsH=new Uint8Array(R*R);{const h=Math.max(2,Math.round(R/200));for(let y=h;y<R-h;y++)for(let x=h;x<R-h;x++){const k=y*R+x;if(cls[k]!==1)continue;const py=pm[k*3+1],px=pm[k*3],pz=pm[k*3+2];if(py<1.3)continue;
+      if(pz>0.05&&(Math.hypot((Math.abs(px)-0.088)/0.12,(py-1.452)/0.09)<1||(Math.abs(px)<0.11&&py<1.45)))continue;let n1=0,n2=0;
+      for(let dy=-h;dy<=h;dy++)for(let dx=-h;dx<=h;dx++){const q=k+dy*R+dx;if(Math.abs(pm[q*3]-px)+Math.abs(pm[q*3+1]-py)+Math.abs(pm[q*3+2]-pz)>0.03)continue;const c=cls[q];if(c===1)n1++;else if(c===2||c===3)n2++}
+      if(n2>n1*1.6)clsH[k]=1}}
   // ortalama renkler: önlük ve kulak içi pembesi (temiz düz renk için)
   const avg=f=>{let r=0,g=0,b=0,n=0;for(let k=0;k<R*R;k++)if(f(k)){r+=orig[k*4];g+=orig[k*4+1];b+=orig[k*4+2];n++}return n?[r/n,g/n,b/n]:[200,150,150]};
   const apMean=avg(k=>cls0[k]===4&&cls[k]===4);const earMean=avg(k=>cls0[k]===5&&pm[k*3+1]>1.58&&Math.abs(pm[k*3])>0.06&&pm[k*3+2]>-0.02);
-  return CM.maps[R]={R,pm,cov,cls,cls0,lum,mean,orig,tl,apMean,earMean,nzm,detm,f3}}
+  return CM.maps[R]={R,pm,cov,cls,cls0,lum,mean,orig,tl,apMean,earMean,nzm,detm,f3,clsH}}
 const HEADC={x:-0.003,y:1.48,z:0.05};
 function isWhiskerPos(x,y,z){if(y>1.5||y<1.33)return false;const r=Math.hypot((x-HEADC.x)/0.2,(y-HEADC.y)/0.2,(z-HEADC.z)/0.19);return r>1.12&&Math.abs(x)>0.1}
 function vertexClass(){const g=CM.geo,UV=g.attributes.uv.array,n=UV.length/2;const cv=document.createElement('canvas');cv.width=cv.height=256;const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(CM.img,0,0,256,256);const d=x.getImageData(0,0,256,256).data;
@@ -1796,24 +1825,26 @@ function topColor(t,x,y,z,out){let c=t.c;
   if(t.kind==='vest'&&R_.torso(x,y,z)&&y<1.22&&!(z>0.06&&Math.abs(x)<0.035+(y-0.95)*0.12&&y>1.0))c=t.v;
   if(t.kind==='vest'&&z>0.08&&Math.abs(x)<0.012&&y>0.85&&y<1.15&&Math.abs(Math.sin(y*60))<0.35)c=[240,200,80];
   if(t.collar&&y>1.2)c=t.collar;out[0]=c[0];out[1]=c[1];out[2]=c[2]}
-const inTop=(x,y,z)=>(R_.torso(x,y,z)||R_.upperArm(x,y,z))&&y<(Math.abs(x)<0.09?1.29:1.34)&&y>0.72&&!(R_.tail(x,y,z));
+let TLK=0;   // o anki doku pikseli kuyruğa ait mi
+const inTop=(x,y,z)=>(R_.torso(x,y,z)||R_.upperArm(x,y,z))&&y<(Math.abs(x)<0.09?1.29:1.34)&&y>(z<-0.02?0.92:0.72)&&!TLK;
 function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
 // kuyruk gizlenince kuyruk üçgenleri gövdeye yapışır: dokusu da yapıştığı yerin (şort/bacak) rengini alsın
 function tailSnapP(){if(CM.P0s)return CM.P0s;const P=new Float32Array(CM.P0),S=CM.tailSnap;if(S)for(let i=0;i<S.length;i++){const j=S[i];if(j>=0&&CM.tailHide[i]&&CM.P0[i*3+1]<TAIL_SNAP_Y){P[i*3]=CM.P0[j*3];P[i*3+1]=CM.P0[j*3+1];P[i*3+2]=CM.P0[j*3+2]}}return CM.P0s=P}
 // ---- çizik temizliği ----
 // Modelin dokusunda kürk üstüne çizilmiş ince koyu çizgiler (kol, göğüs, kulak içi) var. Morfolojik kapama (önce en açık, sonra en koyu komşu)
 // ince koyu çizgileri çevresindeki kürk rengiyle doldurur; kalın desenler (kafa çizgileri) ve yüzdeki göz/kaş/ağız korunur.
+let MPM=null;const near3=(k,q)=>!MPM||Math.abs(MPM[k*3]-MPM[q*3])+Math.abs(MPM[k*3+1]-MPM[q*3+1])+Math.abs(MPM[k*3+2]-MPM[q*3+2])<0.03;   // dokuda komşu ama 3B'de uzak (başka UV adası) pikseller karışmaz
 function morph1(src,mask,R,r,isMax,horiz){const out=new Float32Array(src.length);for(let k=0;k<R*R;k++){if(!mask[k]){out[k]=src[k];continue}const x=k%R,y=(k/R)|0;let v=src[k];
-    for(let o=-r;o<=r;o++){if(!o)continue;const xx=horiz?x+o:x,yy=horiz?y:y+o;if(xx<0||yy<0||xx>=R||yy>=R)continue;const q=yy*R+xx;if(mask[q]!==mask[k])continue;const w=src[q];if(isMax?w>v:w<v)v=w}out[k]=v}return out}
+    for(let o=-r;o<=r;o++){if(!o)continue;const xx=horiz?x+o:x,yy=horiz?y:y+o;if(xx<0||yy<0||xx>=R||yy>=R)continue;const q=yy*R+xx;if(mask[q]!==mask[k]||!near3(k,q))continue;const w=src[q];if(isMax?w>v:w<v)v=w}out[k]=v}return out}
 function morphOp(ch,mask,R,r,isMax){return morph1(morph1(ch,mask,R,r,isMax,true),mask,R,r,isMax,false)}
-function cleanLines(d,M,L){const keepFur=L.pattern==='original'&&L.fur1===0&&L.fur2===3;const {R,pm,cls}=M;const N=R*R;const mask=new Uint8Array(N);const r=Math.max(1,Math.round(R/400));
+function cleanLines(d,M,L,top){MPM=M.pm;const keepFur=L.pattern==='original'&&L.fur1===0&&L.fur2===3;const {R,pm,cls}=M;const N=R*R;const mask=new Uint8Array(N);const r=Math.max(1,Math.round(R/400));
   // kulak içi: pembe texel oranı yüksek bölge (içindeki çizgiler dahil); toplam tablo ile 11x11 pencere
   const I5=new Int32Array((R+1)*(R+1)),IC=new Int32Array((R+1)*(R+1));for(let y=0;y<R;y++){let a=0,b=0;for(let x=0;x<R;x++){const k=y*R+x;a+=cls[k]===5?1:0;b+=cls[k]?1:0;I5[(y+1)*(R+1)+x+1]=I5[y*(R+1)+x+1]+a;IC[(y+1)*(R+1)+x+1]=IC[y*(R+1)+x+1]+b}}
   const box=(A,x,y,h)=>{const x0=Math.max(0,x-h),y0=Math.max(0,y-h),x1=Math.min(R,x+h+1),y1=Math.min(R,y+h+1);return A[y1*(R+1)+x1]-A[y0*(R+1)+x1]-A[y1*(R+1)+x0]+A[y0*(R+1)+x0]};
   const hw=Math.round(R/180);
-  for(let k=0;k<N;k++){const c=cls[k];if(!c)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];
+  for(let k=0;k<N;k++){const c=cls[k];if(!c)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];TLK=M.tl[k];
     if(y>1.54&&Math.abs(x)>0.09&&c!==8&&((((x-HEADC.x)/0.205)**2+((y-HEADC.y)/0.128)**2+((z-0.045)/0.165)**2>1.0&&M.nzm[k]>0.3)||(y>1.5&&Math.abs(x)>0.1&&M.nzm[k]>0.35&&(((x-HEADC.x)/0.205)**2+((y-HEADC.y)/0.128)**2+((z-0.045)/0.165)**2)>0.9)||box(I5,k%R,(k/R)|0,hw)>0.4*box(IC,k%R,(k/R)|0,hw)))mask[k]=2;   // kulak içi: düz pembe
-    else if(c>=1&&c<=3&&(y<1.3||!keepFur)){const face=z>0.05&&(Math.hypot((Math.abs(x)-0.088)/0.105,(y-1.452)/0.075)<1||(Math.abs(x)<0.08&&y<1.43&&y>1.33&&z>0.1));if(!face)mask[k]=1}}
+    else if(c>=1&&c<=3&&(y<1.3||!keepFur)&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))){const face=z>0.05&&(Math.hypot((Math.abs(x)-0.088)/0.105,(y-1.452)/0.075)<1||(Math.abs(x)<0.08&&y<1.43&&y>1.33&&z>0.1));if(!face)mask[k]=1}}
   const pk=L.inner?CPAL.pink[L.inner][1]:M.earMean;
   // kulak içi: çizimler yerine yumuşak tek renk; kenara doğru hafif koyulaşma için kulak tabanından uzaklık
   for(let k=0;k<N;k++)if(mask[k]===2){const y=pm[k*3+1];const f=0.93+0.07*Math.min(1,Math.max(0,(y-1.56)/0.12));d[k*4]=pk[0]*f;d[k*4+1]=pk[1]*f;d[k*4+2]=pk[2]*f}
@@ -1821,11 +1852,11 @@ function cleanLines(d,M,L){const keepFur=L.pattern==='original'&&L.fur1===0&&L.f
   const hole=new Uint8Array(N);for(let k=0;k<N;k++){if(cls[k]!==5||mask[k]===2)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];
     const keep=(y>1.3&&R_.nose(x,y,z))||R_.hands(x,y,z)||R_.feet(x,y,z)||(z>0.1&&y>1.33&&y<1.43&&Math.abs(x)<0.07)||inShorts(x,y,z)||y<0.95&&!R_.head(x,y,z)&&false;if(!keep)hole[k]=1}
   for(let pass=0;pass<14;pass++){let any=0;const nh=hole.slice();for(let k=0;k<N;k++){if(!hole[k])continue;const x=k%R,y=(k/R)|0;let r=0,g=0,b=0,n=0;
-      for(const q of [k-1,k+1,k-R,k+R]){if(q<0||q>=N||hole[q]||!cls[q]||cls[q]===4||cls[q]>5)continue;if(Math.abs((q%R)-x)>1)continue;r+=d[q*4];g+=d[q*4+1];b+=d[q*4+2];n++}
+      for(const q of [k-1,k+1,k-R,k+R]){if(q<0||q>=N||hole[q]||!cls[q]||cls[q]===4||cls[q]>5||!near3(k,q))continue;if(Math.abs((q%R)-x)>1)continue;r+=d[q*4];g+=d[q*4+1];b+=d[q*4+2];n++}
       if(n){d[k*4]=r/n;d[k*4+1]=g/n;d[k*4+2]=b/n;nh[k]=0;any=1}}hole.set(nh);if(!any)break}
   for(let ci=0;ci<3;ci++){const ch=new Float32Array(N);for(let k=0;k<N;k++)ch[k]=d[k*4+ci];
     const o=morphOp(morphOp(ch,mask,R,r,true),mask,R,r,false);   // kapama: ince koyu çizgiler (gövde)
-    for(let k=0;k<N;k++)if(mask[k]===1)d[k*4+ci]=Math.min(255,o[k])}}
+    for(let k=0;k<N;k++)if(mask[k]===1&&(keepFur||cls[k]===3))d[k*4+ci]=Math.min(255,o[k])}}   // yeni renklendirilmiş kürkte yalnız koyu çizgi pikselleri değişir; desenler korunur
 // ---- dokuyu oluştur ----
 function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,orig,tl}=M;const L=cfg.look;const W=cfg.wear;const ap=W.apron&&typeof W.apron==='object'?W.apron.ap:(CLO[W.apron]||{}).ap;const top=typeof W.top==='object'&&W.top?W.top.top:(CLO[W.top]||{}).top;
   const BT=NO_BOTTOMS?null:(CLO[W.bottom||'bt_brown']||CLO.bt_brown);const keepFur=L.pattern==='original'&&L.fur1===0&&L.fur2===3;
@@ -1834,19 +1865,19 @@ function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,ori
   const cv=document.createElement('canvas');cv.width=cv.height=R;const c2=cv.getContext('2d');const im=c2.createImageData(R,R);const d=im.data;
   const eye=CPAL.eye[L.eye][1],eye2=CPAL.eye[(L.eye+2)%CPAL.eye.length][1],inner=CPAL.pink[L.inner][1],nose=CPAL.pink[L.nose][1];const o=[0,0,0];
   const wc=L.whiskCol==='light'?[245,240,232]:null;
-  for(let k=0;k<R*R;k++){const i4=k*4;let r=orig[i4],g=orig[i4+1],b=orig[i4+2];let c=cls[k];
+  for(let k=0;k<R*R;k++){const i4=k*4;let r=orig[i4],g=orig[i4+1],b=orig[i4+2];let c=cls[k];TLK=tl[k];
     if(c>=5&&c<=7){const y=pm[k*3+1],x=pm[k*3],z=pm[k*3+2];if(y<1.28&&!R_.hands(x,y,z)&&!R_.feet(x,y,z)&&(!keepFur||(top&&inTop(x,y,z))))c=1}   // gövdede kalan pembe/koyu lekeler kürk/kıyafet rengini alır
-    const cc=(c===3&&M.f3[k]<0.42&&!(z0=>z0)(0))?2:c;
+    const cc=(c===3&&(!keepFur||M.f3[k]<0.42))?2:(c===1&&M.clsH[k]?2:c);   // yeniden renklendirilen kürkte eski koyu lekeler ve kafadaki küçük açık kırıntılar zemin rengini alır
     if(c){const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];const det=Math.min(1.05,Math.max(0.92,M.detm[k]));
       if(c===4){if(ap){if(ap.orig){if(M.cls0[k]!==4){r=M.apMean[0];g=M.apMean[1];b=M.apMean[2]}}else{apronColor(ap,x,y,z,o);const sh=Math.min(1.25,Math.max(0.7,lum[k]/mean[4]));r=o[0]*sh;g=o[1]*sh;b=o[2]*sh}}
         else{furColor(L,x,y,z,1,o);if(top&&inTop(x,y,z))topColor(top,x,y,z,o);if(BT&&y>0.5&&y<0.95)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
-      else if(c<=3){const sh=!!BT&&inShorts(x,y,z);if(keepFur&&!sh&&M.cls0[k]!==4&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))&&!furMarkHit(L,x,y,z)){}else{const fx=pm[k*3],fy=pm[k*3+1],fz=pm[k*3+2];const face=fz>0.05&&Math.hypot((Math.abs(fx)-0.088)/0.105,(fy-1.452)/0.075)<1;furColor(L,x,y,z,face?c:cc,o);if(top&&inTop(x,y,z)&&!R_.hands(x,y,z))topColor(top,x,y,z,o);if(sh)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
+      else if(c<=3){const sh=!!BT&&inShorts(x,y,z);if(keepFur&&!sh&&M.cls0[k]!==4&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))&&!furMarkHit(L,x,y,z)){}else{const fx=pm[k*3],fy=pm[k*3+1],fz=pm[k*3+2];const face=fz>0.05&&Math.hypot((Math.abs(fx)-0.088)/0.1,(fy-1.452)/0.058)<1;furColor(L,x,y,z,face?c:cc,o);if(top&&inTop(x,y,z)&&!R_.hands(x,y,z))topColor(top,x,y,z,o);if(sh)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
       else if(c===5){const sh=lum[k]/mean[5];const t=R_.ear(x,y,z)?(L.inner?inner:null):(y>1.3&&R_.nose(x,y,z))?(L.nose?nose:null):null;if(BT&&inShorts(x,y,z)){shortsC(x,y,z,o,k);r=o[0];g=o[1];b=o[2]}else if(t){r=t[0]*sh;g=t[1]*sh;b=t[2]*sh}}
       else if(c===6&&L.eye){const e=L.odd&&x<0?eye2:eye;const sh=Math.min(1.5,lum[k]/mean[6]);r=e[0]*sh;g=e[1]*sh;b=e[2]*sh}
       else if(c===8&&wc){r=wc[0];g=wc[1];b=wc[2]}}
     if(!c){const f=furRGB(L.fur1);if(!keepFur){r=f[0];g=f[1];b=f[2]}}
     d[i4]=Math.min(255,r);d[i4+1]=Math.min(255,g);d[i4+2]=Math.min(255,b);d[i4+3]=255}
-  cleanLines(d,M,L);
+  if(!window.__noClean)cleanLines(d,M,L,top);
   c2.putImageData(im,0,0);const t=new THREE.CanvasTexture(cv);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t}
 // ---- geometri biçimleme ----
 function prepMorph(){const P=CM.P0,n=P.length/3,vc=CM.vclass;const ear=new Int8Array(n),earW=new Float32Array(n),tail=new Float32Array(n),wh=new Uint8Array(n);
