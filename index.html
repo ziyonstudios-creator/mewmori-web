@@ -617,11 +617,11 @@ const QSPOTS=[{x:CASH.x,z:-1.98},...QLINE];                         // eski adla
 const REGS=[];      // {i,rx,stand,pay,parts,cust,busy}
 const CASH_DECOR={};
 function makeRegister(rx){const {z,h}=CASH;const P={};const g=inGroup(grp(0,0,0),()=>{
-  box(0.38,0.12,0.32,M.cream,rx,h+0.06,z,{round:0.02});
+  box(0.38,0.12,0.32,M.cream,rx,h+0.062,z,{round:0.02});   // tezgahtan 2 mm yukarıda: yüzeyler çakışıp titremesin
   const top=box(0.34,0.14,0.18,M.red,rx,h+0.19,z-0.04,{round:0.02});top.rotation.x=-0.35;
   const scr=new THREE.Mesh(new THREE.PlaneGeometry(0.2,0.07),new THREE.MeshBasicMaterial({color:0x9fe0a8}));scr.position.set(rx,h+0.3,z+0.02);scr.rotation.x=-0.35;PARENT.add(scr);P.screen=scr;
   for(let i=0;i<3;i++)for(let j=0;j<2;j++)sph(0.014,j?M.cream:M.dark,rx-0.08+i*0.08,h+0.135,z+0.07+j*0.05);
-  P.drawer=box(0.32,0.05,0.24,M.woodDark,rx,h+0.035,z+0.04);P.drawerZ=z+0.04});P.group=g;return P}
+  P.drawer=box(0.32,0.05,0.24,M.woodDark,rx,h+0.037,z+0.046);P.drawerZ=z+0.046   /* çekmece önü gövdenin önünden 6 mm dışarıda (aynı düzlemde titriyordu) */});P.group=g;return P}
 function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)return;
   for(const R of REGS)scene.remove(R.parts.group);const old=REGS.splice(0);
   const X=n===1?[{rx:CASH.x-0.25,sx:CASH.x,px:CASH.x}]:[{rx:CASH.x-0.27,sx:CASH.x-0.27,px:CASH.x-0.27},{rx:CASH.x+0.29,sx:CASH.x+0.29,px:CASH.x+0.29}];
@@ -629,7 +629,7 @@ function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)retur
   // bahşiş kavanozu + tabela: tek kasada sağda, iki kasada ortada
   const D=CASH_DECOR,{x,z,h}=CASH;if(D.g)scene.remove(D.g);
   D.g=inGroup(grp(0,0,0),()=>{const jx=n===1?x+0.32:x+0.01,jz=n===1?z+0.12:z-0.12;
-    cyl(0.06,0.06,0.13,M.glass,jx,h+0.065,jz,14);for(let i=0;i<4;i++)cyl(0.022,0.022,0.006,M.gold,jx+(i%2)*0.012-0.006,h+0.01+i*0.008,jz,10);
+    cyl(0.06,0.06,0.13,M.glass,jx,h+0.067,jz,14);for(let i=0;i<4;i++)cyl(0.022,0.022,0.006,M.gold,jx+(i%2)*0.012-0.006,h+0.01+i*0.008,jz,10);
     const sx=n===1?x+0.08:x+0.01;
     const cv=document.createElement('canvas');cv.width=256;cv.height=128;const c2=cv.getContext('2d');c2.fillStyle='#4a2e1c';c2.fillRect(0,0,256,128);c2.strokeStyle='#c98a4e';c2.lineWidth=12;c2.strokeRect(6,6,244,116);
     c2.fillStyle='#fbf3e4';c2.font='800 64px "Baloo 2",Nunito,sans-serif';c2.textAlign='center';c2.textBaseline='middle';c2.fillText('KASA',128,68);
@@ -1927,7 +1927,8 @@ function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,ori
     const cc=(c===3&&(!keepFur||M.f3[k]<0.42))?2:(c===1&&M.clsH[k]?2:c);   // yeniden renklendirilen kürkte eski koyu lekeler ve kafadaki küçük açık kırıntılar zemin rengini alır
     if(c){const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];const det=Math.min(1.05,Math.max(0.92,M.detm[k]));
       if(c===4){if(ap){if(ap.orig){if(M.cls0[k]!==4){r=M.apMean[0];g=M.apMean[1];b=M.apMean[2]}}else{apronColor(ap,x,y,z,o);const sh=Math.min(1.25,Math.max(0.7,lum[k]/mean[4]));r=o[0]*sh;g=o[1]*sh;b=o[2]*sh}}
-        else{furColor(L,x,y,z,1,o);if(top&&inTop(x,y,z))topColor(top,x,y,z,o);else if(SK){const sh=Math.min(1.2,Math.max(0.75,lum[k]/mean[4]));o[0]=SK[0]*sh;o[1]=SK[1]*sh;o[2]=SK[2]*sh}if(BT&&y>0.5&&y<0.95)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
+        else{furColor(L,x,y,z,1,o);if(top&&inTop(x,y,z))topColor(top,x,y,z,o);else if(W.tunicTop){/* müşteri: modeldeki önlük kalıbı önlüğe benzemesin — bel üstü gömlek deseni, bel altı pantolon rengi; cep/askı çizgileri düz gölgeyle silinir */const sh=Math.min(1.05,Math.max(0.93,lum[k]/mean[4]));const bc=(CLO[W.bottom]||{}).bt;if(y<0.86&&bc){o[0]=bc[0];o[1]=bc[1];o[2]=bc[2]}else topColor(W.tunicTop,x,y,z,o);o[0]*=sh;o[1]*=sh;o[2]*=sh}
+        else if(SK){const sh=Math.min(1.2,Math.max(0.75,lum[k]/mean[4]));o[0]=SK[0]*sh;o[1]=SK[1]*sh;o[2]=SK[2]*sh}if(BT&&y>0.5&&y<0.95)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
       else if(c<=3){const sh=!!BT&&inShorts(x,y,z);if(keepFur&&!sh&&M.cls0[k]!==4&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))&&!furMarkHit(L,x,y,z)){}else{const fx=pm[k*3],fy=pm[k*3+1],fz=pm[k*3+2];const face=fz>0.05&&Math.hypot((Math.abs(fx)-0.088)/0.1,(fy-1.452)/0.058)<1;furColor(L,x,y,z,face?c:cc,o);if(top&&inTop(x,y,z)&&!R_.hands(x,y,z))topColor(top,x,y,z,o);if(sh)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
       else if(c===5){const sh=lum[k]/mean[5];const t=R_.ear(x,y,z)?(L.inner?inner:null):(y>1.3&&R_.nose(x,y,z))?(L.nose?nose:null):null;if(BT&&inShorts(x,y,z)){shortsC(x,y,z,o,k);r=o[0];g=o[1];b=o[2]}else if(t){r=t[0]*sh;g=t[1]*sh;b=t[2]*sh}}
       else if(c===6&&(L.eye||L.odd)){const e=L.odd&&x<0?eye2:eye;const sh=Math.min(1.5,lum[k]/mean[6]);r=e[0]*sh;g=e[1]*sh;b=e[2]*sh}
@@ -2189,7 +2190,7 @@ function furMarkHit(L,x,y,z){if(L.face!=='none'&&(R_.muzzle(x,y,z)||R_.blaze(x,y
 // müşteriler: aynı motor (iç çamaşırı dahil), kendi renkleriyle
 const CUST_BT=['bt_jeans','bt_khaki','bt_navy','bt_black','bt_jeans','bt_brown','bt_capri','bt_khaki'];
 // müşteriler önlük giymez (önlük yalnızca çalışanlarda): kendi renklerinde gündelik bir üst giyerler
-function customerTex(L,i){const top=L.top||{c:L.A,kind:i%2?'stripe':'shirt',c2:[250,246,238]};L._top=top;return composeTexture({look:{...LOOK_DEF,fur1:L.W,fur2:L.B},wear:{apron:null,top:{top},tunic:top.c,bottom:(L._bt=L.bt||CUST_BT[i%CUST_BT.length])}},1024)}
+function customerTex(L,i){const top=L.top||{c:L.A,kind:i%2?'stripe':'shirt',c2:[250,246,238]};L._top=top;return composeTexture({look:{...LOOK_DEF,fur1:L.W,fur2:L.B},wear:{apron:null,top:{top},tunic:top.c,tunicTop:top,bottom:(L._bt=L.bt||CUST_BT[i%CUST_BT.length])}},1024)}
 
 // güvenli alan: sayfayı açan çerçeve :root'a zaten üst/alt boşluk veriyorsa aynı boşluğu ikinci kez ekleme
 function fitSafeArea(){const cs=getComputedStyle(document.documentElement),R=document.documentElement.style;
@@ -4516,15 +4517,15 @@ function garmentPrep(){if(GM.ready)return;custPrepare();const g=CM.geo,n=g.attri
 // Kırpılmış kabuk: f(i)>0 olan bölge; üçgenler f=0 eğrisi boyunca kesilir. off(i): köşenin dışa ötelenmesi.
 function garmentShell(geo,f,opt={}){garmentPrep();const src=geo.attributes,P=src.position.array,N=src.normal.array,UV=src.uv.array,SI=src.skinIndex,SW=src.skinWeight,I=geo.index.array,n=src.position.count;
   const base=opt.off||0.007,lip=opt.lip==null?0.004:opt.lip,wallIn=opt.wallIn==null?0.0015:opt.wallIn;
-  const pos=[],nor=[],uv=[],ski=[],skw=[],idx=[],wid=[];const vmap=new Map();
+  const pos=[],nor=[],uv=[],ski=[],skw=[],idx=[],wid=[],AV=[];const vmap=new Map();
   const skinOf=(i,out)=>{for(let k=0;k<4;k++){const w=SW.getComponent(i,k);if(w>0){const b=SI.getComponent(i,k);out.set(b,(out.get(b)||0)+w)}}};
   const push=(p,nn,u,sk,id)=>{const e=[...sk.entries()].sort((a,b)=>b[1]-a[1]).slice(0,4);let s=0;e.forEach(x=>s+=x[1]);
     pos.push(p[0],p[1],p[2]);nor.push(nn[0],nn[1],nn[2]);uv.push(u[0],u[1]);for(let k=0;k<4;k++){ski.push(e[k]?e[k][0]:0);skw.push(e[k]?e[k][1]/s:0)}wid.push(id);return pos.length/3-1};
-  const orig=i=>{let v=vmap.get('v'+i);if(v==null){const sk=new Map();skinOf(i,sk);v=push([P[i*3],P[i*3+1],P[i*3+2]],[N[i*3],N[i*3+1],N[i*3+2]],[UV[i*2],UV[i*2+1]],sk,'p'+GM.pid[i]);vmap.set('v'+i,v)}return v};
+  const orig=i=>{let v=vmap.get('v'+i);if(v==null){const sk=new Map();skinOf(i,sk);v=push([P[i*3],P[i*3+1],P[i*3+2]],[N[i*3],N[i*3+1],N[i*3+2]],[UV[i*2],UV[i*2+1]],sk,'p'+GM.pid[i]);AV[v]=GM.apron[i];vmap.set('v'+i,v)}return v};
   const cut=(a,b,fa,fb)=>{const k=a<b?'e'+a+'_'+b:'e'+b+'_'+a;let v=vmap.get(k);if(v==null){const t=fa/(fa-fb);const L=(A,j,s)=>A[a*s+j]+(A[b*s+j]-A[a*s+j])*t;
       const sk=new Map(),s1=new Map(),s2=new Map();skinOf(a,s1);skinOf(b,s2);for(const [bb,w] of s1)sk.set(bb,(sk.get(bb)||0)+w*(1-t));for(const [bb,w] of s2)sk.set(bb,(sk.get(bb)||0)+w*t);
       const nn=[L(N,0,3),L(N,1,3),L(N,2,3)];const l=Math.hypot(...nn)||1;const pa=GM.pid[a],pb=GM.pid[b];
-      v=push([L(P,0,3),L(P,1,3),L(P,2,3)],nn.map(x=>x/l),[L(UV,0,2),L(UV,1,2)],sk,'c'+Math.min(pa,pb)+'_'+Math.max(pa,pb)+'_'+(Math.round((pa<pb?t:1-t)*1000)));vmap.set(k,v)}return v};
+      v=push([L(P,0,3),L(P,1,3),L(P,2,3)],nn.map(x=>x/l),[L(UV,0,2),L(UV,1,2)],sk,'c'+Math.min(pa,pb)+'_'+Math.max(pa,pb)+'_'+(Math.round((pa<pb?t:1-t)*1000)));AV[v]=Math.max(GM.apron[a],GM.apron[b]);vmap.set(k,v)}return v};
   const F=new Float32Array(n);for(let i=0;i<n;i++)F[i]=f(i);
   for(let t=0;t<I.length;t+=3){const v=[I[t],I[t+1],I[t+2]],fv=v.map(i=>F[i]);const ins=fv.map(x=>x>=0);const c=ins.filter(Boolean).length;if(c===0)continue;
     if(c===3){idx.push(orig(v[0]),orig(v[1]),orig(v[2]));continue}
@@ -4541,6 +4542,14 @@ function garmentShell(geo,f,opt={}){garmentPrep();const src=geo.attributes,P=src
   for(let i=0;i<nv;i++){const r=ring.get(wid[i]);const o=base+(r===0?lip:r===1?lip*0.55:r===2?lip*0.2:0)+(opt.extra?opt.extra(pos[i*3],pos[i*3+1],pos[i*3+2],r):0);
     inner.push(pos[i*3]+nor[i*3]*wallIn,pos[i*3+1]+nor[i*3+1]*wallIn,pos[i*3+2]+nor[i*3+2]*wallIn);
     pos[i*3]+=nor[i*3]*o;pos[i*3+1]+=nor[i*3+1]*o;pos[i*3+2]+=nor[i*3+2]*o;if(opt.shape){const q=opt.shape(pos[i*3],pos[i*3+1],pos[i*3+2],r);if(q){pos[i*3]=q[0];pos[i*3+1]=q[1];pos[i*3+2]=q[2]}}}
+  // modelin önlük kalıbının (cep, askı, bel bandı) kabartmasını düzle: önlük bölgesindeki köşelerde Taubin yumuşatma (büzülmeden)
+  if(opt.smooth){const K=new Map();for(let i=0;i<nv;i++){const k=wid[i];if(!K.has(k))K.set(k,[]);K.get(k).push(i)}const keys=[...K.keys()];const pk=new Map();for(const k of keys){const i=K.get(k)[0];pk.set(k,[pos[i*3],pos[i*3+1],pos[i*3+2]])}
+    const wt=new Map();for(const k of keys){let a=0;for(const i of K.get(k))a=Math.max(a,AV[i]||0);const r=ring.get(k);wt.set(k,(r===0?0.35:r===1?0.7:1)*Math.min(1,Math.max(0,(a-0.1)/0.5)))}
+    const step=lam=>{const np=new Map();for(const k of keys){const w=wt.get(k),p=pk.get(k);if(!w){np.set(k,p);continue}const nb=adj.get(k);if(!nb||!nb.size){np.set(k,p);continue}let sx=0,sy=0,sz=0;for(const b of nb){const q=pk.get(b);sx+=q[0];sy+=q[1];sz+=q[2]}const c=nb.size,f=lam*w;np.set(k,[p[0]+(sx/c-p[0])*f,p[1]+(sy/c-p[1])*f,p[2]+(sz/c-p[2])*f])}for(const [k,v] of np)pk.set(k,v)};
+    for(let it=0;it<opt.smooth;it++){step(0.55);step(-0.58)}if(opt.flatten)for(let it=0;it<opt.flatten;it++)step(0.5);
+    // bel altındaki önlük eteği bedene doğru toplanır (etek gibi açılmasın, pantolonun kalçası olsun)
+    if(opt.squeeze)for(const k of keys){const w=wt.get(k);const p=pk.get(k);if(!w||p[1]>=0.86)continue;const sq=Math.min(1,(0.86-p[1])/0.2)*opt.squeeze*w;p[0]*=1-sq;p[2]=0.005+(p[2]-0.005)*(1-sq)}
+    for(const k of keys){const p=pk.get(k);for(const i of K.get(k)){pos[i*3]=p[0];pos[i*3+1]=p[1];pos[i*3+2]=p[2]}}}
   const shade=new Float32Array(nv).fill(1);for(let i=0;i<nv;i++){const r=ring.get(wid[i]);if(r===0)shade[i]=0.86;else if(r===1)shade[i]=0.95}
   // duvar: kenar boyunca kabuktan gövdeye inen şerit (kenar kalın görünür, aradan kürk görünmez)
   const col=[...shade];
@@ -4551,7 +4560,7 @@ function garmentShell(geo,f,opt={}){garmentPrep();const src=geo.attributes,P=src
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
   g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(ski,4));g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(skw,4));
   const C=new Float32Array(col.length*3);for(let i=0;i<col.length;i++){C[i*3]=C[i*3+1]=C[i*3+2]=col[i]}g.setAttribute('color',new THREE.BufferAttribute(C,3));
-  g.setIndex(idx);if(opt.shape){g.computeVertexNormals();try{smoothNormals(g)}catch(e){}}g.computeBoundingSphere();return g}
+  g.setIndex(idx);if(opt.shape||opt.smooth){g.computeVertexNormals();try{smoothNormals(g)}catch(e){}}g.computeBoundingSphere();return g}
 // kol ekseni: omuz (Arm) → dirsek (ForeArm) kemiklerinin bağ pozundaki yerleri
 function armAxes(){if(GM.axes)return GM.axes;const sk=CM.mesh.skeleton;const pos=nm=>{const i=sk.bones.findIndex(b=>b.name===nm);const m=new THREE.Matrix4().copy(sk.boneInverses[i]).invert();return new THREE.Vector3().setFromMatrixPosition(m)};
   const ax=s=>{const S=pos('mixamorig'+s+'Arm'),E=pos('mixamorig'+s+'ForeArm');const d=E.clone().sub(S);const len=d.length();d.normalize();return {s:S.toArray(),d:d.toArray(),len}};
@@ -4574,9 +4583,9 @@ const GREG={
   top:(geo,top)=>{const P=geo.attributes.position.array;const A=armAxes();const L=top.sleeve||0.62;
     return i=>{const x=P[i*3],y=P[i*3+1],z=P[i*3+2];let fs=1;const aw=GM.arm[i]+GM.fore[i];
       if(aw>0.35){const a=x>0?A.L:A.R;const t=((x-a.s[0])*a.d[0]+(y-a.s[1])*a.d[1]+(z-a.s[2])*a.d[2])/a.len;fs=(L-t)*0.6}
-      const nk=1.262-0.075*Math.min(1,Math.max(0,(z-0.02)/0.07));return Math.min(fs,0.42-GM.apron[i],0.5-GM.tail[i],(nk-y)*3,(y-0.705)*3,tailHole(x,y,z))}},
+      const nk=1.262-0.075*Math.min(1,Math.max(0,(z-0.02)/0.07));return Math.min(fs,top.cust?1:0.42-GM.apron[i],0.5-GM.tail[i],(nk-y)*3,top.cust?Math.max((y-0.63)*3,GM.apron[i]-0.3):(y-0.705)*3,tailHole(x,y,z))}},
   bottom:(geo,bt)=>{const P=geo.attributes.position.array;const hem=bt.len==='long'?0.075:bt.len==='knee'?0.3:0.42;
-    return i=>{const y=P[i*3+1];return Math.min((y-hem)*3,(0.86-y)*3,tailHole(P[i*3],y,P[i*3+2]),(0.3-GM.apron[i])*(y>0.5?1:0)+(y>0.5?0:1),0.4-GM.arm[i]-GM.fore[i]-GM.top[i]*(y>0.8?1:0),0.4-GM.tail[i])}},
+    const top_=bt.cust?0.68:0.86;return i=>{const y=P[i*3+1];return Math.min((y-hem)*3,(top_-y)*3,tailHole(P[i*3],y,P[i*3+2]),bt.cust?(0.3-GM.apron[i]):(0.3-GM.apron[i])*(y>0.5?1:0)+(y>0.5?0:1),0.4-GM.arm[i]-GM.fore[i]-GM.top[i]*(y>0.8?1:0),0.4-GM.tail[i])}},
   apron:(geo)=>i=>GM.apron[i]-0.45};
 // ---- kumaş dokusu (gövdeyle aynı UV) ----
 const GTEX=new Map();
@@ -4609,11 +4618,13 @@ const GCACHE=new Map();
 function dressGarments(root,sm,wear){clearGarments(root);garmentPrep();const geo=sm.userData.bareGeo&&sm.geometry.userData.hidden?sm.userData.bareGeo:sm.geometry;const base=geo===CM.geo;
   const mk=(tag,fn,opt)=>{const ck=base?tag:null;if(ck&&GCACHE.has(ck))return GCACHE.get(ck);const g=garmentShell(geo,fn,opt);if(ck)GCACHE.set(ck,g);return g};
   let any=false;const hideF=[];
-  if(wear.bottom){const bt=wear.bottom;hideF.push(GREG.bottom(geo,bt));addGarment(sm,mk('b'+bt.len,GREG.bottom(geo,bt),{off:0.008,lip:bt.len==='long'?0.007:0.01,shape:legTube(bt)}),garmentMat(null,bottomTex(bt)),'bottom');any=true}
-  if(wear.top){const top=wear.top;hideF.push(GREG.top(geo,top));addGarment(sm,mk('t'+top.kind,GREG.top(geo,top),{off:0.0075,lip:0.0045}),garmentMat(null,topTex(top)),'top');any=true}
-  if(any){const am=sm.material.clone();am.side=THREE.DoubleSide;am.vertexColors=true;addGarment(sm,mk('apron',GREG.apron(geo),{off:0.012,lip:0.002,wallIn:0.002}),am,'apron');hideF.push(GREG.apron(geo))}
+  const C=!!wear.cust;   // müşteri: önlük yok — modelin önlük kalıbını gömlek (uzun tunik) örter; cep/askı kabartması düzlenir
+  if(wear.bottom){const bt=C?{...wear.bottom,cust:true}:wear.bottom;hideF.push(GREG.bottom(geo,bt));addGarment(sm,mk('b'+bt.len+(C?'C':''),GREG.bottom(geo,bt),{off:C?0.005:0.008,lip:C?0.003:bt.len==='long'?0.007:0.01,shape:legTube(bt)}),garmentMat(null,bottomTex(bt)),'bottom');any=true}
+  if(wear.top){const top=C?{...wear.top,cust:true}:wear.top;hideF.push(GREG.top(geo,top));addGarment(sm,mk('t'+top.kind+(C?'C':''),GREG.top(geo,top),{off:C?0.0095:0.0075,lip:0.0045,smooth:C?40:0,flatten:C?14:0}),garmentMat(null,topTex(top)),'top');any=true}
+  if(any&&C)hideF.push(GREG.apron(geo));
+  else if(any){const am=sm.material.clone();am.side=THREE.DoubleSide;am.vertexColors=true;addGarment(sm,mk('apron',GREG.apron(geo),{off:0.012,lip:0.002,wallIn:0.002}),am,'apron');hideF.push(GREG.apron(geo))}
   // giysinin altında kalan gövde üçgenleri çizilmez: eklem bükülünce kürk kumaştan dışarı taşamaz (kenar payı korunur)
-  if(hideF.length){const key=base?'h'+(wear.top?wear.top.kind:'')+'|'+(wear.bottom?wear.bottom.len:''):null;let ng=key&&GCACHE.get(key);
+  if(hideF.length){const key=base?'h'+(C?'C':'')+(wear.top?wear.top.kind:'')+'|'+(wear.bottom?wear.bottom.len:''):null;let ng=key&&GCACHE.get(key);
     if(!ng){const I=geo.index.array,n=geo.attributes.position.count;const F=new Float32Array(n).fill(-9);for(const f of hideF)for(let i=0;i<n;i++){const v=f(i);if(v>F[i])F[i]=v}
       const keep=[];for(let t=0;t<I.length;t+=3){if(F[I[t]]>HIDE_M&&F[I[t+1]]>HIDE_M&&F[I[t+2]]>HIDE_M)continue;keep.push(I[t],I[t+1],I[t+2])}
       ng=new THREE.BufferGeometry();for(const k in geo.attributes)ng.setAttribute(k,geo.attributes[k]);ng.morphAttributes=geo.morphAttributes;ng.setIndex(keep);ng.boundingSphere=geo.boundingSphere;ng.userData.hidden=true;if(key)GCACHE.set(key,ng)}
@@ -4797,7 +4808,7 @@ function cashLayoutTick(){const n=Math.min(2,CSTAFF.length);if(cashMoving||REGS.
   Promise.all(CSTAFF.map(async k=>{const st=REGS[k.i].stand;await k.ch.walkTo(st.x,st.z,{direct:true});await k.ch.face(0);k.ready=true})).then(()=>{cashMoving=false})}
 // müşteriler de şort giyer: kuyruksuz (pürüzsüz normalli) ortak geometri
 function cloneLook(tex,lk){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);let sm;r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true;if(o.isSkinnedMesh){o.geometry=NO_BOTTOMS?CM.geo:CM.geoNT;sm=o}}});
-  if(sm&&lk&&lk._top){const B=CLO[lk._bt];dressGarments(r,sm,{top:lk._top,bottom:B&&B.bt?{bt:B.bt,bt2:B.bt2,len:B.len||'short',denim:B.denim}:null})}
+  if(sm&&lk&&lk._top){const B=CLO[lk._bt];dressGarments(r,sm,{cust:true,top:lk._top,bottom:B&&B.bt?{bt:B.bt,bt2:B.bt2,len:B.len||'short',denim:B.denim}:null})}
   if(sm&&!NO_BOTTOMS){const L=lk||{};const bt=(CLO[L._bt||L.bt||'bt_navy']||CLO.bt_navy).bt;buildTail(sm,{fur:L.W||[245,240,232],f2:L.B||[150,110,80],tail:'same',pattern:'original',len:'normal',fluff:false,bt})}return r}
 function resize(){const w=game.clientWidth,h=game.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 resize();addEventListener('resize',resize);visualViewport&&visualViewport.addEventListener('resize',resize);
