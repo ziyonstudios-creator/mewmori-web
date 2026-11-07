@@ -550,44 +550,72 @@ function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,pa
   const ax=d.x0-0.045;addTo(L,new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),S.accent||S.wood,ax,d.armY-0.015,(d.zb+d.zf)/2);addTo(L,new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,8),S.leg,ax,(d.footY+d.armY-0.03)/2,d.zf);
   return L}
 // ---- masa tipleri (hepsi doğrulanmış masa dairesinin içinde) ----
+// masa tarzları: tabla biçimi (top) + ayak tipi (base) + üstündeki süs (deco) birbirinden bağımsız
+//  top : round | square | oct | planks | slice | glass       base: pedestal | tripod | four | turned | x | barrel | log
 const TABLE_STYLE={
-  t_round:{top:M.wood,leg:M.woodDark,flower:M.pink},
-  t_four:{top:M.wood,leg:M.woodDark,cloth:M.cream,flower:M.pink},
-  t_four_cafe:{top:M.cream,leg:M.woodDark,cloth:toon(0x8fae58),flower:toon(0xffffff)},
-  t_square:{top:toon(0xdca468),leg:M.woodDark,flower:M.gold,square:true},
-  t_cafe:{top:M.cream,leg:M.woodDark,cloth:M.red,flower:toon(0xffffff)},
-  t_premium:{top:toon(0xf6f1e8),leg:M.gold,rim:M.gold,flower:M.pink,stand:true},
-  // yeni masalar
-  t_bistro:{top:toon(0xf3efe9),leg:M.dark,rim:M.dark,tri:true,candle:true},                 // mermer bistro, ferforje üç ayak, mum
-  t_picnic:{top:M.wood,leg:M.woodDark,clothTex:'gingham',flower:toon(0xf2d64b)},             // kırmızı-beyaz kareli örtü, papatya
-  t_sakura:{top:toon(0xf6c9cf),leg:M.gold,rim:M.gold,flower:toon(0xffffff),petals:true},       // pembe, altın ayak, sakura dalı
-  t_terra:{top:M.terracotta,leg:M.woodDark,square:true,tiles:true,flower:M.green},           // terrakota karo, saksıda yeşillik
-  t_four_lace:{top:toon(0xd6a35c),leg:M.woodDark,clothTex:'lace',candle:true},               // bal rengi ahşap, dantel örtü, mum (4 kişilik)
-  t_four_picnic:{top:M.wood,leg:M.woodDark,clothTex:'gingham',flower:M.pink}};              // kareli örtülü 4 kişilik
+  t_round:{top:'round',tm:M.wood,base:'pedestal',lm:M.woodDark,deco:'vase',fl:M.pink},
+  t_four:{top:'round',tm:M.wood,base:'pedestal',lm:M.woodDark,cloth:M.cream,deco:'vase',fl:M.pink},
+  t_four_cafe:{top:'round',tm:M.cream,base:'pedestal',lm:M.woodDark,cloth:toon(0x8fae58),deco:'vase',fl:toon(0xffffff)},
+  t_square:{top:'square',tm:toon(0xdca468),base:'four',lm:M.woodDark,deco:'vase',fl:M.gold},
+  t_cafe:{top:'round',tm:M.cream,base:'pedestal',lm:M.woodDark,cloth:M.red,deco:'vase',fl:toon(0xffffff)},
+  t_premium:{top:'round',tm:toon(0xf6f1e8),base:'pedestal',lm:M.gold,rim:M.gold,deco:'stand'},
+  t_bistro:{top:'round',tm:toon(0xf3efe9),r:0.78,base:'tripod',lm:M.dark,rim:M.dark,deco:'candle'},        // küçük mermer bistro, ferforje üç ayak
+  t_picnic:{top:'planks',tm:toon(0xc98a4e),base:'x',lm:toon(0x9a6436),runner:'gingham',deco:'daisy'},      // tahta latalı piknik, X ayak, kareli şerit örtü
+  t_sakura:{top:'oct',tm:toon(0xf6c9cf),base:'turned',lm:M.gold,rim:M.gold,deco:'sakura'},                 // sekizgen pembe, altın torna ayaklar
+  t_terra:{top:'round',tm:toon(0x6b4226),base:'barrel',lm:toon(0x8a5a32),deco:'herb',r:0.9},              // fıçı masa
+  t_stump:{top:'slice',tm:toon(0xd9a86c),base:'log',lm:toon(0x7a5232),deco:'mushroom'},                   // ağaç kütüğü
+  t_glass:{top:'glass',tm:null,base:'four',lm:M.gold,thin:true,deco:'orchid'},                            // cam tabla, ince altın ayak
+  t_four_picnic:{top:'planks',tm:toon(0xc98a4e),base:'x',lm:toon(0x9a6436),runner:'gingham',deco:'daisy'},
+  t_four_lace:{top:'oct',tm:toon(0xd6a35c),base:'turned',lm:M.woodDark,clothTex:'lace',deco:'candle'},
+  t_four_stump:{top:'slice',tm:toon(0xd9a86c),base:'log',lm:toon(0x7a5232),deco:'mushroom'},
+  t_four_glass:{top:'glass',tm:null,base:'four',lm:M.gold,thin:true,deco:'orchid'}};
 // örtü dokuları
 const CLOTH_TEX={};function clothMat(kind){if(CLOTH_TEX[kind])return CLOTH_TEX[kind];const cv=document.createElement('canvas');cv.width=cv.height=128;const c=cv.getContext('2d');
-  if(kind==='gingham'){c.fillStyle='#fbf6ee';c.fillRect(0,0,128,128);c.fillStyle='rgba(217,83,79,.55)';for(let i=0;i<8;i++){c.fillRect(i*16,0,8,128);c.fillRect(0,i*16,128,8)}}
+  if(kind==='gingham'){c.fillStyle='#fbf6ee';c.fillRect(0,0,128,128);c.fillStyle='rgba(217,83,79,.6)';for(let i=0;i<8;i++){c.fillRect(i*16,0,8,128);c.fillRect(0,i*16,128,8)}}
   else{c.fillStyle='#fffaf0';c.fillRect(0,0,128,128);c.strokeStyle='#e9dcc6';c.lineWidth=3;for(let i=0;i<6;i++){c.beginPath();c.arc(64,64,10+i*10,0,Math.PI*2);c.stroke()}for(let a=0;a<16;a++){c.beginPath();c.arc(64+60*Math.cos(a/16*6.283),64+60*Math.sin(a/16*6.283),5,0,6.283);c.stroke()}}
   const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;if(kind==='gingham')t.repeat.set(2,2);const m=new THREE.MeshToonMaterial({map:t,gradientMap:grad});CLOTH_TEX[kind]=m;return m}
+const GLASS_TOP=new THREE.MeshPhysicalMaterial({color:0xcfe8ee,transparent:true,opacity:0.38,roughness:0.05,metalness:0,depthWrite:false});
 function tableMeshes(parent,f,typeId,vase=true){const d=SEAT_D,L=frameGroup(f,parent),T=TABLE_STYLE[typeId]||TABLE_STYLE.t_round;
-  if(T.square)addTo(L,new RoundedBoxGeometry(0.42,d.tThick,0.42,2,0.05),T.top,d.tCx,d.tTop-d.tThick/2,d.tCz);
-  else addTo(L,new THREE.CylinderGeometry(d.tR,d.tR,d.tThick,32),T.top,d.tCx,d.tTop-d.tThick/2,d.tCz);
-  if(T.cloth)addTo(L,new THREE.CylinderGeometry(d.tR+0.012,d.tR+0.006,0.02,32),T.cloth,d.tCx,d.tTop-d.tThick-0.004,d.tCz);
-  if(T.clothTex){const cm=clothMat(T.clothTex);const top=addTo(L,new THREE.CylinderGeometry(d.tR+0.004,d.tR+0.004,0.006,40),cm,d.tCx,d.tTop+0.003,d.tCz);
-    addTo(L,new THREE.CylinderGeometry(d.tR+0.014,d.tR+0.03,0.07,40,1,true),cm,d.tCx,d.tTop-0.03,d.tCz)}   // örtü üstü + sarkan etek
-  if(T.tiles){for(let i=-1;i<=1;i+=2)for(let j=-1;j<=1;j+=2)addTo(L,new THREE.BoxGeometry(0.19,0.004,0.19),(i*j>0)?toon(0xe8d6b8):toon(0x4f8a7a),d.tCx+i*0.1,d.tTop+0.002,d.tCz+j*0.1)}
-  if(T.rim){const r=addTo(L,new THREE.TorusGeometry(d.tR-0.012,0.01,6,40),T.rim,d.tCx,d.tTop-d.tThick/2,d.tCz);r.rotation.x=Math.PI/2}
-  if(T.tri){const h=d.tTop-d.tThick-d.footY;for(let k=0;k<3;k++){const an=k/3*Math.PI*2;const lg=addTo(L,new THREE.CylinderGeometry(0.012,0.016,h*1.04,8),T.leg,d.tCx+Math.cos(an)*d.baseR*0.55,d.footY+h/2,d.tCz+Math.sin(an)*d.baseR*0.55);lg.rotation.set(Math.sin(an)*0.12,0,-Math.cos(an)*0.12)}
-    const ring=addTo(L,new THREE.TorusGeometry(d.baseR*0.5,0.008,6,24),T.leg,d.tCx,d.footY+h*0.35,d.tCz);ring.rotation.x=Math.PI/2}
-  else{addTo(L,new THREE.CylinderGeometry(d.pedR,d.pedR,d.tTop-d.tThick-d.footY,12),T.leg,d.tCx,(d.footY+d.tTop-d.tThick)/2,d.tCz);
-  addTo(L,new THREE.CylinderGeometry(d.baseR,d.baseR,0.03,20),T.leg,d.tCx,d.footY+0.015,d.tCz)}
-  if(vase){if(T.stand){addTo(L,new THREE.CylinderGeometry(0.012,0.012,0.08,8),M.gold,d.tCx,d.tTop+0.04,d.tCz);addTo(L,new THREE.CylinderGeometry(0.06,0.06,0.01,16),M.gold,d.tCx,d.tTop+0.085,d.tCz);
-      const c=addTo(L,new THREE.SphereGeometry(0.03,10,8),M.pink,d.tCx,d.tTop+0.11,d.tCz);c.scale.y=0.8}
-    else if(T.candle){const y0=d.tTop+(T.clothTex?0.006:0);addTo(L,new THREE.CylinderGeometry(0.04,0.045,0.012,16),M.gold,d.tCx,y0+0.006,d.tCz);addTo(L,new THREE.CylinderGeometry(0.022,0.022,0.08,12),M.cream,d.tCx,y0+0.052,d.tCz);
-      const fl=addTo(L,new THREE.SphereGeometry(0.014,8,6),new THREE.MeshBasicMaterial({color:0xffc861}),d.tCx,y0+0.105,d.tCz);fl.scale.y=1.6;fl.castShadow=false}
-    else if(T.petals){addTo(L,new THREE.CylinderGeometry(0.03,0.026,0.1,10),M.cream,d.tCx,d.tTop+0.05,d.tCz);const br=addTo(L,new THREE.CylinderGeometry(0.004,0.006,0.16,5),M.woodDark,d.tCx+0.02,d.tTop+0.15,d.tCz);br.rotation.z=-0.35;
-      for(let k=0;k<6;k++){const p=addTo(L,new THREE.SphereGeometry(0.018,8,6),M.pink,d.tCx+0.02+k*0.012,d.tTop+0.1+k*0.022+(k%2)*0.01,d.tCz+((k%3)-1)*0.015);p.castShadow=false}}
-    else{addTo(L,new THREE.CylinderGeometry(0.035,0.03,0.09,10),M.cream,d.tCx,d.tTop+0.045+(T.clothTex?0.006:0),d.tCz);const fl=addTo(L,new THREE.SphereGeometry(0.045,10,8),T.flower,d.tCx,d.tTop+0.115,d.tCz);fl.castShadow=false}}
+  const cx=d.tCx,cz=d.tCz,R=d.tR*(T.r||1),tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+  let surf=top;   // süslerin oturduğu yükseklik
+  // ---- tabla ----
+  if(T.top==='round')A(new THREE.CylinderGeometry(R,R,tk,32),T.tm,cx,yT,cz);
+  else if(T.top==='square')A(new RoundedBoxGeometry(R*1.42,tk,R*1.42,2,0.05),T.tm,cx,yT,cz);
+  else if(T.top==='oct'){const o=A(new THREE.CylinderGeometry(R*1.04,R*1.04,tk,8),T.tm,cx,yT,cz);o.rotation.y=Math.PI/8}
+  else if(T.top==='planks'){for(let k=-2;k<=2;k++){const p=A(new RoundedBoxGeometry(R*0.37,tk,R*1.9,2,0.015),k%2?T.tm:toon(0xb87a40),cx+k*R*0.385,yT,cz);p.rotation.y=(k*0.013)}}
+  else if(T.top==='slice'){const g=new THREE.CylinderGeometry(R*1.02,R*1.05,tk*1.6,14);const P=g.attributes.position;for(let i=0;i<P.count;i++){const x=P.getX(i),z=P.getZ(i),a=Math.atan2(z,x),w=1+0.05*Math.sin(a*3)+0.03*Math.sin(a*7);P.setX(i,x*w);P.setZ(i,z*w)}g.computeVertexNormals();
+    A(g,toon(0x6e4a2c),cx,yT,cz);const r=A(new THREE.CylinderGeometry(R*0.95,R*0.97,0.004,28),T.tm,cx,top+0.012,cz);for(let k=1;k<4;k++){const ring=A(new THREE.TorusGeometry(R*k*0.22,0.004,4,36),toon(0xb07a45),cx,top+0.015,cz);ring.rotation.x=Math.PI/2}surf=top+0.014}
+  else if(T.top==='glass'){const g=A(new THREE.CylinderGeometry(R,R,0.014,40),GLASS_TOP,cx,top-0.007,cz);g.castShadow=false;const rr=A(new THREE.TorusGeometry(R,0.012,6,48),T.lm,cx,top-0.007,cz);rr.rotation.x=Math.PI/2}
+  if(T.cloth)A(new THREE.CylinderGeometry(R+0.012,R+0.006,0.02,32),T.cloth,cx,top-tk-0.004,cz);
+  if(T.clothTex){const cm=clothMat(T.clothTex);A(new THREE.CylinderGeometry(R*1.04+0.004,R*1.04+0.004,0.006,40),cm,cx,top+0.003,cz);A(new THREE.CylinderGeometry(R*1.04+0.014,R*1.04+0.035,0.08,40,1,true),cm,cx,top-0.035,cz);surf=top+0.006}
+  if(T.runner){A(new THREE.BoxGeometry(R*0.7,0.005,R*1.96),clothMat(T.runner),cx,top+0.003,cz);surf=top+0.005}
+  if(T.rim){const r=A(new THREE.TorusGeometry((T.top==='oct'?R*0.98:R)-0.012,0.01,6,T.top==='oct'?8:40),T.rim,cx,yT,cz);r.rotation.x=Math.PI/2;if(T.top==='oct')r.rotation.z=Math.PI/8}
+  // ---- ayaklar ----
+  const leg=(x,z,rt,rb,h,y0,m,tx=0,tz=0)=>{const g=A(new THREE.CylinderGeometry(rt,rb,h,10),m||T.lm,x,y0+h/2,z);g.rotation.set(tx,0,tz);return g};
+  if(T.base==='pedestal'){leg(cx,cz,d.pedR,d.pedR,H,fy);A(new THREE.CylinderGeometry(d.baseR,d.baseR,0.03,20),T.lm,cx,fy+0.015,cz)}
+  else if(T.base==='tripod'){for(let k=0;k<3;k++){const an=k/3*Math.PI*2+0.5,sx=Math.cos(an),sz=Math.sin(an);leg(cx+sx*R*0.42,cz+sz*R*0.42,0.011,0.015,H*1.03,fy,null,sz*0.2,-sx*0.2)}
+    const ring=A(new THREE.TorusGeometry(R*0.38,0.008,6,24),T.lm,cx,fy+H*0.3,cz);ring.rotation.x=Math.PI/2;leg(cx,cz,0.02,0.02,H*0.25,fy+H*0.75)}
+  else if(T.base==='four'){const q=(T.top==='square'?R*0.58:R*0.62),rr=T.thin?0.009:0.022;for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]])leg(cx+a*q,cz+b*q,rr,rr*(T.thin?1:0.8),H,fy);
+    if(T.thin){for(const [a,b,rot] of [[0,1,0],[0,-1,0],[1,0,1],[-1,0,1]]){const br=A(new THREE.CylinderGeometry(0.006,0.006,q*2,6),T.lm,cx+a*q,fy+H*0.25,cz+b*q);br.rotation.set(rot?Math.PI/2:0,0,rot?0:Math.PI/2)}}}
+  else if(T.base==='turned'){const q=(T.top==='oct'?R*0.6:R*0.6);for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]]){const x=cx+a*q,z=cz+b*q;leg(x,z,0.018,0.012,H,fy);for(const t of [0.25,0.55,0.85]){const k=A(new THREE.SphereGeometry(0.026,10,8),T.lm,x,fy+H*t,z);k.scale.y=0.6}}}
+  else if(T.base==='x'){for(const s of [-1,1]){for(const t of [-1,1]){const g=A(new THREE.BoxGeometry(0.03,H*1.2,0.05),T.lm,cx+s*R*0.62,fy+H/2,cz);g.rotation.z=t*0.5}}
+    const bar=A(new THREE.BoxGeometry(R*1.3,0.03,0.035),T.lm,cx,fy+H/2,cz)}
+  else if(T.base==='barrel'){const g=new THREE.CylinderGeometry(R*0.62,R*0.62,H,20,6);const P=g.attributes.position;for(let i=0;i<P.count;i++){const y=P.getY(i)/H,w=1+0.16*(1-4*y*y);P.setX(i,P.getX(i)*w);P.setZ(i,P.getZ(i)*w)}g.computeVertexNormals();A(g,T.lm,cx,fy+H/2,cz);
+    for(const t of [0.12,0.88]){const hr=A(new THREE.TorusGeometry(R*0.62*(1+0.16*(1-4*(t-0.5)**2))+0.004,0.01,6,30),M.dark,cx,fy+H*t,cz);hr.rotation.x=Math.PI/2}}
+  else if(T.base==='log'){const g=new THREE.CylinderGeometry(R*0.45,R*0.55,H,12);const P=g.attributes.position;for(let i=0;i<P.count;i++){const a=Math.atan2(P.getZ(i),P.getX(i)),w=1+0.06*Math.sin(a*5);P.setX(i,P.getX(i)*w);P.setZ(i,P.getZ(i)*w)}g.computeVertexNormals();A(g,T.lm,cx,fy+H/2,cz);
+    for(let k=0;k<4;k++){const an=k*1.7,r=A(new THREE.ConeGeometry(0.03,0.09,6),T.lm,cx+Math.cos(an)*R*0.55,fy+0.035,cz+Math.sin(an)*R*0.55);r.rotation.set(Math.sin(an)*1.2,0,-Math.cos(an)*1.2)}}
+  // ---- süs ----
+  if(vase){const D=T.deco||'vase',y=surf;
+    if(D==='stand'){A(new THREE.CylinderGeometry(0.012,0.012,0.08,8),M.gold,cx,y+0.04,cz);A(new THREE.CylinderGeometry(0.06,0.06,0.01,16),M.gold,cx,y+0.085,cz);const c=A(new THREE.SphereGeometry(0.03,10,8),M.pink,cx,y+0.11,cz);c.scale.y=0.8}
+    else if(D==='candle'){A(new THREE.CylinderGeometry(0.04,0.045,0.012,16),M.gold,cx,y+0.006,cz);A(new THREE.CylinderGeometry(0.022,0.022,0.08,12),M.cream,cx,y+0.052,cz);const fl=A(new THREE.SphereGeometry(0.014,8,6),new THREE.MeshBasicMaterial({color:0xffc861}),cx,y+0.105,cz);fl.scale.y=1.6;fl.castShadow=false}
+    else if(D==='sakura'){A(new THREE.CylinderGeometry(0.03,0.026,0.1,10),M.cream,cx,y+0.05,cz);const br=A(new THREE.CylinderGeometry(0.004,0.006,0.16,5),M.woodDark,cx+0.02,y+0.15,cz);br.rotation.z=-0.35;
+      for(let k=0;k<7;k++){const p=A(new THREE.SphereGeometry(0.02,8,6),M.pink,cx+0.015+k*0.012,y+0.1+k*0.022+(k%2)*0.01,cz+((k%3)-1)*0.016);p.castShadow=false}}
+    else if(D==='daisy'){A(new THREE.CylinderGeometry(0.028,0.028,0.07,10),toon(0x8fb6d8),cx,y+0.035,cz);for(let k=0;k<3;k++){const a=k*2.1,fx=cx+Math.cos(a)*0.025,fz=cz+Math.sin(a)*0.025;A(new THREE.CylinderGeometry(0.003,0.003,0.07,4),M.green,fx,y+0.1,fz);
+        const pe=A(new THREE.CylinderGeometry(0.026,0.026,0.006,10),toon(0xffffff),fx,y+0.135,fz);const cc=A(new THREE.SphereGeometry(0.011,8,6),toon(0xf2c33a),fx,y+0.14,fz)}}
+    else if(D==='herb'){A(new THREE.CylinderGeometry(0.04,0.03,0.06,10),M.terracotta,cx,y+0.03,cz);for(let k=0;k<5;k++){const b=A(new THREE.SphereGeometry(0.03,8,6),M.green,cx+Math.cos(k*1.3)*0.02,y+0.08+(k%2)*0.02,cz+Math.sin(k*1.3)*0.02);b.castShadow=false}}
+    else if(D==='mushroom'){for(const [dx,dz,s] of [[0,0,1],[0.05,0.03,0.7]]){A(new THREE.CylinderGeometry(0.012*s,0.016*s,0.05*s,8),toon(0xf6efe2),cx+dx,y+0.025*s,cz+dz);const c=A(new THREE.SphereGeometry(0.035*s,12,8,0,Math.PI*2,0,Math.PI/2),M.red,cx+dx,y+0.05*s,cz+dz);for(let k=0;k<3;k++)A(new THREE.SphereGeometry(0.006*s,6,4),toon(0xffffff),cx+dx+Math.cos(k*2)*0.018*s,y+0.07*s,cz+dz+Math.sin(k*2)*0.018*s)}}
+    else if(D==='orchid'){A(new THREE.CylinderGeometry(0.03,0.03,0.07,12),toon(0xffffff),cx,y+0.035,cz);const st=A(new THREE.CylinderGeometry(0.003,0.003,0.16,4),M.green,cx,y+0.15,cz);st.rotation.z=0.15;for(let k=0;k<4;k++){const p=A(new THREE.SphereGeometry(0.018,8,6),toon(0xc87bd6),cx-0.01-k*0.012,y+0.2-k*0.022,cz+((k%2)?0.01:-0.01));p.scale.y=0.6;p.castShadow=false}}
+    else{A(new THREE.CylinderGeometry(0.035,0.03,0.09,10),M.cream,cx,y+0.045,cz);const fl=A(new THREE.SphereGeometry(0.045,10,8),T.fl||M.pink,cx,y+0.115,cz);fl.castShadow=false}}
   return L}
 function seatData(f){const d=SEAT_D;return {frame:f,O:f.w(0,0),A:f.w(APPROACH.x,APPROACH.z),serve:f.w(SERVE.x,SERVE.z),serveYaw:f.yaw-Math.PI/2,rootY:-d.footY*YS,spot:f.w(d.tCx,d.tCz-0.17),occupant:null}}
 
@@ -625,8 +653,8 @@ const OUTSIDE={x:-6.0,z:DOOR.z},DOOR_IN={x:-4.15,z:DOOR.z};
 // ---------- tezgah noktaları ----------
 const PREP_SPOT={x:-2.85,z:-1.15},PICKUP_SPOT={x:-1.5,z:-1.15},COUNTER_FACE=Math.PI;
 const PREP_ANCHOR=new THREE.Vector3(-3.95,1.55,-2.0),PICKUP_ANCHOR=new THREE.Vector3(-1.5,1.35,-2.0);
-const PICKUP_SLOTS=[new THREE.Vector3(-1.62,0.715,-1.9),new THREE.Vector3(-1.38,0.715,-1.9),new THREE.Vector3(-1.5,0.715,-2.12)];
-const slotUsed=[null,null,null];
+const PICKUP_SLOTS=[new THREE.Vector3(-1.62,0.715,-1.9),new THREE.Vector3(-1.38,0.715,-1.9),new THREE.Vector3(-1.5,0.715,-2.12),new THREE.Vector3(-1.74,0.715,-2.12),new THREE.Vector3(-1.26,0.715,-2.12)];   // 4 kişilik grubun bütün tabakları sığsın
+const slotUsed=[null,null,null,null,null];
 // mobilya konulamayan bölgeler: kapı girişi, tezgah önü (hazırla/teslim noktaları), garson köşesi yaklaşımı
 // ---------- KASA (menü tahtasının sağında, arka duvar önü; tezgahla aynı tarz) ----------
 const CASH={x:0.35,z:-2.75,w:1.2,d:0.55,h:0.66,queue:[]};
@@ -797,12 +825,16 @@ const CATALOG=[
  {id:'t_round',kind:'table',name:'Küçük yuvarlak ahşap masa',price:45,lvl:1,desc:'İki kişilik sıcak bir köşe. Masa sınırı içinde yeni masa yeri açar.'},
  {id:'t_square',kind:'table',name:'Kare ahşap masa',price:60,lvl:3,desc:'Açık renk ahşap, köşeleri yuvarlatılmış.'},
  {id:'t_cafe',kind:'table',name:'Şık kafe masası',price:85,lvl:5,desc:'Kırmızı örtülü, beyaz çiçekli klasik kafe masası.'},
- {id:'t_bistro',kind:'table',name:'Mermer bistro masası',price:95,lvl:4,desc:'Beyaz mermer tabla, ferforje üç ayak ve masada yanan bir mum.'},
- {id:'t_picnic',kind:'table',name:'Kareli piknik masası',price:70,lvl:2,desc:'Kırmızı-beyaz kareli örtü ve sarı papatyalar.'},
- {id:'t_sakura',kind:'table',name:'Sakura masası',price:120,lvl:6,desc:'Pembe tabla, altın ayak ve vazoda çiçek açmış bir sakura dalı.'},
- {id:'t_terra',kind:'table',name:'Terrakota karo masa',price:80,lvl:3,desc:'Akdeniz esintili kare masa: karo desenli tabla, saksıda yeşillik.'},
- {id:'t_four_picnic',kind:'table',seats:4,name:'Dört kişilik piknik masası',price:130,lvl:3,desc:'Kareli örtülü, kalabalık gruplar için neşeli bir masa.'},
- {id:'t_four_lace',kind:'table',seats:4,name:'Dört kişilik dantel masa',price:190,lvl:6,desc:'Bal rengi ahşap, dantel örtü ve mum ışığı; romantik bir köşe.'},
+ {id:'t_bistro',kind:'table',name:'Mermer bistro masası',price:95,lvl:4,desc:'Küçük beyaz mermer tabla, ferforje üç ayak ve masada yanan bir mum.'},
+ {id:'t_picnic',kind:'table',name:'Piknik masası',price:70,lvl:2,desc:'Tahta latalar, çapraz X ayaklar, kareli şerit örtü ve papatyalar.'},
+ {id:'t_sakura',kind:'table',name:'Sakura masası',price:120,lvl:6,desc:'Sekizgen pembe tabla, altın torna ayaklar ve vazoda çiçek açmış sakura dalı.'},
+ {id:'t_terra',kind:'table',name:'Fıçı masa',price:80,lvl:3,desc:'Eski bir şarap fıçısından masa: demir çemberler, koyu ahşap tabla, saksıda fesleğen.'},
+ {id:'t_stump',kind:'table',name:'Kütük masa',price:75,lvl:2,desc:'Ağaç kütüğü ayak, yıllık halkaları görünen tabla ve minik mantarlar.'},
+ {id:'t_glass',kind:'table',name:'Cam masa',price:150,lvl:7,desc:'Cam tabla, ince altın ayaklar ve beyaz saksıda orkide; modern bir köşe.'},
+ {id:'t_four_picnic',kind:'table',seats:4,name:'Dört kişilik piknik masası',price:130,lvl:3,desc:'Tahta latalı, X ayaklı; kalabalık gruplar için neşeli bir masa.'},
+ {id:'t_four_stump',kind:'table',seats:4,name:'Dört kişilik kütük masa',price:150,lvl:4,desc:'Kocaman bir ağaç kütüğü; orman kafesi havası.'},
+ {id:'t_four_glass',kind:'table',seats:4,name:'Dört kişilik cam masa',price:230,lvl:8,desc:'Cam tabla, ince altın ayaklar ve orkide.'},
+ {id:'t_four_lace',kind:'table',seats:4,name:'Dört kişilik dantel masa',price:190,lvl:6,desc:'Sekizgen bal rengi tabla, torna ayaklar, dantel örtü ve mum ışığı.'},
  {id:'t_premium',kind:'table',name:'Süslü premium masa',price:140,lvl:8,desc:'Altın kenarlı mermer masa ve minik pasta standı.'},
  {id:'c_wood',kind:'chair',name:'Ahşap sandalye',price:0,lvl:1,own:true,desc:'Sade, çubuklu sırtlı ahşap sandalye.'},
  {id:'c_cushion',kind:'chair',name:'Minderli sandalye',price:0,lvl:1,own:true,desc:'Renkli minderli, rahat sandalye.'},
@@ -1603,8 +1635,10 @@ function submitOrder(o){if(o.state!=='TAKEN'||o.submitQueued)return;o.submitQueu
 // grup siparişleri: aynı grubun hazır tabakları tek tepside, tek seferde götürülür
 function servSibs(o){const g=o.customer&&o.customer.group;if(!g||!g.members)return [];return g.members.map(m=>m.order).filter(x=>x&&x!==o&&!x.cancel&&!x.cleared&&!x.delivery)}
 const NOT_READY=new Set(['TAKEN','WAITING_FOR_PREPARATION','PREPARING','IN_PREPARATION']);
-// otomatik modda garson, grubun diğer tabakları da hazır olana dek (en çok 60 sn) bekler
-function batchWaitOk(o){const sb=servSibs(o);if(!sb.some(x=>NOT_READY.has(x.state)))return true;return gameT-(o.readyT||0)>60}
+// otomatik modda garson, grubun diğer tabakları da hazır olana dek (tezgah dolarsa ya da 150 sn geçerse beklemez) bekler
+function groupAllReady(o){const sb=servSibs(o);if(!sb.some(x=>NOT_READY.has(x.state)))return true;
+  return slotUsed.indexOf(null)<0}   // tezgahta yer kalmadıysa (kilitlenmesin) hazır olanlar götürülür
+function batchWaitOk(o){return groupAllReady(o)||gameT-(o.readyT||0)>150}
 const TRAY_SLOTS=[[0,0],[-0.075,0.05],[0.075,0.05],[0,-0.07]];
 function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueued=true;
   const flag=servSibs(o).filter(x=>x.state==='READY'&&!x.pickupQueued);for(const x of flag)x.pickupQueued=true;   // kardeşleri de bu iş götürecek
@@ -2354,7 +2388,7 @@ function updateUI(){for(const e of els.values())e._seen=false;
   const taken=orders.filter(o=>o.state==='TAKEN'&&!o.submitQueued);
   byG(taken).forEach((L,i)=>place(el('prep'+L[0].id,'act prep',`${ic('chef')}${thumbs(L)}Hazırla${L.length>1?` · ${L.length}`:''}`,()=>submitOrders(L)),PREP_ANCHOR,-i*44));
   const ready=orders.filter(o=>o.state==='READY'&&!o.pickupQueued&&!o.cancel);
-  const readyG=byG(ready).filter(L=>{const g=gOf(L[0]);return !g||!servSibs(L[0]).some(x=>NOT_READY.has(x.state))});
+  const readyG=byG(ready).filter(L=>{const g=gOf(L[0]);return !g||groupAllReady(L[0])});
   readyG.forEach((L,i)=>place(el('pick'+L[0].id,'act pick',`${ic('tray')}${thumbs(L)}Teslim al${L.length>1?` · ${L.length}`:''}`,()=>pickupOrder(L[0])),PICKUP_ANCHOR,-i*44));
   for(const b of BSTAFF)if(b.job){const hp=new THREE.Vector3();b.ch.head.getWorldPosition(hp);hp.y+=0.55;const k=Math.min(1,b.job.done/b.job.total);
     place(el(b.i?'posa'+b.i:'posa','progress',`<img src="${productThumb(b.job.o.item.id)}" alt=""><i style="width:${(k*62).toFixed(0)}px"></i>`),hp)}
