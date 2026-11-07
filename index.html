@@ -525,29 +525,66 @@ const tableBox=f=>{const d=SEAT_D;return rectBox(f,d.tCx-d.tR,d.tCx+d.tR,d.tCz-d
 
 // ---- sandalye stilleri ----
 const CUSH_COLS=[0x8fae58,0xf2a6a0,0xf0c46a,0xd9534f,0x86b8d8];
+// sandalye tarzları: oturak profili / sırt yüksekliği / kol dayanağı yeri SABİT (oturma pozları buna göre doğrulandı);
+// yalnız malzeme, ayak tipi (legs) ve sırt biçimi (back) değişir. Her yeni masa kendi takım sandalyesiyle gelir (CAT.chair).
+//  legs: four | x | stump | turned | thin | bent | staves      back: slats | pad | arch | tufted | planks | twigs | barrel | ghost | hoop | oval | flower
 const CHAIR_STYLE={
   c_wood:{seat:M.wood,wood:M.wood,leg:M.woodDark,back:'slats'},
   c_cushion:{seat:null,wood:M.wood,leg:M.woodDark,back:'pad'},
   c_elegant:{seat:toon(0x3f7f7a),wood:M.woodDark,leg:M.woodDark,back:'arch',accent:M.gold,pad:toon(0x3f7f7a)},
-  c_premium:{seat:toon(0xfff3df),wood:toon(0xf4efe6),leg:M.gold,back:'tufted',accent:M.gold,pad:M.pink}};
-function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,parent),S=CHAIR_STYLE[styleId]||CHAIR_STYLE.c_cushion;
+  c_premium:{seat:toon(0xfff3df),wood:toon(0xf4efe6),leg:M.gold,back:'tufted',accent:M.gold,pad:M.pink},
+  c_picnic:{seat:toon(0xc98a4e),wood:toon(0xb87a40),leg:toon(0x9a6436),legs:'x',back:'planks',pillow:'gingham'},
+  c_stump:{seat:toon(0xd9a86c),wood:toon(0x7a5232),leg:toon(0x7a5232),legs:'stump',back:'twigs',moss:true},
+  c_barrel:{seat:toon(0x8a5a32),wood:toon(0x6b4226),leg:toon(0x5a3820),legs:'staves',back:'barrel',accent:M.dark},
+  c_glass:{seat:toon(0xffffff),wood:M.gold,leg:M.gold,legs:'thin',back:'ghost',accent:M.gold},
+  c_sakura:{seat:toon(0xf6c9cf),wood:toon(0xfbeef0),leg:M.gold,legs:'turned',back:'flower',accent:M.gold,pad:toon(0xf6c9cf)},
+  c_lace:{seat:toon(0xfff6e6),wood:toon(0xd6a35c),leg:toon(0xb07a3e),legs:'turned',back:'oval',accent:toon(0xb07a3e),pad:toon(0xfff6e6)},
+  c_bistro:{seat:toon(0x3a2a22),wood:M.dark,leg:M.dark,legs:'bent',back:'hoop'}};
+function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,parent),S=CHAIR_STYLE[styleId]||CHAIR_STYLE.c_cushion;const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
   const cush=S.seat||toon(CUSH_COLS[colIdx%CUSH_COLS.length]);
   // oturma yüzeyi (doğrulanmış profil)
   const sh=new THREE.Shape();sh.moveTo(d.zb,d.cushBot);sh.lineTo(d.zf,d.cushBot);for(let k=d.zs.length-1;k>=0;k--)sh.lineTo(d.zs[k],d.top[k]);sh.lineTo(d.zb,d.cushBot);
-  const cg=new THREE.ExtrudeGeometry(sh,{depth:d.x1-d.x0,bevelEnabled:false});cg.rotateY(-Math.PI/2);cg.translate(d.x1,0,0);addTo(L,cg,cush,0,0,0);
-  addTo(L,new THREE.BoxGeometry(d.x1-d.x0+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),S.wood,(d.x0+d.x1)/2,(d.boardBot+d.cushBot)/2,(d.zb+d.zf)/2);
-  for(const lx of [d.x0+0.03,d.x1-0.03])for(const lz of [d.zb+0.03,d.zf-0.03])addTo(L,new THREE.CylinderGeometry(d.leg,d.leg,d.boardBot-d.footY,10),S.leg,lx,(d.footY+d.boardBot)/2,lz);
-  const bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=(d.x0+d.x1)/2,bz=d.backZ-0.03;
-  if(S.back==='slats'){ // ahşap çubuklu sırt
-    addTo(L,new THREE.BoxGeometry(bw+0.04,0.07,0.05),S.wood,bx,d.backTop-0.035,bz);addTo(L,new THREE.BoxGeometry(bw+0.04,0.05,0.05),S.wood,bx,d.boardBot+0.2,bz);
-    for(let i=0;i<4;i++)addTo(L,new THREE.BoxGeometry(0.05,bh-0.2,0.035),S.wood,d.x0+0.07+i*(bw-0.14)/3,d.boardBot+0.2+(bh-0.2)/2,bz)}
-  else{addTo(L,new THREE.BoxGeometry(bw+0.04,S.back==='arch'?bh-0.1:bh,0.06),S.wood,bx,d.boardBot+(S.back==='arch'?bh-0.1:bh)/2,bz);
-    if(S.back==='arch'){const hs=new THREE.Shape();hs.absellipse(0,0,bw/2+0.02,0.1,0,Math.PI,false);const ag=new THREE.ExtrudeGeometry(hs,{depth:0.06,bevelEnabled:false,curveSegments:20});ag.translate(0,0,-0.03);addTo(L,ag,S.wood,bx,d.backTop-0.1,bz)}
-    addTo(L,new THREE.BoxGeometry(bw-0.06,bh*0.62,0.02),S.pad||cush,bx,d.boardBot+bh*0.55,d.backZ-0.011);
-    if(S.back==='tufted')for(let r=0;r<2;r++)for(let c=0;c<3;c++)addTo(L,new THREE.SphereGeometry(0.014,8,6),S.accent,d.x0+0.12+c*(bw-0.24)/2,d.boardBot+bh*0.42+r*bh*0.24,d.backZ-0.016);
-    if(S.accent)addTo(L,new THREE.BoxGeometry(bw+0.05,0.025,0.055),S.accent,bx,d.boardBot+bh*(S.back==='arch'?0.88:0.97)-0.02,bz)}
-  for(const px of [d.x0-0.01,d.x1+0.01])addTo(L,new THREE.CylinderGeometry(0.022,0.022,d.backTop-d.footY-(S.back==='arch'?0.1:0),10),S.leg,px,(d.footY+d.backTop-(S.back==='arch'?0.1:0))/2,bz);
-  const ax=d.x0-0.045;addTo(L,new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),S.accent||S.wood,ax,d.armY-0.015,(d.zb+d.zf)/2);addTo(L,new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,8),S.leg,ax,(d.footY+d.armY-0.03)/2,d.zf);
+  const cg=new THREE.ExtrudeGeometry(sh,{depth:d.x1-d.x0,bevelEnabled:false});cg.rotateY(-Math.PI/2);cg.translate(d.x1,0,0);A(cg,cush,0,0,0);
+  if(S.pillow){const pm=clothMat(S.pillow);const p=A(new RoundedBoxGeometry(d.x1-d.x0-0.08,0.03,0.2,2,0.012),pm,(d.x0+d.x1)/2,d.top[d.top.length-1]+0.016,(d.zb+d.zf)/2+0.03)}
+  A(new THREE.BoxGeometry(d.x1-d.x0+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),S.wood,(d.x0+d.x1)/2,(d.boardBot+d.cushBot)/2,(d.zb+d.zf)/2);
+  const LH=d.boardBot-d.footY,mx=(d.x0+d.x1)/2,mz=(d.zb+d.zf)/2,leg=(x,z,rt,rb,h,y0,m,tx=0,tz=0)=>{const g=A(new THREE.CylinderGeometry(rt,rb,h,10),m||S.leg,x,y0+h/2,z);g.rotation.set(tx,0,tz);return g};
+  const lgs=S.legs||'four';
+  if(lgs==='four'||lgs==='thin'){const r=lgs==='thin'?0.011:d.leg;for(const lx of [d.x0+0.03,d.x1-0.03])for(const lz of [d.zb+0.03,d.zf-0.03])leg(lx,lz,r,r,LH,d.footY);
+    if(lgs==='thin'){const br=A(new THREE.CylinderGeometry(0.006,0.006,d.x1-d.x0-0.06,6),S.leg,mx,d.footY+LH*0.35,d.zf-0.03);br.rotation.z=Math.PI/2}}
+  else if(lgs==='turned'){for(const lx of [d.x0+0.03,d.x1-0.03])for(const lz of [d.zb+0.03,d.zf-0.03]){leg(lx,lz,0.017,0.012,LH,d.footY);for(const t of [0.3,0.7]){const k=A(new THREE.SphereGeometry(0.024,10,8),S.leg,lx,d.footY+LH*t,lz);k.scale.y=0.6}}}
+  else if(lgs==='x'){for(const lx of [d.x0+0.02,d.x1-0.02])for(const t of [-1,1]){const g=A(new THREE.BoxGeometry(0.03,LH*1.2,0.04),S.leg,lx,d.footY+LH/2,mz);g.rotation.x=t*0.45}}
+  else if(lgs==='stump'){const g=new THREE.CylinderGeometry(0.11,0.14,LH,12);const P=g.attributes.position;for(let i=0;i<P.count;i++){const a=Math.atan2(P.getZ(i),P.getX(i)),w=1+0.07*Math.sin(a*5);P.setX(i,P.getX(i)*w);P.setZ(i,P.getZ(i)*w)}g.computeVertexNormals();A(g,S.leg,mx,d.footY+LH/2,mz)}
+  else if(lgs==='staves'){const g=new THREE.CylinderGeometry(0.15,0.15,LH,16,3);const P=g.attributes.position;for(let i=0;i<P.count;i++){const y=P.getY(i)/LH,w=1+0.14*(1-4*y*y);P.setX(i,P.getX(i)*w*1.6);P.setZ(i,P.getZ(i)*w*0.75)}g.computeVertexNormals();A(g,S.leg,mx,d.footY+LH/2,mz);
+    for(const t of [0.2,0.8]){const hr=A(new THREE.TorusGeometry(1,0.007,5,24),S.accent,mx,d.footY+LH*t,mz);hr.scale.set(0.15*1.6*(1+0.14*(1-4*(t-0.5)**2))+0.006,0.15*0.75*(1+0.14*(1-4*(t-0.5)**2))+0.006,1);hr.rotation.x=Math.PI/2}}
+  else if(lgs==='bent'){for(const lx of [d.x0+0.04,d.x1-0.04])for(const lz of [d.zb+0.04,d.zf-0.04]){const sx=lx<mx?-1:1,sz=lz<mz?-1:1;leg(lx,lz,0.012,0.012,LH*1.03,d.footY,null,sz*0.08,-sx*0.08)}
+    const ring=A(new THREE.TorusGeometry(1,0.008,6,28),S.leg,mx,d.footY+LH*0.4,mz);ring.scale.set((d.x1-d.x0)/2-0.02,(d.zf-d.zb)/2+0.02,1);ring.rotation.x=Math.PI/2}
+  const bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=(d.x0+d.x1)/2,bz=d.backZ-0.03,BK=S.back;
+  const posts=(h=d.backTop)=>{for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.CylinderGeometry(0.02,0.02,h-d.footY,10),S.leg,px,(d.footY+h)/2,bz)};
+  if(BK==='slats'){A(new THREE.BoxGeometry(bw+0.04,0.07,0.05),S.wood,bx,d.backTop-0.035,bz);A(new THREE.BoxGeometry(bw+0.04,0.05,0.05),S.wood,bx,d.boardBot+0.2,bz);
+    for(let i=0;i<4;i++)A(new THREE.BoxGeometry(0.05,bh-0.2,0.035),S.wood,d.x0+0.07+i*(bw-0.14)/3,d.boardBot+0.2+(bh-0.2)/2,bz);posts()}
+  else if(BK==='planks'){for(let k=0;k<3;k++)A(new RoundedBoxGeometry(bw+0.06,0.1,0.04,2,0.012),k%2?S.seat:S.wood,bx,d.boardBot+bh*(0.42+k*0.22),bz);posts()}
+  else if(BK==='twigs'){const tw=(x0,y0,x1,y1,r)=>{const len=Math.hypot(x1-x0,y1-y0);const g=A(new THREE.CylinderGeometry(r*0.8,r,len,6),S.wood,(x0+x1)/2,(y0+y1)/2,bz);g.rotation.z=Math.atan2(x0-x1,y1-y0)};
+    tw(d.x0-0.01,d.footY,d.x0+0.02,d.backTop,0.025);tw(d.x1+0.01,d.footY,d.x1-0.02,d.backTop,0.025);tw(d.x0,d.backTop-0.05,d.x1,d.backTop-0.02,0.022);tw(d.x0+0.02,d.boardBot+0.15,d.x1-0.02,d.backTop-0.08,0.016);tw(d.x1-0.02,d.boardBot+0.15,d.x0+0.04,d.backTop-0.12,0.014);
+    if(S.moss)for(let k=0;k<3;k++){const m=A(new THREE.SphereGeometry(0.025,8,6),M.green,d.x0+0.05+k*0.2,d.backTop-0.03+(k%2)*0.02,bz+0.01);m.scale.y=0.6;m.castShadow=false}}
+  else if(BK==='barrel'){for(let k=0;k<6;k++){const x=d.x0+0.02+k*(bw-0.04)/5;const g=A(new RoundedBoxGeometry(bw/6.2,bh*0.95,0.035,2,0.01),k%2?S.wood:S.seat,x,d.boardBot+bh*0.95/2,bz+0.012*Math.cos((k-2.5)/2.5*1.2)*-1)}
+    for(const t of [0.3,0.85])A(new THREE.BoxGeometry(bw+0.06,0.02,0.045),S.accent,bx,d.boardBot+bh*t,bz)}
+  else if(BK==='ghost'){const gm=GLASS_TOP;const hs=new THREE.Shape();hs.moveTo(-bw/2-0.02,0);hs.lineTo(bw/2+0.02,0);hs.lineTo(bw/2+0.02,bh*0.7);hs.absarc(0,bh*0.7,bw/2+0.02,0,Math.PI,false);hs.lineTo(-bw/2-0.02,0);
+    const g=new THREE.ExtrudeGeometry(hs,{depth:0.02,bevelEnabled:false,curveSegments:20});const m=A(g,gm,bx,d.boardBot,bz-0.01);m.castShadow=false;
+    const rim=A(new THREE.TorusGeometry(bw/2+0.02,0.008,6,24,Math.PI),S.accent,bx,d.boardBot+bh*0.7,bz);posts(d.boardBot+bh*0.7)}
+  else if(BK==='hoop'){const t=A(new THREE.TorusGeometry(bw/2,0.014,8,32,Math.PI),S.wood,bx,d.boardBot+bh*0.55,bz);t.scale.y=1.25;const t2=A(new THREE.TorusGeometry(bw/2-0.08,0.01,8,28,Math.PI),S.wood,bx,d.boardBot+bh*0.55,bz);t2.scale.y=1.1;posts(d.boardBot+bh*0.55)}
+  else if(BK==='oval'){posts();A(new THREE.BoxGeometry(bw+0.04,0.05,0.05),S.wood,bx,d.backTop-0.025,bz);const o=A(new THREE.TorusGeometry(0.13,0.016,8,32),S.accent,bx,d.boardBot+bh*0.6,bz);o.scale.y=1.3;
+    const pd=A(new THREE.CircleGeometry(0.12,28),clothMat('lace'),bx,d.boardBot+bh*0.6,bz+0.012);pd.scale.y=1.3}
+  else if(BK==='flower'){posts();const hs=new THREE.Shape();hs.absellipse(0,0,bw/2+0.02,bh*0.45,0,Math.PI*2,false);const g=new THREE.ExtrudeGeometry(hs,{depth:0.05,bevelEnabled:false,curveSegments:24});A(g,S.wood,bx,d.boardBot+bh*0.55,bz-0.025);
+    A(new THREE.CircleGeometry(1,28),S.pad,bx,d.boardBot+bh*0.55,bz+0.027).scale.set(bw/2-0.04,bh*0.38,1);
+    for(let k=0;k<5;k++){const a=k/5*Math.PI*2;const p=A(new THREE.SphereGeometry(0.03,8,6),M.pink,bx+Math.cos(a)*0.045,d.boardBot+bh*0.62+Math.sin(a)*0.045,bz+0.035);p.scale.z=0.4}A(new THREE.SphereGeometry(0.018,8,6),M.gold,bx,d.boardBot+bh*0.62,bz+0.04)}
+  else{A(new THREE.BoxGeometry(bw+0.04,BK==='arch'?bh-0.1:bh,0.06),S.wood,bx,d.boardBot+(BK==='arch'?bh-0.1:bh)/2,bz);
+    if(BK==='arch'){const hs=new THREE.Shape();hs.absellipse(0,0,bw/2+0.02,0.1,0,Math.PI,false);const ag=new THREE.ExtrudeGeometry(hs,{depth:0.06,bevelEnabled:false,curveSegments:20});ag.translate(0,0,-0.03);A(ag,S.wood,bx,d.backTop-0.1,bz)}
+    A(new THREE.BoxGeometry(bw-0.06,bh*0.62,0.02),S.pad||cush,bx,d.boardBot+bh*0.55,d.backZ-0.011);
+    if(BK==='tufted')for(let r=0;r<2;r++)for(let c=0;c<3;c++)A(new THREE.SphereGeometry(0.014,8,6),S.accent,d.x0+0.12+c*(bw-0.24)/2,d.boardBot+bh*0.42+r*bh*0.24,d.backZ-0.016);
+    if(S.accent)A(new THREE.BoxGeometry(bw+0.05,0.025,0.055),S.accent,bx,d.boardBot+bh*(BK==='arch'?0.88:0.97)-0.02,bz);
+    posts(d.backTop-(BK==='arch'?0.1:0))}
+  // kol dayanağı (oturma tarafının tersinde)
+  const ax=d.x0-0.045;A(new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),S.accent||S.wood,ax,d.armY-0.015,(d.zb+d.zf)/2);A(new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,8),S.leg,ax,(d.footY+d.armY-0.03)/2,d.zf);
   return L}
 // ---- masa tipleri (hepsi doğrulanmış masa dairesinin içinde) ----
 // masa tarzları: tabla biçimi (top) + ayak tipi (base) + üstündeki süs (deco) birbirinden bağımsız
@@ -824,21 +861,28 @@ const CATALOG=[
  {id:'t_four_cafe',kind:'table',seats:4,name:'Dört kişilik bahçe masası',price:160,lvl:4,desc:'Zeytin yeşili örtülü dört kişilik masa.'},
  {id:'t_round',kind:'table',name:'Küçük yuvarlak ahşap masa',price:45,lvl:1,desc:'İki kişilik sıcak bir köşe. Masa sınırı içinde yeni masa yeri açar.'},
  {id:'t_square',kind:'table',name:'Kare ahşap masa',price:60,lvl:3,desc:'Açık renk ahşap, köşeleri yuvarlatılmış.'},
- {id:'t_cafe',kind:'table',name:'Şık kafe masası',price:85,lvl:5,desc:'Kırmızı örtülü, beyaz çiçekli klasik kafe masası.'},
- {id:'t_bistro',kind:'table',name:'Mermer bistro masası',price:95,lvl:4,desc:'Küçük beyaz mermer tabla, ferforje üç ayak ve masada yanan bir mum.'},
- {id:'t_picnic',kind:'table',name:'Piknik masası',price:70,lvl:2,desc:'Tahta latalar, çapraz X ayaklar, kareli şerit örtü ve papatyalar.'},
- {id:'t_sakura',kind:'table',name:'Sakura masası',price:120,lvl:6,desc:'Sekizgen pembe tabla, altın torna ayaklar ve vazoda çiçek açmış sakura dalı.'},
- {id:'t_terra',kind:'table',name:'Fıçı masa',price:80,lvl:3,desc:'Eski bir şarap fıçısından masa: demir çemberler, koyu ahşap tabla, saksıda fesleğen.'},
- {id:'t_stump',kind:'table',name:'Kütük masa',price:75,lvl:2,desc:'Ağaç kütüğü ayak, yıllık halkaları görünen tabla ve minik mantarlar.'},
- {id:'t_glass',kind:'table',name:'Cam masa',price:150,lvl:7,desc:'Cam tabla, ince altın ayaklar ve beyaz saksıda orkide; modern bir köşe.'},
- {id:'t_four_picnic',kind:'table',seats:4,name:'Dört kişilik piknik masası',price:130,lvl:3,desc:'Tahta latalı, X ayaklı; kalabalık gruplar için neşeli bir masa.'},
- {id:'t_four_stump',kind:'table',seats:4,name:'Dört kişilik kütük masa',price:150,lvl:4,desc:'Kocaman bir ağaç kütüğü; orman kafesi havası.'},
- {id:'t_four_glass',kind:'table',seats:4,name:'Dört kişilik cam masa',price:230,lvl:8,desc:'Cam tabla, ince altın ayaklar ve orkide.'},
- {id:'t_four_lace',kind:'table',seats:4,name:'Dört kişilik dantel masa',price:190,lvl:6,desc:'Sekizgen bal rengi tabla, torna ayaklar, dantel örtü ve mum ışığı.'},
- {id:'t_premium',kind:'table',name:'Süslü premium masa',price:140,lvl:8,desc:'Altın kenarlı mermer masa ve minik pasta standı.'},
+ {id:'t_cafe',kind:'table',chair:'c_elegant',name:'Şık kafe masası',price:85,lvl:5,desc:'Kırmızı örtülü, beyaz çiçekli klasik kafe masası.'},
+ {id:'t_bistro',kind:'table',chair:'c_bistro',name:'Mermer bistro masası',price:95,lvl:4,desc:'Küçük beyaz mermer tabla, ferforje üç ayak ve masada yanan bir mum.'},
+ {id:'t_picnic',kind:'table',chair:'c_picnic',name:'Piknik masası',price:70,lvl:2,desc:'Tahta latalar, çapraz X ayaklar, kareli şerit örtü ve papatyalar.'},
+ {id:'t_sakura',kind:'table',chair:'c_sakura',name:'Sakura masası',price:120,lvl:6,desc:'Sekizgen pembe tabla, altın torna ayaklar ve vazoda çiçek açmış sakura dalı.'},
+ {id:'t_terra',kind:'table',chair:'c_barrel',name:'Fıçı masa',price:80,lvl:3,desc:'Eski bir şarap fıçısından masa: demir çemberler, koyu ahşap tabla, saksıda fesleğen.'},
+ {id:'t_stump',kind:'table',chair:'c_stump',name:'Kütük masa',price:75,lvl:2,desc:'Ağaç kütüğü ayak, yıllık halkaları görünen tabla ve minik mantarlar.'},
+ {id:'t_glass',kind:'table',chair:'c_glass',name:'Cam masa',price:150,lvl:7,desc:'Cam tabla, ince altın ayaklar ve beyaz saksıda orkide; modern bir köşe.'},
+ {id:'t_four_picnic',kind:'table',chair:'c_picnic',seats:4,name:'Dört kişilik piknik masası',price:130,lvl:3,desc:'Tahta latalı, X ayaklı; kalabalık gruplar için neşeli bir masa.'},
+ {id:'t_four_stump',kind:'table',chair:'c_stump',seats:4,name:'Dört kişilik kütük masa',price:150,lvl:4,desc:'Kocaman bir ağaç kütüğü; orman kafesi havası.'},
+ {id:'t_four_glass',kind:'table',chair:'c_glass',seats:4,name:'Dört kişilik cam masa',price:230,lvl:8,desc:'Cam tabla, ince altın ayaklar ve orkide.'},
+ {id:'t_four_lace',kind:'table',chair:'c_lace',seats:4,name:'Dört kişilik dantel masa',price:190,lvl:6,desc:'Sekizgen bal rengi tabla, torna ayaklar, dantel örtü ve mum ışığı.'},
+ {id:'t_premium',kind:'table',chair:'c_premium',name:'Süslü premium masa',price:140,lvl:8,desc:'Altın kenarlı mermer masa ve minik pasta standı.'},
  {id:'c_wood',kind:'chair',name:'Ahşap sandalye',price:0,lvl:1,own:true,desc:'Sade, çubuklu sırtlı ahşap sandalye.'},
  {id:'c_cushion',kind:'chair',name:'Minderli sandalye',price:0,lvl:1,own:true,desc:'Renkli minderli, rahat sandalye.'},
  {id:'c_elegant',kind:'chair',name:'Şık kadife sandalye',price:60,lvl:4,desc:'Kemerli sırt, kadife minder, altın şerit.'},
+ {id:'c_picnic',kind:'chair',name:'Piknik sandalyesi',price:35,lvl:2,desc:'Tahta latalı sırt, X ayaklar, kareli minder. Piknik masasıyla takım.'},
+ {id:'c_stump',kind:'chair',name:'Kütük tabure',price:35,lvl:2,desc:'Kütük ayak, dal sırt ve yosun. Kütük masayla takım.'},
+ {id:'c_barrel',kind:'chair',name:'Fıçı sandalye',price:45,lvl:3,desc:'Fıçı tahtalarından sırt, demir çemberler. Fıçı masayla takım.'},
+ {id:'c_bistro',kind:'chair',name:'Bistro sandalyesi',price:50,lvl:4,desc:'Kıvrık siyah ahşap, halka sırt. Bistro masasıyla takım.'},
+ {id:'c_sakura',kind:'chair',name:'Sakura sandalyesi',price:70,lvl:6,desc:'Oval sırtta çiçek işlemesi, altın torna ayaklar. Sakura masasıyla takım.'},
+ {id:'c_lace',kind:'chair',name:'Dantel sandalye',price:75,lvl:6,desc:'Oval dantel madalyonlu sırt, torna ayaklar. Dantel masayla takım.'},
+ {id:'c_glass',kind:'chair',name:'Şeffaf sandalye',price:90,lvl:7,desc:'Şeffaf sırt, ince altın ayaklar. Cam masayla takım.'},
  {id:'c_premium',kind:'chair',name:'Kraliyet koltuğu',price:110,lvl:7,desc:'Kapitone sırt, altın ayaklar.'},
  {id:'w_cream',kind:'wall',name:'Krem boya',price:0,lvl:1,own:true,color:0xf7ecd8},
  {id:'w_beige',kind:'wall',name:'Sıcak bej',price:20,lvl:1,color:0xecd5b4},
@@ -2436,7 +2480,8 @@ function firstXP(id){if(!S.first[id]){S.first[id]=true;addXP(CONFIG.xp.firstPlac
 function freeSlot(ex){const used=new Set(S.furniture.filter(f=>!f.stored&&CAT[f.id].kind==='walldecor'&&f.uid!==ex).map(f=>f.slot));for(let i=0;i<WALL_SLOTS.length;i++)if(!used.has(i))return i;return -1}
 function buy(c){if(S.lvl<c.lvl)return;
   if(c.kind==='table'){if(placedTables()>=tableCap(S.lvl))return;if(S.coins<c.price)return;
-    startPlacement({rec:{uid:++S.uid,id:c.id,x:0,z:0,rot:1,chair:S.chairDefault||'c_cushion',col:Math.floor(Math.random()*CUSH_COLS.length)},isNew:true,price:c.price});return}
+    if(c.chair&&!S.owned[c.chair]){S.owned[c.chair]=true;markDirty()}   // masa kendi takım sandalyeleriyle gelir
+    startPlacement({rec:{uid:++S.uid,id:c.id,x:0,z:0,rot:1,chair:c.chair||S.chairDefault||'c_cushion',col:Math.floor(Math.random()*CUSH_COLS.length)},isNew:true,price:c.price});return}
   if(c.kind==='decor'||c.kind==='walldecor'){if(S.coins<c.price)return;const rec={uid:++S.uid,id:c.id,x:0,z:0,rot:0};if(c.kind==='walldecor'){rec.slot=freeSlot();if(rec.slot<0){toast('Duvarda boş yer kalmadı. Bir tabloyu depoya kaldırabilirsin.',ic('lock'));return}}
     startPlacement({rec,isNew:true,price:c.price});return}
   if(c.kind==='chair'){if(!S.owned[c.id]){if(S.coins<c.price)return;addCoins(-c.price,'decor');S.owned[c.id]=true;firstXP(c.id)}S.chairDefault=c.id;
