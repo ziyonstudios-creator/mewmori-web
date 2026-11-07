@@ -1118,7 +1118,7 @@ function recolor(src,W,B,A,DK,size=512){const cv=document.createElement('canvas'
   cx.putImageData(im,0,0);const t=new THREE.CanvasTexture(cv);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;return t}
 function acc(parent,geo,col,x,y,z,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,toon(col));m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;parent.add(m);return m}
 const LOOKS=[
-  {name:'Portakal',W:[255,236,214],B:[222,128,52],A:[86,128,196],xs:1.04,hat:(h,n)=>ACC_BUILD.beret(n,h,{c:0x2e4f8a})},
+  {name:'Portakal',W:[255,236,214],B:[222,128,52],A:[86,128,196],xs:1.04,hat:(h,n)=>{const b=acc(h,new THREE.SphereGeometry(0.115,16,10),0x2e4f8a,0.01,0.335,0,0.12,0,0.16);b.scale.y=0.33;acc(h,new THREE.CylinderGeometry(0.01,0.012,0.035,6),0x2e4f8a,0.02,0.38,0)}},
   {name:'Duman',W:[200,204,212],B:[104,110,124],A:[196,72,72],xs:1.0,hat:(h,n)=>{const p=n||h;acc(p,new THREE.ConeGeometry(0.05,0.07,8),0xe8b44a,0.05,0.04,0.12,0,0,Math.PI/2);acc(p,new THREE.ConeGeometry(0.05,0.07,8),0xe8b44a,-0.05,0.04,0.12,0,0,-Math.PI/2);acc(p,new THREE.SphereGeometry(0.022,8,6),0xc8902a,0,0.04,0.125)}},
   {name:'Gece',W:[78,74,82],B:[36,34,40],A:[232,186,72],xs:0.96,hat:(h,n)=>{for(let i=0;i<5;i++){const a=i/5*Math.PI*2;const p=acc(h,new THREE.SphereGeometry(0.03,8,6),0xf6a6c0,0.04+Math.cos(a)*0.036,0.33,0.06+Math.sin(a)*0.036);p.scale.y=0.65}acc(h,new THREE.SphereGeometry(0.026,8,6),0xffe066,0.04,0.342,0.06)}},
   {name:'Pamuk',W:[252,250,248],B:[232,214,196],A:[150,110,190],xs:1.02,hat:(h,n)=>{acc(h,new THREE.TorusGeometry(0.075,0.013,6,20,Math.PI),0xb08ad0,0,0.3,-0.01,0,0,0);for(const s of [-1,1]){const e=acc(h,new THREE.CapsuleGeometry(0.032,0.17,4,10),0xffffff,s*0.04,0.47,-0.01,0,0,s*-0.12);acc(e,new THREE.CapsuleGeometry(0.016,0.12,4,8),0xf6b3c2,0,0,0.022)}}},
@@ -1126,11 +1126,11 @@ const LOOKS=[
 // gruplar için daha çok müşteri çeşidi (her biri kendi kürk rengi ve gündelik üstüyle)
 LOOKS.push(
   {name:'Fıstık',W:[250,238,214],B:[186,140,92],A:[214,96,84],xs:1.0,hat:(h,n)=>{acc(h,new THREE.SphereGeometry(0.035,10,8),0xf2b134,0.05,0.33,0.07);acc(h,new THREE.BoxGeometry(0.05,0.012,0.016),0xd9534f,0.05,0.33,0.07,0,0,0.5)}},
-  {name:'Bal',W:[255,232,190],B:[226,160,70],A:[96,150,120],xs:1.02,hat:(h,n)=>ACC_BUILD.cap(n,h,{c:0x5f8a3a})},
+  {name:'Bal',W:[255,232,190],B:[226,160,70],A:[96,150,120],xs:1.02,hat:(h,n)=>{const b=acc(h,new THREE.SphereGeometry(0.1,16,10,0,Math.PI*2,0,Math.PI/2),0x5f8a3a,0,0.3,0);b.scale.y=0.8;acc(h,new THREE.CylinderGeometry(0.095,0.095,0.012,18,1,false,-Math.PI/2,Math.PI),0x4f7a30,0,0.302,0.05,0.12,0,0)}},
   {name:'Kömür',W:[70,66,72],B:[34,32,38],A:[240,200,90],xs:0.98,hat:(h,n)=>{}},
   {name:'Lokum',W:[255,246,246],B:[236,196,206],A:[110,140,200],xs:1.0,hat:(h,n)=>{for(const s of [-1,1])acc(h,new THREE.ConeGeometry(0.04,0.08,6),0xe86aa8,s*0.05,0.34,0.1,0,0,s*Math.PI/2)}},
   {name:'Biber',W:[236,226,214],B:[150,84,60],A:[60,90,140],xs:1.04,hat:(h,n)=>{}},
-  {name:'Mavi',W:[188,200,214],B:[110,124,146],A:[236,150,90],xs:0.98,hat:(h,n)=>ACC_BUILD.beret(n,h,{c:0xd9534f})},
+  {name:'Mavi',W:[188,200,214],B:[110,124,146],A:[236,150,90],xs:0.98,hat:(h,n)=>{const b=acc(h,new THREE.SphereGeometry(0.11,14,8),0xd9534f,-0.01,0.335,0,0.1,0,-0.15);b.scale.y=0.36;acc(h,new THREE.CylinderGeometry(0.01,0.012,0.035,6),0xd9534f,-0.02,0.38,0)}},
   {name:'Badem',W:[246,232,212],B:[170,120,84],A:[150,110,190],xs:1.0,hat:(h,n)=>{}});
 // VIP gurme: altın taç, mor yelek (önlük yok)
 const VIP_LOOK={name:'VIP',W:[252,246,236],B:[190,150,110],A:[120,72,150],xs:1.03,vip:true,top:{c:[250,246,240],kind:'vest',v:[118,70,150]},bt:'bt_navy',
@@ -1684,6 +1684,8 @@ function tailVerts(sm){const g=CM.geo,SI=g.attributes.skinIndex,SW=g.attributes.
   const snap=new Int32Array(n).fill(-1);for(let v=0;v<grp.size;v++){if(!inT[v])continue;const a=mem[v][0];let bd=1e9,bw=-1;for(const w of adj[v]){if(inT[w])continue;const b=mem[w][0];const d=(P[a*3]-P[b*3])**2+(P[a*3+1]-P[b*3+1])**2+(P[a*3+2]-P[b*3+2])**2;if(d<bd){bd=d;bw=b}}if(bw>=0)for(const i of mem[v])snap[i]=bw}CM.tailSnap=snap;
   return out}
 // şort/pantolon giyen karakterde kuyruk gizlenir: kuyruk köşeleri kalçanın içindeki tek bir noktaya toplanır (görünmez)
+// Alt giyim (şort/pantolon) kaldırıldı: kedinin arkası doğal görünür, kendi kuyruğu kullanılır
+const NO_BOTTOMS=true;
 const TAIL_HIDE_AT=[0.008,0.785,-0.065],TAIL_SNAP_Y=9;
 // köşeler tek bir kemiğe (kalça) bağlanır; yoksa animasyonda farklı ağırlıklarla dağılıp şerit gibi görünürler
 function hideTailGeo(g){const P=g.attributes.position.array,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight,T=CM.tailHide,n=T.length,h=CM.hipsBone;
@@ -1826,7 +1828,7 @@ function cleanLines(d,M,L){const keepFur=L.pattern==='original'&&L.fur1===0&&L.f
     for(let k=0;k<N;k++)if(mask[k]===1)d[k*4+ci]=Math.min(255,o[k])}}
 // ---- dokuyu oluştur ----
 function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,orig,tl}=M;const L=cfg.look;const W=cfg.wear;const ap=W.apron&&typeof W.apron==='object'?W.apron.ap:(CLO[W.apron]||{}).ap;const top=typeof W.top==='object'&&W.top?W.top.top:(CLO[W.top]||{}).top;
-  const BT=CLO[W.bottom||'bt_brown']||CLO.bt_brown;const keepFur=L.pattern==='original'&&L.fur1===0&&L.fur2===3;
+  const BT=NO_BOTTOMS?null:(CLO[W.bottom||'bt_brown']||CLO.bt_brown);const keepFur=L.pattern==='original'&&L.fur1===0&&L.fur2===3;
   const shortsC=(x,y,z,o,k)=>{let c=BT.bt;if(BT.bt2&&(Math.sin(x*60)>0)!==(Math.sin(y*60)>0))c=BT.bt2;if(y>0.905)c=[c[0]*0.82,c[1]*0.82,c[2]*0.82];
     o[0]=c[0];o[1]=c[1];o[2]=c[2]};
   const cv=document.createElement('canvas');cv.width=cv.height=R;const c2=cv.getContext('2d');const im=c2.createImageData(R,R);const d=im.data;
@@ -1837,9 +1839,9 @@ function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,ori
     const cc=(c===3&&M.f3[k]<0.42&&!(z0=>z0)(0))?2:c;
     if(c){const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];const det=Math.min(1.05,Math.max(0.92,M.detm[k]));
       if(c===4){if(ap){if(ap.orig){if(M.cls0[k]!==4){r=M.apMean[0];g=M.apMean[1];b=M.apMean[2]}}else{apronColor(ap,x,y,z,o);const sh=Math.min(1.25,Math.max(0.7,lum[k]/mean[4]));r=o[0]*sh;g=o[1]*sh;b=o[2]*sh}}
-        else{furColor(L,x,y,z,1,o);if(top&&inTop(x,y,z))topColor(top,x,y,z,o);if(y>0.5&&y<0.95)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
-      else if(c<=3){const sh=inShorts(x,y,z);if(keepFur&&!sh&&M.cls0[k]!==4&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))&&!furMarkHit(L,x,y,z)){}else{const fx=pm[k*3],fy=pm[k*3+1],fz=pm[k*3+2];const face=fz>0.05&&Math.hypot((Math.abs(fx)-0.088)/0.105,(fy-1.452)/0.075)<1;furColor(L,x,y,z,face?c:cc,o);if(top&&inTop(x,y,z)&&!R_.hands(x,y,z))topColor(top,x,y,z,o);if(sh)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
-      else if(c===5){const sh=lum[k]/mean[5];const t=R_.ear(x,y,z)?(L.inner?inner:null):(y>1.3&&R_.nose(x,y,z))?(L.nose?nose:null):null;if(inShorts(x,y,z)){shortsC(x,y,z,o,k);r=o[0];g=o[1];b=o[2]}else if(t){r=t[0]*sh;g=t[1]*sh;b=t[2]*sh}}
+        else{furColor(L,x,y,z,1,o);if(top&&inTop(x,y,z))topColor(top,x,y,z,o);if(BT&&y>0.5&&y<0.95)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
+      else if(c<=3){const sh=!!BT&&inShorts(x,y,z);if(keepFur&&!sh&&M.cls0[k]!==4&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))&&!furMarkHit(L,x,y,z)){}else{const fx=pm[k*3],fy=pm[k*3+1],fz=pm[k*3+2];const face=fz>0.05&&Math.hypot((Math.abs(fx)-0.088)/0.105,(fy-1.452)/0.075)<1;furColor(L,x,y,z,face?c:cc,o);if(top&&inTop(x,y,z)&&!R_.hands(x,y,z))topColor(top,x,y,z,o);if(sh)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
+      else if(c===5){const sh=lum[k]/mean[5];const t=R_.ear(x,y,z)?(L.inner?inner:null):(y>1.3&&R_.nose(x,y,z))?(L.nose?nose:null):null;if(BT&&inShorts(x,y,z)){shortsC(x,y,z,o,k);r=o[0];g=o[1];b=o[2]}else if(t){r=t[0]*sh;g=t[1]*sh;b=t[2]*sh}}
       else if(c===6&&L.eye){const e=L.odd&&x<0?eye2:eye;const sh=Math.min(1.5,lum[k]/mean[6]);r=e[0]*sh;g=e[1]*sh;b=e[2]*sh}
       else if(c===8&&wc){r=wc[0];g=wc[1];b=wc[2]}}
     if(!c){const f=furRGB(L.fur1);if(!keepFur){r=f[0];g=f[1];b=f[2]}}
@@ -1880,31 +1882,21 @@ const ACC_BUILD={
   bow(n,h,c){const p=n||h;accMesh(p,new THREE.ConeGeometry(0.05,0.07,8),c.c,0.05,0.04,0.12,0,0,Math.PI/2);accMesh(p,new THREE.ConeGeometry(0.05,0.07,8),c.c,-0.05,0.04,0.12,0,0,-Math.PI/2);accMesh(p,new THREE.SphereGeometry(0.022,8,6),c.c,0,0.04,0.125)},
   scarf(n,h,c){const p=n||h;const t=accMesh(p,new THREE.TorusGeometry(0.088,0.032,8,20),c.c,0,0.03,0.035,Math.PI/2+0.15,0,0);if(c.c2){for(let i=0;i<4;i++)accMesh(p,new THREE.TorusGeometry(0.089+0.001*i,0.0335,4,20,Math.PI/5),c.c2,0,0.03,0.035,Math.PI/2+0.15,0,i*Math.PI/2)}
     accMesh(p,new THREE.BoxGeometry(0.05,0.12,0.02),c.c,0.05,-0.04,0.12,0.15,0,0.2)},
-  // Şapkalar kafa kemiği koordinatlarında, kafatası ölçülerine göre tasarlandı (kafa tepesi y≈0.28, yarı genişlik ≈0.21).
-  // Kulaklar şapkanın içinden geçer: cutEarHoles kulak kepçesinin geçtiği yerleri oyar ve deliğin kenarına pervaz koyar.
-  paper(n,h,c){hatDesigned(h);const g=new THREE.Group();g.position.set(0.008,0.232,0.02);g.rotation.y=Math.PI/2;h.add(g);g.userData.cacc=true;
-    const body=accMesh(g,hatPaperGeo(0.36,0.14,0.27),c.c,0,0,0);const band=accMesh(g,new THREE.BoxGeometry(0.362,0.028,0.266,24,2,6),0xd9534f,0,-0.056,0)},
-  chef(n,h,c){hatDesigned(h);accMesh(h,new THREE.CylinderGeometry(0.182,0.19,0.1,48,6,true),c.c,0.008,0.235,0.022);
-    const p=accMesh(h,new THREE.SphereGeometry(0.2,48,28),c.c,0.008,0.345,0.022);p.scale.set(1.02,0.62,0.92);
-    for(let i=0;i<6;i++){const a=i/6*Math.PI*2+0.5;accMesh(h,new THREE.SphereGeometry(0.078,24,16),c.c,0.008+Math.sin(a)*0.115,0.385,0.022+Math.cos(a)*0.095)}
-    accMesh(h,new THREE.SphereGeometry(0.095,24,16),c.c,0.008,0.425,0.022)},
-  cap(n,h,c){hatDesigned(h);const d=accMesh(h,new THREE.SphereGeometry(1,56,28,0,Math.PI*2,0,Math.PI/2),c.c,0.008,0.17,0.02);d.scale.set(0.208,0.17,0.182);
-    accMesh(h,new THREE.SphereGeometry(0.018,10,8),c.c,0.008,0.342,0.02);
-    const br=accMesh(h,new THREE.CylinderGeometry(1,1,1,40,1,false,-Math.PI/2.4,Math.PI/1.2),c.c,0.008,0.176,0.06,0.05,0,0);br.scale.set(0.2,0.016,0.215)},
-  beret(n,h,c){hatDesigned(h);const b=accMesh(h,new THREE.SphereGeometry(1,56,30),c.c,0.02,0.27,0.0,0.1,0,0.14);b.scale.set(0.235,0.082,0.21);
-    const rim=accMesh(h,new THREE.TorusGeometry(1,0.06,10,56),c.c,0.012,0.215,0.018,Math.PI/2+0.06,0,0.12);rim.scale.set(0.19,0.16,0.2);
-    accMesh(h,new THREE.CylinderGeometry(0.012,0.016,0.04,8),c.c,0.035,0.355,0.0,0,0,0.14)},
-  beanie(n,h,c){hatDesigned(h);const d=accMesh(h,new THREE.SphereGeometry(1,56,28,0,Math.PI*2,0,Math.PI/2),c.c,0.01,0.17,0.02);d.scale.set(0.205,0.2,0.178);
-    const cf=accMesh(h,new THREE.TorusGeometry(1,0.11,12,64),0xffffff,0.01,0.18,0.02,Math.PI/2,0,0);cf.scale.set(0.198,0.172,0.2);
-    accMesh(h,new THREE.SphereGeometry(0.048,18,14),0xffffff,0.01,0.385,0.02)},
-  bowler(n,h,c){hatDesigned(h);accMesh(h,new THREE.CylinderGeometry(0.14,0.158,0.12,48,6),c.c,0.008,0.3,0.02);
-    const t=accMesh(h,new THREE.SphereGeometry(0.14,40,16,0,Math.PI*2,0,Math.PI/2),c.c,0.008,0.355,0.02);t.scale.y=0.45;
-    const br=accMesh(h,new THREE.CylinderGeometry(0.265,0.265,0.014,64,1),c.c,0.008,0.245,0.02);br.scale.z=0.86;
-    accMesh(h,new THREE.CylinderGeometry(0.16,0.16,0.028,48,2,true),0xd9534f,0.008,0.262,0.02)},
-  flowers(n,h,c){hatDesigned(h,{trim:false});const r=accMesh(h,new THREE.TorusGeometry(1,0.07,8,72),c.c,0.02,0.222,0.02,Math.PI/2,0,0);r.scale.set(0.2,0.126,0.18);
-    const cols=[0xf2a6a0,0xffe066,0xffffff,0xb27ad6,0xf2a6a0,0xffe066,0xffffff,0xb27ad6,0xf2a6a0];
-    for(let i=0;i<9;i++){const a=i/9*Math.PI*2;const x=0.02+Math.sin(a)*0.2,z=0.02+Math.cos(a)*0.126;const f=accMesh(h,new THREE.SphereGeometry(0.032,12,8),cols[i],x,0.232,z);f.scale.y=0.6;f.userData.small=true;
-      const m=accMesh(h,new THREE.SphereGeometry(0.012,8,6),0xf2b134,x,0.247,z);m.userData.small=true}}};
+  // şapkalar iki kulağın arasındaki kafa tepesine göre ölçülendi (fitHat gerekirse biraz daha küçültür)
+  paper(n,h,c){const g=accMesh(h,new THREE.BoxGeometry(0.085,0.05,0.2),c.c,0,0.32,0.01);const band=accMesh(h,new THREE.BoxGeometry(0.089,0.016,0.204),0xd9534f,0,0.303,0.01);
+    const ridge=accMesh(h,new THREE.ConeGeometry(0.05,0.2,4,1),c.c,0,0.365,0.01,Math.PI/2,0,0);ridge.scale.set(0.85,1,0.45)},
+  chef(n,h,c){accMesh(h,new THREE.CylinderGeometry(0.078,0.074,0.09,18),c.c,0,0.34,0.0);const p=accMesh(h,new THREE.SphereGeometry(0.1,16,12),c.c,0,0.42,0.0);p.scale.y=0.72;
+    for(let i=0;i<5;i++){const a=i/5*Math.PI*2;accMesh(h,new THREE.SphereGeometry(0.045,10,8),c.c,Math.sin(a)*0.058,0.445,Math.cos(a)*0.058)}},
+  cap(n,h,c){const cap=accMesh(h,new THREE.SphereGeometry(0.1,18,10,0,Math.PI*2,0,Math.PI/2),c.c,0,0.3,0.0);cap.scale.y=0.8;
+    accMesh(h,new THREE.SphereGeometry(0.014,8,6),c.c,0,0.38,0.0);
+    const br=accMesh(h,new THREE.CylinderGeometry(0.095,0.095,0.012,18,1,false,-Math.PI/2,Math.PI),c.c,0,0.302,0.05,0.12,0,0);br.scale.z=1.05},
+  beret(n,h,c){const b=accMesh(h,new THREE.SphereGeometry(0.115,18,10),c.c,0.01,0.335,0.0,0.12,0,0.16);b.scale.y=0.33;accMesh(h,new THREE.CylinderGeometry(0.01,0.012,0.035,6),c.c,0.02,0.38,0.0)},
+  beanie(n,h,c){const b=accMesh(h,new THREE.SphereGeometry(0.095,18,10,0,Math.PI*2,0,Math.PI/2),c.c,0,0.31,0.0);b.scale.y=1.05;
+    accMesh(h,new THREE.TorusGeometry(0.093,0.02,8,24),0xffffff,0,0.315,0.0,Math.PI/2,0,0);accMesh(h,new THREE.SphereGeometry(0.035,10,8),0xffffff,0,0.415,0.0)},
+  bowler(n,h,c){accMesh(h,new THREE.CylinderGeometry(0.06,0.07,0.085,18),c.c,0,0.36,0.0);accMesh(h,new THREE.SphereGeometry(0.06,14,8,0,Math.PI*2,0,Math.PI/2),c.c,0,0.4,0.0).scale.y=0.5;
+    accMesh(h,new THREE.CylinderGeometry(0.1,0.1,0.012,20),c.c,0,0.32,0.0);accMesh(h,new THREE.CylinderGeometry(0.071,0.071,0.02,18),0xd9534f,0,0.335,0.0)},
+  flowers(n,h,c){accMesh(h,new THREE.TorusGeometry(0.08,0.012,6,28),c.c,0,0.31,0.0,Math.PI/2,0,0);const cols=[0xf2a6a0,0xffe066,0xffffff,0xb27ad6,0xf2a6a0,0xffe066,0xffffff];
+    for(let i=0;i<7;i++){const a=i/7*Math.PI*2;const x=Math.sin(a)*0.08,z=Math.cos(a)*0.08;const f=accMesh(h,new THREE.SphereGeometry(0.024,10,6),cols[i],x,0.322,z);f.scale.y=0.6;accMesh(h,new THREE.SphereGeometry(0.009,6,4),0xf2b134,x,0.332,z)}}};
 // kâğıt garson şapkası: yandan üçgen, önden ince
 function hatPaperGeo(L,H,W){const g=new THREE.BoxGeometry(L,H,W,24,8,6);const P=g.attributes.position;for(let i=0;i<P.count;i++){const y=P.getY(i),x=P.getX(i);const t=(y+H/2)/H;P.setZ(i,P.getZ(i)*(1-0.85*t))}g.computeVertexNormals();return g}
 function hatDesigned(h,o={}){h.userData.designed=true;h.userData.trim=o.trim!==false}
@@ -1963,7 +1955,7 @@ function attachAcc(root,build){const h=root.getObjectByName('mixamorigHead'),n=r
   const gh=new THREE.Group(),gn=new THREE.Group();gh.userData.cacc=gn.userData.cacc=true;h.add(gh);n.add(gn);build(gh,gn);
   root.updateMatrixWorld(true);if(gn.children.length&&sp){sp.attach(gn)}else n.remove(gn);
   if(!gh.children.length)h.remove(gh);
-  if(gh.parent){if(gh.userData.designed){gh.userData.fit={holes:cutEarHoles(root,gh)}}else{if(!seatHat(root,gh))seatAcc(root,gh,new THREE.Vector3(0,-1,0));fitHat(root,gh)}}if(gn.parent)seatAcc(root,gn,new THREE.Vector3(0,0,-1));
+  if(gh.parent){if(!seatHat(root,gh))seatAcc(root,gh,new THREE.Vector3(0,-1,0));fitHat(root,gh)}if(gn.parent)seatAcc(root,gn,new THREE.Vector3(0,0,-1));
   return [gh,gn]}
 const _sv=new THREE.Vector3(),_sw=new THREE.Vector3();
 function seatAcc(root,g,dirLocal){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!sm)return;root.updateMatrixWorld(true);sm.skeleton.update();
@@ -2014,7 +2006,7 @@ function fitHat(root,g){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!s
 function applyLook(root,cfg,R=1024){custPrepare();let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});
   const tex=(isDefaultYosun(cfg))?CM.mesh.material.map:composeTexture(cfg,R);
   const old=sm.material;sm.material=old.clone();sm.material.map=tex;sm.material.needsUpdate=true;
-  const L=cfg.look;const hideT=!!(cfg.wear&&cfg.wear.bottom);const needGeo=L.earShape!=='pointed'||L.earSize!=='normal'||L.tailLen!=='normal'||L.tailFluff||L.whisk!=='long';
+  const L=cfg.look;const hideT=!NO_BOTTOMS&&!!(cfg.wear&&cfg.wear.bottom);const needGeo=L.earShape!=='pointed'||L.earSize!=='normal'||L.tailLen!=='normal'||L.tailFluff||L.whisk!=='long';
   sm.geometry=needGeo?(hideT?hideTailGeo(morphGeometry(L)):morphGeometry(L)):(hideT?CM.geoNT:CM.geo);
   const xs=BODY_XS[L.body]||1;root.scale.set(YS*xs,YS,YS);applyAccessories(root,cfg.wear);
   if(hideT){const BT=CLO[cfg.wear.bottom]||CLO.bt_brown;buildTail(sm,{fur:furRGB(L.fur1),f2:furRGB(L.fur2),tail:L.tail,pattern:L.pattern,len:L.tailLen,fluff:L.tailFluff,bt:BT.bt})}
@@ -2682,7 +2674,7 @@ function pvShow(cfg){clearTimeout(pvTimer);pvTimer=setTimeout(()=>{if(PV.model)P
 // ---- düzenleyici ----
 const CE={role:null,cfg:null,orig:null,mode:'create',step:0,tab:'look',cat:'fur',err:'',busy:false};
 const CE_CATS=[['fur','Kürk'],['pattern','Desen'],['marks','İşaretler'],['eyes','Gözler'],['ears','Kulaklar'],['face','Yüz'],['body','Vücut']];
-const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['top','Üst'],['bottom','Alt'],['neck','Boyun'],['hat','Şapka']];
+const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['top','Üst'],['neck','Boyun'],['hat','Şapka']];   // alt giyim kaldırıldı
 {const st=document.createElement('style');st.textContent=`
 #ce .pv{position:relative;height:min(36vh,300px);margin:6px 14px 0;border:3px solid var(--ink);border-radius:18px;background:radial-gradient(circle at 50% 40%,#fff8ec,#f3e2c6);overflow:hidden;flex:none}
 #ce .pv canvas{display:block}
@@ -2783,7 +2775,7 @@ function renderCEOpts(){const o=$('ceOpts');let h='';const L=CE.cfg.look;
   o.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     if(b.dataset.w){const c=CLO[b.dataset.w];if(c.set){Object.assign(CE.cfg.wear,c.set);CE.setSel=c.id}else{CE.cfg.wear[c.slot]=c.id;CE.setSel=null}pvShow(CE.cfg);renderCEOpts();renderCEFoot();return}
     const p=b.dataset.p;if(!p)return;let v=b.dataset.v!=null?+b.dataset.v:b.dataset.s;if(v==='true')v=true;else if(v==='false')v=false;ceSet(p,v)}}
-function unownedWorn(){const W=CE.cfg.wear;const out=[];if(CE.setSel&&!ownsCloth(CE.setSel))out.push(CE.setSel);else for(const k of ['apron','top','neck','hat','bottom'])if(W[k]&&!ownsCloth(W[k]))out.push(W[k]);return [...new Set(out)]}
+function unownedWorn(){const W=CE.cfg.wear;const out=[];if(CE.setSel&&!ownsCloth(CE.setSel))out.push(CE.setSel);else for(const k of ['apron','top','neck','hat'])if(W[k]&&!ownsCloth(W[k]))out.push(W[k]);return [...new Set(out)]}
 function costInfo(){if(CE.mode==='hire'){const h=hireInfo(CE.role);return {kind:'hire',cost:h.cost||0,text:h.ok?`İşe alım ücreti: ${h.cost} altın · görünümü şimdi ücretsiz seç`:h.why}}
   if(CE.mode==='create'||!S.created||!ceChanged())return {kind:'free',text:CE.mode==='create'?'İlk oluşturma ücretsiz':ceChanged()?'İlk kurulum ücretsiz':'Görünüm değişmedi · isim ve kıyafet ücretsiz'};
   const ch=S.chars[CE.key];if(ch.freeEdits>0)return {kind:'freeEdit',text:`Görünüm değişikliği: ${ch.freeEdits} ücretsiz hakkın var`};return {kind:'paid',text:`Görünüm değişikliği: ${CONFIG.edit.coins} altın ya da ${CONFIG.edit.gems} elmas`}}
@@ -2828,7 +2820,7 @@ function charThumb(role){const cfg=S.chars[role];const key='c:'+role+':'+JSON.st
 function hireInfo(role){const n=S.staff[role];if(n>=HIRE_MAX[role])return {ok:false,max:true,why:`En fazla ${HIRE_MAX[role]} ${ROLE_NAME[role].toLowerCase()} olabilir`};
   const h=HIRE[role][n-1];const key=staffKey(role,n+1);const r={key,lv:h.lv,cost:h.c,n,max:false};
   if(S.lvl<h.lv)return {...r,ok:false,why:`Seviye ${h.lv} gerekli`};if(S.coins<h.c)return {...r,ok:false,why:`${h.c} altın gerekli`};return {...r,ok:true}}
-function renderTeam(){const l=$('teamList');const wearTxt=w=>['apron','top','bottom','neck','hat'].map(k=>w[k]).filter(id=>id&&!id.endsWith('_none')).map(id=>CLO[id].name).join(' · ')||'Sade';
+function renderTeam(){const l=$('teamList');const wearTxt=w=>['apron','top','neck','hat'].map(k=>w[k]).filter(id=>id&&!id.endsWith('_none')).map(id=>CLO[id].name).join(' · ')||'Sade';
   const total=['waiter','barista','cashier'].reduce((a,r)=>a+S.staff[r],0),maxT=HIRE_MAX.waiter+HIRE_MAX.barista+HIRE_MAX.cashier;
   l.innerHTML=logoSVG('still tlogo')+
    (!S.created?`<div class="banner">${ic('paw')}<div>Yeni! Ekibini kendine göre tasarla. İlk kurulum ücretsiz.</div><button class="btn" type="button" id="tmSetup">Başla</button></div>`:'')+
@@ -2859,7 +2851,7 @@ function offerSetup(isNew){if(S.created)return;if(isNew){UI.backTo='cafe';openEd
 // ---- kıyafet mağazası (Yapı Pazarı içinde sekme) ----
 const CL_F=[['waiter','Garson'],['barista','Barista'],['cashier','Kasiyer'],['hat','Şapkalar'],['acc','Aksesuarlar'],['outfit','Özel takımlar']];
 function clothList(f){const L=CLOTHES.filter(c=>!c.id.endsWith('_none'));if(f==='hat')return L.filter(c=>c.slot==='hat');if(f==='acc')return L.filter(c=>c.slot==='neck');if(f==='outfit')return L.filter(c=>c.slot==='outfit');
-  return L.filter(c=>c.roles.includes(f)&&(c.slot==='apron'||c.slot==='top'||c.slot==='bottom'))}
+  return L.filter(c=>c.roles.includes(f)&&(c.slot==='apron'||c.slot==='top'))}
 function renderClothes(g){UI.clF=UI.clF||'waiter';
   g.innerHTML=`<div style="grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap">${CL_F.map(([id,n])=>`<button class="chip" type="button" data-cf="${id}" aria-pressed="${UI.clF===id}">${n}</button>`).join('')}</div>`+
     clothList(UI.clF).map(c=>{const own=ownsCloth(c.id);return `<button class="card" type="button" data-cl="${c.id}" aria-current="${UI.sel===c.id}"><div class="th" style="padding:14%">${clothIcon(c.id)}</div>${own?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${own?'Sahipsin':c.gems?ic('gem')+c.gems:ic('coin')+c.price}</span></button>`}).join('');
@@ -4363,8 +4355,8 @@ function cashLayoutTick(){const n=Math.min(2,CSTAFF.length);if(cashMoving||REGS.
   for(const k of CSTAFF)k.ready=false;layoutRegisters(n);
   Promise.all(CSTAFF.map(async k=>{const st=REGS[k.i].stand;await k.ch.walkTo(st.x,st.z,{direct:true});await k.ch.face(0);k.ready=true})).then(()=>{cashMoving=false})}
 // müşteriler de şort giyer: kuyruksuz (pürüzsüz normalli) ortak geometri
-function cloneLook(tex,lk){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);let sm;r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true;if(o.isSkinnedMesh){o.geometry=CM.geoNT;sm=o}}});
-  if(sm){const L=lk||{};const bt=(CLO[L._bt||L.bt||'bt_navy']||CLO.bt_navy).bt;buildTail(sm,{fur:L.W||[245,240,232],f2:L.B||[150,110,80],tail:'same',pattern:'original',len:'normal',fluff:false,bt})}return r}
+function cloneLook(tex,lk){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);let sm;r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true;if(o.isSkinnedMesh){o.geometry=NO_BOTTOMS?CM.geo:CM.geoNT;sm=o}}});
+  if(sm&&!NO_BOTTOMS){const L=lk||{};const bt=(CLO[L._bt||L.bt||'bt_navy']||CLO.bt_navy).bt;buildTail(sm,{fur:L.W||[245,240,232],f2:L.B||[150,110,80],tail:'same',pattern:'original',len:'normal',fluff:false,bt})}return r}
 function resize(){const w=game.clientWidth,h=game.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 resize();addEventListener('resize',resize);visualViewport&&visualViewport.addEventListener('resize',resize);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveNow();else if(started)setTimeout(offlineCheck,300);clock.getDelta()});
