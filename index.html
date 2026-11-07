@@ -3257,8 +3257,21 @@ function tut2Tick(){const m=UI.mode;
     if(m!=='menu'){if(['book','cafe','merge'].includes(m))t2Show('menu1b',{text:'<b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>setMode('menu')}]});else t2Hide();return}
     const tg=()=>document.querySelector(`[data-tg="${T2_RECIPE}"]`);if(t2Shown!=='menu2'){const t=tg();scrollToEl(t,0.3)}
     t2Show('menu2',{title:'Menü',text:`Burada açtığın ürünler var. Müşteriler yalnızca <b>menündeki</b> ürünleri sipariş eder. <b>Ballı Süt</b>’ü menüye eklemek için <b>Menüye ekle</b>’ye dokun.`,target:tg});return}
-  if(S.tr==='menu3'){t2Show('menu3',{title:'Harika!',text:`Artık müşterilerin <b>Ballı Süt</b> de sipariş edebilir. Ürünleri istediğin zaman buradan ekleyip çıkarabilirsin; yeni tarifler keşfettikçe menün büyüyecek. Kafe artık senin, iyi eğlenceler!`,dim:true,center:true,
-      buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:()=>{S.tr='done';markDirty();t2Hide();setMode('cafe')}}]});return}}
+  if(S.tr==='menu3'){t2Show('menu3',{title:'Harika!',text:`Artık müşterilerin <b>Ballı Süt</b> de sipariş edebilir. Ürünleri istediğin zaman buradan ekleyip çıkarabilirsin; yeni tarifler keşfettikçe menün büyüyecek.<br>Şimdi son bir şey: ürünlerin <b>malzemeleri</b> nereden geliyor?`,dim:true,center:true,
+      buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st1';markDirty();t2Shown=''}}]});return}
+  // --- tedarik: Stok sekmesi → depo → toptancı siparişi → otomatik tedarik ---
+  if(/^st/.test(S.tr)&&m!=='menu'){if(['book','cafe','merge'].includes(m))t2Show('stnav',{text:'Tedarik sistemini öğrenmek için <b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>{menuTab=S.tr==='st1'?'menu':'stock';setMode('menu')}}]});else t2Hide();return}
+  if(S.tr==='st1'){if(menuTab==='stock'){S.tr='st2';markDirty();t2Shown='';return}
+    t2Show('st1',{title:'Malzeme stoğu',text:'Her ürün, tarifindeki malzemelerden <b>1’er birim</b> harcar: Ballı Süt satıldıkça depodaki süt azalır. Depona bakmak için <b>Stok</b> sekmesine dokun.',target:()=>document.querySelector('[data-mt="stock"]'),place:'bottom'});return}
+  if(S.tr==='st2'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
+    t2Show('st2',{title:'Depon',text:'Burada her malzemenin <b>adedi</b>, <b>kalitesi</b> ve birim maliyeti var. Çubuk azalınca sarıya, bitince kırmızıya döner. <b>Bir malzeme biterse onu kullanan ürünler satılamaz</b>, müşteri başka bir şey ister ya da gider.',target:()=>document.querySelector('#menuList .sk'),place:'top',
+      buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st3';markDirty();t2Shown=''}}]});return}
+  if(S.tr==='st3'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
+    t2Show('st3',{title:'Toptancıdan sipariş',text:'<b>Sipariş ver</b> ile toptancı seçip malzeme alırsın. Ucuz toptancının kalitesi düşük, pahalı olanınki yüksek; kalite müşteri puanını etkiler. Sipariş <b>gerçek zamanlı</b> yola çıkar; toptancı kolileri kapının önüne bırakır, kurye ya da bir garson içeri taşır.',target:()=>document.querySelector('[data-sup]'),place:'bottom',
+      buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st4';markDirty();t2Shown=''}}]});return}
+  if(S.tr==='st4'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
+    t2Show('st4',{title:'Otomatik tedarik',text:'Uğraşmak istemezsen <b>Otomatik tedarik</b>’i aç: seçtiğin malzeme azalınca, seçtiğin toptancıdan kendiliğinden sipariş verilir. Stok azalınca üstte uyarı da çıkar. Kafe artık senin, iyi eğlenceler!',target:()=>document.querySelector('[data-auto]'),place:'bottom',
+      buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:()=>{S.tr='done';markDirty();t2Hide();menuTab='menu';setMode('cafe')}}]});return}}
 
 // ================= HESAP: Supabase ile e-posta kaydı / girişi =================
 // Herkese açık (publishable) anahtar: tarayıcıda kullanılmak üzere yapılmıştır. Gizli anahtar asla burada olmaz.
