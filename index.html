@@ -178,6 +178,9 @@ svg.i{display:block;width:100%;height:100%}
 @keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}
 .lvcard h3{margin:4px 0 2px;font-family:var(--font-display);font-weight:800;font-size:24px;line-height:1.1}
 .lvcard p{margin:0 0 10px;font-size:13px;font-weight:800;opacity:.8}
+.lvgift{display:flex;justify-content:center;gap:10px;margin:2px 0 10px}.lvgift>span{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border:2.5px solid var(--ink);border-radius:999px;background:#fff3d6;font-family:var(--font-display);font-size:17px}.lvgift .ic,.lvgift svg{width:22px!important;height:22px!important;flex:none}
+.lvup{width:min(100%,318px);padding:36px 12px 12px}.lvup .star{width:74px;height:74px;top:-34px}.lvup .star span{font-size:24px}.lvup h3{font-size:21px}.lvup p{margin-bottom:6px}
+.lvup .unl{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:26vh;margin-bottom:10px}.lvup .unl div{font-size:10.5px;gap:5px;padding:3px 6px 3px 3px;border-width:2px;border-radius:10px}.lvup .unl img,.lvup .unl .ic{width:26px;height:26px;border-radius:6px}.lvup .unl div:only-child{grid-column:1/-1}.lvup .btn{padding-top:8px;padding-bottom:8px}
 .unl{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow-y:auto;margin-bottom:12px;text-align:left}
 .unl div{display:flex;align-items:center;gap:8px;background:var(--paper);border:2.5px solid var(--ink);border-radius:12px;padding:4px 8px 4px 4px;font-size:12px;font-weight:800;line-height:1.2}
 .unl img,.unl .ic{width:36px;height:36px;flex:none;border-radius:8px;background:#f6e6cc}
@@ -1028,7 +1031,7 @@ async function loadGLB(url,onProg){const r=await fetch(url);if(!r.ok)throw new E
 const CLIPS={};
 // ---- poz düzeltmeleri (animasyonun üstüne): omuzlar biraz aşağı, oturunca kuyruk sandalyenin yanından sarkar ----
 const PF={ok:false},_pq=new THREE.Quaternion(),_pq2=new THREE.Quaternion(),_pI=new THREE.Quaternion();
-const POSE_CFG={shoulder:0.42,spread:0.22,tailYaw:-0.6,tailLift:0,tailRoll:0.5};
+const POSE_CFG={shoulder:0.42,spread:-0.05,tailYaw:-0.6,tailLift:0,tailRoll:0.5};
 function pfInit(root){if(PF.ok)return;let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!sm)return;const B=sm.skeleton.bones;
   const Wq=n=>{const i=B.findIndex(b=>b.name===n);if(i<0)return null;const q=new THREE.Quaternion();new THREE.Matrix4().copy(sm.skeleton.boneInverses[i]).invert().decompose(new THREE.Vector3(),q,new THREE.Vector3());return q.invert()};
   const qh=Wq('mixamorigHips'),qs=Wq('mixamorigSpine2');if(!qh||!qs)return;
@@ -1443,7 +1446,7 @@ async function prepare(b,o){const ch=b.ch,r=o.item,T=r.prep*equipFactor(r)*prepM
   await lockZ('pick',b);await bGo(b,PST.pickup);await sleep(0.2);
   const f2=new THREE.Vector3();m.getWorldPosition(f2);scene.attach(m);const to=PICKUP_SLOTS[slot];
   await tween(0.4,u=>{m.position.lerpVectors(f2,to,u);m.position.y+=Math.sin(u*Math.PI)*0.05});m.position.copy(to);m.rotation.set(0,0,0);
-  ch.carry=null;tray.visible=false;o.state='READY';sfx('ding');
+  ch.carry=null;tray.visible=false;o.state='READY';o.readyT=gameT;sfx('ding');
   await ch.doFor('Wave_One_Hand',1.2)}
 // boşta beklenecek yer: kendi evi, ama o bölgede diğer barista çalışıyorsa ya da ev doluysa diğer ev
 function bIdleSpot(b){const mine=B_HOME[b.i]||B_HOME[0];if(BSTAFF.length<2)return mine;const o=BSTAFF.find(x=>x!==b);
@@ -1562,18 +1565,31 @@ function takeOrder(c0){const g=c0.group||{members:[c0],size:1,leader:c0};if(!gro
 function submitOrder(o){if(o.state!=='TAKEN'||o.submitQueued)return;o.submitQueued=true;
   enqueue('submit',async w=>{const ch=w.ch;const k=await claimSpot('prep',w);const P=PREP_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('IDLE_WORK',1.2);
     if(o.cancel){o.state='CANCELLED';o.cleared=true;return}o.state='WAITING_FOR_PREPARATION';baristaQ.push(o);sfx('chime')})}
+// grup siparişleri: aynı grubun hazır tabakları tek tepside, tek seferde götürülür
+function servSibs(o){const g=o.customer&&o.customer.group;if(!g||!g.members)return [];return g.members.map(m=>m.order).filter(x=>x&&x!==o&&!x.cancel&&!x.cleared&&!x.delivery)}
+const NOT_READY=new Set(['TAKEN','WAITING_FOR_PREPARATION','PREPARING','IN_PREPARATION']);
+// otomatik modda garson, grubun diğer tabakları da hazır olana dek (en çok 25 sn) bekler
+function batchWaitOk(o){const sb=servSibs(o);if(!sb.some(x=>NOT_READY.has(x.state)))return true;return gameT-(o.readyT||0)>25}
+const TRAY_SLOTS=[[0,0],[-0.075,0.05],[0.075,0.05],[0,-0.07]];
 function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueued=true;
-  enqueue('serve',async w=>{if(o.cancel||!o.mesh)return;const ch=w.ch;const k=await claimSpot('pick',w);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Idle_12',0.35);if(o.cancel||!o.mesh)return;
+  const flag=servSibs(o).filter(x=>x.state==='READY'&&!x.pickupQueued);for(const x of flag)x.pickupQueued=true;   // kardeşleri de bu iş götürecek
+  const unflag=()=>{for(const x of flag)if(x.state==='READY')x.pickupQueued=false};
+  enqueue('serve',async w=>{if(o.cancel||!o.mesh||o.state!=='READY'){unflag();return}const ch=w.ch;const k=await claimSpot('pick',w);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Idle_12',0.35);if(o.cancel||!o.mesh){freeSpot('pick',w);unflag();return}
     const tray=ch.tray;tray.visible=false;ch.carry=tray;await sleep(0.45);   // önce tepsi tutma pozu otursun, sonra tepsi görünsün
-    slotUsed[o.slot]=null;o.slot=-1;tray.visible=true;tray.add(o.mesh);o.mesh.position.set(0,tray.userData.top,0);o.mesh.rotation.set(0,0,0);o.state='PICKED_UP';sfx('clink');
-    freeSpot('pick',w);
-    const s=o.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);await sleep(0.25);
-    if(o.cancel){if(o.mesh){scene.attach(o.mesh);fadeOut(o.mesh);o.mesh=null}ch.carry=null;tray.visible=false;o.state='CANCELLED';o.cleared=true;return}   // müşteri gitmiş: tabak geri götürülür
-    const from=new THREE.Vector3();o.mesh.getWorldPosition(from);scene.attach(o.mesh);const to=new THREE.Vector3(s.spot.x,o.table.topY,s.spot.z);
-    await tween(0.5,u=>{o.mesh.position.lerpVectors(from,to,u);o.mesh.position.y+=Math.sin(u*Math.PI)*0.08});o.mesh.position.copy(to);
-    ch.carry=null;tray.visible=false;sfx('clink');
-    if(o.mesh.userData.hot)o.steam=steamOn(()=>cupTop(o.mesh),1.2);
-    o.state='SERVED';addXP(CONFIG.xp.serve);o.customer._served();
+    // o anda hazır olan grup tabakları (en çok 4) birlikte alınır
+    const B=[o,...servSibs(o).filter(x=>x.state==='READY'&&x.mesh)].slice(0,4);
+    B.forEach((x,i)=>{slotUsed[x.slot]=null;x.slot=-1;x.pickupQueued=true;tray.add(x.mesh);const f=TRAY_SLOTS[B.length===1?0:i];x.mesh.position.set(f[0],tray.userData.top,f[1]);x.mesh.rotation.set(0,0,0);x.state='PICKED_UP'});
+    tray.visible=true;sfx('clink');freeSpot('pick',w);unflag();
+    // yakın koltuktan uzağa doğru sırayla bırakır
+    const left=B.slice();while(left.length){let bi=0,bd=1e9;left.forEach((x,i)=>{const d=Math.hypot(x.seat.serve.x-ch.pos.x,x.seat.serve.z-ch.pos.z);if(d<bd){bd=d;bi=i}});const x=left.splice(bi,1)[0];
+      if(x.cancel){if(x.mesh){scene.attach(x.mesh);fadeOut(x.mesh);x.mesh=null}x.state='CANCELLED';x.cleared=true;continue}   // müşteri gitmiş: tabak geri götürülür
+      const s=x.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);await sleep(0.2);
+      if(x.cancel||!x.mesh){if(x.mesh){scene.attach(x.mesh);fadeOut(x.mesh);x.mesh=null}x.state='CANCELLED';x.cleared=true;continue}
+      const from=new THREE.Vector3();x.mesh.getWorldPosition(from);scene.attach(x.mesh);const to=new THREE.Vector3(s.spot.x,x.table.topY,s.spot.z);
+      await tween(0.45,u=>{x.mesh.position.lerpVectors(from,to,u);x.mesh.position.y+=Math.sin(u*Math.PI)*0.08});x.mesh.position.copy(to);sfx('clink');
+      if(x.mesh.userData.hot)x.steam=steamOn(()=>cupTop(x.mesh),1.2);
+      x.state='SERVED';addXP(CONFIG.xp.serve);x.customer._served()}
+    ch.carry=null;tray.visible=false;
     await ch.doFor('IDLE_TALK',0.9)})}
 async function consume(o,dur){const m=o.mesh;
   await tween(dur,u=>{if(m.userData.fill){const f=m.userData.fill,k=Math.max(0.03,1-u);f.scale.y=k;f.position.y=f.userData.base+f.userData.h*k/2;m.rotation.z=Math.sin(u*Math.PI*6)*0.08*(1-u)}
@@ -2222,7 +2238,7 @@ function toastNext(){const q=TQ.shift();if(!q){tCur=null;return}const t=document
 function showLevelUp(){if(UI.modal||!lvQueue.length)return;const L=lvQueue.shift();UI.modal=true;const m=$('lvModal');
   const list=unlocksAt(L).map(u=>{const im=u.kind==='item'?`<img src="${itemThumb(u.c.id)}" alt="">`:u.kind==='recipe'?`<img src="${productThumb(u.r.id)}" alt="">`:ic(u.kind==='cap'?'table':u.kind==='hire'?'paw':'heart');return `<div>${im}<span>${u.text}</span></div>`}).join('')||'<div><span>Kafen büyüyor!</span></div>';
   const cols=['#f2b134','#f2a6a0','#8a9a3b','#d9534f','#86b8d8'];const conf=Array.from({length:22},(_,i)=>`<i style="left:${(i*37)%100}%;background:${cols[i%5]};animation-delay:${(i%7)*0.08}s"></i>`).join('');
-  m.innerHTML=`<div class="lvcard" role="dialog" aria-label="Seviye atladın"><div class="confetti">${conf}</div><div class="star">${UI_IC.star}<span>${L}</span></div><h3>Seviye ${L}!</h3><p class="lvgift">${ic('coin')}<b>+${lvCoins(L)} altın</b> · ${ic('gem')}<b>+${CONFIG.gems.levelUp}</b> hediye</p><p>Yeni açılanlar</p><div class="unl">${list}</div><button class="btn" id="lvOk" type="button">${ic('check')}Harika!</button></div>`;
+  m.innerHTML=`<div class="lvcard lvup" role="dialog" aria-label="Seviye atladın"><div class="confetti">${conf}</div><div class="star">${UI_IC.star}<span>${L}</span></div><h3>Seviye ${L}!</h3><div class="lvgift"><span>${ic('coin')}<b>+${lvCoins(L)}</b></span><span>${ic('gem')}<b>+${CONFIG.gems.levelUp}</b></span></div><p>Yeni açılanlar</p><div class="unl">${list}</div><button class="btn" id="lvOk" type="button">${ic('check')}Harika!</button></div>`;
   m.hidden=false;sfx('levelup');$('lvOk').onclick=()=>{m.hidden=true;UI.modal=false;if(lvQueue.length)setTimeout(showLevelUp,150);else if(UI.mode==='market')renderMarket()};$('lvOk').focus()}
 
 // ================= ALT MENÜ =================
@@ -3180,7 +3196,7 @@ function toggleAuto(){S.auto=!S.auto;markDirty();drawAuto();const n=NMs().waiter
 const AUTO_T=new Map();
 function autoTick(dt){if(!S.auto)return;const due=(key,ok)=>{if(!ok){AUTO_T.delete(key);return false}const t=(AUTO_T.get(key)||0)+dt;AUTO_T.set(key,t);if(t>=0.9){AUTO_T.delete(key);return true}return false};
   for(const c of customers)if(due('t'+c.id,c.state==='WAITING_TO_ORDER'&&!c.orderQueued))takeOrder(c);
-  for(const o of orders){if(due('s'+o.id,o.state==='TAKEN'&&!o.submitQueued))submitOrder(o);if(due('p'+o.id,o.state==='READY'&&!o.pickupQueued&&!o.cancel))pickupOrder(o)}}
+  for(const o of orders){if(due('s'+o.id,o.state==='TAKEN'&&!o.submitQueued))submitOrder(o);if(due('p'+o.id,o.state==='READY'&&!o.pickupQueued&&!o.cancel&&batchWaitOk(o)))pickupOrder(o)}}
 
 // ================= İKİNCİ ÖĞRETİCİLER: Ekip ilk açılış · Tarifler → Birleştir → Tarifler → Menü =================
 {const st=document.createElement('style');st.textContent=`.cell.tuthl{box-shadow:0 0 0 4px var(--gold) inset;border-radius:12px;animation:tuthl 1s ease-in-out infinite}@keyframes tuthl{50%{box-shadow:0 0 0 7px var(--gold) inset}}
@@ -3470,7 +3486,7 @@ async function chaseBack(k){const R=REGS[k.i]||REGS[0];const st=R.stand;const ch
   await cashEnter(ch,st);await ch.face(0);k.chasing=false;k.ready=REGS.length>k.i}
 // kasa tezgahının arkasından çıkış/giriş: tezgahın yanındaki geçitten (içinden geçmeden)
 const CASH_GATE={L:-0.6,R:1.3,back:-3.4,front:-2.12};
-function gateX(x){return x>CASH.x?CASH_GATE.R:CASH_GATE.L}
+function gateX(x){return CASH_GATE.L}   // sağ tarafta kasiyer sandalyesi var: tezgah arkasından hep sol geçitten çıkılır
 async function cashExit(ch,tx){if(ch.pos.z>CASH_GATE.front-0.05)return;const g=gateX(tx);await ch.walkTo(g,ch.pos.z,{direct:true});await ch.walkTo(g,CASH_GATE.front,{direct:true})}
 async function cashEnter(ch,st){if(ch.pos.z<CASH_GATE.front-0.05){await ch.walkTo(st.x,st.z,{direct:true});return}const g=gateX(ch.pos.x);await ch.walkTo(g,CASH_GATE.front);await ch.walkTo(g,st.z,{direct:true});await ch.walkTo(st.x,st.z,{direct:true})}
 
@@ -4690,17 +4706,30 @@ async function waiterWander(w,P,yaw){const ch=w.ch;for(let n=0;n<8;n++){const a=
 async function baristaWander(b,h){if(baristaQ.length)return;const ch=b.ch;const span=BSTAFF.length>1?0.35:0.7;const x=h.x+(Math.random()<0.5?-1:1)*irnd(0.25,span);
   await ch.walkTo(x,h.z,{direct:true});if(baristaQ.length)return;await ch.face(Math.random()<0.5?Math.PI:0);await sleep(irnd(1,2.2));
   if(!baristaQ.length&&Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(h.x,h.z,{direct:true});await ch.face(0)}
+// kasiyerin sandalyesi: kasanın sağında, duvar dibinde (yüzü salona dönük)
+let CASH_CHAIR=null;
+function cashChair(){if(CASH_CHAIR)return CASH_CHAIR;const x=CASH.x+0.78,z=CASH.stand.z+0.02;const f=frame(x,z,0);const G=new THREE.Group();scene.add(G);chairMeshes(G,f,'c_cushion',2);
+  const seat=seatData(f);seat.A={x:x-0.36,z:z+0.06};seat.cash=true;CASH_CHAIR={G,seat,used:null};return CASH_CHAIR}
+// kasa ve telefon boşsa oturmaya uygun
+function cashCalm(k){const R=REGS[k.i];return R&&!R.busy&&!R.cust&&!CASH.queue.length&&!k.chasing&&!cashMoving&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING'||c.state==='WAITING_TO_PAY')&&!(S.auto&&typeof DLV!=='undefined'&&DLV.call)}
+async function cashierSit(k){const C=cashChair(),ch=k.ch,R=REGS[k.i];if(C.used)return false;C.used=k;
+  try{await ch.walkTo(C.seat.A.x,C.seat.A.z,{direct:true});if(!cashCalm(k))return true;
+    await new Promise(res=>{ch.seat=C.seat;ch.crossTo(CLIPS.SIT_BASE?'SIT_BASE':'Chair_Sit_Idle_F',SIT_DUR);ch.trans={p0:{x:ch.pos.x,z:ch.pos.z},p1:C.seat.O,y0:ch.pos.y,y1:C.seat.rootY,r0:ch.o.rotation.y,r1:C.seat.frame.yaw,t:0,done:res}});
+    const until=gameT+irnd(9,18);while(gameT<until&&cashCalm(k))await sleep(0.2);
+    await ch.standUp()}
+  finally{C.used=null;try{await ch.walkTo(R.stand.x,R.stand.z,{direct:true})}catch(e){}}return true}
 // kasiyer: kasa boşken
 function cashIdleOk(k){const R=REGS[k.i];return k.ready&&!k.chasing&&!cashMoving&&R&&!R.busy&&!R.cust&&!CASH.queue.length&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING')}
 async function cashierIdle(k){const R=REGS[k.i],st=R.stand,ch=k.ch;k.ready=false;k.idleBusy=true;
-  try{const mates=[...BSTAFF.filter(b=>!b.busy&&!baristaQ.length),...WSTAFF.filter(w=>!jobs.length)].map(x=>x.ch).filter(c=>Math.hypot(c.pos.x-ch.pos.x,c.pos.z-ch.pos.z)<4.2&&!c.path.length);
+  try{if(k.i===REGS.length-1&&Math.random()<0.55){await cashierSit(k);await ch.face(0);return}
+    const mates=[...BSTAFF.filter(b=>!b.busy&&!baristaQ.length),...WSTAFF.filter(w=>!jobs.length)].map(x=>x.ch).filter(c=>Math.hypot(c.pos.x-ch.pos.x,c.pos.z-ch.pos.z)<4.2&&!c.path.length);
     if(mates.length&&Math.random()<0.55){const m=mates[Math.floor(Math.random()*mates.length)];await ch.faceTo(m.pos.x,m.pos.z);staffBubble(ch,'heart',2.2);
       await Promise.all([ch.doFor(Math.random()<0.5?'Wave_One_Hand':'IDLE_TALK',1.4),(async()=>{await sleep(0.5);if(!m.act&&!m.path.length){staffBubble(m,'heart',1.8);await m.doFor('IDLE_TALK',1.2)}})()])}
     else{const x=Math.max(-0.12,Math.min(0.82,st.x+(Math.random()<0.5?-1:1)*irnd(0.2,0.38)));await ch.walkTo(x,st.z,{direct:true});await ch.face(Math.PI);await sleep(irnd(1,2));
       if(Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(st.x,st.z,{direct:true})}
     await ch.face(0)}finally{k.idleBusy=false;k.ready=REGS.length>k.i}}
-function staffIdleTick(dt){if(!IDLE.on||!S.created)return;for(const k of CSTAFF){if(k.idleBusy)continue;if(!cashIdleOk(k)){k.idleT=0;continue}k.idleT=(k.idleT||0)+dt;
-    if(k.idleT>(k.idleNext||(k.idleNext=irnd(10,18)))){k.idleT=0;k.idleNext=irnd(12,22);cashierIdle(k)}}}
+function staffIdleTick(dt){if(!IDLE.on||!S.created)return;if(!CASH_CHAIR)cashChair();for(const k of CSTAFF){if(k.idleBusy)continue;if(!cashIdleOk(k)){k.idleT=0;continue}k.idleT=(k.idleT||0)+dt;
+    if(k.idleT>(k.idleNext||(k.idleNext=irnd(6,11)))){k.idleT=0;k.idleNext=irnd(12,22);cashierIdle(k)}}}
 
 // ================= BAŞLAT =================
 function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]>1)setEquip(k,S.equip[k]);
