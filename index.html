@@ -1028,7 +1028,7 @@ async function loadGLB(url,onProg){const r=await fetch(url);if(!r.ok)throw new E
 const CLIPS={};
 // ---- poz düzeltmeleri (animasyonun üstüne): omuzlar biraz aşağı, oturunca kuyruk sandalyenin yanından sarkar ----
 const PF={ok:false},_pq=new THREE.Quaternion(),_pq2=new THREE.Quaternion(),_pI=new THREE.Quaternion();
-const POSE_CFG={shoulder:0.42,tailYaw:-0.6,tailLift:0,tailRoll:0.5};
+const POSE_CFG={shoulder:0.42,spread:0.22,tailYaw:-0.6,tailLift:0,tailRoll:0.5};
 function pfInit(root){if(PF.ok)return;let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!sm)return;const B=sm.skeleton.bones;
   const Wq=n=>{const i=B.findIndex(b=>b.name===n);if(i<0)return null;const q=new THREE.Quaternion();new THREE.Matrix4().copy(sm.skeleton.boneInverses[i]).invert().decompose(new THREE.Vector3(),q,new THREE.Vector3());return q.invert()};
   const qh=Wq('mixamorigHips'),qs=Wq('mixamorigSpine2');if(!qh||!qs)return;
@@ -1039,8 +1039,8 @@ function poseRig(m){pfInit(m);const g=n=>m.getObjectByName(n);return {acts:{},ta
 function poseFix(ch,dt){if(!PF.ok)return;
   const a=POSE_CFG.shoulder;if(a&&ch.shL&&ch.shR){ch.shL.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdS,-a));ch.shR.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdS,a));
     // kolun yönü korunur: yalnız omuz eklemi aşağı iner
-    if(PF.fwdL&&ch.arL&&ch.arR){ch.arL.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdL,a));ch.arR.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdR,-a))}}
-  if(ch.tailB){const A=ch.acts;const sw=Math.min(1,((A.Chair_Sit_Idle_F&&A.Chair_Sit_Idle_F._w)||0)+((A.Look_Back_and_Sit&&A.Look_Back_and_Sit._w)||0));
+    if(PF.fwdL&&ch.arL&&ch.arR){const sp=a+(POSE_CFG.spread||0);ch.arL.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdL,sp));ch.arR.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdR,-sp))}}   // + kollar gövdeden biraz açık (önlüğe girmesin)
+  if(ch.tailB){const A=ch.acts;let sw=0;for(const k of ['Chair_Sit_Idle_F','Look_Back_and_Sit','SIT_BASE','SIT_CHAT','SIT_PHONE'])sw+=(A[k]&&A[k]._w)||0;sw=Math.min(1,sw);
     ch.tailPh=(ch.tailPh||Math.random()*6)+dt;const sway=Math.sin(ch.tailPh*1.4)*0.08*(1-sw);
     _pq2.setFromAxisAngle(PF.up,sway);ch.tailB.quaternion.copy(_pI).slerp(PF.sit,sw).multiply(_pq2)}}const ONCE=new Set(['Wave_One_Hand']);
 const V=(x,z)=>new THREE.Vector3(x,0,z);
@@ -1074,10 +1074,10 @@ class Char{
   doFor(name,dur){if(this.act){const r=this.act.res;this.act=null;r()}return new Promise(res=>{this.act={name,res,t:0,max:dur};this.play(name,0.25)})}
   endAct(){const r=this.act&&this.act.res;this.act=null;r&&r()}
   sitAt(seat,instant=false){
-    if(instant){this.path=[];this.seat=seat;this.pos.set(seat.O.x,seat.rootY,seat.O.z);this.o.rotation.y=seat.frame.yaw;this.crossTo('Chair_Sit_Idle_F',0);return Promise.resolve()}   // aynı karede, gecikmesiz
+    if(instant){this.path=[];this.seat=seat;this.pos.set(seat.O.x,seat.rootY,seat.O.z);this.o.rotation.y=seat.frame.yaw;this.crossTo(CLIPS.SIT_BASE?'SIT_BASE':'Chair_Sit_Idle_F',0);return Promise.resolve()}   // aynı karede, gecikmesiz
     return this.walkTo(seat.A.x,seat.A.z).then(()=>new Promise(res=>{
     this.seat=seat;
-    this.crossTo('Chair_Sit_Idle_F',SIT_DUR);
+    this.crossTo(CLIPS.SIT_BASE?'SIT_BASE':'Chair_Sit_Idle_F',SIT_DUR);
     this.trans={p0:{x:this.pos.x,z:this.pos.z},p1:seat.O,y0:this.pos.y,y1:seat.rootY,r0:this.o.rotation.y,r1:seat.frame.yaw,t:0,done:res}}))}
   standUp(){if(!this.seat)return Promise.resolve();return new Promise(res=>{const s=this.seat;this.crossTo('Idle_12',SIT_DUR);
     this.trans={p0:s.O,p1:s.A,y0:this.pos.y,y1:this.pos.y,r0:s.frame.yaw,r1:s.frame.yaw,t:0,done:()=>{this.seat=null;res()}}})}
@@ -1102,9 +1102,10 @@ class Char{
           const ang=Math.atan2(d.x,d.z);let df=ang-this.o.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));this.o.rotation.y+=df*Math.min(1,dt*10)}}}
     else if(this.turn){let df=this.turn.to-this.o.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));if(Math.abs(df)<0.03){this.o.rotation.y=this.turn.to;const r=this.turn.res;this.turn=null;r()}else this.o.rotation.y+=df*Math.min(1,dt*9)}
     // otomatik animasyon seçimi (tek kaynak: aynı anda tek ana animasyon)
+    if(!this.seat&&this.phone)this.phone.visible=false;
     if(this._hold)this._hold=false;
     else if(!this.trans){let want;
-      if(this.seat)want='Chair_Sit_Idle_F';
+      if(this.seat)want=sitPick(this,dt);
       else if(this.path.length)want=this.carry?(this.carryAnim&&this.acts[this.carryAnim]?this.carryAnim:'Handbag_Walk'):(this.vel>1.5?'Running':'Walking');
       else if(this.act)want=this.act.name;
       else want=this.carry?(this.carryAnim&&this.acts[this.carryAnim]?this.carryAnim:'Handbag_Walk'):'Idle_12';
@@ -1382,7 +1383,7 @@ async function waiterLoop(w){let idle=0;const ch=w.ch;
     if(w.i===0&&!jobs.length&&idle>16&&atSpot(ch,P)&&await idleChat(w)){idle=0;continue}
     if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w)}   // bir iş hata verse de garson çalışmaya devam eder
     else if(!atSpot(ch,P)){const ok=await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(ok&&!jobs.length)await ch.face(yaw)}
-    else{await sleep(0.1);idle+=0.1;if(idle>18+w.i*5&&!jobs.length){idle=0;await ch.doFor('Talk_with_Hands_Open',1.2);if(!jobs.length)await ch.face(yaw)}}}}
+    else{await sleep(0.1);idle+=0.1;if(idle>(w.wanderAt||(w.wanderAt=7+Math.random()*7))&&!jobs.length){idle=0;w.wanderAt=0;if(Math.random()<0.7)await waiterWander(w,P,yaw);else{await ch.doFor('Talk_with_Hands_Open',1.2);if(!jobs.length)await ch.face(yaw)}}}}}
 const yosunLoop=()=>{};   // eski ad (artık her garson kendi döngüsünde)
 function enqueue(name,run){jobs.push({name,run})}
 
@@ -1449,7 +1450,7 @@ async function baristaLoop(b){let idle=0;const ch=b.ch;
       continue}
     const h=bIdleSpot(b);b.idleAt=h;
     if(!atSpot(ch,h)){unlockZ('pick',b);await bGo(b,{x:h.x,z:h.z});await ch.face(0);continue}
-    unlockZ('pick',b);await sleep(0.1);idle+=0.1;if(idle>14+b.i*4){idle=0;await ch.doFor('Talk_with_Hands_Open',1.4)}}}
+    unlockZ('pick',b);await sleep(0.1);idle+=0.1;if(idle>(b.wanderAt||(b.wanderAt=8+Math.random()*6))){idle=0;b.wanderAt=0;b.busy=true;try{if(Math.random()<0.75)await baristaWander(b,h);else await ch.doFor('Talk_with_Hands_Open',1.4)}finally{b.busy=false}}}}
 const posaLoop=()=>{};   // eski ad
 
 // ================= MÜŞTERİLER =================
@@ -1491,7 +1492,7 @@ function spawnCustomer(forceSeat,g0,idx=0){
   const seat=forceSeat||t.seats[Math.floor(Math.random()*t.seats.length)];const P=PERSONA[look2.name]||{pref:{drink:1,dessert:1,main:1},eat:1,tip:CONFIG.tipChanceBase,look:0.2};
   const ch=new Char(cloneLook(look2.tex,look2),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;attachAcc(ch.o,(h,n)=>look2.hat(h,n));
   ch.pos.set(OUTSIDE.x-idx*0.7,0,OUTSIDE.z+(idx%2?0.25:-0.1));ch.o.rotation.y=Math.PI/2;   // grup arka arkaya, birlikte yürür
-  const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip,group:g};g.members.push(c);if(!g.leader)g.leader=c;
+  const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip,group:g};ch.sitMode=g.size>1?'chat':(Math.random()<0.55?'phone':'calm');ch.sitT=2+Math.random()*4;g.members.push(c);if(!g.leader)g.leader=c;
   custTag(c);seat.occupant=c;customers.push(c);
   customerLife(c);return c}
 // masadan kalkan her üye koltuğunu boşaltır; son üye kalkınca masa yeni gruba açılır
@@ -1591,7 +1592,7 @@ const LOOK_OPTS={pattern:[['original','Klasik lekeli'],['solid','Düz'],['tabby'
   place:[['all','Tüm vücut'],['head','Kafa ve kuyruk'],['back','Sırt']],face:[['none','Yok'],['muzzle','Açık ağız'],['blaze','Alın çizgisi'],['mask','Göz maskesi']],
   paws:[['none','Yok'],['socks','Beyaz çorap'],['boots','Uzun çizme'],['dark','Koyu pati']],tail:[['same','Vücutla aynı'],['tip','Beyaz uç'],['dtip','Koyu uç'],['rings','Halkalı'],['dark','Koyu kuyruk']],
   earShape:[['pointed','Sivri'],['round','Yuvarlak'],['fold','Kıvrık']],earSize:[['small','Küçük'],['normal','Normal'],['big','Büyük']],cheek:[['none','Yok'],['blush','Al yanak'],['freckles','Çil']],
-  whisk:[['long','Uzun'],['short','Kısa'],['none','Yok']],whiskCol:[['dark','Koyu'],['light','Açık']],body:[['slim','İnce'],['normal','Normal'],['chubby','Tombul']],tailLen:[['normal','Normal'],['short','Kısa'],['bob','Pompon']]};
+  whisk:[['long','Uzun'],['short','Kısa']],whiskCol:[['dark','Koyu'],['light','Açık']],body:[['slim','İnce'],['normal','Normal'],['chubby','Tombul']],tailLen:[['normal','Normal'],['short','Kısa'],['bob','Pompon']]};
 const BODY_XS={slim:0.96,normal:1,chubby:1.04};   // oturma testi bu aralıkta yapıldı
 // ---- kıyafet kataloğu ----
 // slot: apron | top | neck | hat | outfit(set)  •  roles: kim giyebilir  •  price/gems: fiyat  •  free: başlangıçta sahip
@@ -1620,12 +1621,17 @@ const CLOTHES=[
  {id:'vest_brown',slot:'top',name:'Kahve yelek',roles:['waiter','barista','cashier'],price:70,top:{c:[250,248,244],kind:'vest',v:[120,80,54]}},
  {id:'vest_green',slot:'top',name:'Yeşil yelek',roles:['waiter','cashier'],price:70,top:{c:[250,248,244],kind:'vest',v:[96,124,70]}},
  {id:'vest_black',slot:'top',name:'Siyah garson yeleği',roles:['waiter'],price:90,top:{c:[250,248,244],kind:'vest',v:[52,46,50]}},
- {id:'bt_brown',slot:'bottom',name:'Kahve şort',roles:['waiter','barista','cashier'],free:true,bt:[118,82,58]},
- {id:'bt_cream',slot:'bottom',name:'Krem şort',roles:['waiter','barista','cashier'],free:true,bt:[236,222,196]},
- {id:'bt_navy',slot:'bottom',name:'Lacivert şort',roles:['waiter','barista','cashier'],free:true,bt:[62,82,130]},
- {id:'bt_olive',slot:'bottom',name:'Zeytin şort',roles:['waiter','barista','cashier'],free:true,bt:[104,120,64]},
- {id:'bt_pink',slot:'bottom',name:'Pembe şort',roles:['waiter','barista','cashier'],free:true,bt:[236,160,166]},
- {id:'bt_check',slot:'bottom',name:'Ekose şort',roles:['waiter','barista','cashier'],price:40,bt:[214,80,74],bt2:[250,240,230]},
+ {id:'bt_none',slot:'bottom',name:'Altsız',roles:['waiter','barista','cashier'],free:true},
+ {id:'bt_brown',slot:'bottom',len:'short',name:'Kahve şort',roles:['waiter','barista','cashier'],free:true,bt:[118,82,58]},
+ {id:'bt_cream',slot:'bottom',len:'short',name:'Krem şort',roles:['waiter','barista','cashier'],free:true,bt:[236,222,196]},
+ {id:'bt_navy',slot:'bottom',len:'short',name:'Lacivert şort',roles:['waiter','barista','cashier'],free:true,bt:[62,82,130]},
+ {id:'bt_olive',slot:'bottom',len:'short',name:'Zeytin şort',roles:['waiter','barista','cashier'],free:true,bt:[104,120,64]},
+ {id:'bt_pink',slot:'bottom',len:'short',name:'Pembe şort',roles:['waiter','barista','cashier'],free:true,bt:[236,160,166]},
+ {id:'bt_check',slot:'bottom',len:'short',name:'Ekose şort',roles:['waiter','barista','cashier'],price:40,bt:[214,80,74],bt2:[250,240,230]},
+ {id:'bt_jeans',slot:'bottom',len:'long',name:'Kot pantolon',roles:['waiter','barista','cashier'],price:60,bt:[72,98,142],denim:true},
+ {id:'bt_khaki',slot:'bottom',len:'long',name:'Bej pantolon',roles:['waiter','barista','cashier'],price:50,bt:[200,174,124]},
+ {id:'bt_black',slot:'bottom',len:'long',name:'Siyah pantolon',roles:['waiter','barista','cashier'],price:55,bt:[50,46,50]},
+ {id:'bt_capri',slot:'bottom',len:'knee',name:'Zeytin kapri',roles:['waiter','barista','cashier'],price:45,bt:[104,120,64]},
  {id:'nk_none',slot:'neck',name:'Boyun boş',roles:['waiter','barista','cashier'],free:true},
  {id:'bow_red',slot:'neck',name:'Kırmızı papyon',roles:['waiter','barista','cashier'],free:true,acc:'bow',c:0xd9534f},
  {id:'bow_black',slot:'neck',name:'Siyah papyon',roles:['waiter','cashier'],price:30,acc:'bow',c:0x2e2a2e},
@@ -1650,8 +1656,8 @@ const CLOTHES=[
 const CLO=Object.fromEntries(CLOTHES.map(c=>[c.id,c]));
 const ROLES=[{id:'waiter',name:'Garson',desc:'Siparişleri alır, tepsiyle servis yapar.'},{id:'barista',name:'Barista',desc:'Tezgah arkasında içecek ve yemekleri hazırlar.'},{id:'cashier',name:'Kasiyer',desc:'Kasada ödemeleri alır.'}];
 const ROLE_DEF={
-  waiter:{name:'Yosun',look:{...LOOK_DEF},wear:{apron:'ap_olive',top:'top_none',neck:'nk_none',hat:'hat_none',bottom:'bt_brown'}},
-  barista:{name:'Poşa',look:{...LOOK_DEF,fur1:0,fur2:9},wear:{apron:'ap_pink',top:'top_none',neck:'nk_none',hat:'hat_chef',bottom:'bt_navy'}},
+  waiter:{name:'Yosun',look:{...LOOK_DEF},wear:{apron:'ap_olive',top:'top_none',neck:'nk_none',hat:'hat_none',bottom:'bt_none'}},
+  barista:{name:'Poşa',look:{...LOOK_DEF,fur1:0,fur2:9},wear:{apron:'ap_pink',top:'top_none',neck:'nk_none',hat:'hat_chef',bottom:'bt_none'}},
   cashier:{name:'Fındık',look:{...LOOK_DEF,fur1:1,fur2:3},wear:{apron:'ap_mint',top:'top_none',neck:'nk_none',hat:'hat_cap',bottom:'bt_brown'}}};
 const isDefaultYosun=cfg=>false;   // iç çamaşırı katmanı her zaman boyanır
 
@@ -1886,13 +1892,13 @@ function cleanLines(d,M,L,top){MPM=M.pm;const keepFur=L.pattern==='original'&&L.
     const o=morphOp(morphOp(ch,mask,R,r,true),mask,R,r,false);   // kapama: ince koyu çizgiler (gövde)
     for(let k=0;k<N;k++)if(mask[k]===1&&(keepFur||cls[k]===3))d[k*4+ci]=Math.min(255,o[k])}}   // yeni renklendirilmiş kürkte yalnız koyu çizgi pikselleri değişir; desenler korunur
 // ---- dokuyu oluştur ----
-function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,orig,tl}=M;const L=cfg.look;const W=cfg.wear;const ap=W.apron&&typeof W.apron==='object'?W.apron.ap:(CLO[W.apron]||{}).ap;const top=typeof W.top==='object'&&W.top?W.top.top:(CLO[W.top]||{}).top;
+function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,orig,tl}=M;const L=cfg.look;const W=cfg.wear;const ap=W.apron&&typeof W.apron==='object'?W.apron.ap:(CLO[W.apron]||{}).ap;const top=null;   // üst giyim artık ayrı kabuk (p28_garment); kürke boyanmaz
   const SK=(CLO[W.bottom]||{}).bt||null;   // önlüksüz karakterde modelin önlük eteği bu renkte bir etek olur
   const BT=NO_BOTTOMS?null:(CLO[W.bottom||'bt_brown']||CLO.bt_brown);const keepFur=L.pattern==='original'&&L.fur1===0&&L.fur2===3;
   const shortsC=(x,y,z,o,k)=>{let c=BT.bt;if(BT.bt2&&(Math.sin(x*60)>0)!==(Math.sin(y*60)>0))c=BT.bt2;if(y>0.905)c=[c[0]*0.82,c[1]*0.82,c[2]*0.82];
     o[0]=c[0];o[1]=c[1];o[2]=c[2]};
   const cv=document.createElement('canvas');cv.width=cv.height=R;const c2=cv.getContext('2d');const im=c2.createImageData(R,R);const d=im.data;
-  const eye=CPAL.eye[L.eye][1],eye2=CPAL.eye[(L.eye+2)%CPAL.eye.length][1],inner=CPAL.pink[L.inner][1],nose=CPAL.pink[L.nose][1];const o=[0,0,0];
+  const eye=CPAL.eye[L.eye][1],eye2=CPAL.eye[L.eye2??((L.eye+2)%CPAL.eye.length)][1],inner=CPAL.pink[L.inner][1],nose=CPAL.pink[L.nose][1];const o=[0,0,0];
   const wc=L.whiskCol==='light'?[245,240,232]:null;
   for(let k=0;k<R*R;k++){const i4=k*4;let r=orig[i4],g=orig[i4+1],b=orig[i4+2];let c=cls[k];TLK=tl[k];TOPV=M.tm[k];
     if(c>=5&&c<=7){const y=pm[k*3+1],x=pm[k*3],z=pm[k*3+2];if(y<1.28&&!R_.hands(x,y,z)&&!R_.feet(x,y,z)&&(!keepFur||(top&&inTop(x,y,z))))c=1}   // gövdede kalan pembe/koyu lekeler kürk/kıyafet rengini alır
@@ -1902,7 +1908,7 @@ function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,ori
         else{furColor(L,x,y,z,1,o);if(top&&inTop(x,y,z))topColor(top,x,y,z,o);else if(SK){const sh=Math.min(1.2,Math.max(0.75,lum[k]/mean[4]));o[0]=SK[0]*sh;o[1]=SK[1]*sh;o[2]=SK[2]*sh}if(BT&&y>0.5&&y<0.95)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
       else if(c<=3){const sh=!!BT&&inShorts(x,y,z);if(keepFur&&!sh&&M.cls0[k]!==4&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))&&!furMarkHit(L,x,y,z)){}else{const fx=pm[k*3],fy=pm[k*3+1],fz=pm[k*3+2];const face=fz>0.05&&Math.hypot((Math.abs(fx)-0.088)/0.1,(fy-1.452)/0.058)<1;furColor(L,x,y,z,face?c:cc,o);if(top&&inTop(x,y,z)&&!R_.hands(x,y,z))topColor(top,x,y,z,o);if(sh)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
       else if(c===5){const sh=lum[k]/mean[5];const t=R_.ear(x,y,z)?(L.inner?inner:null):(y>1.3&&R_.nose(x,y,z))?(L.nose?nose:null):null;if(BT&&inShorts(x,y,z)){shortsC(x,y,z,o,k);r=o[0];g=o[1];b=o[2]}else if(t){r=t[0]*sh;g=t[1]*sh;b=t[2]*sh}}
-      else if(c===6&&L.eye){const e=L.odd&&x<0?eye2:eye;const sh=Math.min(1.5,lum[k]/mean[6]);r=e[0]*sh;g=e[1]*sh;b=e[2]*sh}
+      else if(c===6&&(L.eye||L.odd)){const e=L.odd&&x<0?eye2:eye;const sh=Math.min(1.5,lum[k]/mean[6]);r=e[0]*sh;g=e[1]*sh;b=e[2]*sh}
       else if(c===8&&wc){r=wc[0];g=wc[1];b=wc[2]}}
     if(!c){const f=furRGB(L.fur1);if(!keepFur){r=f[0];g=f[1];b=f[2]}}
     d[i4]=Math.min(255,r);d[i4+1]=Math.min(255,g);d[i4+2]=Math.min(255,b);d[i4+3]=255}
@@ -2059,13 +2065,33 @@ function hatHits(g,pts){let n=0;g.updateMatrixWorld(true);const ms=[];g.traverse
   for(const p of pts){for(const [o,inv,m] of ms){_fp.copy(p).applyMatrix4(inv);if(insideGeo(o.geometry,_fp,m)){n++;break}}}return n}
 function fitHat(root,g){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!sm)return 0;const idx=earFlapIdx();if(sm.geometry.attributes.position.count!==CM.P0.length/3)return 0;
   root.updateMatrixWorld(true);sm.skeleton.update();const pts=idx.map(i=>sm.getVertexPosition(i,new THREE.Vector3()).applyMatrix4(sm.matrixWorld));
-  // kulaklar kafa tepesinde birbirine yakın: şapka önce biraz öne (alına doğru) kaydırılarak denenir, en büyük kalabildiği yer seçilir
-  const s0=g.scale.x,p0=g.position.clone();let best=null;
-  for(const dz of [0,0.02,0.04,0.06,0.08]){g.scale.setScalar(s0);g.position.copy(p0);g.position.z+=dz;seatHat(root,g);let hits=hatHits(g,pts),k=0;
-    while(hits>0&&k<14){g.scale.multiplyScalar(0.94);seatHat(root,g);hits=hatHits(g,pts);k++}
-    const sc=g.scale.x/s0;if(hits===0&&(!best||sc>best.sc+0.04))best={sc,dz,pos:g.position.clone(),scale:g.scale.x};if(hits===0&&sc>0.97)break}
-  if(best){g.position.copy(best.pos);g.scale.setScalar(best.scale)}
-  const hits=hatHits(g,pts);g.userData.fit={hits,scale:+(g.scale.x/s0).toFixed(3),dz:best?best.dz:null};return hits}
+  const SK=skullGrid(root,sm);
+  // Arama: şapka büyük başlar; alına doğru kaydırma (dz) ve öne eğim denenir, kulaklara değmeyen en büyük ölçek seçilir.
+  const s0=g.scale.x,p0=g.position.clone(),rx0=g.rotation.x;let best=null;
+  for(const dz of [0,0.025,0.05,0.075])for(const tl of [0,0.12,0.24]){g.scale.setScalar(s0*HAT_BIG);g.position.copy(p0);g.position.z+=dz;g.rotation.x=rx0+tl;hatFlush(g,SK);
+    let hits=hatHits(g,pts),k=0;while(hits>0&&k<18){g.scale.multiplyScalar(0.95);hatFlush(g,SK);hits=hatHits(g,pts);k++}
+    if(hits||!hatSupported(g,SK))continue;const sc=g.scale.x/s0;const score=sc-dz*0.8-Math.abs(tl)*0.15;if(!best||score>best.score)best={score,sc,dz,tl,pos:g.position.clone(),scale:g.scale.x}}
+  if(best){g.position.copy(best.pos);g.scale.setScalar(best.scale);g.rotation.x=rx0+best.tl}else{g.scale.setScalar(s0*0.6);g.position.copy(p0);hatFlush(g,SK)}
+  hatConform(g,SK);const hits=hatHits(g,pts);g.userData.fit={hits,scale:+(g.scale.x/s0).toFixed(3),dz:best?best.dz:null,tilt:best?best.tl:null};return hits}
+const HAT_BIG=1.3;
+// şapkanın tabanının ortası kafatasının üstünde mi (havada/önde asılı kalmasın)
+function hatSupported(g,SK){const b=new THREE.Box3().setFromObject(g);const c=b.getCenter(new THREE.Vector3());const h=SK.at(c.x,c.z);return h>-1e8&&Math.abs(b.min.y-h)<0.05}
+// kafatası yükseklik haritası (dünya xz → en yüksek kafa noktası; kulaklar hariç)
+function skullGrid(root,sm){const cs=0.006,H=new Map(),v=new THREE.Vector3();const P=CM.P0;
+  for(let i=0;i<P.length/3;i++){if(CM.ear[i]||P[i*3+1]<1.36)continue;sm.getVertexPosition(i,v);v.applyMatrix4(sm.matrixWorld);const k=Math.floor(v.x/cs)+'_'+Math.floor(v.z/cs);const h=H.get(k);if(h==null||v.y>h)H.set(k,v.y)}
+  return {cs,H,at(x,z){let m=-1e9;const gx=Math.floor(x/cs),gz=Math.floor(z/cs);for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const h=H.get((gx+a)+'_'+(gz+b));if(h!=null&&h>m)m=h}return m}}}
+const _hv=new THREE.Vector3(),_hu=new THREE.Vector3();
+// şapkayı dikey olarak kafaya tam değecek şekilde oturt: hiçbir noktası kafanın içine girmez, en az bir noktası 1 mm yakınındadır
+function hatFlush(g,SK){g.updateMatrixWorld(true);let need=-1e9;
+  g.traverse(m=>{if(!m.isMesh||m.userData.small)return;const a=m.geometry.attributes.position;for(let j=0;j<a.count;j++){_hv.fromBufferAttribute(a,j).applyMatrix4(m.matrixWorld);const h=SK.at(_hv.x,_hv.z);if(h<-1e8)continue;const d=h-_hv.y;if(d>need)need=d}});
+  if(need<-1e8)return;const dy=need+0.001;const inv=new THREE.Matrix4().copy(g.parent.matrixWorld).invert();const o=new THREE.Vector3().applyMatrix4(inv),u=new THREE.Vector3(0,dy,0).applyMatrix4(inv).sub(o);g.position.add(u);g.updateMatrixWorld(true)}
+// alt kenarı kafanın eğimine uydur: tabana yakın noktalar, altlarındaki kafa yüzeyine kadar (1 mm pay) indirilir; boşluk kalmaz
+function hatConform(g,SK){g.updateMatrixWorld(true);let lo=1e9,hi=-1e9;g.traverse(m=>{if(!m.isMesh||m.userData.small)return;const a=m.geometry.attributes.position;for(let j=0;j<a.count;j++){_hv.fromBufferAttribute(a,j).applyMatrix4(m.matrixWorld);lo=Math.min(lo,_hv.y);hi=Math.max(hi,_hv.y)}});
+  const band=Math.min(0.05,(hi-lo)*0.45);
+  g.traverse(m=>{if(!m.isMesh||m.userData.small||m.userData.rigid)return;const a=m.geometry.attributes.position;const inv=new THREE.Matrix4().copy(m.matrixWorld).invert();let ch=false;
+    for(let j=0;j<a.count;j++){_hv.fromBufferAttribute(a,j).applyMatrix4(m.matrixWorld);if(_hv.y>lo+band)continue;const h=SK.at(_hv.x,_hv.z);if(h<-1e8)continue;const gap=_hv.y-(h+0.001);if(gap<=0.0005||gap>0.018)continue;
+      const w=1-(_hv.y-lo)/band;_hv.y-=gap*Math.max(0,Math.min(1,w*1.2));_hu.copy(_hv).applyMatrix4(inv);a.setXYZ(j,_hu.x,_hu.y,_hu.z);ch=true}
+    if(ch){a.needsUpdate=true;m.geometry.computeVertexNormals();m.geometry.computeBoundingSphere()}})}
 // ---- bir karaktere uygula (oyunda canlı da çalışır) ----
 function applyLook(root,cfg,R=1024){custPrepare();let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});
   const tex=(isDefaultYosun(cfg))?CM.mesh.material.map:composeTexture(cfg,R);
@@ -2073,6 +2099,7 @@ function applyLook(root,cfg,R=1024){custPrepare();let sm;root.traverse(o=>{if(o.
   const L=cfg.look;const hideT=!NO_BOTTOMS&&!!(cfg.wear&&cfg.wear.bottom);const needGeo=L.earShape!=='pointed'||L.earSize!=='normal'||L.tailLen!=='normal'||L.tailFluff||L.whisk!=='long';
   sm.geometry=needGeo?(hideT?hideTailGeo(morphGeometry(L)):morphGeometry(L)):(hideT?CM.geoNT:CM.geo);
   const xs=BODY_XS[L.body]||1;root.scale.set(YS*xs,YS,YS);applyAccessories(root,cfg.wear);
+  {const W=cfg.wear||{};const top=typeof W.top==='object'&&W.top?W.top.top:(CLO[W.top]||{}).top;const B=CLO[W.bottom];dressGarments(root,sm,{top:top||null,bottom:B&&B.bt?{bt:B.bt,bt2:B.bt2,len:B.len||'short',denim:B.denim}:null})}
   if(hideT){const BT=CLO[cfg.wear.bottom]||CLO.bt_brown;buildTail(sm,{fur:furRGB(L.fur1),f2:furRGB(L.fur2),tail:L.tail,pattern:L.pattern,len:L.tailLen,fluff:L.tailFluff,bt:BT.bt})}
   return xs}
 // ---- kuyruk: kıyafetteki kuyruk deliğinden çıkan ayrı kuyruk ----
@@ -2122,7 +2149,7 @@ function buildTail(sm,o){const hb=sm.skeleton.bones[CM.hipsBone];if(!hb)return n
   return outer}
 function randomLook(){const pick=a=>a[Math.floor(Math.random()*a.length)][0];const L={...LOOK_DEF};
   for(const k in LOOK_OPTS)L[k]=pick(LOOK_OPTS[k]);L.fur1=Math.floor(Math.random()*CPAL.fur.length);do{L.fur2=Math.floor(Math.random()*CPAL.fur.length)}while(L.fur2===L.fur1);
-  L.eye=Math.floor(Math.random()*CPAL.eye.length);L.inner=Math.floor(Math.random()*3);L.nose=Math.floor(Math.random()*CPAL.pink.length);L.odd=Math.random()<0.15;L.tailFluff=Math.random()<0.3;return L}
+  L.eye=Math.floor(Math.random()*CPAL.eye.length);L.inner=Math.floor(Math.random()*3);L.nose=Math.floor(Math.random()*CPAL.pink.length);L.odd=Math.random()<0.15;L.eye2=Math.floor(Math.random()*CPAL.eye.length);L.tailFluff=false;L.tailLen='normal';L.tail='same';if(L.whisk==='none')L.whisk='short';return L}
 function buildCat(cfg,R=1024){const r=SkeletonUtils.clone(TEMPLATE);applyLook(r,cfg,R);return r}
 
 // küçük işaret dokunuşları "klasik + varsayılan renk" kürkünde de uygulanır
@@ -2131,7 +2158,7 @@ function furMarkHit(L,x,y,z){if(L.face!=='none'&&(R_.muzzle(x,y,z)||R_.blaze(x,y
 // müşteriler: aynı motor (iç çamaşırı dahil), kendi renkleriyle
 const CUST_BT=['bt_navy','bt_brown','bt_navy','bt_olive','bt_brown'];
 // müşteriler önlük giymez (önlük yalnızca çalışanlarda): kendi renklerinde gündelik bir üst giyerler
-function customerTex(L,i){const top=L.top||{c:L.A,kind:i%2?'stripe':'shirt',c2:[250,246,238]};return composeTexture({look:{...LOOK_DEF,fur1:L.W,fur2:L.B},wear:{apron:null,top:{top},bottom:(L._bt=L.bt||CUST_BT[i%CUST_BT.length])}},1024)}
+function customerTex(L,i){const top=L.top||{c:L.A,kind:i%2?'stripe':'shirt',c2:[250,246,238]};L._top=top;return composeTexture({look:{...LOOK_DEF,fur1:L.W,fur2:L.B},wear:{apron:null,top:{top},bottom:(L._bt=L.bt||CUST_BT[i%CUST_BT.length])}},1024)}
 
 // güvenli alan: sayfayı açan çerçeve :root'a zaten üst/alt boşluk veriyorsa aynı boşluğu ikinci kez ekleme
 function fitSafeArea(){const cs=getComputedStyle(document.documentElement),R=document.documentElement.style;
@@ -2695,7 +2722,7 @@ UI_IC.plus=SV(`<circle cx="32" cy="32" r="24" fill="#bfe39a"/><path d="M32 20 V4
 UI_IC.undo=SV(`<path d="M20 24 H40 Q54 24 54 38 Q54 52 40 52 H26" stroke-width="5"/><path d="M28 14 L18 24 L28 34" stroke-width="5"/>`);
 UI_IC.shirt=UI_IC.shirt||SV(`<path d="M22 10 L10 18 L14 30 L20 28 V56 H44 V28 L50 30 L54 18 L42 10 Q32 18 22 10 Z" fill="#bfe3f5"/>`);
 const hexS=c=>Array.isArray(c)?`rgb(${c.map(v=>Math.round(v)).join(',')})`:'#'+c.toString(16).padStart(6,'0');
-function clothIcon(id){const c=CLO[id];if(c.slot==='bottom'){const F=hexS(c.bt),F2=c.bt2?hexS(c.bt2):F;return SV(`<path d="M12 14 H52 L56 52 H36 L32 30 L28 52 H8 Z" fill="${F}"/>${c.bt2?`<path d="M12 26 H52 M10 40 H30 M34 40 H54 M22 14 V52 M42 14 V52" stroke="${F2}" stroke-width="4" opacity=".8"/>`:''}<path d="M12 14 H52 L56 52 H36 L32 30 L28 52 H8 Z"/><path d="M12 20 H52" stroke-width="2.5"/>`)}
+function clothIcon(id){const c=CLO[id];if(c.slot==='bottom'&&!c.bt)return SV(`<path d="M14 16 H50 L54 50 M14 16 L10 50" stroke-dasharray="4 4" fill="none"/>`);if(c.slot==='bottom'&&c.len&&c.len!=='short'){const F=hexS(c.bt);const yb=c.len==='long'?60:46;return SV(`<path d="M16 6 H48 L52 ${yb} H36 L32 22 L28 ${yb} H12 Z" fill="${F}"/>`)}if(c.slot==='bottom'){const F=hexS(c.bt),F2=c.bt2?hexS(c.bt2):F;return SV(`<path d="M12 14 H52 L56 52 H36 L32 30 L28 52 H8 Z" fill="${F}"/>${c.bt2?`<path d="M12 26 H52 M10 40 H30 M34 40 H54 M22 14 V52 M42 14 V52" stroke="${F2}" stroke-width="4" opacity=".8"/>`:''}<path d="M12 14 H52 L56 52 H36 L32 30 L28 52 H8 Z"/><path d="M12 20 H52" stroke-width="2.5"/>`)}
   const col=c.ap?c.ap.c:c.top?c.top.c:c.c!=null?c.c:[230,220,200];const col2=c.ap&&c.ap.c2?c.ap.c2:c.top&&(c.top.c2||c.top.v)?(c.top.c2||c.top.v):c.c2;
   const F=hexS(col),F2=col2!=null?hexS(col2):F;
   if(id.endsWith('_none'))return SV(`<circle cx="32" cy="32" r="20" fill="#efe3d0"/><path d="M18 46 L46 18" stroke-width="4"/>`);
@@ -2738,7 +2765,7 @@ function pvShow(cfg){clearTimeout(pvTimer);pvTimer=setTimeout(()=>{if(PV.model)P
 // ---- düzenleyici ----
 const CE={role:null,cfg:null,orig:null,mode:'create',step:0,tab:'look',cat:'fur',err:'',busy:false};
 const CE_CATS=[['fur','Kürk'],['pattern','Desen'],['marks','İşaretler'],['eyes','Gözler'],['ears','Kulaklar'],['face','Yüz'],['body','Vücut']];
-const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['top','Üst'],['neck','Boyun'],['hat','Şapka']];   // alt giyim kaldırıldı
+const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['top','Üst'],['bottom','Alt'],['neck','Boyun'],['hat','Şapka']];
 {const st=document.createElement('style');st.textContent=`
 #ce .pv{position:relative;height:min(36vh,300px);margin:6px 14px 0;border:3px solid var(--ink);border-radius:18px;background:radial-gradient(circle at 50% 40%,#fff8ec,#f3e2c6);overflow:hidden;flex:none}
 #ce .pv canvas{display:block}
@@ -2763,6 +2790,7 @@ const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['top','Üst'],['neck
 .cl .ic{width:40px;height:40px}.cl[aria-pressed="true"]{background:#fde9b8;box-shadow:0 2px 0 var(--ink)}
 .cl .pr{display:flex;align-items:center;gap:2px;font-size:10.5px}.cl .pr .ic{width:13px;height:13px}
 .cl .ow{position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%;background:var(--olive);border:2px solid var(--ink)}
+.eyepair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 10px}.eyecol{background:#fff8ee;border:2px solid var(--ink);border-radius:14px;padding:8px}.eyecol>b{display:block;font-size:12px;margin:4px 0 6px;text-align:center}.eyecol .wrap{justify-content:center}.eyecol .sw{width:22px;height:22px;margin:2px}.eyeic{width:46px;height:30px;margin:0 auto;border:3px solid var(--ink);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#fff;display:grid;place-items:center}.eyeic i{width:18px;height:22px;border-radius:50%;background:var(--ec);border:2px solid #2b1d14;box-shadow:inset 4px -4px 0 rgba(0,0,0,.25)}
 .ce-foot{position:sticky;bottom:0;display:flex;flex-direction:column;gap:6px;padding:8px 14px 10px;background:var(--cream);border-top:3px solid var(--ink)}
 .ce-foot .row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .ce-foot .cost{text-align:center;font-size:12px;font-weight:800;line-height:1.3}
@@ -2821,16 +2849,19 @@ function renderCE(){const R=ROLES.find(r=>r.id===CE.role),idx=ROLES.indexOf(R);
   $('ceCats').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;CE.cat=b.dataset.c;renderCE()};
   renderCEOpts();renderCEFoot()}
 function swRow(title,path,pal){const [a,b]=path.split('.');const cur=CE.cfg[a][b];return `<div class="ce-row"><b>${title}</b><div class="wrap">${pal.map(([n,c],i)=>`<button class="sw" type="button" title="${n}" aria-label="${n}" data-p="${path}" data-v="${i}" aria-pressed="${cur===i}" style="background:${hexS(c)}"></button>`).join('')}</div></div>`}
+// farklı renkli gözler: iki göz yan yana, her biri kendi renk paletiyle (göz simgesi seçili rengi gösterir)
+function eyeSw(title,path,cur){const c=CPAL.eye[cur]||CPAL.eye[0];const col=`rgb(${c[1].join(',')})`;
+  return `<div class="eyecol"><div class="eyeic" style="--ec:${col}"><i></i></div><b>${title}</b><div class="wrap">${CPAL.eye.map(([n,cc],i)=>`<button class="sw" type="button" title="${n}" aria-label="${title}: ${n}" data-p="${path}" data-v="${i}" aria-pressed="${cur===i}" style="background:rgb(${cc.join(',')})"></button>`).join('')}</div></div>`}
 function chRow(title,path,opts){const [a,b]=path.split('.');const cur=CE.cfg[a][b];return `<div class="ce-row"><b>${title}</b><div class="wrap">${opts.map(([v,n])=>`<button class="chip" type="button" data-p="${path}" data-s="${v}" aria-pressed="${String(cur)===String(v)}">${n}</button>`).join('')}</div></div>`}
 function renderCEOpts(){const o=$('ceOpts');let h='';const L=CE.cfg.look;
   if(CE.tab==='look'){switch(CE.cat){
     case 'fur':h=swRow('Ana kürk rengi','look.fur1',CPAL.fur)+swRow('İkinci renk (desen ve işaretler)','look.fur2',CPAL.fur);break;
     case 'pattern':h=chRow('Desen tipi','look.pattern',LOOK_OPTS.pattern)+(['tabby','spots','bicolor'].includes(L.pattern)?chRow('Desenin yeri','look.place',LOOK_OPTS.place):'');break;
-    case 'marks':h=chRow('Yüz işareti','look.face',LOOK_OPTS.face)+chRow('Pati işareti','look.paws',LOOK_OPTS.paws)+chRow('Kuyruk deseni','look.tail',LOOK_OPTS.tail);break;
-    case 'eyes':h=swRow('Göz rengi','look.eye',CPAL.eye)+chRow('Göz çeşidi','look.odd',[[false,'İki göz aynı'],[true,'Farklı renkli gözler']]);break;
+    case 'marks':h=chRow('Yüz işareti','look.face',LOOK_OPTS.face)+chRow('Pati işareti','look.paws',LOOK_OPTS.paws);break;
+    case 'eyes':h=chRow('Göz çeşidi','look.odd',[[false,'İki göz aynı'],[true,'Farklı renkli gözler']])+(L.odd?`<div class="eyepair">${eyeSw('Soldaki göz','look.eye2',L.eye2??((L.eye+2)%CPAL.eye.length))}${eyeSw('Sağdaki göz','look.eye',L.eye)}</div>`:swRow('Göz rengi','look.eye',CPAL.eye));break;
     case 'ears':h=chRow('Kulak şekli','look.earShape',LOOK_OPTS.earShape)+chRow('Kulak boyu','look.earSize',LOOK_OPTS.earSize)+swRow('Kulak içi rengi','look.inner',CPAL.pink);break;
     case 'face':h=swRow('Burun rengi','look.nose',CPAL.pink)+chRow('Yanak','look.cheek',LOOK_OPTS.cheek)+chRow('Bıyık','look.whisk',LOOK_OPTS.whisk)+chRow('Bıyık rengi','look.whiskCol',LOOK_OPTS.whiskCol);break;
-    case 'body':h=chRow('Vücut','look.body',LOOK_OPTS.body)+chRow('Kuyruk boyu','look.tailLen',LOOK_OPTS.tailLen)+chRow('Kuyruk','look.tailFluff',[[false,'İnce'],[true,'Pofuduk']]);break}}
+    case 'body':h=chRow('Vücut','look.body',LOOK_OPTS.body);break}}
   else{const slot=CE.cat;const items=CLOTHES.filter(c=>c.slot===slot&&c.roles.includes(CE.role));const W=CE.cfg.wear;
     const isOn=c=>c.set?Object.entries(c.set).every(([k,v])=>W[k]===v):W[slot]===c.id;
     h=`<div class="ce-row"><div class="wrap">${items.map(c=>{const own=ownsCloth(c.id);return `<button class="cl" type="button" data-w="${c.id}" aria-pressed="${isOn(c)}"><span class="ic">${clothIcon(c.id)}</span>${own?'<span class="ow" title="Sende"></span>':''}${c.name}${own?'':`<span class="pr">${c.gems?ic('gem')+c.gems:ic('coin')+c.price}</span>`}</button>`}).join('')}</div></div>`;
@@ -2839,7 +2870,7 @@ function renderCEOpts(){const o=$('ceOpts');let h='';const L=CE.cfg.look;
   o.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     if(b.dataset.w){const c=CLO[b.dataset.w];if(c.set){Object.assign(CE.cfg.wear,c.set);CE.setSel=c.id}else{CE.cfg.wear[c.slot]=c.id;CE.setSel=null}pvShow(CE.cfg);renderCEOpts();renderCEFoot();return}
     const p=b.dataset.p;if(!p)return;let v=b.dataset.v!=null?+b.dataset.v:b.dataset.s;if(v==='true')v=true;else if(v==='false')v=false;ceSet(p,v)}}
-function unownedWorn(){const W=CE.cfg.wear;const out=[];if(CE.setSel&&!ownsCloth(CE.setSel))out.push(CE.setSel);else for(const k of ['apron','top','neck','hat'])if(W[k]&&!ownsCloth(W[k]))out.push(W[k]);return [...new Set(out)]}
+function unownedWorn(){const W=CE.cfg.wear;const out=[];if(CE.setSel&&!ownsCloth(CE.setSel))out.push(CE.setSel);else for(const k of ['apron','top','bottom','neck','hat'])if(W[k]&&!ownsCloth(W[k]))out.push(W[k]);return [...new Set(out)]}
 function costInfo(){if(CE.mode==='hire'){const h=hireInfo(CE.role);return {kind:'hire',cost:h.cost||0,text:h.ok?`İşe alım ücreti: ${h.cost} altın · görünümü şimdi ücretsiz seç`:h.why}}
   if(CE.mode==='create'||!S.created||!ceChanged())return {kind:'free',text:CE.mode==='create'?'İlk oluşturma ücretsiz':ceChanged()?'İlk kurulum ücretsiz':'Görünüm değişmedi · isim ve kıyafet ücretsiz'};
   const ch=S.chars[CE.key];if(ch.freeEdits>0)return {kind:'freeEdit',text:`Görünüm değişikliği: ${ch.freeEdits} ücretsiz hakkın var`};return {kind:'paid',text:`Görünüm değişikliği: ${CONFIG.edit.coins} altın ya da ${CONFIG.edit.gems} elmas`}}
@@ -2884,7 +2915,7 @@ function charThumb(role){const cfg=S.chars[role];const key='c:'+role+':'+JSON.st
 function hireInfo(role){const n=S.staff[role];if(n>=HIRE_MAX[role])return {ok:false,max:true,why:`En fazla ${HIRE_MAX[role]} ${ROLE_NAME[role].toLowerCase()} olabilir`};
   const h=HIRE[role][n-1];const key=staffKey(role,n+1);const r={key,lv:h.lv,cost:h.c,n,max:false};
   if(S.lvl<h.lv)return {...r,ok:false,why:`Seviye ${h.lv} gerekli`};if(S.coins<h.c)return {...r,ok:false,why:`${h.c} altın gerekli`};return {...r,ok:true}}
-function renderTeam(){const l=$('teamList');const wearTxt=w=>['apron','top','neck','hat'].map(k=>w[k]).filter(id=>id&&!id.endsWith('_none')).map(id=>CLO[id].name).join(' · ')||'Sade';
+function renderTeam(){const l=$('teamList');const wearTxt=w=>['apron','top','bottom','neck','hat'].map(k=>w[k]).filter(id=>id&&!id.endsWith('_none')).map(id=>CLO[id].name).join(' · ')||'Sade';
   const total=['waiter','barista','cashier'].reduce((a,r)=>a+S.staff[r],0),maxT=HIRE_MAX.waiter+HIRE_MAX.barista+HIRE_MAX.cashier;
   l.innerHTML=logoSVG('still tlogo')+
    (!S.created?`<div class="banner">${ic('paw')}<div>Yeni! Ekibini kendine göre tasarla. İlk kurulum ücretsiz.</div><button class="btn" type="button" id="tmSetup">Başla</button></div>`:'')+
@@ -2915,7 +2946,7 @@ function offerSetup(isNew){if(S.created)return;if(isNew){UI.backTo='cafe';openEd
 // ---- kıyafet mağazası (Yapı Pazarı içinde sekme) ----
 const CL_F=[['waiter','Garson'],['barista','Barista'],['cashier','Kasiyer'],['hat','Şapkalar'],['acc','Aksesuarlar'],['outfit','Özel takımlar']];
 function clothList(f){const L=CLOTHES.filter(c=>!c.id.endsWith('_none'));if(f==='hat')return L.filter(c=>c.slot==='hat');if(f==='acc')return L.filter(c=>c.slot==='neck');if(f==='outfit')return L.filter(c=>c.slot==='outfit');
-  return L.filter(c=>c.roles.includes(f)&&(c.slot==='apron'||c.slot==='top'))}
+  return L.filter(c=>c.roles.includes(f)&&(c.slot==='apron'||c.slot==='top'||c.slot==='bottom'))}
 function renderClothes(g){UI.clF=UI.clF||'waiter';
   g.innerHTML=`<div style="grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap">${CL_F.map(([id,n])=>`<button class="chip" type="button" data-cf="${id}" aria-pressed="${UI.clF===id}">${n}</button>`).join('')}</div>`+
     clothList(UI.clF).map(c=>{const own=ownsCloth(c.id);return `<button class="card" type="button" data-cl="${c.id}" aria-current="${UI.sel===c.id}"><div class="th" style="padding:14%">${clothIcon(c.id)}</div>${own?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${own?'Sahipsin':c.gems?ic('gem')+c.gems:ic('coin')+c.price}</span></button>`}).join('');
@@ -3045,7 +3076,7 @@ UI_IC.auto=SV(`<circle cx="32" cy="32" r="24" fill="#bfe39a"/><path d="M20 34 A1
 #coach .cbub .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 #coach .cbub .btn{font-size:14px;padding:8px 14px}
 #coach .chand{position:absolute;left:0;top:0;width:58px;height:55px;pointer-events:none;filter:drop-shadow(0 3px 0 rgba(74,46,28,.35));will-change:transform}
-#coach .chand .in{width:100%;height:100%;animation:poke 1s ease-in-out infinite}
+#coach .chand .in{width:100%;height:100%;animation:poke 1s ease-in-out infinite}#coach .chand.drag .in{animation:none}#coach .cghost{position:absolute;left:0;top:0;width:48px;height:48px;pointer-events:none;opacity:.85;filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}#coach .cghost img{width:100%;height:100%;object-fit:contain}
 @keyframes poke{50%{transform:translate(0,-9px)}}
 #coach .ring{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:4px solid var(--gold);pointer-events:none;animation:ringP 1.2s ease-out infinite}
 @keyframes ringP{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.4);opacity:0}}
@@ -3054,10 +3085,10 @@ UI_IC.auto=SV(`<circle cx="32" cy="32" r="24" fill="#bfe39a"/><path d="M20 34 A1
 .autobtn[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){#coach .chand .in,#coach .ring{animation:none}}
 `;document.head.appendChild(st)}
-{const c=document.createElement('div');c.id='coach';c.hidden=true;c.innerHTML=`<div class="cdim" hidden></div><div class="ring" hidden></div><div class="chand" hidden><div class="in">${UI_IC.hand}</div></div><div class="cbub" hidden></div>`;$('game').appendChild(c);
+{const c=document.createElement('div');c.id='coach';c.hidden=true;c.innerHTML=`<div class="cdim" hidden></div><div class="ring" hidden></div><div class="cghost" hidden></div><div class="chand" hidden><div class="in">${UI_IC.hand}</div></div><div class="cbub" hidden></div>`;$('game').appendChild(c);
  const a=document.createElement('button');a.type='button';a.className='autobtn';a.id='autoBtn';a.hidden=true;$('game').insertBefore(a,$('nav'));a.onclick=()=>toggleAuto()}
 const CO={target:null,raf:0,onAuto:null};
-function coach({title='',text,target=null,buttons=[],dim=false,center=false,place=null,owner='t1'}){const box=$('coach');CO.owner=owner;box.hidden=false;const bub=box.querySelector('.cbub');const dimEl=box.querySelector('.cdim');dimEl.hidden=!dim;
+function coach({title='',text,target=null,buttons=[],dim=false,center=false,place=null,owner='t1',drag=null}){CO.drag=drag;const box=$('coach');CO.owner=owner;box.hidden=false;const bub=box.querySelector('.cbub');const dimEl=box.querySelector('.cdim');dimEl.hidden=!dim;
   bub.hidden=false;bub.className='cbub'+(center?' center':'');bub.style.top='';bub.style.bottom='';/* önceki balonun konumu ortalı balonu ezmesin */bub.innerHTML=`<span class="who">${UI_IC.paw}</span><div class="tx">${title?`<b class="t">${title}</b>`:''}<p>${text}</p>${buttons.length?`<div class="row">${buttons.map((b,i)=>`<button class="btn ${b.light?'light':b.green?'green':''}" type="button" data-cb="${i}">${b.icon?ic(b.icon):''}${b.label}</button>`).join('')}</div>`:''}</div>`;
   bub.querySelectorAll('[data-cb]').forEach(el=>el.onclick=()=>{const b=buttons[+el.dataset.cb];sfx('tap');b.onClick&&b.onClick()});
   CO.target=target;CO.place=place;CO.center=center;cancelAnimationFrame(CO.raf);coachFrame()}
@@ -3065,6 +3096,16 @@ function coachOff(){const box=$('coach');box.hidden=true;CO.target=null;cancelAn
 function targetRect(t){if(!t)return null;const v=typeof t==='function'?t():t;if(!v)return null;if(v.getBoundingClientRect){if(!v.isConnected||v.offsetParent===null&&getComputedStyle(v).position!=='fixed')return null;const r=v.getBoundingClientRect();if(!r.width&&!r.height)return null;return r}
   if(v.isVector3){const p=v.clone().project(camera);const r=renderer.domElement.getBoundingClientRect();if(p.z>1)return null;const x=(p.x+1)/2*r.width,y=(1-p.y)/2*r.height;return {left:x-20,top:y-20,width:40,height:40}}return null}
 function coachFrame(){CO.raf=requestAnimationFrame(coachFrame);const box=$('coach');const hand=box.querySelector('.chand'),ring=box.querySelector('.ring'),bub=box.querySelector('.cbub');const g=$('game').getBoundingClientRect();
+  const gh=box.querySelector('.cghost');
+  if(CO.drag){const a=targetRect(CO.drag.from),b=targetRect(CO.drag.to);if(a&&b){
+      // sürükle-bırak gösterimi: parmak malzemeyi tutar, diğerinin üstüne taşır, bırakır
+      const t=(performance.now()%2200)/2200;const ax=a.left-g.left+a.width/2,ay=a.top-g.top+a.height/2,bx=b.left-g.left+b.width/2,by=b.top-g.top+b.height/2;
+      const e=t<0.18?0:t<0.72?(t-0.18)/0.54:1;const k=e*e*(3-2*e);const x=ax+(bx-ax)*k,y=ay+(by-ay)*k-Math.sin(k*Math.PI)*18;
+      hand.hidden=false;hand.classList.add('drag');ring.hidden=false;ring.style.left=bx+'px';ring.style.top=by+'px';
+      const press=t>0.1&&t<0.8;hand.style.transform=`translate(${x-27*0.8}px,${y-4}px) scale(${press?0.92:1})`;hand.style.opacity=t>0.9?String(1-(t-0.9)*10):'1';
+      if(gh){const im=CO.drag.from()&&CO.drag.from().querySelector('img');if(im&&gh.dataset.src!==im.src){gh.innerHTML=`<img src="${im.src}" alt="">`;gh.dataset.src=im.src}gh.hidden=!(t>0.1&&t<0.8);gh.style.transform=`translate(${x-24}px,${y-34}px)`}
+      if(CO.place==='head'){bub.style.bottom='';bub.style.top='58px'}return}}
+  hand.classList.remove('drag');hand.style.opacity='';if(gh)gh.hidden=true;
   const r=targetRect(CO.target);if(!r){hand.hidden=true;ring.hidden=true;if(CO.place==='head'){bub.style.bottom='';bub.style.top='58px'}else if(!CO.center){bub.style.top='';bub.style.bottom=`calc(var(--navh) + var(--sab) + 70px)`}return}
   hand.hidden=false;ring.hidden=false;const cx=r.left-g.left+r.width/2,cy=r.top-g.top+r.height/2;ring.style.left=cx+'px';ring.style.top=cy+'px';
   const below=cy<g.height*0.55;  // hedef üstteyse el aşağıdan yukarıyı gösterir
@@ -3101,7 +3142,7 @@ function tutTick(){autoBtnVis();if(!S.tut||S.tut==='done'||S.tut==='create')retu
   if(st==='cafe2'){if(c&&c.orderQueued){S.tut='cafe3';return}show('cafe2',{text:`Müşterimiz oturdu ve menüye göz atıyor. Masanın üstündeki <b>Sipariş al</b> düğmesine dokun; ${N.waiter.name} hemen yanına koşsun.`,target:()=>c&&els.get('take'+c.id)});return}
   if(st==='cafe3'){const o=orders[0];if(o&&o.state==='TAKEN'&&!o.submitQueued&&els.get('prep'+o.id)){show('cafe3',{text:`Sipariş alındı! Şimdi siparişi baristaya iletelim: tezgahtaki <b>Hazırla</b> düğmesine dokun, baristamız ${N.barista.name} hemen hazırlamaya başlasın.`,target:()=>els.get('prep'+o.id)})}
     else if(o&&o.submitQueued){S.tut='cafe4'}else show('cafe3w',{text:`${N.waiter.name} siparişi not alıyor…`});return}
-  if(st==='cafe4'){const o=orders[0];if(o&&o.state==='READY'){S.tut='cafe5';return}show('cafe4',{text:`${N.barista.name} işe koyuldu! Başının üstündeki çubuk dolunca ürün tezgahın sağındaki teslim alanına konacak.`,target:()=>posa&&posa.head?posa.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,0.75,0)):null});return}
+  if(st==='cafe4'){const o=orders[0];if(o&&o.state==='READY'){S.tut='cafe5';return}show('cafe4',{text:`${N.barista.name} işe koyuldu! Başının üstündeki çubuk dolunca ürün tezgahın sağındaki teslim alanına konacak.`});return}
   if(st==='cafe5'){const o=orders[0];if(o&&o.pickupQueued){S.tut='cafe6';return}show('cafe5',{text:`Sipariş hazır! <b>Teslim al</b>’a dokun; ${N.waiter.name} tepsiyle masaya götürsün.`,target:()=>o&&els.get('pick'+o.id)});return}
   if(st==='cafe6'){const o=orders[0];if(o&&o.paid){S.tut='cafe7';return}show('cafe6',{text:`Afiyet olsun! Müşterimiz yemeğini bitirince kasaya gidecek; kasiyerimiz ${N.cashier.name} ödemesini alacak.`});return}
   if(st==='cafe7'){if(customers.length)return show('cafe7w',{text:'Ödeme alındı! Müşterimiz mutlu mutlu ayrılıyor…'});
@@ -3161,8 +3202,8 @@ function tut2Tick(){const m=UI.mode;
   if(S.tr==='mg'){if(S.recipes[T2_RECIPE]){S.tr='mgdone';markDirty();t2Shown='';return}
     if(m!=='merge'){if(m==='cafe'||m==='book'){t2Show('mgnav',{text:`Ballı Süt tarifini keşfetmek için <b>Birleştirme tahtasına</b> geçelim.`,target:()=>navBtn('merge'),buttons:[{label:'Birleştir’e git',green:true,icon:'merge',onClick:()=>setMode('merge')}]})}else t2Hide();return}
     const B=S.board,idx=id=>B.reduce((a,v,i)=>(v===id&&a.push(i),a),[]);const n2=idx(T2_MID),n1=idx(T2_BASE);clearTutHL();
-    if(n2.length>=2){cellEl(n2[1])&&cellEl(n2[1]).classList.add('tuthl');t2Show('mg3',{title:'Son adım!',text:`İki <b>${ITEMS[T2_MID].name}</b> malzemesini üst üste sürükle; <b>${ITEMS[T2_DISC].name}</b> olsun ve tarif keşfedilsin.`,target:()=>cellEl(n2[0]),place:'head'});return}
-    if(n1.length>=2){cellEl(n1[1])&&cellEl(n1[1]).classList.add('tuthl');t2Show('mg2'+n2.length,{title:n2.length?'Bir tane daha!':'Şimdi birleştir',text:`Bir <b>${ITEMS[T2_BASE].name}</b> malzemesini parmağınla tut ve parlayan diğerinin üstüne bırak. Aynı iki malzeme birleşince bir üst seviye olur: <b>${ITEMS[T2_MID].name}</b>.`,target:()=>cellEl(n1[0]),place:'head'});return}
+    if(n2.length>=2){cellEl(n2[1])&&cellEl(n2[1]).classList.add('tuthl');t2Show('mg3',{title:'Son adım!',text:`İki <b>${ITEMS[T2_MID].name}</b> malzemesini üst üste sürükle; <b>${ITEMS[T2_DISC].name}</b> olsun ve tarif keşfedilsin.`,target:()=>cellEl(n2[0]),drag:{from:()=>cellEl(n2[0]),to:()=>cellEl(n2[1])},place:'head'});return}
+    if(n1.length>=2){cellEl(n1[1])&&cellEl(n1[1]).classList.add('tuthl');t2Show('mg2'+n2.length,{title:n2.length?'Bir tane daha!':'Şimdi birleştir',text:`Bir <b>${ITEMS[T2_BASE].name}</b> malzemesini parmağınla tut ve parlayan diğerinin üstüne bırak. Aynı iki malzeme birleşince bir üst seviye olur: <b>${ITEMS[T2_MID].name}</b>.`,target:()=>cellEl(n1[0]),drag:{from:()=>cellEl(n1[0]),to:()=>cellEl(n1[1])},place:'head'});return}
     const bag=B.indexOf('bag_drink');const full=!B.some(v=>!v);
     if(full){t2Show('mgfull',{text:'Tahtan dolu! Bir malzemeye dokun ve <b>Kaldır</b>’a bas, sonra torbaya dokun.',place:'head'});return}
     t2Show('mg1'+n1.length+n2.length,{title:n1.length||n2.length?'Bir süt daha':'Torbaya dokun',text:n1.length||n2.length?`Torbaya bir kez daha dokun.${n2.length?' Bir tane daha '+ITEMS[T2_MID].name+' yapacağız.':''}`:`<b>İçecek torbasına</b> dokun; içinden malzeme çıkar. Bu öğreticide torba ücretsiz ve hep <b>${ITEMS[T2_BASE].name}</b> verecek.`,target:()=>bag>=0?cellEl(bag):null,place:'head'});return}
@@ -3390,7 +3431,7 @@ async function runAway(c){const ch=c.char;c.ranAway=true;c.state='RUNNING';c.bub
 async function chase(c,k){if(!k||c.chaser||c.state!=='RUNNING')return false;c.chaser=k;k.chasing=true;k.ready=false;const R=REGS[k.i]||REGS[0];const ch=k.ch;
   while(R&&R.busy)await sleep(0.1);
   if(c.state!=='RUNNING'){await chaseBack(k);return false}
-  staffBubble(ch,'alert',1.4);sfx('chime');const sp0=ch.speed;ch.canRun=true;ch.speed=1.7;
+  staffBubble(ch,'alert',1.4);sfx('chime');const sp0=ch.speed;ch.canRun=true;ch.speed=1.7;await cashExit(ch,c.char.pos.x);
   let t=0;while(c.state==='RUNNING'&&t<25){const p=c.char.pos;if(Math.hypot(ch.pos.x-p.x,ch.pos.z-p.z)<0.62){await catchRunner(c,k);break}
     ch.walkTo(p.x,p.z,{direct:p.x<DOOR_IN.x-0.2});await sleep(0.2);t+=0.2}
   if(c.state==='ESCAPED'){ch.walkTo(ch.pos.x,ch.pos.z,{direct:true});staffBubble(ch,'sleepy',1.6);await ch.doFor('Talk_with_Hands_Open',0.8)}
@@ -3404,7 +3445,12 @@ async function catchRunner(c,k){const ch=k.ch,cc=c.char;c.caughtDone=new Promise
   c._cd()}
 async function chaseBack(k){const R=REGS[k.i]||REGS[0];const st=R.stand;const ch=k.ch;
   // kasa arkasına: tezgahın yanından dolaşarak dön
-  await ch.walkTo(st.x,st.z);await ch.face(0);k.chasing=false;k.ready=REGS.length>k.i}
+  await cashEnter(ch,st);await ch.face(0);k.chasing=false;k.ready=REGS.length>k.i}
+// kasa tezgahının arkasından çıkış/giriş: tezgahın yanındaki geçitten (içinden geçmeden)
+const CASH_GATE={L:-0.6,R:1.3,back:-3.4,front:-2.12};
+function gateX(x){return x>CASH.x?CASH_GATE.R:CASH_GATE.L}
+async function cashExit(ch,tx){if(ch.pos.z>CASH_GATE.front-0.05)return;const g=gateX(tx);await ch.walkTo(g,ch.pos.z,{direct:true});await ch.walkTo(g,CASH_GATE.front,{direct:true})}
+async function cashEnter(ch,st){if(ch.pos.z<CASH_GATE.front-0.05){await ch.walkTo(st.x,st.z,{direct:true});return}const g=gateX(ch.pos.x);await ch.walkTo(g,CASH_GATE.front);await ch.walkTo(g,st.z,{direct:true});await ch.walkTo(st.x,st.z,{direct:true})}
 
 // ---------- hediye masa (ilk müşteriden sonra) ----------
 function giftTable(){if(placedTables()>=tableCap(S.lvl))return false;const rec={uid:++S.uid,id:'t_round',x:0,z:0,rot:1,chair:S.chairDefault||'c_cushion',col:2};
@@ -3860,7 +3906,7 @@ const SCOOT={park:{x:-7.15,z:2.95,yaw:0},route:[{x:-8.9,z:3.7},{x:-8.9,z:9.6},{x
 // sürücü: oturma pozu, kalçası seleye, ayakları tabana gelecek şekilde motorla birlikte taşınır
 const RIDER_OFF=new THREE.Vector3(-0.14,0.27,-0.02);
 function scootRider(){const r=SCOOT.rider;if(!r)return;const g=SCOOT.g;const off=RIDER_OFF.clone().applyAxisAngle(new THREE.Vector3(0,1,0),g.rotation.y);r.pos.set(g.position.x+off.x,g.position.y+off.y,g.position.z+off.z);r.o.rotation.y=g.rotation.y}
-function mount(ch){ch.path=[];ch.seat={scooter:true};ch.crossTo('Chair_Sit_Idle_F',0.25);SCOOT.rider=ch;scootRider()}
+function mount(ch){ch.path=[];ch.seat={scooter:true};ch.crossTo(CLIPS.SIT_BASE?'SIT_BASE':'Chair_Sit_Idle_F',0.25);SCOOT.rider=ch;scootRider()}
 function dismount(ch){SCOOT.rider=null;ch.seat=null;ch.pos.y=0;ch.crossTo('Idle_12',0.25)}
 async function drive(pts){const g=SCOOT.g;sfx('door');for(const p of pts){while(true){const dx=p.x-g.position.x,dz=p.z-g.position.z,d=Math.hypot(dx,dz);if(d<0.05)break;
       const want=Math.atan2(dx,dz);let df=want-g.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));g.rotation.y+=df*Math.min(1,0.05*8);
@@ -3873,7 +3919,7 @@ async function rideBack(ch){const g=SCOOT.g;g.visible=true;ch.o.visible=true;g.p
   const g2=SCOOT.g;g2.rotation.y=SCOOT.park.yaw;scootRider();await sleep(0.3);dismount(ch);ch.pos.set(g2.position.x+0.45,0,g2.position.z-0.1)}
 UI_IC.bike=SV(`<circle cx="16" cy="46" r="8" fill="#3e3a3a"/><circle cx="48" cy="46" r="8" fill="#3e3a3a"/><path d="M18 40h20l6-14h6" fill="none"/><path d="M14 40c0-8 6-12 14-12h6l4 12z" fill="#d9534f"/><rect x="10" y="18" width="14" height="10" rx="2" fill="#c9a06a"/><path d="M44 22h8" />`);
 // ---------- her kare ----------
-function extrasTick(dt){afkTick(dt);hudShop();stockTick(dt);doorTick(dt);dayEndTick()}
+function extrasTick(dt){afkTick(dt);staffIdleTick(dt);hudShop();stockTick(dt);doorTick(dt);dayEndTick()}
 {const st=document.createElement('style');st.textContent=`
 /*eski*/.shopbtn_old{right:auto!important;left:max(12px,env(safe-area-inset-left,0px));padding:5px 12px!important}.shopbtn .dot{width:14px;height:14px;border-radius:50%;background:#5b9a3a;border:2.5px solid var(--ink)}.shopbtn.closed{background:#ffe3df}.shopbtn.closed .dot{background:#d0453c}
 .pill.daypill{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-display);font-weight:800;font-size:12px;padding:3px 8px}.pill.daypill svg{width:18px;height:18px}
@@ -4367,6 +4413,179 @@ function bend(ch,dur,onMid){return new Promise(res=>{const sp=[ch.o.getObjectByN
 @media (prefers-reduced-motion:reduce){.nsky i,.nightov{animation:none}.nsky .sun{opacity:1}.nsky .moon{opacity:0}}
 `;document.head.appendChild(st)}
 
+// ================= KIYAFET KABUKLARI =================
+// Üst ve alt giysiler kürkün üstüne boyanmaz; gövdenin biraz dışında duran ayrı bir "kabuk" olarak üretilir.
+// Kabuk, gövdenin kendi üçgenlerinden kesilir (aynı deri ağırlıkları → her harekette gövdeye kusursuz yapışık kalır),
+// kenarları (yaka, kol ağzı, etek/paça) düzgün bir eğri boyunca kırpılır, kenarda kalınlık (kıvrık dikiş payı) ve
+// gövdeye inen bir duvar olur. Önlük de giysinin üstünde ayrı bir katman olarak kalır.
+const GM={ready:false};
+function garmentPrep(){if(GM.ready)return;custPrepare();const g=CM.geo,n=g.attributes.position.count,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight;
+  const B=CM.mesh.skeleton.bones.map(b=>b.name);const grp=re=>B.map(nm=>re.test(nm));
+  const isTop=grp(/mixamorig(Spine|Spine1|Spine2|LeftShoulder|RightShoulder|LeftArm|RightArm)$/),isArm=grp(/mixamorig(LeftArm|RightArm)$/),isFore=grp(/mixamorig(LeftForeArm|RightForeArm|LeftHand|RightHand)/),
+    isHip=grp(/mixamorig(Hips|LeftUpLeg|RightUpLeg)$/),isLeg=grp(/mixamorig(LeftLeg|RightLeg)$/),isTail=grp(/mixamorigTail$/),isNeck=grp(/mixamorig(Neck|Head)$/);
+  const W=f=>{const o=new Float32Array(n);for(let i=0;i<n;i++){let t=0;for(let k=0;k<4;k++){const w=SW.getComponent(i,k);if(w>0&&f[SI.getComponent(i,k)])t+=w}o[i]=t}return o};
+  GM.top=W(isTop);GM.arm=W(isArm);GM.fore=W(isFore);GM.hip=W(isHip);GM.leg=W(isLeg);GM.tail=new Float32Array(n);for(let i=0;i<n;i++)for(let k=0;k<4;k++)if(isTail[SI.getComponent(i,k)])GM.tail[i]=1;GM.neck=W(isNeck);
+  // önlük köşeleri: köşenin doku noktasındaki piksel sınıfı (önlük = 4), komşu piksellerin çoğunluğu
+  const M=posMap(1024),UV=g.attributes.uv.array;GM.apron=new Float32Array(n);
+  for(let i=0;i<n;i++){const x=Math.floor(UV[i*2]*1024),y=Math.floor(UV[i*2+1]*1024);let a=0,c=0;
+    for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=1024||yy>=1024)continue;const k=yy*1024+xx;if(!M.cls[k])continue;c++;if(M.cls[k]===4)a++}
+    GM.apron[i]=c?a/c:0}
+  // aynı konumdaki köşeler (doku dikişleri) tek nokta sayılır
+  const P=CM.P0;const key=i=>Math.round(P[i*3]*1e4)+'_'+Math.round(P[i*3+1]*1e4)+'_'+Math.round(P[i*3+2]*1e4);const mp=new Map();GM.pid=new Int32Array(n);
+  for(let i=0;i<n;i++){const k=key(i);let v=mp.get(k);if(v==null){v=mp.size;mp.set(k,v)}GM.pid[i]=v}
+  // önlük alanını kaynaşık köşelerde ortala (dikişte iki tarafın değeri aynı olsun)
+  const sum=new Float32Array(mp.size),cnt=new Float32Array(mp.size);for(let i=0;i<n;i++){sum[GM.pid[i]]+=GM.apron[i];cnt[GM.pid[i]]++}for(let i=0;i<n;i++)GM.apron[i]=sum[GM.pid[i]]/cnt[GM.pid[i]];
+  GM.ready=true}
+// Kırpılmış kabuk: f(i)>0 olan bölge; üçgenler f=0 eğrisi boyunca kesilir. off(i): köşenin dışa ötelenmesi.
+function garmentShell(geo,f,opt={}){garmentPrep();const src=geo.attributes,P=src.position.array,N=src.normal.array,UV=src.uv.array,SI=src.skinIndex,SW=src.skinWeight,I=geo.index.array,n=src.position.count;
+  const base=opt.off||0.007,lip=opt.lip==null?0.004:opt.lip,wallIn=opt.wallIn==null?0.0015:opt.wallIn;
+  const pos=[],nor=[],uv=[],ski=[],skw=[],idx=[],wid=[];const vmap=new Map();
+  const skinOf=(i,out)=>{for(let k=0;k<4;k++){const w=SW.getComponent(i,k);if(w>0){const b=SI.getComponent(i,k);out.set(b,(out.get(b)||0)+w)}}};
+  const push=(p,nn,u,sk,id)=>{const e=[...sk.entries()].sort((a,b)=>b[1]-a[1]).slice(0,4);let s=0;e.forEach(x=>s+=x[1]);
+    pos.push(p[0],p[1],p[2]);nor.push(nn[0],nn[1],nn[2]);uv.push(u[0],u[1]);for(let k=0;k<4;k++){ski.push(e[k]?e[k][0]:0);skw.push(e[k]?e[k][1]/s:0)}wid.push(id);return pos.length/3-1};
+  const orig=i=>{let v=vmap.get('v'+i);if(v==null){const sk=new Map();skinOf(i,sk);v=push([P[i*3],P[i*3+1],P[i*3+2]],[N[i*3],N[i*3+1],N[i*3+2]],[UV[i*2],UV[i*2+1]],sk,'p'+GM.pid[i]);vmap.set('v'+i,v)}return v};
+  const cut=(a,b,fa,fb)=>{const k=a<b?'e'+a+'_'+b:'e'+b+'_'+a;let v=vmap.get(k);if(v==null){const t=fa/(fa-fb);const L=(A,j,s)=>A[a*s+j]+(A[b*s+j]-A[a*s+j])*t;
+      const sk=new Map(),s1=new Map(),s2=new Map();skinOf(a,s1);skinOf(b,s2);for(const [bb,w] of s1)sk.set(bb,(sk.get(bb)||0)+w*(1-t));for(const [bb,w] of s2)sk.set(bb,(sk.get(bb)||0)+w*t);
+      const nn=[L(N,0,3),L(N,1,3),L(N,2,3)];const l=Math.hypot(...nn)||1;const pa=GM.pid[a],pb=GM.pid[b];
+      v=push([L(P,0,3),L(P,1,3),L(P,2,3)],nn.map(x=>x/l),[L(UV,0,2),L(UV,1,2)],sk,'c'+Math.min(pa,pb)+'_'+Math.max(pa,pb)+'_'+(Math.round((pa<pb?t:1-t)*1000)));vmap.set(k,v)}return v};
+  const F=new Float32Array(n);for(let i=0;i<n;i++)F[i]=f(i);
+  for(let t=0;t<I.length;t+=3){const v=[I[t],I[t+1],I[t+2]],fv=v.map(i=>F[i]);const ins=fv.map(x=>x>=0);const c=ins.filter(Boolean).length;if(c===0)continue;
+    if(c===3){idx.push(orig(v[0]),orig(v[1]),orig(v[2]));continue}
+    const poly=[];for(let e=0;e<3;e++){const a=v[e],b=v[(e+1)%3],fa=fv[e],fb=fv[(e+1)%3];if(fa>=0)poly.push(orig(a));if((fa>=0)!==(fb>=0))poly.push(cut(a,b,fa,fb))}
+    for(let k=1;k+1<poly.length;k++)idx.push(poly[0],poly[k],poly[k+1])}
+  if(!idx.length)return null;
+  // kenarlar: kaynaşık konuma göre tek üçgende kalan kenarlar
+  const wk=i=>wid[i];const ec=new Map();for(let t=0;t<idx.length;t+=3)for(let e=0;e<3;e++){const a=idx[t+e],b=idx[t+(e+1)%3];const ka=wk(a),kb=wk(b);const k=ka<kb?ka+'|'+kb:kb+'|'+ka;const r=ec.get(k);if(r)r.n++;else ec.set(k,{n:1,a,b})}
+  const bnd=[];const ring=new Map();for(const r of ec.values())if(r.n===1){bnd.push([r.a,r.b]);ring.set(wk(r.a),0);ring.set(wk(r.b),0)}
+  // kenardan uzaklık (2 halka): kıvrık dikiş payı
+  const adj=new Map();for(let t=0;t<idx.length;t+=3)for(let e=0;e<3;e++){const a=wk(idx[t+e]),b=wk(idx[t+(e+1)%3]);if(!adj.has(a))adj.set(a,new Set());if(!adj.has(b))adj.set(b,new Set());adj.get(a).add(b);adj.get(b).add(a)}
+  let fr=[...ring.keys()];for(let d=1;d<=2;d++){const nx=[];for(const a of fr)for(const b of adj.get(a)||[])if(!ring.has(b)){ring.set(b,d);nx.push(b)}fr=nx}
+  const nv=pos.length/3;const inner=[];
+  for(let i=0;i<nv;i++){const r=ring.get(wid[i]);const o=base+(r===0?lip:r===1?lip*0.55:r===2?lip*0.2:0)+(opt.extra?opt.extra(pos[i*3],pos[i*3+1],pos[i*3+2],r):0);
+    inner.push(pos[i*3]+nor[i*3]*wallIn,pos[i*3+1]+nor[i*3+1]*wallIn,pos[i*3+2]+nor[i*3+2]*wallIn);
+    pos[i*3]+=nor[i*3]*o;pos[i*3+1]+=nor[i*3+1]*o;pos[i*3+2]+=nor[i*3+2]*o}
+  const shade=new Float32Array(nv).fill(1);for(let i=0;i<nv;i++){const r=ring.get(wid[i]);if(r===0)shade[i]=0.86;else if(r===1)shade[i]=0.95}
+  // duvar: kenar boyunca kabuktan gövdeye inen şerit (kenar kalın görünür, aradan kürk görünmez)
+  const col=[...shade];
+  for(const [a,b] of bnd){const base0=pos.length/3;const q=[a,b];
+    for(const i of q){pos.push(pos[i*3],pos[i*3+1],pos[i*3+2]);nor.push(nor[i*3],nor[i*3+1],nor[i*3+2]);uv.push(uv[i*2],uv[i*2+1]);for(let k=0;k<4;k++){ski.push(ski[i*4+k]);skw.push(skw[i*4+k])}col.push(0.72)}
+    for(const i of q){pos.push(inner[i*3],inner[i*3+1],inner[i*3+2]);nor.push(nor[i*3],nor[i*3+1],nor[i*3+2]);uv.push(uv[i*2],uv[i*2+1]);for(let k=0;k<4;k++){ski.push(ski[i*4+k]);skw.push(skw[i*4+k])}col.push(0.6)}
+    idx.push(base0,base0+2,base0+1,base0+1,base0+2,base0+3)}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(ski,4));g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(skw,4));
+  const C=new Float32Array(col.length*3);for(let i=0;i<col.length;i++){C[i*3]=C[i*3+1]=C[i*3+2]=col[i]}g.setAttribute('color',new THREE.BufferAttribute(C,3));
+  g.setIndex(idx);g.computeBoundingSphere();return g}
+// kol ekseni: omuz (Arm) → dirsek (ForeArm) kemiklerinin bağ pozundaki yerleri
+function armAxes(){if(GM.axes)return GM.axes;const sk=CM.mesh.skeleton;const pos=nm=>{const i=sk.bones.findIndex(b=>b.name===nm);const m=new THREE.Matrix4().copy(sk.boneInverses[i]).invert();return new THREE.Vector3().setFromMatrixPosition(m)};
+  const ax=s=>{const S=pos('mixamorig'+s+'Arm'),E=pos('mixamorig'+s+'ForeArm');const d=E.clone().sub(S);const len=d.length();d.normalize();return {s:S.toArray(),d:d.toArray(),len}};
+  return GM.axes={L:ax('Left'),R:ax('Right')}}
+// kuyruğun çıktığı yer: giysi orada açık kalır (kuyruk deliği)
+const tailHole=(x,y,z)=>Math.hypot(x-0.015,(y-0.82)*0.8,z+0.15)-0.06;
+// ---- bölgeler (pozitif = içeride) ----
+// geo: o karakterin (biçimlenmiş olabilir) geometrisi; köşe numaraları temel modelle aynıdır
+const GREG={
+  top:(geo,top)=>{const P=geo.attributes.position.array;const A=armAxes();const L=top.sleeve||0.62;
+    return i=>{const x=P[i*3],y=P[i*3+1],z=P[i*3+2];let fs=1;const aw=GM.arm[i]+GM.fore[i];
+      if(aw>0.35){const a=x>0?A.L:A.R;const t=((x-a.s[0])*a.d[0]+(y-a.s[1])*a.d[1]+(z-a.s[2])*a.d[2])/a.len;fs=(L-t)*0.6}
+      const nk=1.262-0.075*Math.min(1,Math.max(0,(z-0.02)/0.07));return Math.min(fs,0.42-GM.apron[i],0.5-GM.tail[i],(nk-y)*3,(y-0.705)*3,tailHole(x,y,z))}},
+  bottom:(geo,bt)=>{const P=geo.attributes.position.array;const hem=bt.len==='long'?0.075:bt.len==='knee'?0.3:0.42;
+    return i=>{const y=P[i*3+1];return Math.min((y-hem)*3,(0.86-y)*3,tailHole(P[i*3],y,P[i*3+2]),0.4-GM.arm[i]-GM.fore[i]-GM.top[i]*(y>0.8?1:0),0.4-GM.tail[i])}},
+  apron:(geo)=>i=>GM.apron[i]-0.45};
+// ---- kumaş dokusu (gövdeyle aynı UV) ----
+const GTEX=new Map();
+function garmentTex(key,colorFn,R=512){if(GTEX.has(key))return GTEX.get(key);const M=posMap(R);const cv=document.createElement('canvas');cv.width=cv.height=R;const c2=cv.getContext('2d');const im=c2.createImageData(R,R);const d=im.data;const o=[0,0,0];
+  for(let k=0;k<R*R;k++){const x=M.pm[k*3],y=M.pm[k*3+1],z=M.pm[k*3+2];colorFn(x,y,z,o);const nz=0.96+0.06*vnoise(x*160,y*160,z*160);d[k*4]=Math.min(255,o[0]*nz);d[k*4+1]=Math.min(255,o[1]*nz);d[k*4+2]=Math.min(255,o[2]*nz);d[k*4+3]=255}
+  c2.putImageData(im,0,0);const t=new THREE.CanvasTexture(cv);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;GTEX.set(key,t);return t}
+function topTex(top){return garmentTex('t'+JSON.stringify(top),(x,y,z,o)=>topColor(top,x,y,z,o))}
+function bottomTex(bt){return garmentTex('b'+JSON.stringify(bt),(x,y,z,o)=>{let c=bt.bt;if(bt.bt2&&(Math.sin(x*60)>0)!==(Math.sin(y*60)>0))c=bt.bt2;
+  if(bt.denim){const s=Math.abs(Math.abs(x)-0.155)<0.003&&y<0.7?1:0;if(s)c=[c[0]*0.78,c[1]*0.78,c[2]*0.78]}o[0]=c[0];o[1]=c[1];o[2]=c[2]})}
+// ---- karaktere tak ----
+function garmentMat(base,map){const m=new THREE.MeshStandardMaterial({map,vertexColors:true,roughness:0.95,metalness:0,side:THREE.DoubleSide});if(base&&base.color)m.color.copy(base.color);return m}
+function addGarment(sm,geo,mat,tag){if(!geo)return null;const m=new THREE.SkinnedMesh(geo,mat);m.bind(sm.skeleton,sm.bindMatrix);m.bindMode=sm.bindMode;m.userData.garment=tag;m.castShadow=true;m.receiveShadow=false;m.frustumCulled=false;sm.parent.add(m);return m}
+function clearGarments(root){const k=[];root.traverse(o=>{if(o.userData&&o.userData.garment)k.push(o)});k.forEach(o=>{o.parent.remove(o)})}
+const GCACHE=new Map();
+// wear: {top:{c,kind,..}|null, bottom:{bt,len,..}|null}; apron katmanı giysi varsa üste çıkar
+function dressGarments(root,sm,wear){clearGarments(root);garmentPrep();const geo=sm.userData.bareGeo&&sm.geometry.userData.hidden?sm.userData.bareGeo:sm.geometry;const base=geo===CM.geo;
+  const mk=(tag,fn,opt)=>{const ck=base?tag:null;if(ck&&GCACHE.has(ck))return GCACHE.get(ck);const g=garmentShell(geo,fn,opt);if(ck)GCACHE.set(ck,g);return g};
+  let any=false;const hideF=[];
+  if(wear.bottom){const bt=wear.bottom;hideF.push(GREG.bottom(geo,bt));addGarment(sm,mk('b'+bt.len,GREG.bottom(geo,bt),{off:0.006,lip:0.004}),garmentMat(null,bottomTex(bt)),'bottom');any=true}
+  if(wear.top){const top=wear.top;hideF.push(GREG.top(geo,top));addGarment(sm,mk('t'+top.kind,GREG.top(geo,top),{off:0.0075,lip:0.0045}),garmentMat(null,topTex(top)),'top');any=true}
+  if(any){const am=sm.material.clone();am.side=THREE.DoubleSide;am.vertexColors=true;addGarment(sm,mk('apron',GREG.apron(geo),{off:0.012,lip:0.002,wallIn:0.002}),am,'apron');hideF.push(GREG.apron(geo))}
+  // giysinin altında kalan gövde üçgenleri çizilmez: eklem bükülünce kürk kumaştan dışarı taşamaz (kenar payı korunur)
+  if(hideF.length){const key=base?'h'+(wear.top?wear.top.kind:'')+'|'+(wear.bottom?wear.bottom.len:''):null;let ng=key&&GCACHE.get(key);
+    if(!ng){const I=geo.index.array,n=geo.attributes.position.count;const F=new Float32Array(n).fill(-9);for(const f of hideF)for(let i=0;i<n;i++){const v=f(i);if(v>F[i])F[i]=v}
+      const keep=[];for(let t=0;t<I.length;t+=3){if(F[I[t]]>HIDE_M&&F[I[t+1]]>HIDE_M&&F[I[t+2]]>HIDE_M)continue;keep.push(I[t],I[t+1],I[t+2])}
+      ng=new THREE.BufferGeometry();for(const k in geo.attributes)ng.setAttribute(k,geo.attributes[k]);ng.morphAttributes=geo.morphAttributes;ng.setIndex(keep);ng.boundingSphere=geo.boundingSphere;ng.userData.hidden=true;if(key)GCACHE.set(key,ng)}
+    sm.userData.bareGeo=geo;sm.geometry=ng}}
+const HIDE_M=0.04;
+
+// ================= OTURMA POZLARI =================
+// Mixamo'nun "Chair_Sit_Idle_F" klibi uzun bir bölümde öne eğilip kalçayı kaydırıyor (masada kötü görünüyor).
+// Onun yerine klibin sakin ilk anından sabit bir oturma pozu çıkarılır ve üzerine çeşitler kurulur:
+//  SIT_BASE  : sakin oturuş, hafif nefes
+//  SIT_CHAT  : grupta sohbet (alt gövde oturur, kollar/baş Talk klibinden)
+//  SIT_PHONE : tek müşteri telefonla konuşur (bir el kulakta, baş hafif yana)
+const UPPER_RE=/mixamorig(LeftShoulder|RightShoulder|LeftArm|RightArm|LeftForeArm|RightForeArm|LeftHand|RightHand|Neck|Head)\b/;
+function sampleClip(clip,t){const out=new Map();for(const tr of clip.tracks){const it=tr.createInterpolant();const v=it.evaluate(Math.min(t,clip.duration));out.set(tr.name,{type:tr.constructor,v:Array.from(v),times:null})}return out}
+function staticTrack(name,type,v,dur){return new type(name,[0,dur],[...v,...v])}
+function buildPoseClips(){const S0=CLIPS.Chair_Sit_Idle_F;if(!S0||CLIPS.SIT_BASE)return;
+  const base=sampleClip(S0,0.6);const dur=4;
+  // nefes: göğüs (Spine2) 4 saniyede hafifçe öne-arkaya
+  const mk=(name,extra)=>{const tracks=[];for(const [n,o] of base){if(extra&&extra.has(n))continue;
+      if(/mixamorigSpine2\.quaternion/.test(n)){const q0=new THREE.Quaternion().fromArray(o.v),ts=[],vs=[];for(let i=0;i<=8;i++){const t=i/8*dur;const q=q0.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.sin(t/dur*Math.PI*2)*0.025));ts.push(t);vs.push(q.x,q.y,q.z,q.w)}tracks.push(new THREE.QuaternionKeyframeTrack(n,ts,vs))}
+      else tracks.push(staticTrack(n,o.type,o.v,dur))}
+    if(extra)for(const tr of extra.values())tracks.push(tr);return new THREE.AnimationClip(name,-1,tracks)};
+  CLIPS.SIT_BASE=mk('SIT_BASE',null);
+  // sohbet: Talk klibinin üst gövde izleri
+  const T=CLIPS.Talk_with_Hands_Open;if(T){const ex=new Map();for(const tr of T.tracks)if(UPPER_RE.test(tr.name)&&/quaternion/.test(tr.name))ex.set(tr.name,tr.clone());CLIPS.SIT_CHAT=mk('SIT_CHAT',ex)}
+  // telefon: el sallama klibinde elin başa en yakın olduğu an, o kolun pozu; baş hafif yana eğik
+  const W=CLIPS.Wave_One_Hand;if(W&&TEMPLATE){const r=SkeletonUtils.clone(TEMPLATE);const mx=new THREE.AnimationMixer(r);const a=mx.clipAction(W);a.play();const head=r.getObjectByName('mixamorigHead');let best={d:9};const hv=new THREE.Vector3(),pv=new THREE.Vector3();
+    for(let t=0.1;t<W.duration;t+=0.05){mx.setTime(t);r.updateMatrixWorld(true);head.getWorldPosition(hv);for(const side of ['Left','Right']){r.getObjectByName('mixamorig'+side+'Hand').getWorldPosition(pv);const d=pv.distanceTo(hv);if(d<best.d)best={d,t,side}}}
+    const pose=sampleClip(W,best.t);const ex=new Map();const re=new RegExp('mixamorig'+best.side+'(Shoulder|Arm|ForeArm|Hand)\\b');
+    for(const [n,o] of pose)if(re.test(n)&&/quaternion/.test(n))ex.set(n,staticTrack(n,o.type,o.v,dur));
+    const hn='mixamorigHead.quaternion',hb=base.get(hn);if(hb){const q=new THREE.Quaternion().fromArray(hb.v).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),best.side==='Left'?0.16:-0.16));ex.set(hn,staticTrack(hn,THREE.QuaternionKeyframeTrack,[q.x,q.y,q.z,q.w],dur))}
+    CLIPS.SIT_PHONE=mk('SIT_PHONE',ex);CLIPS.SIT_PHONE.userData={side:best.side}}}
+// telefon modeli (yalnız SIT_PHONE sırasında görünür)
+function phoneFor(ch){if(ch.phone!==undefined)return ch.phone;const side=CLIPS.SIT_PHONE&&CLIPS.SIT_PHONE.userData&&CLIPS.SIT_PHONE.userData.side;const hand=side&&ch.o.getObjectByName('mixamorig'+side+'Hand');if(!hand){ch.phone=null;return null}
+  const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(0.045,0.09,0.008),toon(0x2b2b33));g.add(body);const scr=new THREE.Mesh(new THREE.PlaneGeometry(0.038,0.075),new THREE.MeshBasicMaterial({color:0x8fd3ff}));scr.position.z=0.0045;g.add(scr);
+  const ws=hand.getWorldScale(new THREE.Vector3()).x||1;g.scale.setScalar(1/ws);g.position.set(0,0.06/ws,0.03/ws);g.rotation.set(0.2,0,0);g.visible=false;g.userData.cacc=true;hand.add(g);ch.phone=g;return g}
+// oturan karakterin poz seçimi: grupta sohbet ↔ sakin, tek müşteri ara ara telefonda
+function sitPick(ch,dt){if(!CLIPS.SIT_BASE)return 'Chair_Sit_Idle_F';ch.sitT=(ch.sitT||0)-dt;
+  if(ch.sitT<=0){const m=ch.sitMode||'calm';let next='SIT_BASE',dur=4+Math.random()*5;
+    if(m==='chat'&&ch.sitCur!=='SIT_CHAT'&&Math.random()<0.75){next='SIT_CHAT';dur=4+Math.random()*4}
+    else if(m==='phone'&&ch.sitCur!=='SIT_PHONE'&&Math.random()<0.7){next='SIT_PHONE';dur=7+Math.random()*8}
+    ch.sitCur=CLIPS[next]?next:'SIT_BASE';ch.sitT=dur}
+  const ph=ch.sitCur==='SIT_PHONE'?phoneFor(ch):ch.phone;if(ph)ph.visible=ch.sitCur==='SIT_PHONE';
+  return ch.sitCur||'SIT_BASE'}
+
+// ================= ÇALIŞANLARIN BOŞ ZAMANI =================
+// Boşta kalan garson kendi bekleme alanında kısa gezinir; barista tezgahın arkasında yürür, raflara bakar;
+// kasiyer kasanın arkasında adım atar ve ara ara yakınındaki çalışanla selamlaşıp sohbet eder.
+const IDLE={on:true};
+const irnd=(a,b)=>a+Math.random()*(b-a);
+function freeAt(x,z){try{const [i,k]=cellOf(x,z);return !blocked(i,k)}catch(e){return false}}
+// garson: bekleme noktasının çevresinde (≤0.9 m) boş bir noktaya yürür, biraz durur, geri döner
+async function waiterWander(w,P,yaw){const ch=w.ch;for(let n=0;n<8;n++){const a=Math.random()*Math.PI*2,r=irnd(0.45,0.9);const x=P.x+Math.cos(a)*r,z=P.z+Math.sin(a)*r;
+    if(!freeAt(x,z)||WSTAFF.some(o=>o!==w&&Math.hypot(o.ch.pos.x-x,o.ch.pos.z-z)<0.6))continue;
+    const ok=await ch.walkTo(x,z,{interrupt:()=>jobs.length>0});if(!ok||jobs.length)return;
+    await ch.face(Math.random()*Math.PI*2);await sleep(irnd(1.2,2.6));if(jobs.length)return;
+    await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(!jobs.length)await ch.face(yaw);return}}
+// barista: tezgah arkasında kendi bölgesinde birkaç adım
+async function baristaWander(b,h){if(baristaQ.length)return;const ch=b.ch;const span=BSTAFF.length>1?0.35:0.7;const x=h.x+(Math.random()<0.5?-1:1)*irnd(0.25,span);
+  await ch.walkTo(x,h.z,{direct:true});if(baristaQ.length)return;await ch.face(Math.random()<0.5?Math.PI:0);await sleep(irnd(1,2.2));
+  if(!baristaQ.length&&Math.random()<0.5)await ch.doFor('Talk_with_Hands_Open',1.0);await ch.walkTo(h.x,h.z,{direct:true});await ch.face(0)}
+// kasiyer: kasa boşken
+function cashIdleOk(k){const R=REGS[k.i];return k.ready&&!k.chasing&&!cashMoving&&R&&!R.busy&&!R.cust&&!CASH.queue.length&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING')}
+async function cashierIdle(k){const R=REGS[k.i],st=R.stand,ch=k.ch;k.ready=false;k.idleBusy=true;
+  try{const mates=[...BSTAFF.filter(b=>!b.busy&&!baristaQ.length),...WSTAFF.filter(w=>!jobs.length)].map(x=>x.ch).filter(c=>Math.hypot(c.pos.x-ch.pos.x,c.pos.z-ch.pos.z)<4.2&&!c.path.length);
+    if(mates.length&&Math.random()<0.55){const m=mates[Math.floor(Math.random()*mates.length)];await ch.faceTo(m.pos.x,m.pos.z);staffBubble(ch,'heart',2.2);
+      await Promise.all([ch.doFor(Math.random()<0.5?'Wave_One_Hand':'Talk_with_Hands_Open',1.4),(async()=>{await sleep(0.5);if(!m.act&&!m.path.length){staffBubble(m,'heart',1.8);await m.doFor('Talk_with_Hands_Open',1.2)}})()])}
+    else{const x=Math.max(-0.12,Math.min(0.82,st.x+(Math.random()<0.5?-1:1)*irnd(0.2,0.38)));await ch.walkTo(x,st.z,{direct:true});await ch.face(Math.PI);await sleep(irnd(1,2));
+      if(Math.random()<0.5)await ch.doFor('Talk_with_Hands_Open',1.0);await ch.walkTo(st.x,st.z,{direct:true})}
+    await ch.face(0)}finally{k.idleBusy=false;k.ready=REGS.length>k.i}}
+function staffIdleTick(dt){if(!IDLE.on||!S.created)return;for(const k of CSTAFF){if(k.idleBusy)continue;if(!cashIdleOk(k)){k.idleT=0;continue}k.idleT=(k.idleT||0)+dt;
+    if(k.idleT>(k.idleNext||(k.idleNext=irnd(10,18)))){k.idleT=0;k.idleNext=irnd(12,22);cashierIdle(k)}}}
+
 // ================= BAŞLAT =================
 function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]>1)setEquip(k,S.equip[k]);
   let moved=0,stored=0;
@@ -4382,13 +4601,13 @@ async function init(){
   try{
     const hadSave=loadState();applyState();
     const g=await loadGLB('models/yosun.txt',p=>introProgress(p));GLTF=g;TEMPLATE=SkeletonUtils.clone(g.scene); // el değmemiş kopya: müşteriler Yosun'un o anki pozunu/tepsisini devralmasın
-    for(const c of g.animations){if(c.name==='walking_2')continue;c.tracks=c.tracks.filter(t=>!/Toe|Hand(Thumb|Middle)/.test(t.name));c.resetDuration();CLIPS[c.name]=c}
+    for(const c of g.animations){if(c.name==='walking_2')continue;c.tracks=c.tracks.filter(t=>!/Toe|Hand(Thumb|Middle)/.test(t.name));c.resetDuration();CLIPS[c.name]=c}buildPoseClips();
     await new Promise(r=>setTimeout(r,30));
     const baseMat=(()=>{let m;g.scene.traverse(o=>{if(o.isMesh&&!m)m=o.material});return m})();const src=baseMat.map.image;
     for(const L of LOOKS)L.tex=recolor(src,L.W,L.B,L.A,null);POSA_LOOK.tex=recolor(src,POSA_LOOK.W,POSA_LOOK.B,POSA_LOOK.A,POSA_LOOK.DK);
     // ekip: kayıtlı görünümlerle (yoksa varsayılan Yosun / Poşa / Fındık)
     custPrepare();LOOKS.forEach((L,i)=>L.tex=customerTex(L,i));VIP_LOOK.tex=customerTex(VIP_LOOK,1);if(!S.chars)S.chars=charsDefault();
-    for(const key of allStaffKeys()){const role=roleOfKey(key);if(!S.chars[key])S.chars[key]=newHireCfg(key);const c=S.chars[key];c.look={...LOOK_DEF,...(c.look||{})};c.wear={...ROLE_DEF[role].wear,...(c.wear||{})};if(!c.name)c.name=HIRE_NAMES[key]||ROLE_DEF[role].name;if(!CLO[c.wear.apron])c.wear.apron=ROLE_DEF[role].wear.apron;   // çalışanlar her zaman önlüklü
+    for(const key of allStaffKeys()){const role=roleOfKey(key);if(!S.chars[key])S.chars[key]=newHireCfg(key);const c=S.chars[key];c.look={...LOOK_DEF,...(c.look||{})};if(c.look.whisk==='none')c.look.whisk='short';c.look.tailLen='normal';c.look.tailFluff=false;c.look.tail='same';c.wear={...ROLE_DEF[role].wear,...(c.wear||{})};if(!c.name)c.name=HIRE_NAMES[key]||ROLE_DEF[role].name;if(!CLO[c.wear.apron])c.wear.apron=ROLE_DEF[role].wear.apron;   // çalışanlar her zaman önlüklü
     if(c.freeEdits==null)c.freeEdits=0}
     layoutRegisters(S.staff.cashier);
     for(const key of allStaffKeys())spawnStaff(key,false);
@@ -4420,6 +4639,7 @@ function cashLayoutTick(){const n=Math.min(2,CSTAFF.length);if(cashMoving||REGS.
   Promise.all(CSTAFF.map(async k=>{const st=REGS[k.i].stand;await k.ch.walkTo(st.x,st.z,{direct:true});await k.ch.face(0);k.ready=true})).then(()=>{cashMoving=false})}
 // müşteriler de şort giyer: kuyruksuz (pürüzsüz normalli) ortak geometri
 function cloneLook(tex,lk){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);let sm;r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true;if(o.isSkinnedMesh){o.geometry=NO_BOTTOMS?CM.geo:CM.geoNT;sm=o}}});
+  if(sm&&lk&&lk._top)dressGarments(r,sm,{top:lk._top,bottom:null});
   if(sm&&!NO_BOTTOMS){const L=lk||{};const bt=(CLO[L._bt||L.bt||'bt_navy']||CLO.bt_navy).bt;buildTail(sm,{fur:L.W||[245,240,232],f2:L.B||[150,110,80],tail:'same',pattern:'original',len:'normal',fluff:false,bt})}return r}
 function resize(){const w=game.clientWidth,h=game.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 resize();addEventListener('resize',resize);visualViewport&&visualViewport.addEventListener('resize',resize);
