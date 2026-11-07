@@ -300,7 +300,7 @@ function obst(minX,maxX,minZ,maxZ){OBST.push({minX,maxX,minZ,maxZ})}
 const floorStrips=[];
 const floor=new THREE.Mesh(new THREE.BoxGeometry(ROOM_W,0.2,ROOM_D),M.floor);floor.position.y=-0.1;floor.receiveShadow=true;scene.add(floor);
 for(let i=0;i<Math.floor(ROOM_D/0.43);i++){const z=-ROOM_D/2+0.22+i*0.43;const strip=new THREE.Mesh(new THREE.BoxGeometry(ROOM_W-0.02,0.01,0.02),M.floorDark);strip.position.set(0,0.005,z);strip.receiveShadow=true;scene.add(strip);floorStrips.push(strip)}
-const rug=cyl(1.5,1.5,0.03,M.pink,1.4,0.015,0.6,40);rug.castShadow=false;const rugIn=cyl(1.1,1.1,0.035,M.cream,1.4,0.015,0.6,40);rugIn.castShadow=false;
+const rug=box(4.3,0.024,3.3,M.pink,1.35,0.012,1.35,{shadow:false,round:0.01});rug.castShadow=false;const rugIn=box(3.8,0.028,2.8,M.cream,1.35,0.014,1.35,{shadow:false,round:0.01});rugIn.castShadow=false;   // dikdörtgen halı: dört masanın altında
 // ---------- DUVARLAR (arka: -z, sol: -x) — gerçek pencere ve kapı boşluklu, zemine kadar iner ----------
 const WIN={x:1.6,y:1.5,w:2.0,h:1.2}, DOOR={z:1.8,w:1.2,h:2.3}, SIDEL={z:0.55,y:1.2,w:0.44,h:1.2};
 function archHole(path,cx,cy,w,h){path.moveTo(cx-w/2,cy-h/2);path.lineTo(cx+w/2,cy-h/2);path.lineTo(cx+w/2,cy+h/2);path.absarc(cx,cy+h/2,w/2,0,Math.PI,false);path.lineTo(cx-w/2,cy-h/2);return path}
@@ -1071,7 +1071,7 @@ class Char{
   // yeni bir dönüş/hareket eskisinin yerini alırsa eski bekleyen söz de çözülür (aksi hâlde onu bekleyen döngü sonsuza dek takılırdı)
   face(yaw){if(this.turn){const r=this.turn.res;this.turn=null;r()}return new Promise(res=>{this.turn={to:yaw,res}})}
   faceTo(x,z){return this.face(Math.atan2(x-this.pos.x,z-this.pos.z))}
-  doFor(name,dur){if(this.act){const r=this.act.res;this.act=null;r()}return new Promise(res=>{this.act={name,res,t:0,max:dur};this.play(name,0.25)})}
+  doFor(name,dur){if(!this.acts[name])name='Idle_12';if(this.act){const r=this.act.res;this.act=null;r()}return new Promise(res=>{this.act={name,res,t:0,max:dur};this.play(name,0.25)})}
   endAct(){const r=this.act&&this.act.res;this.act=null;r&&r()}
   sitAt(seat,instant=false){
     if(instant){this.path=[];this.seat=seat;this.pos.set(seat.O.x,seat.rootY,seat.O.z);this.o.rotation.y=seat.frame.yaw;this.crossTo(CLIPS.SIT_BASE?'SIT_BASE':'Chair_Sit_Idle_F',0);return Promise.resolve()}   // aynı karede, gecikmesiz
@@ -1108,12 +1108,17 @@ class Char{
       if(this.seat)want=sitPick(this,dt);
       else if(this.path.length)want=this.carry?(this.carryAnim&&this.acts[this.carryAnim]?this.carryAnim:'Handbag_Walk'):(this.vel>1.5?'Running':'Walking');
       else if(this.act)want=this.act.name;
-      else want=this.carry?(this.carryAnim&&this.acts[this.carryAnim]?this.carryAnim:'Handbag_Walk'):'Idle_12';
+      else want=this.carry?(this.carryAnim==='Carry_Heavy_Object_Walk_inplace'&&this.acts.CARRY_IDLE?'CARRY_IDLE':this.carryAnim&&this.acts[this.carryAnim]?this.carryAnim:'Handbag_Walk'):'Idle_12';
       this.play(want)}
     this.acts.Handbag_Walk.timeScale=(this.carry&&!this.path.length&&!this.act)?0:1;
     {const ca=this.acts.Carry_Heavy_Object_Walk_inplace;if(ca)ca.timeScale=(this.carry&&!this.path.length&&!this.act)?0:1.15}   // koli taşıma yürüyüşü; dururken kucakta tutma pozu
     if(this.act){this.act.t+=dt;if(this.act.t>=this.act.max)this.endAct()}
-    this.blend(dt);this.mixer.update(dt);poseFix(this,dt);if(this.post)this.post(dt);
+    // AnimationMixer bir kemiğin değeri bir önceki kareyle aynıysa (sabit iz, donmuş klip) onu yeniden YAZMAZ;
+    // poseFix / eğilme / baş bakışı gibi animasyon sonrası eklemeler o zaman kare kare birikir (kollar dönüp gider).
+    // Bu yüzden eklemelerin dokunduğu kemikler her karede animasyonun verdiği değere geri alınır.
+    if(!this._fb){this._fb=[];for(const n of ['Spine','Spine1','Spine2','Neck','Head','LeftShoulder','RightShoulder','LeftArm','RightArm','LeftForeArm','RightForeArm']){const b=this.o.getObjectByName('mixamorig'+n);if(b)this._fb.push([b,b.quaternion.clone()])}}
+    else for(const f of this._fb)f[0].quaternion.copy(f[1]);
+    this.blend(dt);this.mixer.update(dt);for(const f of this._fb)f[1].copy(f[0].quaternion);poseFix(this,dt);if(this.post)this.post(dt);
     if(this.look>0&&this.seat&&!this.trans&&this.head){this.lt+=dt;this.head.rotation.y+=Math.sin(this.lt*0.55+this.lookPh)*0.32*this.look;this.head.rotation.x+=Math.sin(this.lt*0.31+this.lookPh)*0.05*this.look}
     if(!this.seat&&!this.trans&&this.feet.length){this.o.updateMatrixWorld(true);let low=Infinity;for(const b of this.feet){b.getWorldPosition(_v);if(_v.y<low)low=_v.y}
       const wantY=this.pos.y+(FLOOR_Y+FOOT_BONE_ABOVE_SOLE*YS-low);this.pos.y+=(wantY-this.pos.y)*Math.min(1,dt*20)}
@@ -1151,7 +1156,7 @@ LOOKS.push(
   {name:'Mavi',W:[188,200,214],B:[110,124,146],A:[236,150,90],xs:0.98,hat:(h,n)=>{const b=acc(h,new THREE.SphereGeometry(0.11,14,8),0xd9534f,-0.01,0.335,0,0.1,0,-0.15);b.scale.y=0.36;acc(h,new THREE.CylinderGeometry(0.01,0.012,0.035,6),0xd9534f,-0.02,0.38,0)}},
   {name:'Badem',W:[246,232,212],B:[170,120,84],A:[150,110,190],xs:1.0,hat:(h,n)=>{}});
 // VIP gurme: altın taç, mor yelek (önlük yok)
-const VIP_LOOK={name:'VIP',W:[252,246,236],B:[190,150,110],A:[120,72,150],xs:1.03,vip:true,top:{c:[250,246,240],kind:'vest',v:[118,70,150]},bt:'bt_navy',
+const VIP_LOOK={name:'VIP',W:[252,246,236],B:[190,150,110],A:[120,72,150],xs:1.03,vip:true,top:{c:[118,70,150],kind:'shirt',collar:[250,246,240]},bt:'bt_black',
   hat:(h,n)=>{const g=new THREE.Group();g.position.set(0,0.33,0);h.add(g);acc(g,new THREE.CylinderGeometry(0.07,0.078,0.055,18,1,true),0xf2b134,0,0,0);acc(g,new THREE.CylinderGeometry(0.072,0.072,0.006,18),0xf6d47a,0,-0.024,0);
     for(let i=0;i<5;i++){const a=i/5*Math.PI*2;acc(g,new THREE.ConeGeometry(0.018,0.05,6),0xf2b134,Math.sin(a)*0.07,0.05,Math.cos(a)*0.07);acc(g,new THREE.SphereGeometry(0.012,8,6),i%2?0xd9534f:0x6fb0e0,Math.sin(a)*0.077,0.004,Math.cos(a)*0.077)}}};
 const CASH_LOOK={W:[255,244,226],B:[214,150,84],A:[110,150,96]};   // kasiyer Fındık: krem-fındık kürk, yeşil önlük
@@ -1279,7 +1284,7 @@ function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
 
 // ================= OYUN DURUMU + KAYIT =================
 const SAVE_KEY='posa-yosun-kafe-kayit-v3';
-const START_TABLES=[[-1.3,0.5,'t_four',0],[1.2,0.5,'t_four',0],[-0.1,2.8,'t_round',1],[2.4,2.8,'t_round',1]];   // başlangıç: 2 dört kişilik + 2 iki kişilik masa (12 kişi)
+const START_TABLES=[[0.2,0.4,'t_round',1],[2.5,0.4,'t_round',1],[0.2,2.35,'t_four',0],[2.5,2.35,'t_four',0]];   // başlangıç: halının üstünde 2×2 düzen (üstte iki kişilik, altta dört kişilik)   // başlangıç: 2 dört kişilik + 2 iki kişilik masa (12 kişi)
 let GLTF=null,TEMPLATE=null,yosun=null,posa=null,cashier=null,orderSeq=0,custSeq=0,spawnT=CONFIG.firstArrival,started=false;
 const customers=[],orders=[],jobs=[],baristaQ=[];
 let posaJob=null;   // eski ad: ilk baristanın işi (UI uyumu)
@@ -1292,7 +1297,7 @@ function defaultBoard(){const b=Array(CONFIG.board.w*CONFIG.board.h).fill(null);
   b[24]='kahve1';b[25]='kahve1';b[28]='un1';b[29]='seker1';return b}
 function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.id]=true;
   const recipes={};for(const r of RECIPES)if(r.def)recipes[r.id]=true;const unlocked={...recipes},menu={...recipes};
-  return {v:7,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:4,
+  return {v:8,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:4,
     furniture:START_TABLES.map((p,i)=>({uid:i+1,id:p[2],x:p[0],z:p[1],rot:p[3],chair:'c_cushion',col:i})),
     wall:'w_cream',floor:'f_classic',equip:{espresso:1,kettle:1,vitrine:1,oven:1},recipes,unlocked,menu,items:{},board:defaultBoard(),
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
@@ -1320,6 +1325,8 @@ function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e
     if(!(d.v>=4)){const near=(f,x,z)=>Math.hypot(f.x-x,f.z-z)<0.05;for(const f of S.furniture){if(f.uid===1&&near(f,0.8,-1.9)){f.x=0.35;f.z=0.6;f.rot=1}else if(f.uid===2&&near(f,1.2,1.4)){f.x=2.45;f.z=0.6;f.rot=1}}S.v=4}
     // v7: başlangıç düzeni 4 × dört kişilik masa (16 kişi). Eski masalar depoya kaldırılır, istenirse yeniden yerleştirilir
     if(!(d.v>=7)){for(const f of S.furniture)if(CAT[f.id]&&CAT[f.id].kind==='table')f.stored=true;START_TABLES.forEach((p,i)=>S.furniture.push({uid:++S.uid,id:p[2],x:p[0],z:p[1],rot:p[3],chair:S.chairDefault||'c_cushion',col:i}));S.v=7;S.giftTable=true;S._moved7=true}
+    // v8: yeni başlangıç düzeni; varsayılan yerinde duran (oyuncunun taşımadığı) masalar yeni yerlerine
+    if(!(d.v>=8)){const OLD=[[-1.3,0.5],[1.2,0.5],[-0.1,2.8],[2.4,2.8]];for(const f of S.furniture){if(f.stored)continue;const k=OLD.findIndex(o=>Math.hypot(f.x-o[0],f.z-o[1])<0.05);if(k>=0){const n=START_TABLES.find(t=>t[2]===f.id&&!S.furniture.some(g=>g!==f&&!g.stored&&Math.hypot(g.x-t[0],g.z-t[1])<0.05));if(n){f.x=n[0];f.z=n[1];f.rot=n[3]}}}S.v=8}
     return true}catch(e){console.warn('kayıt okunamadı',e);return false}}
 let saveTimer=0;
 let RESETTING=false;
@@ -1328,7 +1335,9 @@ function markDirty(){if(!saveTimer)saveTimer=setTimeout(saveNow,400)}
 
 // ---------- seviye / XP ----------
 const lvQueue=[];
-function addXP(n){if(!(n>0))return;S.xp+=Math.round(n);let up=false;while(S.xp>=CONFIG.xpNeed(S.lvl)){S.xp-=CONFIG.xpNeed(S.lvl);S.lvl++;S.gems+=CONFIG.gems.levelUp;lvQueue.push(S.lvl);up=true}if(up)hudGems();
+// seviye atlama ödülü (erken oyunda ekonomiyi rahatlatır)
+const lvCoins=L=>Math.min(400,40+L*20);
+function addXP(n){if(!(n>0))return;S.xp+=Math.round(n);let up=false;while(S.xp>=CONFIG.xpNeed(S.lvl)){S.xp-=CONFIG.xpNeed(S.lvl);S.lvl++;S.gems+=CONFIG.gems.levelUp;S.coins+=lvCoins(S.lvl);finRec(lvCoins(S.lvl),'bonus');lvQueue.push(S.lvl);up=true}if(up)hudCoins(true);if(up)hudGems();
   hudXP();markDirty();if(up)showLevelUp()}
 function addCoins(n,cat){S.coins+=n;hudCoins(true);markDirty();finRec(n,cat)}
 function unlocksAt(L){const out=[];
@@ -1383,7 +1392,7 @@ async function waiterLoop(w){let idle=0;const ch=w.ch;
     if(w.i===0&&!jobs.length&&idle>16&&atSpot(ch,P)&&await idleChat(w)){idle=0;continue}
     if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w)}   // bir iş hata verse de garson çalışmaya devam eder
     else if(!atSpot(ch,P)){const ok=await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(ok&&!jobs.length)await ch.face(yaw)}
-    else{await sleep(0.1);idle+=0.1;if(idle>(w.wanderAt||(w.wanderAt=7+Math.random()*7))&&!jobs.length){idle=0;w.wanderAt=0;if(Math.random()<0.7)await waiterWander(w,P,yaw);else{await ch.doFor('Talk_with_Hands_Open',1.2);if(!jobs.length)await ch.face(yaw)}}}}}
+    else{await sleep(0.1);idle+=0.1;if(idle>(w.wanderAt||(w.wanderAt=7+Math.random()*7))&&!jobs.length){idle=0;w.wanderAt=0;if(Math.random()<0.7)await waiterWander(w,P,yaw);else{await ch.doFor('IDLE_LOOK',1.2);if(!jobs.length)await ch.face(yaw)}}}}}
 const yosunLoop=()=>{};   // eski ad (artık her garson kendi döngüsünde)
 function enqueue(name,run){jobs.push({name,run})}
 
@@ -1410,7 +1419,7 @@ const unlockZ=(k,b)=>{if(ZLOCK[k]===b)ZLOCK[k]=null};
 async function prepare(b,o){const ch=b.ch,r=o.item,T=r.prep*equipFactor(r)*prepMul(),Z=zoneOf(r);
   const m=makeProduct(r);m.visible=false;scene.add(m);o.mesh=m;
   b.job={o,done:0,total:T};if(b.i===0)posaJob=b.job;
-  const step=async(dur,fn)=>{const t0=b.job.done;await Promise.all([ch.doFor('Talk_with_Hands_Open',dur),tween(dur,u=>{fn&&fn(u);b.job.done=t0+dur*u})]);b.job.done=t0+dur};
+  const step=async(dur,fn)=>{const t0=b.job.done;await Promise.all([ch.doFor('IDLE_WORK',dur),tween(dur,u=>{fn&&fn(u);b.job.done=t0+dur*u})]);b.job.done=t0+dur};
   const show=spot=>{m.position.copy(spot);m.visible=true;setBuilt(m,0);m.scale.setScalar(1)};
   if(r.station==='coffee'){
     await bGo(b,PST.grind);sfx('grind',T*0.3);await step(T*0.3,u=>{STATION.crank.rotation.y=u*Math.PI*8});
@@ -1450,7 +1459,7 @@ async function baristaLoop(b){let idle=0;const ch=b.ch;
       continue}
     const h=bIdleSpot(b);b.idleAt=h;
     if(!atSpot(ch,h)){unlockZ('pick',b);await bGo(b,{x:h.x,z:h.z});await ch.face(0);continue}
-    unlockZ('pick',b);await sleep(0.1);idle+=0.1;if(idle>(b.wanderAt||(b.wanderAt=8+Math.random()*6))){idle=0;b.wanderAt=0;b.busy=true;try{if(Math.random()<0.75)await baristaWander(b,h);else await ch.doFor('Talk_with_Hands_Open',1.4)}finally{b.busy=false}}}}
+    unlockZ('pick',b);await sleep(0.1);idle+=0.1;if(idle>(b.wanderAt||(b.wanderAt=8+Math.random()*6))){idle=0;b.wanderAt=0;b.busy=true;try{if(Math.random()<0.75)await baristaWander(b,h);else await ch.doFor('IDLE_LOOK',1.4)}finally{b.busy=false}}}}
 const posaLoop=()=>{};   // eski ad
 
 // ================= MÜŞTERİLER =================
@@ -1537,7 +1546,7 @@ const payCount=()=>CASH.queue.length+REGS.filter(r=>r.cust).length;
 // ---------- KASİYERLER ----------
 async function cashierServe(R,c){const k=CSTAFF[R.i]||CSTAFF[0];while(k.chasing)await sleep(0.2);R.busy=true;const ca=k.ch;const P=R.parts,dr=P.drawer,z0=P.drawerZ;await ca.face(0);
   P.screen.material.color.setHex(0xfff3a0);
-  await Promise.all([ca.doFor('Talk_with_Hands_Open',1.5),(async()=>{await sleep(0.6);sfx('register');await tween(0.25,u=>dr.position.z=z0+0.16*u)})()]);
+  await Promise.all([ca.doFor('IDLE_WORK',1.5),(async()=>{await sleep(0.6);sfx('register');await tween(0.25,u=>dr.position.z=z0+0.16*u)})()]);
   pay(c,R);await sleep(0.45);await tween(0.25,u=>dr.position.z=z0+0.16*(1-u));P.screen.material.color.setHex(0x9fe0a8);
   ca.doFor('Wave_One_Hand',1.2).then(()=>ca.face(0));R.busy=false}
 function chooseRecipe(c){const av=availableRecipes();if(!av.length)return null;const rq=S.req&&av.find(r=>r.id===S.req.rid);if(rq&&Math.random()<0.55)return rq;
@@ -1545,13 +1554,13 @@ function chooseRecipe(c){const av=availableRecipes();if(!av.length)return null;c
 // grubun siparişi tek seferde alınır: garson masaya bir kez gelir, her üye için ayrı ürün yazılır
 function takeOrder(c0){const g=c0.group||{members:[c0],size:1,leader:c0};if(!groupReady(g))return;const M=g.members.filter(m=>!m.gone);for(const m of M)m.orderQueued=true;const c=g.leader;
   enqueue('take',async w=>{const ch=w.ch;const s=c.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);
-    for(const m of M)m.bubble='think';await ch.doFor('Talk_with_Hands_Open',1.8+0.6*(M.length-1));
+    for(const m of M)m.bubble='think';await ch.doFor('IDLE_TALK',1.8+0.6*(M.length-1));
     const noStk=[];for(const m of M){const item=(window.__force&&RECIPE[window.__force])||chooseRecipe(m);
       if(m.gone)continue;if(!item){noStk.push(m);continue}const u=stockUse(item);const o={id:'S'+(++orderSeq),customer:m,table:m.table,seat:m.seat,item,price:priceOf(item),qual:u.q,cost:u.c,state:'TAKEN',paid:false,mesh:null,slot:-1};orders.push(o);m.order=o;
       if(m.menu){scene.remove(m.menu);m.menu=null}m.bubble=null;m.state='ORDER_TAKEN';m._taken()}
     if(noStk.length)stockOut(g,noStk);sfx('order')})}
 function submitOrder(o){if(o.state!=='TAKEN'||o.submitQueued)return;o.submitQueued=true;
-  enqueue('submit',async w=>{const ch=w.ch;const k=await claimSpot('prep',w);const P=PREP_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Talk_with_Hands_Open',1.2);
+  enqueue('submit',async w=>{const ch=w.ch;const k=await claimSpot('prep',w);const P=PREP_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('IDLE_WORK',1.2);
     if(o.cancel){o.state='CANCELLED';o.cleared=true;return}o.state='WAITING_FOR_PREPARATION';baristaQ.push(o);sfx('chime')})}
 function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueued=true;
   enqueue('serve',async w=>{if(o.cancel||!o.mesh)return;const ch=w.ch;const k=await claimSpot('pick',w);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Idle_12',0.35);if(o.cancel||!o.mesh)return;
@@ -1565,7 +1574,7 @@ function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueu
     ch.carry=null;tray.visible=false;sfx('clink');
     if(o.mesh.userData.hot)o.steam=steamOn(()=>cupTop(o.mesh),1.2);
     o.state='SERVED';addXP(CONFIG.xp.serve);o.customer._served();
-    await ch.doFor('Talk_with_Hands_Open',0.9)})}
+    await ch.doFor('IDLE_TALK',0.9)})}
 async function consume(o,dur){const m=o.mesh;
   await tween(dur,u=>{if(m.userData.fill){const f=m.userData.fill,k=Math.max(0.03,1-u);f.scale.y=k;f.position.y=f.userData.base+f.userData.h*k/2;m.rotation.z=Math.sin(u*Math.PI*6)*0.08*(1-u)}
     else if(m.userData.body){const k=Math.max(0.001,1-u);m.userData.body.scale.set(k,k,k)}})}
@@ -1618,9 +1627,6 @@ const CLOTHES=[
  {id:'sh_blue',slot:'top',name:'Açık mavi gömlek',roles:['waiter','cashier'],price:50,top:{c:[190,218,240],kind:'shirt'}},
  {id:'polo_stripe',slot:'top',name:'Çizgili tişört',roles:['waiter','cashier'],price:60,top:{c:[250,246,238],c2:[214,80,74],kind:'stripe'}},
  {id:'uni_cafe',slot:'top',name:'Kafe üniforması',roles:['barista','cashier'],price:70,top:{c:[120,150,90],kind:'shirt',collar:[250,246,238]}},
- {id:'vest_brown',slot:'top',name:'Kahve yelek',roles:['waiter','barista','cashier'],price:70,top:{c:[250,248,244],kind:'vest',v:[120,80,54]}},
- {id:'vest_green',slot:'top',name:'Yeşil yelek',roles:['waiter','cashier'],price:70,top:{c:[250,248,244],kind:'vest',v:[96,124,70]}},
- {id:'vest_black',slot:'top',name:'Siyah garson yeleği',roles:['waiter'],price:90,top:{c:[250,248,244],kind:'vest',v:[52,46,50]}},
  {id:'bt_none',slot:'bottom',name:'Altsız',roles:['waiter','barista','cashier'],free:true},
  {id:'bt_brown',slot:'bottom',len:'short',name:'Kahve şort',roles:['waiter','barista','cashier'],free:true,bt:[118,82,58]},
  {id:'bt_cream',slot:'bottom',len:'short',name:'Krem şort',roles:['waiter','barista','cashier'],free:true,bt:[236,222,196]},
@@ -1648,10 +1654,10 @@ const CLOTHES=[
  {id:'hat_beanie',slot:'hat',name:'Ponponlu bere',roles:['barista','cashier'],price:70,acc:'beanie',c:0xf2a6a0},
  {id:'hat_bowler',slot:'hat',name:'Minik melon şapka',roles:['cashier','barista'],price:90,acc:'bowler',c:0x3a2e2a},
  {id:'hat_flower',slot:'hat',name:'Çiçek tacı',roles:['waiter','barista','cashier'],gems:5,acc:'flowers',c:0x8fae58},
- {id:'set_classic',slot:'outfit',name:'Klasik garson takımı',roles:['waiter'],price:150,set:{top:'vest_black',neck:'bow_black',apron:'ap_black',hat:'hat_none'}},
- {id:'set_master',slot:'outfit',name:'Kahve ustası takımı',roles:['barista'],price:180,set:{apron:'ap_barista',top:'vest_brown',hat:'hat_beret',neck:'nk_none'}},
- {id:'set_cashier',slot:'outfit',name:'Güler yüzlü kasiyer',roles:['cashier'],price:150,set:{top:'polo_stripe',hat:'hat_bowler',neck:'bow_red',apron:'ap_stripe'}},
- {id:'set_winter',slot:'outfit',name:'Kış kafesi',roles:['waiter','barista','cashier'],gems:12,set:{neck:'scarf_winter',apron:'ap_gingham',top:'sh_white'}},
+ {id:'set_classic',slot:'outfit',name:'Klasik garson takımı',roles:['waiter'],price:150,set:{neck:'bow_black',apron:'ap_black',hat:'hat_bowler'}},
+ {id:'set_master',slot:'outfit',name:'Kahve ustası takımı',roles:['barista'],price:180,set:{apron:'ap_barista',hat:'hat_beret',neck:'nk_none'}},
+ {id:'set_cashier',slot:'outfit',name:'Güler yüzlü kasiyer',roles:['cashier'],price:150,set:{hat:'hat_cap',neck:'bow_red',apron:'ap_stripe'}},
+ {id:'set_winter',slot:'outfit',name:'Kış kafesi',roles:['waiter','barista','cashier'],gems:12,set:{neck:'scarf_winter',apron:'ap_gingham',hat:'hat_beanie'}},
  {id:'set_spring',slot:'outfit',name:'Bahar şenliği',roles:['waiter','barista','cashier'],gems:10,set:{hat:'hat_flower',apron:'ap_polka',neck:'scarf_mint'}}];
 const CLO=Object.fromEntries(CLOTHES.map(c=>[c.id,c]));
 const ROLES=[{id:'waiter',name:'Garson',desc:'Siparişleri alır, tepsiyle servis yapar.'},{id:'barista',name:'Barista',desc:'Tezgah arkasında içecek ve yemekleri hazırlar.'},{id:'cashier',name:'Kasiyer',desc:'Kasada ödemeleri alır.'}];
@@ -1893,7 +1899,7 @@ function cleanLines(d,M,L,top){MPM=M.pm;const keepFur=L.pattern==='original'&&L.
     for(let k=0;k<N;k++)if(mask[k]===1&&(keepFur||cls[k]===3))d[k*4+ci]=Math.min(255,o[k])}}   // yeni renklendirilmiş kürkte yalnız koyu çizgi pikselleri değişir; desenler korunur
 // ---- dokuyu oluştur ----
 function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,orig,tl}=M;const L=cfg.look;const W=cfg.wear;const ap=W.apron&&typeof W.apron==='object'?W.apron.ap:(CLO[W.apron]||{}).ap;const top=null;   // üst giyim artık ayrı kabuk (p28_garment); kürke boyanmaz
-  const SK=(CLO[W.bottom]||{}).bt||null;   // önlüksüz karakterde modelin önlük eteği bu renkte bir etek olur
+  const SK=W.tunic||(CLO[W.bottom]||{}).bt||null;   // önlüksüz karakterde modelin önlük eteği bu renkte bir etek olur
   const BT=NO_BOTTOMS?null:(CLO[W.bottom||'bt_brown']||CLO.bt_brown);const keepFur=L.pattern==='original'&&L.fur1===0&&L.fur2===3;
   const shortsC=(x,y,z,o,k)=>{let c=BT.bt;if(BT.bt2&&(Math.sin(x*60)>0)!==(Math.sin(y*60)>0))c=BT.bt2;if(y>0.905)c=[c[0]*0.82,c[1]*0.82,c[2]*0.82];
     o[0]=c[0];o[1]=c[1];o[2]=c[2]};
@@ -1947,7 +1953,11 @@ function accMesh(parent,geo,col,x,y,z,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo
 const ACC_BUILD={
   bow(n,h,c){const p=n||h;accMesh(p,new THREE.ConeGeometry(0.05,0.07,8),c.c,0.05,0.04,0.12,0,0,Math.PI/2);accMesh(p,new THREE.ConeGeometry(0.05,0.07,8),c.c,-0.05,0.04,0.12,0,0,-Math.PI/2);accMesh(p,new THREE.SphereGeometry(0.022,8,6),c.c,0,0.04,0.125)},
   scarf(n,h,c){const p=n||h;const t=accMesh(p,new THREE.TorusGeometry(0.088,0.032,8,20),c.c,0,0.03,0.035,Math.PI/2+0.15,0,0);if(c.c2){for(let i=0;i<4;i++)accMesh(p,new THREE.TorusGeometry(0.089+0.001*i,0.0335,4,20,Math.PI/5),c.c2,0,0.03,0.035,Math.PI/2+0.15,0,i*Math.PI/2)}
-    accMesh(p,new THREE.BoxGeometry(0.05,0.12,0.02),c.c,0.05,-0.04,0.12,0.15,0,0.2)},
+    // düğüm + önlüğün ÜSTÜNDEN göğse doğru sarkan iki uç (alt uçları öne eğik, göğüs eğimini izler)
+    accMesh(p,new THREE.SphereGeometry(0.03,10,8),c.c,0.035,0.0,0.13);
+    const tail=(x,y,z,len,rz)=>{const g=new THREE.BoxGeometry(0.048,len,0.016);g.translate(0,-len/2,0);const m=accMesh(p,g,c.c,x,y,z,-0.46,0,rz);
+      if(c.c2)for(const f of [0.35,0.7]){const s2=accMesh(m,new THREE.BoxGeometry(0.05,0.012,0.018),c.c2,0,-len*f,0)}return m};
+    tail(0.045,-0.005,0.142,0.14,0.12);tail(0.012,-0.005,0.147,0.115,-0.1)},
   // şapkalar iki kulağın arasındaki kafa tepesine göre ölçülendi (fitHat gerekirse biraz daha küçültür)
   paper(n,h,c){const g=accMesh(h,new THREE.BoxGeometry(0.085,0.05,0.2),c.c,0,0.32,0.01);const band=accMesh(h,new THREE.BoxGeometry(0.089,0.016,0.204),0xd9534f,0,0.303,0.01);
     const ridge=accMesh(h,new THREE.ConeGeometry(0.05,0.2,4,1),c.c,0,0.365,0.01,Math.PI/2,0,0);ridge.scale.set(0.85,1,0.45)},
@@ -2068,12 +2078,17 @@ function fitHat(root,g){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!s
   const SK=skullGrid(root,sm);
   // Arama: şapka büyük başlar; alına doğru kaydırma (dz) ve öne eğim denenir, kulaklara değmeyen en büyük ölçek seçilir.
   const s0=g.scale.x,p0=g.position.clone(),rx0=g.rotation.x;let best=null;
-  for(const dz of [0,0.025,0.05,0.075])for(const tl of [0,0.12,0.24]){g.scale.setScalar(s0*HAT_BIG);g.position.copy(p0);g.position.z+=dz;g.rotation.x=rx0+tl;hatFlush(g,SK);
-    let hits=hatHits(g,pts),k=0;while(hits>0&&k<18){g.scale.multiplyScalar(0.95);hatFlush(g,SK);hits=hatHits(g,pts);k++}
-    if(hits||!hatSupported(g,SK))continue;const sc=g.scale.x/s0;const score=sc-dz*0.8-Math.abs(tl)*0.15;if(!best||score>best.score)best={score,sc,dz,tl,pos:g.position.clone(),scale:g.scale.x}}
-  if(best){g.position.copy(best.pos);g.scale.setScalar(best.scale);g.rotation.x=rx0+best.tl}else{g.scale.setScalar(s0*0.6);g.position.copy(p0);hatFlush(g,SK)}
+  const rz0=g.rotation.z;const tl=0;
+  for(const dz of [0,0.025,0.05,0.075]){g.scale.setScalar(s0*HAT_BIG);g.position.copy(p0);g.position.z+=dz;g.rotation.x=rx0;g.rotation.z=rz0;hatTilt(g,SK,rx0,rz0);hatFlush(g,SK);
+    let hits=hatHits(g,pts),k=0;while(hits>0&&k<18){g.scale.multiplyScalar(0.95);hatTilt(g,SK,rx0,rz0);hatFlush(g,SK);hits=hatHits(g,pts);k++}
+    if(hits||!hatSupported(g,SK))continue;const sc=g.scale.x/s0;const score=sc-dz*0.8-Math.abs(tl)*0.15;if(!best||score>best.score)best={score,sc,dz,tl,rx:g.rotation.x,rz:g.rotation.z,pos:g.position.clone(),scale:g.scale.x}}
+  if(best){g.position.copy(best.pos);g.scale.setScalar(best.scale);g.rotation.x=best.rx;g.rotation.z=best.rz}else{g.scale.setScalar(s0*0.6);g.position.copy(p0);hatFlush(g,SK)}
   hatConform(g,SK);const hits=hatHits(g,pts);g.userData.fit={hits,scale:+(g.scale.x/s0).toFixed(3),dz:best?best.dz:null,tilt:best?best.tl:null};return hits}
 const HAT_BIG=1.3;
+// şapka tabanını kafatasının eğimine yatır: tabanın önü/arkası/yanlarındaki kafa yüksekliklerinden düzlem
+function hatTilt(g,SK,rx0,rz0){g.rotation.x=rx0;g.rotation.z=rz0;g.updateMatrixWorld(true);const b=new THREE.Box3();g.traverse(m=>{if(m.isMesh&&!m.userData.small)b.expandByObject(m)});if(b.isEmpty())return;
+  const c=b.getCenter(new THREE.Vector3()),hx=(b.max.x-b.min.x)*0.32,hz=(b.max.z-b.min.z)*0.32;const H=(x,z)=>SK.at(x,z);const f=H(c.x,c.z+hz),bk=H(c.x,c.z-hz),l=H(c.x-hx,c.z),r=H(c.x+hx,c.z);
+  if(f<-1e8||bk<-1e8||l<-1e8||r<-1e8)return;const px=Math.atan2(bk-f,2*hz),pz=Math.atan2(r-l,2*hx);g.rotation.x=rx0+Math.max(-0.5,Math.min(0.5,px));g.rotation.z=rz0+Math.max(-0.4,Math.min(0.4,pz))}
 // şapkanın tabanının ortası kafatasının üstünde mi (havada/önde asılı kalmasın)
 function hatSupported(g,SK){const b=new THREE.Box3().setFromObject(g);const c=b.getCenter(new THREE.Vector3());const h=SK.at(c.x,c.z);return h>-1e8&&Math.abs(b.min.y-h)<0.05}
 // kafatası yükseklik haritası (dünya xz → en yüksek kafa noktası; kulaklar hariç)
@@ -2089,7 +2104,7 @@ function hatFlush(g,SK){g.updateMatrixWorld(true);let need=-1e9;
 function hatConform(g,SK){g.updateMatrixWorld(true);let lo=1e9,hi=-1e9;g.traverse(m=>{if(!m.isMesh||m.userData.small)return;const a=m.geometry.attributes.position;for(let j=0;j<a.count;j++){_hv.fromBufferAttribute(a,j).applyMatrix4(m.matrixWorld);lo=Math.min(lo,_hv.y);hi=Math.max(hi,_hv.y)}});
   const band=Math.min(0.05,(hi-lo)*0.45);
   g.traverse(m=>{if(!m.isMesh||m.userData.small||m.userData.rigid)return;const a=m.geometry.attributes.position;const inv=new THREE.Matrix4().copy(m.matrixWorld).invert();let ch=false;
-    for(let j=0;j<a.count;j++){_hv.fromBufferAttribute(a,j).applyMatrix4(m.matrixWorld);if(_hv.y>lo+band)continue;const h=SK.at(_hv.x,_hv.z);if(h<-1e8)continue;const gap=_hv.y-(h+0.001);if(gap<=0.0005||gap>0.018)continue;
+    for(let j=0;j<a.count;j++){_hv.fromBufferAttribute(a,j).applyMatrix4(m.matrixWorld);if(_hv.y>lo+band)continue;const h=SK.at(_hv.x,_hv.z);if(h<-1e8)continue;const gap=_hv.y-(h+0.001);if(gap<=0.0005||gap>0.035)continue;
       const w=1-(_hv.y-lo)/band;_hv.y-=gap*Math.max(0,Math.min(1,w*1.2));_hu.copy(_hv).applyMatrix4(inv);a.setXYZ(j,_hu.x,_hu.y,_hu.z);ch=true}
     if(ch){a.needsUpdate=true;m.geometry.computeVertexNormals();m.geometry.computeBoundingSphere()}})}
 // ---- bir karaktere uygula (oyunda canlı da çalışır) ----
@@ -2099,7 +2114,7 @@ function applyLook(root,cfg,R=1024){custPrepare();let sm;root.traverse(o=>{if(o.
   const L=cfg.look;const hideT=!NO_BOTTOMS&&!!(cfg.wear&&cfg.wear.bottom);const needGeo=L.earShape!=='pointed'||L.earSize!=='normal'||L.tailLen!=='normal'||L.tailFluff||L.whisk!=='long';
   sm.geometry=needGeo?(hideT?hideTailGeo(morphGeometry(L)):morphGeometry(L)):(hideT?CM.geoNT:CM.geo);
   const xs=BODY_XS[L.body]||1;root.scale.set(YS*xs,YS,YS);applyAccessories(root,cfg.wear);
-  {const W=cfg.wear||{};const top=typeof W.top==='object'&&W.top?W.top.top:(CLO[W.top]||{}).top;const B=CLO[W.bottom];dressGarments(root,sm,{top:top||null,bottom:B&&B.bt?{bt:B.bt,bt2:B.bt2,len:B.len||'short',denim:B.denim}:null})}
+  {const W=cfg.wear||{};const top=null;const B=null;/* çalışanlar yalnız önlük, şapka, boyunluk giyer */dressGarments(root,sm,{top:top||null,bottom:B&&B.bt?{bt:B.bt,bt2:B.bt2,len:B.len||'short',denim:B.denim}:null})}
   if(hideT){const BT=CLO[cfg.wear.bottom]||CLO.bt_brown;buildTail(sm,{fur:furRGB(L.fur1),f2:furRGB(L.fur2),tail:L.tail,pattern:L.pattern,len:L.tailLen,fluff:L.tailFluff,bt:BT.bt})}
   return xs}
 // ---- kuyruk: kıyafetteki kuyruk deliğinden çıkan ayrı kuyruk ----
@@ -2156,9 +2171,9 @@ function buildCat(cfg,R=1024){const r=SkeletonUtils.clone(TEMPLATE);applyLook(r,
 function furMarkHit(L,x,y,z){if(L.face!=='none'&&(R_.muzzle(x,y,z)||R_.blaze(x,y,z)||R_.mask(x,y,z)))return true;if(L.paws!=='none'&&(y<0.45||(Math.abs(x)>0.22&&y<0.96)))return true;
   if(L.tail!=='same'&&R_.tail(x,y,z))return true;if(L.cheek!=='none'&&R_.cheek(x,y,z))return true;return false}
 // müşteriler: aynı motor (iç çamaşırı dahil), kendi renkleriyle
-const CUST_BT=['bt_navy','bt_brown','bt_navy','bt_olive','bt_brown'];
+const CUST_BT=['bt_jeans','bt_khaki','bt_navy','bt_black','bt_jeans','bt_brown','bt_capri','bt_khaki'];
 // müşteriler önlük giymez (önlük yalnızca çalışanlarda): kendi renklerinde gündelik bir üst giyerler
-function customerTex(L,i){const top=L.top||{c:L.A,kind:i%2?'stripe':'shirt',c2:[250,246,238]};L._top=top;return composeTexture({look:{...LOOK_DEF,fur1:L.W,fur2:L.B},wear:{apron:null,top:{top},bottom:(L._bt=L.bt||CUST_BT[i%CUST_BT.length])}},1024)}
+function customerTex(L,i){const top=L.top||{c:L.A,kind:i%2?'stripe':'shirt',c2:[250,246,238]};L._top=top;return composeTexture({look:{...LOOK_DEF,fur1:L.W,fur2:L.B},wear:{apron:null,top:{top},tunic:top.c,bottom:(L._bt=L.bt||CUST_BT[i%CUST_BT.length])}},1024)}
 
 // güvenli alan: sayfayı açan çerçeve :root'a zaten üst/alt boşluk veriyorsa aynı boşluğu ikinci kez ekleme
 function fitSafeArea(){const cs=getComputedStyle(document.documentElement),R=document.documentElement.style;
@@ -2197,12 +2212,17 @@ function hudGoal(){const g=$('goal');const A=activeObjs();if(!A.length){g.hidden
   g.classList.toggle('open',!!UI.goalOpen);g.setAttribute('aria-expanded',String(!!UI.goalOpen));
   g.innerHTML=UI.goalOpen?A.map(row).join(''):row(top).replace('</em></div>',`</em>${A.length>1?`<b class="gmore">+${A.length-1}</b>`:''}</div>`)}
 $('goal').setAttribute('role','button');$('goal').tabIndex=0;$('goal').onclick=()=>{UI.goalOpen=!UI.goalOpen;sfx('tap');hudGoal()};
-function toast(html,iconHtml='',ms=2600){const t=document.createElement('div');t.className='toast';t.innerHTML=`${iconHtml}<div>${html}</div>`;$('toasts').appendChild(t);
-  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),320)},ms);while($('toasts').children.length>3)$('toasts').firstChild.remove()}
+// bildirimler sırayla, tek tek gösterilir (üst üste binmez); sırada bekleyen varsa ekrandaki biraz erken çekilir
+const TQ=[];let tCur=null;
+function toast(html,iconHtml='',ms=2600){if(tCur&&tCur.html===html)return;if(TQ.some(q=>q.html===html))return;TQ.push({html,iconHtml,ms});if(TQ.length>5)TQ.shift();if(!tCur)toastNext();else if(tCur.canCut)tCur.cut()}
+function toastNext(){const q=TQ.shift();if(!q){tCur=null;return}const t=document.createElement('div');t.className='toast';t.innerHTML=`${q.iconHtml}<div>${q.html}</div>`;const box=$('toasts');while(box.children.length)box.firstChild.remove();box.appendChild(t);
+  const cur=tCur={html:q.html,canCut:false,done:false};let tm=null;
+  const end=()=>{if(cur.done)return;cur.done=true;clearTimeout(tm);t.classList.add('out');setTimeout(()=>{t.remove();if(tCur===cur)toastNext()},260)};cur.cut=end;
+  setTimeout(()=>{cur.canCut=true;if(TQ.length)end()},Math.min(q.ms,1500));tm=setTimeout(end,q.ms)}
 function showLevelUp(){if(UI.modal||!lvQueue.length)return;const L=lvQueue.shift();UI.modal=true;const m=$('lvModal');
   const list=unlocksAt(L).map(u=>{const im=u.kind==='item'?`<img src="${itemThumb(u.c.id)}" alt="">`:u.kind==='recipe'?`<img src="${productThumb(u.r.id)}" alt="">`:ic(u.kind==='cap'?'table':u.kind==='hire'?'paw':'heart');return `<div>${im}<span>${u.text}</span></div>`}).join('')||'<div><span>Kafen büyüyor!</span></div>';
   const cols=['#f2b134','#f2a6a0','#8a9a3b','#d9534f','#86b8d8'];const conf=Array.from({length:22},(_,i)=>`<i style="left:${(i*37)%100}%;background:${cols[i%5]};animation-delay:${(i%7)*0.08}s"></i>`).join('');
-  m.innerHTML=`<div class="lvcard" role="dialog" aria-label="Seviye atladın"><div class="confetti">${conf}</div><div class="star">${UI_IC.star}<span>${L}</span></div><h3>Seviye ${L}!</h3><p>Yeni açılanlar</p><div class="unl">${list}</div><button class="btn" id="lvOk" type="button">${ic('check')}Harika!</button></div>`;
+  m.innerHTML=`<div class="lvcard" role="dialog" aria-label="Seviye atladın"><div class="confetti">${conf}</div><div class="star">${UI_IC.star}<span>${L}</span></div><h3>Seviye ${L}!</h3><p class="lvgift">${ic('coin')}<b>+${lvCoins(L)} altın</b> · ${ic('gem')}<b>+${CONFIG.gems.levelUp}</b> hediye</p><p>Yeni açılanlar</p><div class="unl">${list}</div><button class="btn" id="lvOk" type="button">${ic('check')}Harika!</button></div>`;
   m.hidden=false;sfx('levelup');$('lvOk').onclick=()=>{m.hidden=true;UI.modal=false;if(lvQueue.length)setTimeout(showLevelUp,150);else if(UI.mode==='market')renderMarket()};$('lvOk').focus()}
 
 // ================= ALT MENÜ =================
@@ -2765,7 +2785,7 @@ function pvShow(cfg){clearTimeout(pvTimer);pvTimer=setTimeout(()=>{if(PV.model)P
 // ---- düzenleyici ----
 const CE={role:null,cfg:null,orig:null,mode:'create',step:0,tab:'look',cat:'fur',err:'',busy:false};
 const CE_CATS=[['fur','Kürk'],['pattern','Desen'],['marks','İşaretler'],['eyes','Gözler'],['ears','Kulaklar'],['face','Yüz'],['body','Vücut']];
-const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['top','Üst'],['bottom','Alt'],['neck','Boyun'],['hat','Şapka']];
+const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['neck','Boyun'],['hat','Şapka']];
 {const st=document.createElement('style');st.textContent=`
 #ce .pv{position:relative;height:min(36vh,300px);margin:6px 14px 0;border:3px solid var(--ink);border-radius:18px;background:radial-gradient(circle at 50% 40%,#fff8ec,#f3e2c6);overflow:hidden;flex:none}
 #ce .pv canvas{display:block}
@@ -2870,7 +2890,7 @@ function renderCEOpts(){const o=$('ceOpts');let h='';const L=CE.cfg.look;
   o.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     if(b.dataset.w){const c=CLO[b.dataset.w];if(c.set){Object.assign(CE.cfg.wear,c.set);CE.setSel=c.id}else{CE.cfg.wear[c.slot]=c.id;CE.setSel=null}pvShow(CE.cfg);renderCEOpts();renderCEFoot();return}
     const p=b.dataset.p;if(!p)return;let v=b.dataset.v!=null?+b.dataset.v:b.dataset.s;if(v==='true')v=true;else if(v==='false')v=false;ceSet(p,v)}}
-function unownedWorn(){const W=CE.cfg.wear;const out=[];if(CE.setSel&&!ownsCloth(CE.setSel))out.push(CE.setSel);else for(const k of ['apron','top','bottom','neck','hat'])if(W[k]&&!ownsCloth(W[k]))out.push(W[k]);return [...new Set(out)]}
+function unownedWorn(){const W=CE.cfg.wear;const out=[];if(CE.setSel&&!ownsCloth(CE.setSel))out.push(CE.setSel);else for(const k of ['apron','neck','hat'])if(W[k]&&!ownsCloth(W[k]))out.push(W[k]);return [...new Set(out)]}
 function costInfo(){if(CE.mode==='hire'){const h=hireInfo(CE.role);return {kind:'hire',cost:h.cost||0,text:h.ok?`İşe alım ücreti: ${h.cost} altın · görünümü şimdi ücretsiz seç`:h.why}}
   if(CE.mode==='create'||!S.created||!ceChanged())return {kind:'free',text:CE.mode==='create'?'İlk oluşturma ücretsiz':ceChanged()?'İlk kurulum ücretsiz':'Görünüm değişmedi · isim ve kıyafet ücretsiz'};
   const ch=S.chars[CE.key];if(ch.freeEdits>0)return {kind:'freeEdit',text:`Görünüm değişikliği: ${ch.freeEdits} ücretsiz hakkın var`};return {kind:'paid',text:`Görünüm değişikliği: ${CONFIG.edit.coins} altın ya da ${CONFIG.edit.gems} elmas`}}
@@ -2915,7 +2935,7 @@ function charThumb(role){const cfg=S.chars[role];const key='c:'+role+':'+JSON.st
 function hireInfo(role){const n=S.staff[role];if(n>=HIRE_MAX[role])return {ok:false,max:true,why:`En fazla ${HIRE_MAX[role]} ${ROLE_NAME[role].toLowerCase()} olabilir`};
   const h=HIRE[role][n-1];const key=staffKey(role,n+1);const r={key,lv:h.lv,cost:h.c,n,max:false};
   if(S.lvl<h.lv)return {...r,ok:false,why:`Seviye ${h.lv} gerekli`};if(S.coins<h.c)return {...r,ok:false,why:`${h.c} altın gerekli`};return {...r,ok:true}}
-function renderTeam(){const l=$('teamList');const wearTxt=w=>['apron','top','bottom','neck','hat'].map(k=>w[k]).filter(id=>id&&!id.endsWith('_none')).map(id=>CLO[id].name).join(' · ')||'Sade';
+function renderTeam(){const l=$('teamList');const wearTxt=w=>['apron','neck','hat'].map(k=>w[k]).filter(id=>id&&!id.endsWith('_none')).map(id=>CLO[id].name).join(' · ')||'Sade';
   const total=['waiter','barista','cashier'].reduce((a,r)=>a+S.staff[r],0),maxT=HIRE_MAX.waiter+HIRE_MAX.barista+HIRE_MAX.cashier;
   l.innerHTML=logoSVG('still tlogo')+
    (!S.created?`<div class="banner">${ic('paw')}<div>Yeni! Ekibini kendine göre tasarla. İlk kurulum ücretsiz.</div><button class="btn" type="button" id="tmSetup">Başla</button></div>`:'')+
@@ -2946,7 +2966,7 @@ function offerSetup(isNew){if(S.created)return;if(isNew){UI.backTo='cafe';openEd
 // ---- kıyafet mağazası (Yapı Pazarı içinde sekme) ----
 const CL_F=[['waiter','Garson'],['barista','Barista'],['cashier','Kasiyer'],['hat','Şapkalar'],['acc','Aksesuarlar'],['outfit','Özel takımlar']];
 function clothList(f){const L=CLOTHES.filter(c=>!c.id.endsWith('_none'));if(f==='hat')return L.filter(c=>c.slot==='hat');if(f==='acc')return L.filter(c=>c.slot==='neck');if(f==='outfit')return L.filter(c=>c.slot==='outfit');
-  return L.filter(c=>c.roles.includes(f)&&(c.slot==='apron'||c.slot==='top'||c.slot==='bottom'))}
+  return L.filter(c=>c.roles.includes(f)&&(c.slot==='apron'))}
 function renderClothes(g){UI.clF=UI.clF||'waiter';
   g.innerHTML=`<div style="grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap">${CL_F.map(([id,n])=>`<button class="chip" type="button" data-cf="${id}" aria-pressed="${UI.clF===id}">${n}</button>`).join('')}</div>`+
     clothList(UI.clF).map(c=>{const own=ownsCloth(c.id);return `<button class="card" type="button" data-cl="${c.id}" aria-current="${UI.sel===c.id}"><div class="th" style="padding:14%">${clothIcon(c.id)}</div>${own?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${own?'Sahipsin':c.gems?ic('gem')+c.gems:ic('coin')+c.price}</span></button>`}).join('');
@@ -3377,7 +3397,9 @@ function renderTarget(){const t=$('mgTarget');if(!t)return;const tut=S.tr&&S.tr!
 {const r=document.createElement('div');r.className='goal req';r.id='req';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;$('goal').after(r);r.onclick=()=>openReq()}
 function reqCands(){const out=[];for(const r of RECIPES){if(r.def||S.lvl<r.lvl)continue;
     const kind=S.menu[r.id]&&S.unlocked[r.id]?'menu':S.unlocked[r.id]?'open':S.recipes[r.id]?'disc':'new';out.push({r,kind,time:{menu:110,open:150,disc:200,new:300}[kind]})}return out}
-function newReq(){const C=reqCands();if(!C.length)return;const nm=C.filter(x=>x.kind!=='menu');const pool=nm.length&&Math.random()<0.8?nm:C;const x=pool[Math.floor(Math.random()*pool.length)];
+function newReq(){let C=reqCands();if(!C.length)return;
+  // ilk seviyelerde yalnız açık (menüde/menüye eklenebilir) ürünler istenir ve süre daha uzundur; kaçırmanın cezası yok
+  const early=S.lvl<4;if(early){const o=C.filter(x=>x.kind==='menu'||x.kind==='open');if(o.length)C=o;C=C.map(x=>({...x,time:Math.round(x.time*1.6)}))}const nm=C.filter(x=>x.kind!=='menu');const pool=nm.length&&Math.random()<0.8?nm:C;const x=pool[Math.floor(Math.random()*pool.length)];
   const who=LOOKS[Math.floor(Math.random()*LOOKS.length)].name;const coins=Math.round(20+priceOf(x.r)*4+(x.kind==='new'?25:x.kind==='disc'?12:0));
   S.req={rid:x.r.id,who,left:x.time,total:x.time,coins,kind:x.kind};if(x.kind==='new'&&!S.target)S.target=x.r.id;markDirty();sfx('chime');
   const how={menu:'Menünde var; sipariş edilmesini bekle',open:'Menü’den menüne ekle',disc:'Tarifler’den ürünü aç ve menüye ekle',new:'Birleştirme tahtasında keşfet (hedefe alındı)'}[x.kind];
@@ -3409,8 +3431,8 @@ function custTag(c){if(c.vip){c.tag=`${ic('star')}VIP gurme`;toast('<b>VIP gurme
 async function idleChat(w){const b=BSTAFF[0];if(!b||b.busy||b.job||baristaQ.length||!b.idleAt||!atSpot(b.ch,b.idleAt,0.1)||customers.some(c=>PENDING.has(c.state))||Math.random()<0.5)return false;
   const ch=w.ch,P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);await ch.faceTo(b.ch.pos.x,b.ch.pos.z);if(jobs.length)return true;
   b.ch.faceTo(ch.pos.x,ch.pos.z);staffBubble(ch,'heart',2.4);staffBubble(b.ch,'heart',2.2,0.6);
-  await Promise.all([ch.doFor('Wave_One_Hand',1.2),(async()=>{await sleep(0.5);if(!b.busy&&!b.job)await b.ch.doFor('Talk_with_Hands_Open',1.4);if(!b.busy&&!b.job)b.ch.face(0)})()]);
-  if(!jobs.length)await ch.doFor('Talk_with_Hands_Open',1.0);if(!jobs.length)await ch.face(yaw);return true}
+  await Promise.all([ch.doFor('Wave_One_Hand',1.2),(async()=>{await sleep(0.5);if(!b.busy&&!b.job)await b.ch.doFor('IDLE_TALK',1.4);if(!b.busy&&!b.job)b.ch.face(0)})()]);
+  if(!jobs.length)await ch.doFor('IDLE_LOOK',1.6);if(!jobs.length)await ch.face(yaw);return true}
 const SBUB=[];let sbSeq=0;
 function staffBubble(ch,icon,dur,delay=0){const t=gameT+delay;SBUB.push({ch,icon,from:t,until:t+dur,id:++sbSeq})}
 
@@ -3434,12 +3456,12 @@ async function chase(c,k){if(!k||c.chaser||c.state!=='RUNNING')return false;c.ch
   staffBubble(ch,'alert',1.4);sfx('chime');const sp0=ch.speed;ch.canRun=true;ch.speed=1.7;await cashExit(ch,c.char.pos.x);
   let t=0;while(c.state==='RUNNING'&&t<25){const p=c.char.pos;if(Math.hypot(ch.pos.x-p.x,ch.pos.z-p.z)<0.62){await catchRunner(c,k);break}
     ch.walkTo(p.x,p.z,{direct:p.x<DOOR_IN.x-0.2});await sleep(0.2);t+=0.2}
-  if(c.state==='ESCAPED'){ch.walkTo(ch.pos.x,ch.pos.z,{direct:true});staffBubble(ch,'sleepy',1.6);await ch.doFor('Talk_with_Hands_Open',0.8)}
+  if(c.state==='ESCAPED'){ch.walkTo(ch.pos.x,ch.pos.z,{direct:true});staffBubble(ch,'sleepy',1.6);await ch.doFor('IDLE_TALK',0.8)}
   ch.canRun=false;ch.speed=sp0;await chaseBack(k);return true}
 async function catchRunner(c,k){const ch=k.ch,cc=c.char;c.caughtDone=new Promise(r=>c._cd=r);c.caught=true;c.state='CAUGHT';
   ch.walkTo(ch.pos.x,ch.pos.z,{direct:true});await sleep(0.05);
   await Promise.all([ch.faceTo(cc.pos.x,cc.pos.z),cc.faceTo(ch.pos.x,ch.pos.z)]);c.bubble='sorry';
-  await Promise.all([ch.doFor('Talk_with_Hands_Open',1.6),(async()=>{await sleep(0.5);await cc.doFor('Wave_One_Hand',1.1)})()]);
+  await Promise.all([ch.doFor('IDLE_TALK',1.6),(async()=>{await sleep(0.5);await cc.doFor('Wave_One_Hand',1.1)})()]);
   sfx('register');pay(c,REGS[k.i]||REGS[0],cc.pos.clone().setY(1.25));c.bubble=null;bump('caught');
   const nm=(S.chars&&S.chars[k.key]&&S.chars[k.key].name)||'Kasiyer';toast(`<b>${nm} kaçağı yakaladı!</b><br>${c.look.name} hesabını ödedi`,ic('coin'),2800);
   c._cd()}
@@ -3640,8 +3662,21 @@ function dlvTick(dt){const D=dlvState();
     if(PHONE){PHONE.hs.position.y=0.075+Math.abs(Math.sin(gameT*22))*0.02;PHONE.g.rotation.z=Math.sin(gameT*40)*0.04}
     if(DLV.call.left<=0){const c=DLV.call;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);toast(`Cevapsız arama: ${c.who}`,ic('bell'),2200);bump('dlvMissed');rateDelivery(c,false);if($('dlvPanel')){$('dlvPanel').remove();UI.modal=false}}}
   else if(PHONE){PHONE.hs.position.y=0.075;PHONE.g.rotation.z=0}
+  if(DLV.call&&S.auto)autoPhone();
   const d=DLV.active;if(d&&d.state==='PREP'&&d.orders.every(o=>o.state==='READY')&&!COURIER.busy){d.readyT=gameT;courierRun(d)}
   if(!DLV.call&&!DLV.active&&shopOpen()&&!lastCallNow()){DLV.cd-=dt*dlvRate();if(DLV.cd<=0)newCall()}}
+// otomatik mod: telefonu KASİYER açar (kasa boşken; arama bitmek üzereyse kasada ödeme yoksa yine açar)
+let PHONE_BUSY=false;
+function autoPhone(){const c=DLV.call;if(PHONE_BUSY||!c||DLV.active||$('dlvPanel'))return;if(CONFIG.dlv.ring-c.left<1.4)return;
+  const k=CSTAFF.find(k=>{const R=REGS[k.i];return k.ready&&!k.chasing&&!k.idleBusy&&!(typeof cashMoving!=='undefined'&&cashMoving)&&R&&!R.busy&&(!R.cust||c.left<6)});if(!k)return;
+  PHONE_BUSY=true;k.ready=false;k.idleBusy=true;const ch=k.ch;
+  (async()=>{try{await ch.faceTo(PHONE.g.position.x,PHONE.g.position.z);if(DLV.call!==c)return;
+      // ahizeyi kaldırır, konuşur, kapatır
+      const hs=PHONE.hs;let lift=true;const up=tween(0.3,u=>{hs.position.y=0.075+0.12*u});await up;
+      await ch.doFor('IDLE_TALK',1.6);await tween(0.25,u=>{hs.position.y=0.195-0.12*u});lift=false;
+      if(DLV.call!==c)return;
+      if(!acceptCall(c)){DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);toast(`<b>${NMs().cashier?NMs().cashier.name:'Kasiyer'} siparişi alamadı</b><br>Stok yetmiyor`,ic('box'),2200)}}
+    catch(e){console.warn('autoPhone',e)}finally{PHONE_BUSY=false;k.idleBusy=false;k.ready=REGS.length>k.i;try{await ch.face(0)}catch(e){}}})()}
 // ---------- arayüz: telefon düğmesi, kurye konuşma balonu, durum çipi ----------
 {const r=document.createElement('div');r.className='goal dlvchip';r.id='dlvChip';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;$('req').after(r);r.onclick=()=>{if(DLV.call)openCall()}}
 function dlvUI(){const hp=new THREE.Vector3();
@@ -4004,10 +4039,10 @@ function collectBoxes(who){const T=stockS();if(!T.arr.length)return 0;let n=0;
 const sfxSafe=k=>{try{sfx(k)}catch(e){}};
 
 // ---------- toptancı kedisi: koliyi kapının önüne bırakır ----------
-const SUP_DROP={x:-5.45,z:0.7},SUP_ENTRY=[{x:-8.9,z:9.6},{x:-8.9,z:3.7},{x:-6.05,z:0.85}],SUP_STAND={x:-6.0,z:0.82};
+const SUP_DROP={x:-5.45,z:0.7},SUP_ENTRY=[{x:-8.9,z:9.6},{x:-8.9,z:3.7},{x:-5.9,z:0.78}],SUP_STAND={x:-5.88,z:0.76};
 // koliler tezgahın sol ucuna taşınır (müşteri tarafı), sonra stoğa girer
 const BOX_COUNTER={stand:{x:-4.38,z:-1.1},top:{x:-4.43,y:0.72,z:-1.95}};   // duvar dibindeki boş tezgah ucu
-const SUPC_CFG={name:'Tuğra',look:{...LOOK_DEF,fur1:5,fur2:1},wear:{apron:'ap_olive',top:'vest_brown',neck:'nk_none',hat:'hat_cap',bottom:'bt_olive'}};
+const SUPC_CFG={name:'Tuğra',look:{...LOOK_DEF,fur1:5,fur2:1},wear:{apron:'ap_olive',top:'top_none',neck:'nk_none',hat:'hat_cap',bottom:'bt_none'}};
 let SUPC=null,SUPBOX=null;
 function boxMesh(s=1){const bx=new THREE.Group();const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
   const body=new THREE.Mesh(new RoundedBoxGeometry(0.34*s,0.24*s,0.28*s,2,0.02),T(0xc9a06a));body.position.y=0.12*s;body.castShadow=true;bx.add(body);
@@ -4021,19 +4056,25 @@ function supBoxes(){const n=FETCH.picked?0:Math.min(3,stockS().arr.length?1+Math
 const HOLDS=new Set();const _hl=new THREE.Vector3(),_hr=new THREE.Vector3(),_hs=new THREE.Vector3();
 function holdBox(ch,g){ch.carry=g;ch.carryAnim='Carry_Heavy_Object_Walk_inplace';g.userData.ch=ch;g.userData.hold=true;g.userData.hl=ch.o.getObjectByName('mixamorigLeftHand');g.userData.hr=ch.o.getObjectByName('mixamorigRightHand');g.userData.sp=ch.o.getObjectByName('mixamorigSpine1');scene.add(g);HOLDS.add(g);holdTick()}
 function dropHold(ch){const g=ch.carry;if(g&&HOLDS.has(g)){HOLDS.delete(g);scene.remove(g)}ch.carry=null;ch.carryAnim=null}
+// kucaktaki koli eğilmenin dibinde elden yere kayarak iner (ışınlanmaz), sonra yerdeki koli yığınına dönüşür
+function boxToFloor(ch,x,z){const g=ch.carry;if(!g)return;HOLDS.delete(g);ch.carry=null;ch.carryAnim=null;const from=g.position.clone(),to=new THREE.Vector3(x,0.1,z),r0=g.rotation.y;
+  tween(0.28,u=>{const e=u*u;g.position.lerpVectors(from,to,e);g.rotation.y=r0+(0.1-r0)*u}).then(()=>scene.remove(g))}
 function holdTick(){for(const g of HOLDS)holdPlace(g)}
 function holdPlace(g){{const U=g.userData;if(!U.hl||!U.hr)return;U.hl.getWorldPosition(_hl);U.hr.getWorldPosition(_hr);U.sp.getWorldPosition(_hs);
   const yaw=U.ch.o.rotation.y;g.position.set((_hl.x+_hr.x)/2,(_hl.y+_hr.y)/2-0.03,(_hl.z+_hr.z)/2);
   // kolinin gövdeye girmemesi için göğüsten en az biraz önde tut
-  const fx=Math.sin(yaw),fz=Math.cos(yaw);const d=(g.position.x-_hs.x)*fx+(g.position.z-_hs.z)*fz;if(d<0.17){g.position.x+=fx*(0.17-d);g.position.z+=fz*(0.17-d)}g.rotation.y=yaw}}
+  const fx=Math.sin(yaw),fz=Math.cos(yaw);const d=(g.position.x-_hs.x)*fx+(g.position.z-_hs.z)*fz;if(d<0.22){g.position.x+=fx*(0.22-d);g.position.z+=fz*(0.22-d)}g.rotation.y=yaw;
+  // yerden kaldırılıyorsa: yerdeki konumdan ele doğru kısa bir yükseliş
+  if(U.from){U.lt=Math.min(1,(U.lt||0)+lastDt/0.3);const e=1-(1-U.lt)*(1-U.lt);g.position.lerpVectors(U.from,g.position.clone(),e);if(U.lt>=1)U.from=null}}}
 async function supArrive(p){const T=stockS();
   const r=SkeletonUtils.clone(TEMPLATE);const ch=new Char(r,{run:false,xs:1});applyLook(r,SUPC_CFG,512);ch.o.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});
   ch.tray=makeTray();ch.avoidOf=walkersNear;SUPC={ch,p};const st=SUP_ENTRY[0];ch.pos.set(st.x,0,st.z);ch.o.rotation.y=Math.PI;
-  try{const bx=new THREE.Group();const b0=boxMesh(0.9);b0.position.y=-0.1;bx.add(b0);holdBox(ch,bx);
+  try{const bx=new THREE.Group();const b0=boxMesh(1.3);b0.position.y=-0.15;bx.add(b0);   // kollar arası ~0.45 m: koli iki eli dolduracak boydaholdBox(ch,bx);
     for(const q of SUP_ENTRY.slice(1))await ch.walkTo(q.x,q.z,{direct:true});await ch.faceTo(SUP_DROP.x,SUP_DROP.z);
     // eğilip koliyi yere bırakır: koli kucaktan yere iner
-    await bend(ch,1.1,()=>{dropHold(ch);const i=T.pend.indexOf(p);if(i>=0)T.pend.splice(i,1);T.arr.push(p);supBoxes();sfxSafe('place')});saveNow();
-    toast(`<b>Toptancı geldi!</b><br>${SUP(p.sup).name} kolileri kapının önüne bıraktı`,ic('box'),2600);
+    // aynı anda yolda olan (yarım dakika içinde gelecek) diğer siparişler de bu ziyarette birlikte bırakılır
+    let nDrop=0;await bend(ch,1.2,()=>{boxToFloor(ch,SUP_DROP.x,SUP_DROP.z);const lim=nowT()+30000;for(const q of T.pend.slice())if(q===p||q.eta<=lim){T.pend.splice(T.pend.indexOf(q),1);T.arr.push(q);nDrop++}supBoxes();sfxSafe('place')});saveNow();
+    toast(nDrop>1?`<b>Toptancı geldi!</b><br>${nDrop} siparişin kolileri birlikte kapının önüne bırakıldı`:`<b>Toptancı geldi!</b><br>${(SUP(p.sup)||{}).name||"Toptancı"} kolileri kapının önüne bıraktı`,ic('box'),2600);
     await ch.doFor('Wave_One_Hand',1.2);
     for(const q of SUP_ENTRY.slice(0,2).reverse())await ch.walkTo(q.x,q.z,{direct:true});
   }catch(e){console.warn('supArrive',e);const i=T.pend.indexOf(p);if(i>=0){T.pend.splice(i,1);T.arr.push(p);supBoxes()}}
@@ -4062,8 +4103,8 @@ function fetchTick(dt){const T=stockS();if(!T.arr.length||FETCH.on||SUPC){FETCH.
 async function fetchRun(ch){const T=stockS();let stack=null;try{
   await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(SUP_STAND.x,SUP_STAND.z,{direct:true});await ch.faceTo(SUP_DROP.x,SUP_DROP.z);
   // eğilip kolileri tepsiye alır
-  const n=Math.min(3,1+Math.min(2,T.arr.length));stack=new THREE.Group();for(let i=0;i<n;i++){const b=boxMesh(0.7);b.position.set(0,-0.14+i*0.17,0);b.rotation.y=(i%2?0.25:-0.1);stack.add(b)}
-  await bend(ch,1.1,()=>{FETCH.picked=true;supBoxes();if(ch.tray)ch.tray.visible=false;holdBox(ch,stack);sfxSafe('place')});
+  const n=Math.min(2,T.arr.length);stack=new THREE.Group();for(let i=0;i<n;i++){const b=boxMesh(1.25-i*0.2);b.position.set(0,-0.16+i*0.3,0);b.rotation.y=(i%2?0.2:0);stack.add(b)}
+  await bend(ch,1.1,()=>{FETCH.picked=true;supBoxes();if(ch.tray)ch.tray.visible=false;stack.position.set(SUP_DROP.x,0.14,SUP_DROP.z);stack.userData.from=stack.position.clone();stack.userData.lt=0;holdBox(ch,stack);sfxSafe('place')});
   await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});
   await ch.walkTo(BOX_COUNTER.stand.x,BOX_COUNTER.stand.z);await ch.faceTo(BOX_COUNTER.top.x,BOX_COUNTER.top.z);
   // tezgaha bırakır; kısa süre orada durur, sonra stoğa girer
@@ -4325,7 +4366,9 @@ function inNight(t=dayPhase()){return t>=CONFIG.day.night||t<CONFIG.day.morning}
 function lastCallNow(){if(!S.created||S.tut!=='done'||window.__noDayEnd)return false;const t=dayPhase();return t>=CONFIG.day.lastCall||t<CONFIG.day.morning}
 let dayRepOpen=false;
 // __noDayEnd yalnız otomatik testlerde açılır
-function dayEndTick(){if(!S.created||S.tut!=='done'||window.__noDayEnd)return;if(!S.dayStart)S.dayStart=nowT();const t=dayPhase(),F=dayFlags();
+function dayEndTick(){if(!S.created||S.tut!=='done'||window.__noDayEnd)return;
+  // ilk gün: öğretici bitince saat ne olursa olsun sabahtan başlar, ilk müşteri hemen gelir
+  if(!S.dayStart){S.dayStart=nowT();if(!S.firstDayDone){S.firstDayDone=1;const t0=dayPhase();if(t0<CONFIG.day.morning||t0>CONFIG.day.morning+0.12){S.dayOff=(S.dayOff||0)+((CONFIG.day.morning+0.01-t0+1)%1)*CONFIG.day.len;try{dayTick(true)}catch(e){}}spawnT=Math.min(spawnT,2.5);markDirty()}}const t=dayPhase(),F=dayFlags();
   if(t>=CONFIG.day.lastCall&&t<CONFIG.day.night&&!F.lc){F.lc=1;markDirty();toast('<b>Akşam oluyor · son siparişler</b><br>Yeni müşteri ve paket sipariş alınmıyor; içerdekilere servis sürüyor.',UI_IC.moon,3600)}
   // gece raporu açılamadan sabah olduysa (ör. oyun gece kapalıydı) yeni güne sessizce geç
   if(F.nc&&!inNight(t)&&t<CONFIG.day.lastCall&&!dayRepOpen){const reopen=F.wasOpen!==false;S.dayN=(S.dayN||1)+1;S.dayStart=nowT();S.dayFlags={n:S.dayN};if(reopen)S.closed=false;hudShop();markDirty();return}
@@ -4380,9 +4423,14 @@ function openAuto(){if($('autoModal'))return;UI.modal=true;const md=document.cre
     if(e.target.closest('#autoOk')){md.remove();UI.modal=false;saveNow();if(UI.mode==='menu')renderMenu()}}}
 
 // ---------- eğilme (koli bırakma / alma): animasyonun üstüne omurgayı öne büker ----------
+// öne eğilme (koli bırakma/alma): omurga kemikleri, karakterin SAĞ ekseni etrafında dünya uzayında öne döner
+// (kemiklerin yerel eksenleri modele göre değiştiği için yerel x'e eklemek yerine dünya ekseni yerele çevrilir)
+const _bq=new THREE.Quaternion(),_bp=new THREE.Quaternion(),_ba=new THREE.Vector3();
 function bend(ch,dur,onMid){return new Promise(res=>{const sp=[ch.o.getObjectByName('mixamorigSpine'),ch.o.getObjectByName('mixamorigSpine1'),ch.o.getObjectByName('mixamorigSpine2')].filter(Boolean);
-  const hips=ch.o.getObjectByName('mixamorigHips');let t=0,mid=false;
-  ch.post=dt=>{t+=dt;const u=Math.min(1,t/dur),a=Math.sin(Math.PI*u);for(const b of sp)b.rotation.x+=0.42*a;if(hips)hips.position.y-=4*a;
+  const nk=ch.o.getObjectByName('mixamorigNeck');let t=0,mid=false;
+  const tilt=(b,ang)=>{b.parent.updateWorldMatrix(true,false);b.parent.getWorldQuaternion(_bp);const yaw=ch.o.rotation.y;_ba.set(Math.cos(yaw),0,-Math.sin(yaw));
+    _bq.setFromAxisAngle(_ba,ang);const inv=_bp.clone().invert();b.quaternion.premultiply(inv.multiply(_bq).multiply(_bp))};
+  ch.post=dt=>{t+=dt;const u=Math.min(1,t/dur),a=Math.sin(Math.PI*u);sp.forEach(b=>tilt(b,0.36*a));if(nk)tilt(nk,-0.3*a);
     if(!mid&&u>=0.5){mid=true;try{onMid&&onMid()}catch(e){console.warn(e)}}if(u>=1){ch.post=null;res()}}})}
 
 {const st=document.createElement('style');st.textContent=`
@@ -4463,7 +4511,7 @@ function garmentShell(geo,f,opt={}){garmentPrep();const src=geo.attributes,P=src
   const nv=pos.length/3;const inner=[];
   for(let i=0;i<nv;i++){const r=ring.get(wid[i]);const o=base+(r===0?lip:r===1?lip*0.55:r===2?lip*0.2:0)+(opt.extra?opt.extra(pos[i*3],pos[i*3+1],pos[i*3+2],r):0);
     inner.push(pos[i*3]+nor[i*3]*wallIn,pos[i*3+1]+nor[i*3+1]*wallIn,pos[i*3+2]+nor[i*3+2]*wallIn);
-    pos[i*3]+=nor[i*3]*o;pos[i*3+1]+=nor[i*3+1]*o;pos[i*3+2]+=nor[i*3+2]*o}
+    pos[i*3]+=nor[i*3]*o;pos[i*3+1]+=nor[i*3+1]*o;pos[i*3+2]+=nor[i*3+2]*o;if(opt.shape){const q=opt.shape(pos[i*3],pos[i*3+1],pos[i*3+2],r);if(q){pos[i*3]=q[0];pos[i*3+1]=q[1];pos[i*3+2]=q[2]}}}
   const shade=new Float32Array(nv).fill(1);for(let i=0;i<nv;i++){const r=ring.get(wid[i]);if(r===0)shade[i]=0.86;else if(r===1)shade[i]=0.95}
   // duvar: kenar boyunca kabuktan gövdeye inen şerit (kenar kalın görünür, aradan kürk görünmez)
   const col=[...shade];
@@ -4474,11 +4522,21 @@ function garmentShell(geo,f,opt={}){garmentPrep();const src=geo.attributes,P=src
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
   g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(ski,4));g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(skw,4));
   const C=new Float32Array(col.length*3);for(let i=0;i<col.length;i++){C[i*3]=C[i*3+1]=C[i*3+2]=col[i]}g.setAttribute('color',new THREE.BufferAttribute(C,3));
-  g.setIndex(idx);g.computeBoundingSphere();return g}
+  g.setIndex(idx);if(opt.shape){g.computeVertexNormals();try{smoothNormals(g)}catch(e){}}g.computeBoundingSphere();return g}
 // kol ekseni: omuz (Arm) → dirsek (ForeArm) kemiklerinin bağ pozundaki yerleri
 function armAxes(){if(GM.axes)return GM.axes;const sk=CM.mesh.skeleton;const pos=nm=>{const i=sk.bones.findIndex(b=>b.name===nm);const m=new THREE.Matrix4().copy(sk.boneInverses[i]).invert();return new THREE.Vector3().setFromMatrixPosition(m)};
   const ax=s=>{const S=pos('mixamorig'+s+'Arm'),E=pos('mixamorig'+s+'ForeArm');const d=E.clone().sub(S);const len=d.length();d.normalize();return {s:S.toArray(),d:d.toArray(),len}};
   return GM.axes={L:ax('Left'),R:ax('Right')}}
+// bacak eksenleri (kalça → diz → bilek), bağ pozunda
+function legAxes(){if(GM.legs)return GM.legs;const sk=CM.mesh.skeleton;const pos=nm=>{const i=sk.bones.findIndex(b=>b.name===nm);const m=new THREE.Matrix4().copy(sk.boneInverses[i]).invert();return new THREE.Vector3().setFromMatrixPosition(m)};
+  const L=s=>[pos('mixamorig'+s+'UpLeg'),pos('mixamorig'+s+'Leg'),pos('mixamorig'+s+'Foot')];return GM.legs={L:L('Left'),R:L('Right')}}
+// pantolon/şort bacağı: bacağı saran değil, düz kesimli kumaş tüp. Köşe, bacak eksenine göre en az R(y) yarıçapına itilir.
+function legTube(bt){const A=legAxes();const Rt=bt.len==='short'?0.088:0.079,Rk=bt.len==='short'?0.085:0.07,Ra=0.064;
+  return (x,y,z,r)=>{if(y>0.66)return null;const S=x>0?A.L:A.R;const a=S[0],k=S[1],f=S[2];
+    // eksen üzerindeki nokta (y'ye göre parça parça doğrusal)
+    let c,R;if(y>=k.y){const t=(y-k.y)/(a.y-k.y);c=[k.x+(a.x-k.x)*t,k.z+(a.z-k.z)*t];R=Rk+(Rt-Rk)*t}else{const t=Math.max(0,(y-f.y)/(k.y-f.y));c=[f.x+(k.x-f.x)*t,f.z+(k.z-f.z)*t];R=Ra+(Rk-Ra)*t}
+    const dx=x-c[0],dz=z-c[1];const d=Math.hypot(dx,dz)||1e-6;const w=Math.min(1,Math.max(0,(0.66-y)/0.1));   // kasık yakınında yumuşak geçiş
+    const want=Math.max(d,R+(r===0?0.006:0));const nd=d+(want-d)*w;return [c[0]+dx/d*nd,y,c[1]+dz/d*nd]}}
 // kuyruğun çıktığı yer: giysi orada açık kalır (kuyruk deliği)
 const tailHole=(x,y,z)=>Math.hypot(x-0.015,(y-0.82)*0.8,z+0.15)-0.06;
 // ---- bölgeler (pozitif = içeride) ----
@@ -4489,7 +4547,7 @@ const GREG={
       if(aw>0.35){const a=x>0?A.L:A.R;const t=((x-a.s[0])*a.d[0]+(y-a.s[1])*a.d[1]+(z-a.s[2])*a.d[2])/a.len;fs=(L-t)*0.6}
       const nk=1.262-0.075*Math.min(1,Math.max(0,(z-0.02)/0.07));return Math.min(fs,0.42-GM.apron[i],0.5-GM.tail[i],(nk-y)*3,(y-0.705)*3,tailHole(x,y,z))}},
   bottom:(geo,bt)=>{const P=geo.attributes.position.array;const hem=bt.len==='long'?0.075:bt.len==='knee'?0.3:0.42;
-    return i=>{const y=P[i*3+1];return Math.min((y-hem)*3,(0.86-y)*3,tailHole(P[i*3],y,P[i*3+2]),0.4-GM.arm[i]-GM.fore[i]-GM.top[i]*(y>0.8?1:0),0.4-GM.tail[i])}},
+    return i=>{const y=P[i*3+1];return Math.min((y-hem)*3,(0.86-y)*3,tailHole(P[i*3],y,P[i*3+2]),(0.3-GM.apron[i])*(y>0.5?1:0)+(y>0.5?0:1),0.4-GM.arm[i]-GM.fore[i]-GM.top[i]*(y>0.8?1:0),0.4-GM.tail[i])}},
   apron:(geo)=>i=>GM.apron[i]-0.45};
 // ---- kumaş dokusu (gövdeyle aynı UV) ----
 const GTEX=new Map();
@@ -4497,8 +4555,22 @@ function garmentTex(key,colorFn,R=512){if(GTEX.has(key))return GTEX.get(key);con
   for(let k=0;k<R*R;k++){const x=M.pm[k*3],y=M.pm[k*3+1],z=M.pm[k*3+2];colorFn(x,y,z,o);const nz=0.96+0.06*vnoise(x*160,y*160,z*160);d[k*4]=Math.min(255,o[0]*nz);d[k*4+1]=Math.min(255,o[1]*nz);d[k*4+2]=Math.min(255,o[2]*nz);d[k*4+3]=255}
   c2.putImageData(im,0,0);const t=new THREE.CanvasTexture(cv);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;GTEX.set(key,t);return t}
 function topTex(top){return garmentTex('t'+JSON.stringify(top),(x,y,z,o)=>topColor(top,x,y,z,o))}
-function bottomTex(bt){return garmentTex('b'+JSON.stringify(bt),(x,y,z,o)=>{let c=bt.bt;if(bt.bt2&&(Math.sin(x*60)>0)!==(Math.sin(y*60)>0))c=bt.bt2;
-  if(bt.denim){const s=Math.abs(Math.abs(x)-0.155)<0.003&&y<0.7?1:0;if(s)c=[c[0]*0.78,c[1]*0.78,c[2]*0.78]}o[0]=c[0];o[1]=c[1];o[2]=c[2]})}
+function bottomTex(bt){return garmentTex('b'+JSON.stringify(bt),(x,y,z,o)=>{let c=bt.bt.slice();if(bt.bt2&&(Math.sin(x*60)>0)!==(Math.sin(y*60)>0))c=bt.bt2.slice();const ax=Math.abs(x);
+  const hem=bt.len==='long'?0.075:bt.len==='knee'?0.3:0.42;const mul=f=>{c=[c[0]*f,c[1]*f,c[2]*f]};
+  // dokuma: kotta belirgin çapraz çizgi, kumaşta ince
+  const tw=Math.sin((y*0.7+ax*0.7+z*0.5)*520);if(bt.denim)mul(0.93+0.07*tw);else mul(0.975+0.025*tw);
+  // yan dikiş (bacağın dış yanı) ve iç dikiş
+  const legX=Math.abs(legAxes().L[1].x);const side=Math.abs(ax-legX-0.062);if(y<0.7&&Math.abs(z)<0.03&&side<0.012)mul(0.82);
+  // paça/manşet: altta kıvrılmış bant ve dikiş
+  if(y<hem+0.035){mul(bt.len==='short'?0.86:0.9);if(Math.abs(y-(hem+0.03))<0.003)c=bt.denim?[214,160,90]:[c[0]*1.25,c[1]*1.25,c[2]*1.25]}
+  // bel bandı ve kemer halkaları
+  if(y>0.8){mul(0.9);if(Math.abs(y-0.8)<0.003)c=bt.denim?[214,160,90]:[c[0]*1.2,c[1]*1.2,c[2]*1.2]}
+  // arka cepler (kotta turuncu dikişli), ön cep kavisi
+  if(z<-0.04&&y>0.66&&y<0.77){const px=ax-0.07;const e=Math.max(Math.abs(px)/0.035,Math.abs(y-0.715)/0.055);if(e<1&&e>0.9)c=bt.denim?[214,160,90]:[c[0]*0.75,c[1]*0.75,c[2]*0.75]}
+  if(z>0.04&&y>0.7&&y<0.8){const q=Math.hypot((ax-0.13)/0.06,(y-0.8)/0.08);if(q>0.92&&q<1.02)mul(0.7)}
+  // ütü çizgisi (pantolon önü)
+  if(bt.len==='long'&&!bt.denim&&z>0.02&&Math.abs(ax-legX)<0.004&&y<0.66)mul(1.12);
+  o[0]=Math.min(255,c[0]);o[1]=Math.min(255,c[1]);o[2]=Math.min(255,c[2])})}
 // ---- karaktere tak ----
 function garmentMat(base,map){const m=new THREE.MeshStandardMaterial({map,vertexColors:true,roughness:0.95,metalness:0,side:THREE.DoubleSide});if(base&&base.color)m.color.copy(base.color);return m}
 function addGarment(sm,geo,mat,tag){if(!geo)return null;const m=new THREE.SkinnedMesh(geo,mat);m.bind(sm.skeleton,sm.bindMatrix);m.bindMode=sm.bindMode;m.userData.garment=tag;m.castShadow=true;m.receiveShadow=false;m.frustumCulled=false;sm.parent.add(m);return m}
@@ -4508,7 +4580,7 @@ const GCACHE=new Map();
 function dressGarments(root,sm,wear){clearGarments(root);garmentPrep();const geo=sm.userData.bareGeo&&sm.geometry.userData.hidden?sm.userData.bareGeo:sm.geometry;const base=geo===CM.geo;
   const mk=(tag,fn,opt)=>{const ck=base?tag:null;if(ck&&GCACHE.has(ck))return GCACHE.get(ck);const g=garmentShell(geo,fn,opt);if(ck)GCACHE.set(ck,g);return g};
   let any=false;const hideF=[];
-  if(wear.bottom){const bt=wear.bottom;hideF.push(GREG.bottom(geo,bt));addGarment(sm,mk('b'+bt.len,GREG.bottom(geo,bt),{off:0.006,lip:0.004}),garmentMat(null,bottomTex(bt)),'bottom');any=true}
+  if(wear.bottom){const bt=wear.bottom;hideF.push(GREG.bottom(geo,bt));addGarment(sm,mk('b'+bt.len,GREG.bottom(geo,bt),{off:0.008,lip:bt.len==='long'?0.007:0.01,shape:legTube(bt)}),garmentMat(null,bottomTex(bt)),'bottom');any=true}
   if(wear.top){const top=wear.top;hideF.push(GREG.top(geo,top));addGarment(sm,mk('t'+top.kind,GREG.top(geo,top),{off:0.0075,lip:0.0045}),garmentMat(null,topTex(top)),'top');any=true}
   if(any){const am=sm.material.clone();am.side=THREE.DoubleSide;am.vertexColors=true;addGarment(sm,mk('apron',GREG.apron(geo),{off:0.012,lip:0.002,wallIn:0.002}),am,'apron');hideF.push(GREG.apron(geo))}
   // giysinin altında kalan gövde üçgenleri çizilmez: eklem bükülünce kürk kumaştan dışarı taşamaz (kenar payı korunur)
@@ -4537,14 +4609,58 @@ function buildPoseClips(){const S0=CLIPS.Chair_Sit_Idle_F;if(!S0||CLIPS.SIT_BASE
     if(extra)for(const tr of extra.values())tracks.push(tr);return new THREE.AnimationClip(name,-1,tracks)};
   CLIPS.SIT_BASE=mk('SIT_BASE',null);
   // sohbet: Talk klibinin üst gövde izleri
-  const T=CLIPS.Talk_with_Hands_Open;if(T){const ex=new Map();for(const tr of T.tracks)if(UPPER_RE.test(tr.name)&&/quaternion/.test(tr.name))ex.set(tr.name,tr.clone());CLIPS.SIT_CHAT=mk('SIT_CHAT',ex)}
+  const T=CLIPS.Talk_with_Hands_Open;if(T){const ex=new Map();for(const tr of T.tracks)if(UPPER_RE.test(tr.name)&&/quaternion/.test(tr.name)){const c=tr.clone();const b0=base.get(tr.name);
+      // kollar Talk'ın yarı şiddetinde (iki yana açılmasın), baş tam
+      if(b0&&/Arm|Hand|Shoulder/.test(tr.name)){const qb=new THREE.Quaternion().fromArray(b0.v),qq=new THREE.Quaternion();for(let i=0;i<c.values.length;i+=4){qq.fromArray(c.values,i);qq.copy(qb.clone().slerp(qq,/ForeArm|Hand/.test(tr.name)?0.5:0.35));qq.toArray(c.values,i)}}
+      ex.set(tr.name,c)}CLIPS.SIT_CHAT=mk('SIT_CHAT',ex)}
   // telefon: el sallama klibinde elin başa en yakın olduğu an, o kolun pozu; baş hafif yana eğik
   const W=CLIPS.Wave_One_Hand;if(W&&TEMPLATE){const r=SkeletonUtils.clone(TEMPLATE);const mx=new THREE.AnimationMixer(r);const a=mx.clipAction(W);a.play();const head=r.getObjectByName('mixamorigHead');let best={d:9};const hv=new THREE.Vector3(),pv=new THREE.Vector3();
     for(let t=0.1;t<W.duration;t+=0.05){mx.setTime(t);r.updateMatrixWorld(true);head.getWorldPosition(hv);for(const side of ['Left','Right']){r.getObjectByName('mixamorig'+side+'Hand').getWorldPosition(pv);const d=pv.distanceTo(hv);if(d<best.d)best={d,t,side}}}
     const pose=sampleClip(W,best.t);const ex=new Map();const re=new RegExp('mixamorig'+best.side+'(Shoulder|Arm|ForeArm|Hand)\\b');
     for(const [n,o] of pose)if(re.test(n)&&/quaternion/.test(n))ex.set(n,staticTrack(n,o.type,o.v,dur));
     const hn='mixamorigHead.quaternion',hb=base.get(hn);if(hb){const q=new THREE.Quaternion().fromArray(hb.v).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),best.side==='Left'?0.16:-0.16));ex.set(hn,staticTrack(hn,THREE.QuaternionKeyframeTrack,[q.x,q.y,q.z,q.w],dur))}
-    CLIPS.SIT_PHONE=mk('SIT_PHONE',ex);CLIPS.SIT_PHONE.userData={side:best.side}}}
+    CLIPS.SIT_PHONE=mk('SIT_PHONE',ex);CLIPS.SIT_PHONE.userData={side:best.side}}
+  buildStandClips()}
+// ---- ayakta doğal boş/sohbet/çalışma hareketleri (Talk_with_Hands_Open'ın kolları iki yana açması yerine) ----
+//  IDLE_LOOK : Idle_12 + baş yavaşça sağa-sola bakar, hafif kilo aktarımı
+//  IDLE_TALK : Idle_12 + Talk klibinin kolları ~%30 şiddetle (küçük el hareketleri), baş hafif sallanır
+//  IDLE_WORK : kollar önde tezgah üstünde (Carry klibinin kolları), eller küçük küçük çalışır
+function _samp(clip){const m=new Map();if(!clip)return m;for(const tr of clip.tracks){const it=tr.createInterpolant();m.set(tr.name,{tr,f:t=>Array.from(it.evaluate(((t%clip.duration)+clip.duration)%clip.duration))})}return m}
+const _ARM_RE=/mixamorig(Left|Right)(Shoulder|Arm|ForeArm|Hand)\.quaternion/;
+// kolları, ellerin karın hizasında önde (tezgah üstünde) birleşeceği poza küçük bir sayısal arama ile getirir
+function workArms(I){const r=SkeletonUtils.clone(TEMPLATE);const mx=new THREE.AnimationMixer(r);mx.clipAction(I).play();mx.setTime(0.3);r.updateMatrixWorld(true);
+  const B=n=>r.getObjectByName('mixamorig'+n);const P=n=>B(n).getWorldPosition(new THREE.Vector3());const inv=new THREE.Matrix4().copy(r.matrixWorld).invert();const L=v=>v.applyMatrix4(inv);
+  const hd=L(P('Head')),sp=L(P('Spine1')),hp=L(P('Hips'));const H=hd.y-0;const out=new Map();const e=new THREE.Euler(),qe=new THREE.Quaternion();
+  for(const side of ['Left','Right']){const arm=B(side+'Arm'),fa=B(side+'ForeArm'),hand=B(side+'Hand');const qa=arm.quaternion.clone(),qf=fa.quaternion.clone();
+    const sx=L(P(side+'Hand')).x>hp.x?1:-1;
+    const solve=(tgt)=>{const prm=[0,0,0,0,0,0];const ev=()=>{arm.quaternion.copy(qa).multiply(qe.setFromEuler(e.set(prm[0],prm[1],prm[2])));fa.quaternion.copy(qf).multiply(qe.setFromEuler(e.set(prm[3],prm[4],prm[5])));
+        arm.updateMatrixWorld(true);const h=L(hand.getWorldPosition(new THREE.Vector3())),el=L(fa.getWorldPosition(new THREE.Vector3()));
+        return h.distanceTo(tgt)+Math.abs(el.z-(hp.z+0.03*H))*0.6+Math.max(0,Math.abs(el.x-hp.x)-0.17*H)*0.5+(prm[0]**2+prm[1]**2+prm[2]**2)*0.002*H};
+      let best=ev();for(let st=0.6;st>0.01;st*=0.6)for(let it=0;it<6;it++){let imp=false;for(let k=0;k<6;k++)for(const sg of [1,-1]){prm[k]+=sg*st;const v=ev();if(v<best-1e-6){best=v;imp=true}else prm[k]-=sg*st}if(!imp)break}
+      ev();return [arm.quaternion.toArray(),fa.quaternion.toArray(),best/H]};
+    const ty=sp.y*1.05-hp.y*0.05,tz=hp.z+0.19*H;
+    const a=solve(new THREE.Vector3(hp.x+sx*0.06*H,ty,tz)),b=solve(new THREE.Vector3(hp.x+sx*0.1*H,ty+0.03*H,tz+0.02*H));
+    out.set('mixamorig'+side+'Arm.quaternion',a[0]);out.set('mixamorig'+side+'ForeArm.quaternion',a[1]);out.set('mixamorig'+side+'ForeArm.quaternion2',b[1]);
+    arm.quaternion.copy(qa);fa.quaternion.copy(qf)}
+  return out}
+function buildStandClips(){const I=CLIPS.Idle_12;if(!I||CLIPS.IDLE_LOOK)return;const si=_samp(I),st=_samp(CLIPS.Talk_with_Hands_Open),sc=_samp(CLIPS.Carry_Heavy_Object_Walk_inplace);
+  const q=new THREE.Quaternion(),q2=new THREE.Quaternion(),e=new THREE.Quaternion(),X=new THREE.Vector3(1,0,0),Y=new THREE.Vector3(0,1,0),Z=new THREE.Vector3(0,0,1);
+  const mk=(name,dur,fn)=>{const fps=15,n=Math.round(dur*fps),tracks=[];for(const [nm,o] of si){const ts=[],vs=[];for(let i=0;i<=n;i++){const t=i/n*dur;ts.push(t);vs.push(...fn(nm,o.f(t),t,dur))}
+      tracks.push(new o.tr.constructor(nm,ts,vs))}return new THREE.AnimationClip(name,dur,tracks)};
+  const rot=(v,ax,a)=>{q.fromArray(v);e.setFromAxisAngle(ax,a);q.multiply(e);return [q.x,q.y,q.z,q.w]};
+  CLIPS.IDLE_LOOK=mk('IDLE_LOOK',4,(nm,v,t,d)=>{const ph=Math.sin(t/d*Math.PI*2);
+    if(nm==='mixamorigHead.quaternion')return rot(v,Y,ph*0.42);if(nm==='mixamorigNeck.quaternion')return rot(v,Y,ph*0.18);
+    if(nm==='mixamorigSpine1.quaternion')return rot(v,Y,ph*0.06);return v});
+  const TD=CLIPS.Talk_with_Hands_Open?CLIPS.Talk_with_Hands_Open.duration:3;
+  CLIPS.IDLE_TALK=mk('IDLE_TALK',TD,(nm,v,t,d)=>{if(_ARM_RE.test(nm)&&st.has(nm)){q.fromArray(v);q2.fromArray(st.get(nm).f(t));q.slerp(q2,/ForeArm|Hand/.test(nm)?0.38:0.24);return [q.x,q.y,q.z,q.w]}
+    if(nm==='mixamorigHead.quaternion')return rot(v,X,Math.sin(t*5.2)*0.06+Math.sin(t*1.3)*0.04);return v});
+  // kucakta koliyle dururken ayaklar yürümesin: alt gövde Idle, kollar taşıma pozunda
+  if(sc.size)CLIPS.CARRY_IDLE=mk('CARRY_IDLE',I.duration,(nm,v,t)=>{if(/mixamorig(Left|Right)(Shoulder|Arm|ForeArm|Hand)\.quaternion|mixamorig(Spine1|Spine2|Neck|Head)\.quaternion/.test(nm)&&sc.has(nm))return sc.get(nm).f(0.25);return v});
+  const W=TEMPLATE?workArms(I):null;
+  if(W)CLIPS.IDLE_WORK=mk('IDLE_WORK',2,(nm,v,t,d)=>{const w=W.get(nm);if(w){const ph=Math.sin(t/d*Math.PI*4+(/Left/.test(nm)?0:1.7));q.fromArray(w);
+      if(/ForeArm/.test(nm)){q.slerp(q2.fromArray(W.get(nm+'2')),0.5+0.5*ph)}return [q.x,q.y,q.z,q.w]}
+    if(nm==='mixamorigHead.quaternion')return rot(v,X,0.24);if(nm==='mixamorigSpine2.quaternion')return rot(v,X,0.06);return v});
+}
 // telefon modeli (yalnız SIT_PHONE sırasında görünür)
 function phoneFor(ch){if(ch.phone!==undefined)return ch.phone;const side=CLIPS.SIT_PHONE&&CLIPS.SIT_PHONE.userData&&CLIPS.SIT_PHONE.userData.side;const hand=side&&ch.o.getObjectByName('mixamorig'+side+'Hand');if(!hand){ch.phone=null;return null}
   const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(0.045,0.09,0.008),toon(0x2b2b33));g.add(body);const scr=new THREE.Mesh(new THREE.PlaneGeometry(0.038,0.075),new THREE.MeshBasicMaterial({color:0x8fd3ff}));scr.position.z=0.0045;g.add(scr);
@@ -4573,15 +4689,15 @@ async function waiterWander(w,P,yaw){const ch=w.ch;for(let n=0;n<8;n++){const a=
 // barista: tezgah arkasında kendi bölgesinde birkaç adım
 async function baristaWander(b,h){if(baristaQ.length)return;const ch=b.ch;const span=BSTAFF.length>1?0.35:0.7;const x=h.x+(Math.random()<0.5?-1:1)*irnd(0.25,span);
   await ch.walkTo(x,h.z,{direct:true});if(baristaQ.length)return;await ch.face(Math.random()<0.5?Math.PI:0);await sleep(irnd(1,2.2));
-  if(!baristaQ.length&&Math.random()<0.5)await ch.doFor('Talk_with_Hands_Open',1.0);await ch.walkTo(h.x,h.z,{direct:true});await ch.face(0)}
+  if(!baristaQ.length&&Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(h.x,h.z,{direct:true});await ch.face(0)}
 // kasiyer: kasa boşken
 function cashIdleOk(k){const R=REGS[k.i];return k.ready&&!k.chasing&&!cashMoving&&R&&!R.busy&&!R.cust&&!CASH.queue.length&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING')}
 async function cashierIdle(k){const R=REGS[k.i],st=R.stand,ch=k.ch;k.ready=false;k.idleBusy=true;
   try{const mates=[...BSTAFF.filter(b=>!b.busy&&!baristaQ.length),...WSTAFF.filter(w=>!jobs.length)].map(x=>x.ch).filter(c=>Math.hypot(c.pos.x-ch.pos.x,c.pos.z-ch.pos.z)<4.2&&!c.path.length);
     if(mates.length&&Math.random()<0.55){const m=mates[Math.floor(Math.random()*mates.length)];await ch.faceTo(m.pos.x,m.pos.z);staffBubble(ch,'heart',2.2);
-      await Promise.all([ch.doFor(Math.random()<0.5?'Wave_One_Hand':'Talk_with_Hands_Open',1.4),(async()=>{await sleep(0.5);if(!m.act&&!m.path.length){staffBubble(m,'heart',1.8);await m.doFor('Talk_with_Hands_Open',1.2)}})()])}
+      await Promise.all([ch.doFor(Math.random()<0.5?'Wave_One_Hand':'IDLE_TALK',1.4),(async()=>{await sleep(0.5);if(!m.act&&!m.path.length){staffBubble(m,'heart',1.8);await m.doFor('IDLE_TALK',1.2)}})()])}
     else{const x=Math.max(-0.12,Math.min(0.82,st.x+(Math.random()<0.5?-1:1)*irnd(0.2,0.38)));await ch.walkTo(x,st.z,{direct:true});await ch.face(Math.PI);await sleep(irnd(1,2));
-      if(Math.random()<0.5)await ch.doFor('Talk_with_Hands_Open',1.0);await ch.walkTo(st.x,st.z,{direct:true})}
+      if(Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(st.x,st.z,{direct:true})}
     await ch.face(0)}finally{k.idleBusy=false;k.ready=REGS.length>k.i}}
 function staffIdleTick(dt){if(!IDLE.on||!S.created)return;for(const k of CSTAFF){if(k.idleBusy)continue;if(!cashIdleOk(k)){k.idleT=0;continue}k.idleT=(k.idleT||0)+dt;
     if(k.idleT>(k.idleNext||(k.idleNext=irnd(10,18)))){k.idleT=0;k.idleNext=irnd(12,22);cashierIdle(k)}}}
@@ -4607,7 +4723,7 @@ async function init(){
     for(const L of LOOKS)L.tex=recolor(src,L.W,L.B,L.A,null);POSA_LOOK.tex=recolor(src,POSA_LOOK.W,POSA_LOOK.B,POSA_LOOK.A,POSA_LOOK.DK);
     // ekip: kayıtlı görünümlerle (yoksa varsayılan Yosun / Poşa / Fındık)
     custPrepare();LOOKS.forEach((L,i)=>L.tex=customerTex(L,i));VIP_LOOK.tex=customerTex(VIP_LOOK,1);if(!S.chars)S.chars=charsDefault();
-    for(const key of allStaffKeys()){const role=roleOfKey(key);if(!S.chars[key])S.chars[key]=newHireCfg(key);const c=S.chars[key];c.look={...LOOK_DEF,...(c.look||{})};if(c.look.whisk==='none')c.look.whisk='short';c.look.tailLen='normal';c.look.tailFluff=false;c.look.tail='same';c.wear={...ROLE_DEF[role].wear,...(c.wear||{})};if(!c.name)c.name=HIRE_NAMES[key]||ROLE_DEF[role].name;if(!CLO[c.wear.apron])c.wear.apron=ROLE_DEF[role].wear.apron;   // çalışanlar her zaman önlüklü
+    for(const key of allStaffKeys()){const role=roleOfKey(key);if(!S.chars[key])S.chars[key]=newHireCfg(key);const c=S.chars[key];c.look={...LOOK_DEF,...(c.look||{})};if(c.look.whisk==='none')c.look.whisk='short';c.wear.top='top_none';c.wear.bottom='bt_none';c.look.tailLen='normal';c.look.tailFluff=false;c.look.tail='same';c.wear={...ROLE_DEF[role].wear,...(c.wear||{})};if(!c.name)c.name=HIRE_NAMES[key]||ROLE_DEF[role].name;if(!CLO[c.wear.apron])c.wear.apron=ROLE_DEF[role].wear.apron;   // çalışanlar her zaman önlüklü
     if(c.freeEdits==null)c.freeEdits=0}
     layoutRegisters(S.staff.cashier);
     for(const key of allStaffKeys())spawnStaff(key,false);
@@ -4639,7 +4755,7 @@ function cashLayoutTick(){const n=Math.min(2,CSTAFF.length);if(cashMoving||REGS.
   Promise.all(CSTAFF.map(async k=>{const st=REGS[k.i].stand;await k.ch.walkTo(st.x,st.z,{direct:true});await k.ch.face(0);k.ready=true})).then(()=>{cashMoving=false})}
 // müşteriler de şort giyer: kuyruksuz (pürüzsüz normalli) ortak geometri
 function cloneLook(tex,lk){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);let sm;r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true;if(o.isSkinnedMesh){o.geometry=NO_BOTTOMS?CM.geo:CM.geoNT;sm=o}}});
-  if(sm&&lk&&lk._top)dressGarments(r,sm,{top:lk._top,bottom:null});
+  if(sm&&lk&&lk._top){const B=CLO[lk._bt];dressGarments(r,sm,{top:lk._top,bottom:B&&B.bt?{bt:B.bt,bt2:B.bt2,len:B.len||'short',denim:B.denim}:null})}
   if(sm&&!NO_BOTTOMS){const L=lk||{};const bt=(CLO[L._bt||L.bt||'bt_navy']||CLO.bt_navy).bt;buildTail(sm,{fur:L.W||[245,240,232],f2:L.B||[150,110,80],tail:'same',pattern:'original',len:'normal',fluff:false,bt})}return r}
 function resize(){const w=game.clientWidth,h=game.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 resize();addEventListener('resize',resize);visualViewport&&visualViewport.addEventListener('resize',resize);
