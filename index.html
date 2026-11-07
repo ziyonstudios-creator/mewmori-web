@@ -1093,7 +1093,7 @@ class Char{
       if(this.interrupt&&this.interrupt()){this.path=[];this.vel=0;const r=this.arrive;this.arrive=null;r&&r(false)}
       else{const tgt=this.path[0];const d=new THREE.Vector3(tgt.x-this.pos.x,0,tgt.z-this.pos.z);const dist=d.length();
         let rem=dist;for(let i=0;i<this.path.length-1;i++)rem+=this.path[i].distanceTo(this.path[i+1]);
-        const want=(this.canRun&&!this.carry&&rem>1.8)?2.3:this.speed;this.vel+=(want-this.vel)*Math.min(1,dt*6);
+        const want=(this.canRun&&!this.carry&&rem>1.8)?2.3:this.carryAnim==='Carry_Heavy_Object_Walk_inplace'&&this.carry?this.speed*0.7:this.speed;this.vel+=(want-this.vel)*Math.min(1,dt*6);
         if(dist<1e-4||(this.path.length>1&&dist<0.06)){this.path.shift();if(!this.path.length){this.vel=0;this._hold=true;const r=this.arrive;this.arrive=null;r&&r(true)}}
         else{const step=Math.min(dist,this.vel*dt);this.pos.x+=d.x/dist*step;this.pos.z+=d.z/dist*step;
           // yürürken başka bir kedinin içinden geçmesin: yana doğru küçük bir adım (yalnızca boş zemine)
@@ -1113,8 +1113,11 @@ class Char{
       else if(this.act)want=this.act.name;
       else want=this.carry?(this.carryAnim==='Carry_Heavy_Object_Walk_inplace'&&this.acts.CARRY_IDLE?'CARRY_IDLE':this.carryAnim&&this.acts[this.carryAnim]?this.carryAnim:'Handbag_Walk'):'Idle_12';
       this.play(want)}
-    this.acts.Handbag_Walk.timeScale=(this.carry&&!this.path.length&&!this.act)?0:1;
-    {const ca=this.acts.Carry_Heavy_Object_Walk_inplace;if(ca)ca.timeScale=(this.carry&&!this.path.length&&!this.act)?0:1.15}   // koli taşıma yürüyüşü; dururken kucakta tutma pozu
+    // adım hızı yürüme hızına göre: ayak yere bastığında kaymasın (klip başına ölçülen ayak hızı, m/sn, timeScale 1'de)
+    {const still=this.carry&&!this.path.length&&!this.act,v=Math.max(0.35,this.vel||0);
+     this.acts.Handbag_Walk.timeScale=still?0:Math.min(2.2,v/0.53);
+     const ca=this.acts.Carry_Heavy_Object_Walk_inplace;if(ca)ca.timeScale=still?0:Math.min(5,v/0.184);
+     if(this.acts.Walking)this.acts.Walking.timeScale=Math.min(1.6,Math.max(0.6,v/0.8))}
     if(this.act){this.act.t+=dt;if(this.act.t>=this.act.max)this.endAct()}
     // AnimationMixer bir kemiğin değeri bir önceki kareyle aynıysa (sabit iz, donmuş klip) onu yeniden YAZMAZ;
     // poseFix / eğilme / baş bakışı gibi animasyon sonrası eklemeler o zaman kare kare birikir (kollar dönüp gider).
@@ -4812,7 +4815,11 @@ function cloneLook(tex,lk){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);l
   if(sm&&!NO_BOTTOMS){const L=lk||{};const bt=(CLO[L._bt||L.bt||'bt_navy']||CLO.bt_navy).bt;buildTail(sm,{fur:L.W||[245,240,232],f2:L.B||[150,110,80],tail:'same',pattern:'original',len:'normal',fluff:false,bt})}return r}
 function resize(){const w=game.clientWidth,h=game.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 resize();addEventListener('resize',resize);visualViewport&&visualViewport.addEventListener('resize',resize);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)saveNow();else if(started)setTimeout(offlineCheck,300);clock.getDelta()});
+// oyuna geri dönülünce (uygulama arka plandan açılınca) her zaman dükkan görünümüyle başlar; açık kalan menü/tahta kapanır
+let hiddenAt=0;
+function goHome(){try{if(!started||!S.created||S.tut!=='done')return;if(UI.mode==='place'&&typeof cancelPlacement==='function')cancelPlacement();if(UI.mode!=='cafe')setMode('cafe')}catch(e){console.warn('goHome',e)}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){hiddenAt=Date.now();saveNow()}else if(started){if(Date.now()-hiddenAt>2000)goHome();setTimeout(offlineCheck,300)}clock.getDelta()});
+addEventListener('pageshow',e=>{if(e.persisted)goHome()});
 addEventListener('pagehide',saveNow);
 const clock=new THREE.Clock();let lastDt=0;
 function simStep(dt){lastDt=dt;gameT+=dt;
