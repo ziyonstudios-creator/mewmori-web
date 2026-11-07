@@ -1750,9 +1750,13 @@ function posMap(R){if(CM.maps[R])return CM.maps[R];const g=CM.geo,P=tailSnapP(),
   for(let k=0;k<R*R;k++){if(!cov[k])continue;const r=orig[k*4]/255,g2=orig[k*4+1]/255,b=orig[k*4+2]/255;const mx=Math.max(r,g2,b),mn=Math.min(r,g2,b),v=mx,s=mx>0?(mx-mn)/mx:0,dd=(mx-mn)||1e-6;
     let h=mx===r?((g2-b)/dd)%6:mx===g2?(b-r)/dd+2:(r-g2)/dd+4;h*=60;if(h<0)h+=360;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];
     const inHead=y>1.28,inEye=inHead&&z>0.05&&Math.hypot((Math.abs(x)-0.088)/0.085,(y-1.445)/0.053)<1;const whisker=inHead&&isWhiskerPos(x,y,z);
-    let c;if(whisker)c=8;else if(h>55&&h<170&&s>0.22&&v>0.12&&(inEye?false:true)&&!inHead)c=4;else if(inEye&&h>55&&h<170&&s>0.25)c=6;
+    let c;if(whisker)c=8;else if(h>42&&h<170&&s>0.22&&v>0.12&&(inEye?false:true)&&!inHead)c=4;else if(inEye&&h>55&&h<170&&s>0.25)c=6;
     else if((h>=330||h<14)&&s>0.12&&v>0.5)c=5;else if(v<=0.3)c=inEye?7:3;else if(s<0.22&&v>0.55)c=1;else if(h>=8&&h<=55&&s>0.2)c=2;else c=inEye?7:1;
     cls[k]=c;lum[k]=0.3*r+0.59*g2+0.11*b;sum[c]+=lum[k];cnt[c]++}
+  // önlüğün dikiş/kenar çizgileri (koyu ya da sarımsı): 3B komşularının çoğu önlükse önlük say (renklenince gölge olarak kalır)
+  {const h=Math.max(2,Math.round(R/220));for(let pass=0;pass<2;pass++){const nc=cls.slice();for(let y=h;y<R-h;y++)for(let x=h;x<R-h;x++){const k=y*R+x,c=cls[k];if(!(c===2||c===3||c===7))continue;const px=pm[k*3],py=pm[k*3+1],pz=pm[k*3+2];if(py>1.28)continue;let n4=0,nf=0;
+      for(let dy=-h;dy<=h;dy++)for(let dx=-h;dx<=h;dx++){const q=k+dy*R+dx;if(Math.abs(pm[q*3]-px)+Math.abs(pm[q*3+1]-py)+Math.abs(pm[q*3+2]-pz)>0.03)continue;if(cls[q]===4)n4++;else if(cls[q]===1||cls[q]===2)nf++}
+      if(n4>=2&&n4>nf*0.7)nc[k]=4}cls.set(nc)}}
   const cls0=cls.slice();
   // önlük–kürk sınırını yumuşat (testere dişi kenarlar): 5x5 çoğunluk süzgeci
   for(let pass=0;pass<2;pass++){const nc=cls.slice();for(let y=2;y<R-2;y++)for(let x=2;x<R-2;x++){const k=y*R+x,c=cls[k];if(!(c>=1&&c<=4))continue;let a4=0,af=0;
@@ -1777,7 +1781,9 @@ function posMap(R){if(CM.maps[R])return CM.maps[R];const g=CM.geo,P=tailSnapP(),
   const avg=f=>{let r=0,g=0,b=0,n=0;for(let k=0;k<R*R;k++)if(f(k)){r+=orig[k*4];g+=orig[k*4+1];b+=orig[k*4+2];n++}return n?[r/n,g/n,b/n]:[200,150,150]};
   const apMean=avg(k=>cls0[k]===4&&cls[k]===4);const earMean=avg(k=>cls0[k]===5&&pm[k*3+1]>1.58&&Math.abs(pm[k*3])>0.06&&pm[k*3+2]>-0.02);
   return CM.maps[R]={R,pm,cov,cls,cls0,lum,mean,orig,tl,apMean,earMean,nzm,detm,f3,clsH}}
-const HEADC={x:-0.003,y:1.48,z:0.05};
+// kafa (kulaklar hariç) elipsoidi: yeni modelin ölçüleri
+const HEADC={x:0,y:1.44,z:0.013},HEADR={x:0.215,y:0.175,z:0.15};
+const headEll=(x,y,z)=>((x-HEADC.x)/HEADR.x)**2+((y-HEADC.y)/HEADR.y)**2+((z-HEADC.z)/HEADR.z)**2;
 function isWhiskerPos(x,y,z){if(y>1.5||y<1.33)return false;const r=Math.hypot((x-HEADC.x)/0.2,(y-HEADC.y)/0.2,(z-HEADC.z)/0.19);return r>1.12&&Math.abs(x)>0.1}
 function vertexClass(){const g=CM.geo,UV=g.attributes.uv.array,n=UV.length/2;const cv=document.createElement('canvas');cv.width=cv.height=256;const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(CM.img,0,0,256,256);const d=x.getImageData(0,0,256,256).data;
   const out=new Uint8Array(n);for(let i=0;i<n;i++){const u=Math.min(255,Math.floor(UV[i*2]*256)),v=Math.min(255,Math.floor(UV[i*2+1]*256));const k=(v*256+u)*4;const r=d[k],gg=d[k+1],b=d[k+2];const mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);
@@ -1843,7 +1849,7 @@ function cleanLines(d,M,L,top){MPM=M.pm;const keepFur=L.pattern==='original'&&L.
   const box=(A,x,y,h)=>{const x0=Math.max(0,x-h),y0=Math.max(0,y-h),x1=Math.min(R,x+h+1),y1=Math.min(R,y+h+1);return A[y1*(R+1)+x1]-A[y0*(R+1)+x1]-A[y1*(R+1)+x0]+A[y0*(R+1)+x0]};
   const hw=Math.round(R/180);
   for(let k=0;k<N;k++){const c=cls[k];if(!c)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];TLK=M.tl[k];
-    if(y>1.54&&Math.abs(x)>0.09&&c!==8&&((((x-HEADC.x)/0.205)**2+((y-HEADC.y)/0.128)**2+((z-0.045)/0.165)**2>1.0&&M.nzm[k]>0.3)||(y>1.5&&Math.abs(x)>0.1&&M.nzm[k]>0.35&&(((x-HEADC.x)/0.205)**2+((y-HEADC.y)/0.128)**2+((z-0.045)/0.165)**2)>0.9)||box(I5,k%R,(k/R)|0,hw)>0.4*box(IC,k%R,(k/R)|0,hw)))mask[k]=2;   // kulak içi: düz pembe
+    if(y>1.54&&Math.abs(x)>0.09&&c!==8&&((headEll(x,y,z)>1.0&&M.nzm[k]>0.3)||(y>1.5&&Math.abs(x)>0.1&&M.nzm[k]>0.35&&(headEll(x,y,z))>0.9)||box(I5,k%R,(k/R)|0,hw)>0.4*box(IC,k%R,(k/R)|0,hw)))mask[k]=2;   // kulak içi: düz pembe
     else if(c>=1&&c<=3&&(y<1.3||!keepFur)&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))){const face=z>0.05&&(Math.hypot((Math.abs(x)-0.088)/0.105,(y-1.452)/0.075)<1||(Math.abs(x)<0.08&&y<1.43&&y>1.33&&z>0.1));if(!face)mask[k]=1}}
   const pk=L.inner?CPAL.pink[L.inner][1]:M.earMean;
   // kulak içi: çizimler yerine yumuşak tek renk; kenara doğru hafif koyulaşma için kulak tabanından uzaklık
@@ -1883,7 +1889,7 @@ function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,ori
 function prepMorph(){const P=CM.P0,n=P.length/3,vc=CM.vclass;const ear=new Int8Array(n),earW=new Float32Array(n),tail=new Float32Array(n),wh=new Uint8Array(n);
   const base={'-1':[0,0,0,0],'1':[0,0,0,0]};let tb=[0,0,0,0];
   for(let i=0;i<n;i++){const x=P[i*3],y=P[i*3+1],z=P[i*3+2];
-    if(y>1.545&&Math.abs(x)>0.05){ear[i]=x>0?1:-1;earW[i]=smooth(1.55,1.63,y);if(y<1.585){const B=base[ear[i]];B[0]+=x;B[1]+=y;B[2]+=z;B[3]++}}
+    if(y>1.545&&Math.abs(x)>0.05&&headEll(x,y,z)>1.02){ear[i]=x>0?1:-1;earW[i]=smooth(1.55,1.63,y);if(y<1.585){const B=base[ear[i]];B[0]+=x;B[1]+=y;B[2]+=z;B[3]++}}
     if(R_.tail(x,y,z)&&vc[i]!==4){tail[i]=1;if(y>0.9){tb[0]+=x;tb[1]+=y;tb[2]+=z;tb[3]++}}
     if(y>1.28&&isWhiskerPos(x,y,z))wh[i]=1}
   for(const s of ['-1','1']){const B=base[s];base[s]=[B[0]/B[3],B[1]/B[3],B[2]/B[3]]}
@@ -2015,7 +2021,7 @@ function seatHat(root,g){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!
 // tabanının ortası çevresinde küçültülüp yeniden kafaya oturtulur.
 function earFlapIdx(){if(CM.flap)return CM.flap;custPrepare();const P=CM.P0,n=P.length/3,out=[];
   for(let i=0;i<n;i++){if(!CM.ear[i])continue;const x=P[i*3],y=P[i*3+1],z=P[i*3+2];
-    const e=((x-HEADC.x)/0.205)**2+((y-HEADC.y)/0.128)**2+((z-0.045)/0.165)**2;if(e>1.06)out.push(i)}
+    const e=headEll(x,y,z);if(e>1.06)out.push(i)}
   return CM.flap=out}
 const _fp=new THREE.Vector3(),_fm=new THREE.Matrix4();
 function insideGeo(geo,p,m){const t=geo.type,q=geo.parameters||{};const x=p.x,y=p.y,z=p.z;
@@ -2030,9 +2036,13 @@ function hatHits(g,pts){let n=0;g.updateMatrixWorld(true);const ms=[];g.traverse
   for(const p of pts){for(const [o,inv,m] of ms){_fp.copy(p).applyMatrix4(inv);if(insideGeo(o.geometry,_fp,m)){n++;break}}}return n}
 function fitHat(root,g){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!sm)return 0;const idx=earFlapIdx();if(sm.geometry.attributes.position.count!==CM.P0.length/3)return 0;
   root.updateMatrixWorld(true);sm.skeleton.update();const pts=idx.map(i=>sm.getVertexPosition(i,new THREE.Vector3()).applyMatrix4(sm.matrixWorld));
-  let hits=hatHits(g,pts),k=0;const s0=g.scale.x;
-  while(hits>0&&k<12){g.scale.multiplyScalar(0.93);if(!seatHat(root,g)){}hits=hatHits(g,pts);k++}
-  g.userData.fit={hits,scale:+(g.scale.x/s0).toFixed(3)};return hits}
+  // kulaklar kafa tepesinde birbirine yakın: şapka önce biraz öne (alına doğru) kaydırılarak denenir, en büyük kalabildiği yer seçilir
+  const s0=g.scale.x,p0=g.position.clone();let best=null;
+  for(const dz of [0,0.02,0.04,0.06,0.08]){g.scale.setScalar(s0);g.position.copy(p0);g.position.z+=dz;seatHat(root,g);let hits=hatHits(g,pts),k=0;
+    while(hits>0&&k<14){g.scale.multiplyScalar(0.94);seatHat(root,g);hits=hatHits(g,pts);k++}
+    const sc=g.scale.x/s0;if(hits===0&&(!best||sc>best.sc+0.04))best={sc,dz,pos:g.position.clone(),scale:g.scale.x};if(hits===0&&sc>0.97)break}
+  if(best){g.position.copy(best.pos);g.scale.setScalar(best.scale)}
+  const hits=hatHits(g,pts);g.userData.fit={hits,scale:+(g.scale.x/s0).toFixed(3),dz:best?best.dz:null};return hits}
 // ---- bir karaktere uygula (oyunda canlı da çalışır) ----
 function applyLook(root,cfg,R=1024){custPrepare();let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});
   const tex=(isDefaultYosun(cfg))?CM.mesh.material.map:composeTexture(cfg,R);
