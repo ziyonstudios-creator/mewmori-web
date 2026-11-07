@@ -1025,7 +1025,24 @@ async function loadGLB(url,onProg){const r=await fetch(url);if(!r.ok)throw new E
   return new Promise((res,rej)=>loader.parse(bytes.buffer,'',res,rej))}
 
 
-const CLIPS={};const ONCE=new Set(['Wave_One_Hand']);
+const CLIPS={};
+// ---- poz düzeltmeleri (animasyonun üstüne): omuzlar biraz aşağı, oturunca kuyruk sandalyenin yanından sarkar ----
+const PF={ok:false},_pq=new THREE.Quaternion(),_pq2=new THREE.Quaternion(),_pI=new THREE.Quaternion();
+const POSE_CFG={shoulder:0.26,tailYaw:-0.6,tailLift:0,tailRoll:0.5};
+function pfInit(root){if(PF.ok)return;let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});if(!sm)return;const B=sm.skeleton.bones;
+  const Wq=n=>{const i=B.findIndex(b=>b.name===n);if(i<0)return null;const q=new THREE.Quaternion();new THREE.Matrix4().copy(sm.skeleton.boneInverses[i]).invert().decompose(new THREE.Vector3(),q,new THREE.Vector3());return q.invert()};
+  const qh=Wq('mixamorigHips'),qs=Wq('mixamorigSpine2');if(!qh||!qs)return;
+  PF.up=new THREE.Vector3(0,1,0).applyQuaternion(qh).normalize();PF.fwd=new THREE.Vector3(0,0,1).applyQuaternion(qh).normalize();PF.side=new THREE.Vector3(1,0,0).applyQuaternion(qh).normalize();PF.fwdS=new THREE.Vector3(0,0,1).applyQuaternion(qs).normalize();const qL=Wq('mixamorigLeftShoulder'),qR=Wq('mixamorigRightShoulder');if(qL&&qR){PF.fwdL=new THREE.Vector3(0,0,1).applyQuaternion(qL).normalize();PF.fwdR=new THREE.Vector3(0,0,1).applyQuaternion(qR).normalize()}
+  PF.sit=new THREE.Quaternion().setFromAxisAngle(PF.up,POSE_CFG.tailYaw).multiply(new THREE.Quaternion().setFromAxisAngle(PF.side,-POSE_CFG.tailLift)).premultiply(new THREE.Quaternion().setFromAxisAngle(PF.fwd,POSE_CFG.tailRoll));PF.ok=true}
+// düzenleyici/önizleme modelleri için (Char olmayan): aynı düzeltmeler
+function poseRig(m){pfInit(m);const g=n=>m.getObjectByName(n);return {acts:{},tailB:g('mixamorigTail'),shL:g('mixamorigLeftShoulder'),shR:g('mixamorigRightShoulder'),arL:g('mixamorigLeftArm'),arR:g('mixamorigRightArm')}}
+function poseFix(ch,dt){if(!PF.ok)return;
+  const a=POSE_CFG.shoulder;if(a&&ch.shL&&ch.shR){ch.shL.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdS,-a));ch.shR.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdS,a));
+    // kolun yönü korunur: yalnız omuz eklemi aşağı iner
+    if(PF.fwdL&&ch.arL&&ch.arR){ch.arL.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdL,a));ch.arR.quaternion.premultiply(_pq.setFromAxisAngle(PF.fwdR,-a))}}
+  if(ch.tailB){const A=ch.acts;const sw=Math.min(1,((A.Chair_Sit_Idle_F&&A.Chair_Sit_Idle_F._w)||0)+((A.Look_Back_and_Sit&&A.Look_Back_and_Sit._w)||0));
+    ch.tailPh=(ch.tailPh||Math.random()*6)+dt;const sway=Math.sin(ch.tailPh*1.4)*0.08*(1-sw);
+    _pq2.setFromAxisAngle(PF.up,sway);ch.tailB.quaternion.copy(_pI).slerp(PF.sit,sw).multiply(_pq2)}}const ONCE=new Set(['Wave_One_Hand']);
 const V=(x,z)=>new THREE.Vector3(x,0,z);
 class Char{
   constructor(root,{xs=1,speed=1.0,run=false}={}){this.o=root;root.userData.isChar=true;root.scale.set(YS*xs,YS,YS);scene.add(root);
@@ -1033,7 +1050,7 @@ class Char{
     this.mixer=new THREE.AnimationMixer(root);this.acts={};
     for(const k in CLIPS){const a=this.mixer.clipAction(CLIPS[k]);if(ONCE.has(k)){a.setLoop(THREE.LoopOnce,1);a.clampWhenFinished=true}this.acts[k]=a}
     this.feet=[];root.traverse(b=>{if(b.isBone&&/Foot|ToeBase|Toe_End/.test(b.name))this.feet.push(b)});
-    this.hand=root.getObjectByName('mixamorigRightHand');this.head=root.getObjectByName('mixamorigHead');this.neck=root.getObjectByName('mixamorigNeck');
+    this.hand=root.getObjectByName('mixamorigRightHand');this.tailB=root.getObjectByName('mixamorigTail');this.shL=root.getObjectByName('mixamorigLeftShoulder');this.shR=root.getObjectByName('mixamorigRightShoulder');this.arL=root.getObjectByName('mixamorigLeftArm');this.arR=root.getObjectByName('mixamorigRightArm');pfInit(root);this.head=root.getObjectByName('mixamorigHead');this.neck=root.getObjectByName('mixamorigNeck');
     this.goal=null;this.direct=false;this.look=0;this.lookPh=Math.random()*6;this.lt=0;this.cur=null;this.path=[];this.vel=0;this.trans=null;this.seat=null;this.carry=null;this.act=null;this.turn=null;this.arrive=null;this.interrupt=null;this.speed=speed;this.canRun=run;
     this.mixer.addEventListener('finished',e=>{if(this.act&&e.action===this.acts[this.act.name])this.endAct()});
     this.fadeDur=0.3;this.play('Idle_12',0);this.acts.Idle_12._w=1}
@@ -1095,7 +1112,7 @@ class Char{
     this.acts.Handbag_Walk.timeScale=(this.carry&&!this.path.length&&!this.act)?0:1;
     {const ca=this.acts.Carry_Heavy_Object_Walk_inplace;if(ca)ca.timeScale=(this.carry&&!this.path.length&&!this.act)?0:1.15}   // koli taşıma yürüyüşü; dururken kucakta tutma pozu
     if(this.act){this.act.t+=dt;if(this.act.t>=this.act.max)this.endAct()}
-    this.blend(dt);this.mixer.update(dt);if(this.post)this.post(dt);
+    this.blend(dt);this.mixer.update(dt);poseFix(this,dt);if(this.post)this.post(dt);
     if(this.look>0&&this.seat&&!this.trans&&this.head){this.lt+=dt;this.head.rotation.y+=Math.sin(this.lt*0.55+this.lookPh)*0.32*this.look;this.head.rotation.x+=Math.sin(this.lt*0.31+this.lookPh)*0.05*this.look}
     if(!this.seat&&!this.trans&&this.feet.length){this.o.updateMatrixWorld(true);let low=Infinity;for(const b of this.feet){b.getWorldPosition(_v);if(_v.y<low)low=_v.y}
       const wantY=this.pos.y+(FLOOR_Y+FOOT_BONE_ABOVE_SOLE*YS-low);this.pos.y+=(wantY-this.pos.y)*Math.min(1,dt*20)}
@@ -2705,13 +2722,13 @@ function pvInit(host){if(!PV.r){const r=new THREE.WebGLRenderer({antialias:true,
     el.addEventListener('pointermove',e=>{if(drag)PV.yaw=drag.y0+(e.clientX-drag.x)*0.012});el.addEventListener('pointerup',()=>drag=null);el.addEventListener('pointercancel',()=>drag=null)}
   PV.host=host;host.prepend(PV.r.domElement);pvResize();cancelAnimationFrame(PV.raf);let last=performance.now();
   const loopPV=()=>{PV.raf=requestAnimationFrame(loopPV);const now=performance.now(),dt=Math.min(0.05,(now-last)/1000);last=now;if(!PV.host||!PV.host.isConnected)return;
-    if(PV.mixer)PV.mixer.update(dt);if(PV.model)PV.model.rotation.y+=(PV.yaw-PV.model.rotation.y)*Math.min(1,dt*10);PV.r.render(PV.sc,PV.cam)};loopPV()}
+    if(PV.mixer){PV.mixer.update(dt);if(PV.pf)poseFix(PV.pf,dt)}if(PV.model)PV.model.rotation.y+=(PV.yaw-PV.model.rotation.y)*Math.min(1,dt*10);PV.r.render(PV.sc,PV.cam)};loopPV()}
 function pvResize(){if(!PV.host)return;const w=PV.host.clientWidth||300,h=PV.host.clientHeight||260;PV.r.setSize(w,h,false);PV.r.domElement.style.width=w+'px';PV.r.domElement.style.height=h+'px';PV.cam.aspect=w/h;PV.cam.updateProjectionMatrix();
   PV.cam.position.set(0,0.78,2.75);PV.cam.lookAt(0,0.62,0)}
 function pvStop(){cancelAnimationFrame(PV.raf);PV.host=null}
 let pvTimer=0;
 function pvShow(cfg){clearTimeout(pvTimer);pvTimer=setTimeout(()=>{if(PV.model)PV.sc.remove(PV.model);const m=buildCat(cfg,512);m.traverse(o=>{if(o.isMesh)o.frustumCulled=false});
-  m.rotation.y=PV.model?PV.model.rotation.y:PV.yaw;PV.sc.add(m);PV.model=m;PV.mixer=new THREE.AnimationMixer(m);PV.mixer.clipAction(CLIPS.Idle_12).play()},60)}
+  m.rotation.y=PV.model?PV.model.rotation.y:PV.yaw;PV.sc.add(m);PV.model=m;PV.mixer=new THREE.AnimationMixer(m);PV.mixer.clipAction(CLIPS.Idle_12).play();PV.pf=poseRig(m)},60)}
 // ---- düzenleyici ----
 const CE={role:null,cfg:null,orig:null,mode:'create',step:0,tab:'look',cat:'fur',err:'',busy:false};
 const CE_CATS=[['fur','Kürk'],['pattern','Desen'],['marks','İşaretler'],['eyes','Gözler'],['ears','Kulaklar'],['face','Yüz'],['body','Vücut']];
@@ -2857,7 +2874,7 @@ function closeEditor(saved){pvStop();if(PV.model){PV.sc.remove(PV.model);PV.mode
 function applyCharToGame(role){const ch=roleChar(role);if(!ch)return;const cfg=S.chars[role];applyLook(ch.o,cfg,1024);ch.o.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}})}
 // ---- ekip ekranı ----
 function charThumb(role){const cfg=S.chars[role];const key='c:'+role+':'+JSON.stringify(cfg.look)+JSON.stringify(cfg.wear);if(TH.cache.has(key))return TH.cache.get(key);
-  const m=buildCat(cfg,512);const mx=new THREE.AnimationMixer(m);mx.clipAction(CLIPS.Idle_12).play();mx.update(0.6);const u=renderThumb(m,{dir:[0.35,0.15,1],pad:0.95});TH.cache.set(key,u);return u}
+  const m=buildCat(cfg,512);const mx=new THREE.AnimationMixer(m);mx.clipAction(CLIPS.Idle_12).play();mx.update(0.6);poseFix(poseRig(m),0);const u=renderThumb(m,{dir:[0.35,0.15,1],pad:0.95});TH.cache.set(key,u);return u}
 function hireInfo(role){const n=S.staff[role];if(n>=HIRE_MAX[role])return {ok:false,max:true,why:`En fazla ${HIRE_MAX[role]} ${ROLE_NAME[role].toLowerCase()} olabilir`};
   const h=HIRE[role][n-1];const key=staffKey(role,n+1);const r={key,lv:h.lv,cost:h.c,n,max:false};
   if(S.lvl<h.lv)return {...r,ok:false,why:`Seviye ${h.lv} gerekli`};if(S.coins<h.c)return {...r,ok:false,why:`${h.c} altın gerekli`};return {...r,ok:true}}
