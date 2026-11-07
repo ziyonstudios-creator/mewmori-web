@@ -556,17 +556,38 @@ const TABLE_STYLE={
   t_four_cafe:{top:M.cream,leg:M.woodDark,cloth:toon(0x8fae58),flower:toon(0xffffff)},
   t_square:{top:toon(0xdca468),leg:M.woodDark,flower:M.gold,square:true},
   t_cafe:{top:M.cream,leg:M.woodDark,cloth:M.red,flower:toon(0xffffff)},
-  t_premium:{top:toon(0xf6f1e8),leg:M.gold,rim:M.gold,flower:M.pink,stand:true}};
+  t_premium:{top:toon(0xf6f1e8),leg:M.gold,rim:M.gold,flower:M.pink,stand:true},
+  // yeni masalar
+  t_bistro:{top:toon(0xf3efe9),leg:M.dark,rim:M.dark,tri:true,candle:true},                 // mermer bistro, ferforje üç ayak, mum
+  t_picnic:{top:M.wood,leg:M.woodDark,clothTex:'gingham',flower:toon(0xf2d64b)},             // kırmızı-beyaz kareli örtü, papatya
+  t_sakura:{top:toon(0xf6c9cf),leg:M.gold,rim:M.gold,flower:toon(0xffffff),petals:true},       // pembe, altın ayak, sakura dalı
+  t_terra:{top:M.terracotta,leg:M.woodDark,square:true,tiles:true,flower:M.green},           // terrakota karo, saksıda yeşillik
+  t_four_lace:{top:toon(0xd6a35c),leg:M.woodDark,clothTex:'lace',candle:true},               // bal rengi ahşap, dantel örtü, mum (4 kişilik)
+  t_four_picnic:{top:M.wood,leg:M.woodDark,clothTex:'gingham',flower:M.pink}};              // kareli örtülü 4 kişilik
+// örtü dokuları
+const CLOTH_TEX={};function clothMat(kind){if(CLOTH_TEX[kind])return CLOTH_TEX[kind];const cv=document.createElement('canvas');cv.width=cv.height=128;const c=cv.getContext('2d');
+  if(kind==='gingham'){c.fillStyle='#fbf6ee';c.fillRect(0,0,128,128);c.fillStyle='rgba(217,83,79,.55)';for(let i=0;i<8;i++){c.fillRect(i*16,0,8,128);c.fillRect(0,i*16,128,8)}}
+  else{c.fillStyle='#fffaf0';c.fillRect(0,0,128,128);c.strokeStyle='#e9dcc6';c.lineWidth=3;for(let i=0;i<6;i++){c.beginPath();c.arc(64,64,10+i*10,0,Math.PI*2);c.stroke()}for(let a=0;a<16;a++){c.beginPath();c.arc(64+60*Math.cos(a/16*6.283),64+60*Math.sin(a/16*6.283),5,0,6.283);c.stroke()}}
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;if(kind==='gingham')t.repeat.set(2,2);const m=new THREE.MeshToonMaterial({map:t,gradientMap:grad});CLOTH_TEX[kind]=m;return m}
 function tableMeshes(parent,f,typeId,vase=true){const d=SEAT_D,L=frameGroup(f,parent),T=TABLE_STYLE[typeId]||TABLE_STYLE.t_round;
   if(T.square)addTo(L,new RoundedBoxGeometry(0.42,d.tThick,0.42,2,0.05),T.top,d.tCx,d.tTop-d.tThick/2,d.tCz);
   else addTo(L,new THREE.CylinderGeometry(d.tR,d.tR,d.tThick,32),T.top,d.tCx,d.tTop-d.tThick/2,d.tCz);
   if(T.cloth)addTo(L,new THREE.CylinderGeometry(d.tR+0.012,d.tR+0.006,0.02,32),T.cloth,d.tCx,d.tTop-d.tThick-0.004,d.tCz);
+  if(T.clothTex){const cm=clothMat(T.clothTex);const top=addTo(L,new THREE.CylinderGeometry(d.tR+0.004,d.tR+0.004,0.006,40),cm,d.tCx,d.tTop+0.003,d.tCz);
+    addTo(L,new THREE.CylinderGeometry(d.tR+0.014,d.tR+0.03,0.07,40,1,true),cm,d.tCx,d.tTop-0.03,d.tCz)}   // örtü üstü + sarkan etek
+  if(T.tiles){for(let i=-1;i<=1;i+=2)for(let j=-1;j<=1;j+=2)addTo(L,new THREE.BoxGeometry(0.19,0.004,0.19),(i*j>0)?toon(0xe8d6b8):toon(0x4f8a7a),d.tCx+i*0.1,d.tTop+0.002,d.tCz+j*0.1)}
   if(T.rim){const r=addTo(L,new THREE.TorusGeometry(d.tR-0.012,0.01,6,40),T.rim,d.tCx,d.tTop-d.tThick/2,d.tCz);r.rotation.x=Math.PI/2}
-  addTo(L,new THREE.CylinderGeometry(d.pedR,d.pedR,d.tTop-d.tThick-d.footY,12),T.leg,d.tCx,(d.footY+d.tTop-d.tThick)/2,d.tCz);
-  addTo(L,new THREE.CylinderGeometry(d.baseR,d.baseR,0.03,20),T.leg,d.tCx,d.footY+0.015,d.tCz);
+  if(T.tri){const h=d.tTop-d.tThick-d.footY;for(let k=0;k<3;k++){const an=k/3*Math.PI*2;const lg=addTo(L,new THREE.CylinderGeometry(0.012,0.016,h*1.04,8),T.leg,d.tCx+Math.cos(an)*d.baseR*0.55,d.footY+h/2,d.tCz+Math.sin(an)*d.baseR*0.55);lg.rotation.set(Math.sin(an)*0.12,0,-Math.cos(an)*0.12)}
+    const ring=addTo(L,new THREE.TorusGeometry(d.baseR*0.5,0.008,6,24),T.leg,d.tCx,d.footY+h*0.35,d.tCz);ring.rotation.x=Math.PI/2}
+  else{addTo(L,new THREE.CylinderGeometry(d.pedR,d.pedR,d.tTop-d.tThick-d.footY,12),T.leg,d.tCx,(d.footY+d.tTop-d.tThick)/2,d.tCz);
+  addTo(L,new THREE.CylinderGeometry(d.baseR,d.baseR,0.03,20),T.leg,d.tCx,d.footY+0.015,d.tCz)}
   if(vase){if(T.stand){addTo(L,new THREE.CylinderGeometry(0.012,0.012,0.08,8),M.gold,d.tCx,d.tTop+0.04,d.tCz);addTo(L,new THREE.CylinderGeometry(0.06,0.06,0.01,16),M.gold,d.tCx,d.tTop+0.085,d.tCz);
       const c=addTo(L,new THREE.SphereGeometry(0.03,10,8),M.pink,d.tCx,d.tTop+0.11,d.tCz);c.scale.y=0.8}
-    else{addTo(L,new THREE.CylinderGeometry(0.035,0.03,0.09,10),M.cream,d.tCx,d.tTop+0.045,d.tCz);const fl=addTo(L,new THREE.SphereGeometry(0.045,10,8),T.flower,d.tCx,d.tTop+0.115,d.tCz);fl.castShadow=false}}
+    else if(T.candle){const y0=d.tTop+(T.clothTex?0.006:0);addTo(L,new THREE.CylinderGeometry(0.04,0.045,0.012,16),M.gold,d.tCx,y0+0.006,d.tCz);addTo(L,new THREE.CylinderGeometry(0.022,0.022,0.08,12),M.cream,d.tCx,y0+0.052,d.tCz);
+      const fl=addTo(L,new THREE.SphereGeometry(0.014,8,6),new THREE.MeshBasicMaterial({color:0xffc861}),d.tCx,y0+0.105,d.tCz);fl.scale.y=1.6;fl.castShadow=false}
+    else if(T.petals){addTo(L,new THREE.CylinderGeometry(0.03,0.026,0.1,10),M.cream,d.tCx,d.tTop+0.05,d.tCz);const br=addTo(L,new THREE.CylinderGeometry(0.004,0.006,0.16,5),M.woodDark,d.tCx+0.02,d.tTop+0.15,d.tCz);br.rotation.z=-0.35;
+      for(let k=0;k<6;k++){const p=addTo(L,new THREE.SphereGeometry(0.018,8,6),M.pink,d.tCx+0.02+k*0.012,d.tTop+0.1+k*0.022+(k%2)*0.01,d.tCz+((k%3)-1)*0.015);p.castShadow=false}}
+    else{addTo(L,new THREE.CylinderGeometry(0.035,0.03,0.09,10),M.cream,d.tCx,d.tTop+0.045+(T.clothTex?0.006:0),d.tCz);const fl=addTo(L,new THREE.SphereGeometry(0.045,10,8),T.flower,d.tCx,d.tTop+0.115,d.tCz);fl.castShadow=false}}
   return L}
 function seatData(f){const d=SEAT_D;return {frame:f,O:f.w(0,0),A:f.w(APPROACH.x,APPROACH.z),serve:f.w(SERVE.x,SERVE.z),serveYaw:f.yaw-Math.PI/2,rootY:-d.footY*YS,spot:f.w(d.tCx,d.tCz-0.17),occupant:null}}
 
@@ -776,6 +797,12 @@ const CATALOG=[
  {id:'t_round',kind:'table',name:'Küçük yuvarlak ahşap masa',price:45,lvl:1,desc:'İki kişilik sıcak bir köşe. Masa sınırı içinde yeni masa yeri açar.'},
  {id:'t_square',kind:'table',name:'Kare ahşap masa',price:60,lvl:3,desc:'Açık renk ahşap, köşeleri yuvarlatılmış.'},
  {id:'t_cafe',kind:'table',name:'Şık kafe masası',price:85,lvl:5,desc:'Kırmızı örtülü, beyaz çiçekli klasik kafe masası.'},
+ {id:'t_bistro',kind:'table',name:'Mermer bistro masası',price:95,lvl:4,desc:'Beyaz mermer tabla, ferforje üç ayak ve masada yanan bir mum.'},
+ {id:'t_picnic',kind:'table',name:'Kareli piknik masası',price:70,lvl:2,desc:'Kırmızı-beyaz kareli örtü ve sarı papatyalar.'},
+ {id:'t_sakura',kind:'table',name:'Sakura masası',price:120,lvl:6,desc:'Pembe tabla, altın ayak ve vazoda çiçek açmış bir sakura dalı.'},
+ {id:'t_terra',kind:'table',name:'Terrakota karo masa',price:80,lvl:3,desc:'Akdeniz esintili kare masa: karo desenli tabla, saksıda yeşillik.'},
+ {id:'t_four_picnic',kind:'table',seats:4,name:'Dört kişilik piknik masası',price:130,lvl:3,desc:'Kareli örtülü, kalabalık gruplar için neşeli bir masa.'},
+ {id:'t_four_lace',kind:'table',seats:4,name:'Dört kişilik dantel masa',price:190,lvl:6,desc:'Bal rengi ahşap, dantel örtü ve mum ışığı; romantik bir köşe.'},
  {id:'t_premium',kind:'table',name:'Süslü premium masa',price:140,lvl:8,desc:'Altın kenarlı mermer masa ve minik pasta standı.'},
  {id:'c_wood',kind:'chair',name:'Ahşap sandalye',price:0,lvl:1,own:true,desc:'Sade, çubuklu sırtlı ahşap sandalye.'},
  {id:'c_cushion',kind:'chair',name:'Minderli sandalye',price:0,lvl:1,own:true,desc:'Renkli minderli, rahat sandalye.'},
@@ -1290,7 +1317,7 @@ function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
 
 // ================= OYUN DURUMU + KAYIT =================
 const SAVE_KEY='posa-yosun-kafe-kayit-v3';
-const START_TABLES=[[0.2,0.4,'t_round',1],[2.5,0.4,'t_round',1],[0.2,2.35,'t_four',0],[2.5,2.35,'t_four',0]];   // başlangıç: halının üstünde 2×2 düzen (üstte iki kişilik, altta dört kişilik)   // başlangıç: 2 dört kişilik + 2 iki kişilik masa (12 kişi)
+const START_TABLES=[[0.25,0.5,'t_round',1],[2.5,0.5,'t_round',1],[0.25,2.25,'t_four',0],[2.5,2.25,'t_four',0]];   // 25 cm'lik ızgaraya oturur   // başlangıç: halının üstünde 2×2 düzen (üstte iki kişilik, altta dört kişilik)   // başlangıç: 2 dört kişilik + 2 iki kişilik masa (12 kişi)
 let GLTF=null,TEMPLATE=null,yosun=null,posa=null,cashier=null,orderSeq=0,custSeq=0,spawnT=CONFIG.firstArrival,started=false;
 const customers=[],orders=[],jobs=[],baristaQ=[];
 let posaJob=null;   // eski ad: ilk baristanın işi (UI uyumu)
@@ -1303,7 +1330,7 @@ function defaultBoard(){const b=Array(CONFIG.board.w*CONFIG.board.h).fill(null);
   b[24]='kahve1';b[25]='kahve1';b[28]='un1';b[29]='seker1';return b}
 function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.id]=true;
   const recipes={};for(const r of RECIPES)if(r.def)recipes[r.id]=true;const unlocked={...recipes},menu={...recipes};
-  return {v:8,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:4,
+  return {v:9,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:4,
     furniture:START_TABLES.map((p,i)=>({uid:i+1,id:p[2],x:p[0],z:p[1],rot:p[3],chair:'c_cushion',col:i})),
     wall:'w_cream',floor:'f_classic',equip:{espresso:1,kettle:1,vitrine:1,oven:1},recipes,unlocked,menu,items:{},board:defaultBoard(),
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
@@ -1332,7 +1359,8 @@ function loadState(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e
     // v7: başlangıç düzeni 4 × dört kişilik masa (16 kişi). Eski masalar depoya kaldırılır, istenirse yeniden yerleştirilir
     if(!(d.v>=7)){for(const f of S.furniture)if(CAT[f.id]&&CAT[f.id].kind==='table')f.stored=true;START_TABLES.forEach((p,i)=>S.furniture.push({uid:++S.uid,id:p[2],x:p[0],z:p[1],rot:p[3],chair:S.chairDefault||'c_cushion',col:i}));S.v=7;S.giftTable=true;S._moved7=true}
     // v8: yeni başlangıç düzeni; varsayılan yerinde duran (oyuncunun taşımadığı) masalar yeni yerlerine
-    if(!(d.v>=8)){const OLD=[[-1.3,0.5],[1.2,0.5],[-0.1,2.8],[2.4,2.8]];for(const f of S.furniture){if(f.stored)continue;const k=OLD.findIndex(o=>Math.hypot(f.x-o[0],f.z-o[1])<0.05);if(k>=0){const n=START_TABLES.find(t=>t[2]===f.id&&!S.furniture.some(g=>g!==f&&!g.stored&&Math.hypot(g.x-t[0],g.z-t[1])<0.05));if(n){f.x=n[0];f.z=n[1];f.rot=n[3]}}}S.v=8}
+    if(d.v>=8&&!(d.v>=9)){const OLD=[[0.2,0.4],[2.5,0.4],[0.2,2.35],[2.5,2.35]];for(const f of S.furniture){if(f.stored)continue;const k=OLD.findIndex(o=>Math.hypot(f.x-o[0],f.z-o[1])<0.02);if(k>=0){f.x=START_TABLES[k][0];f.z=START_TABLES[k][1]}}S.v=9}
+  if(!(d.v>=8)){const OLD=[[-1.3,0.5],[1.2,0.5],[-0.1,2.8],[2.4,2.8]];for(const f of S.furniture){if(f.stored)continue;const k=OLD.findIndex(o=>Math.hypot(f.x-o[0],f.z-o[1])<0.05);if(k>=0){const n=START_TABLES.find(t=>t[2]===f.id&&!S.furniture.some(g=>g!==f&&!g.stored&&Math.hypot(g.x-t[0],g.z-t[1])<0.05));if(n){f.x=n[0];f.z=n[1];f.rot=n[3]}}}S.v=8}
     return true}catch(e){console.warn('kayıt okunamadı',e);return false}}
 let saveTimer=0;
 let RESETTING=false;
@@ -1565,14 +1593,18 @@ function takeOrder(c0){const g=c0.group||{members:[c0],size:1,leader:c0};if(!gro
       if(m.gone)continue;if(!item){noStk.push(m);continue}const u=stockUse(item);const o={id:'S'+(++orderSeq),customer:m,table:m.table,seat:m.seat,item,price:priceOf(item),qual:u.q,cost:u.c,state:'TAKEN',paid:false,mesh:null,slot:-1};orders.push(o);m.order=o;
       if(m.menu){scene.remove(m.menu);m.menu=null}m.bubble=null;m.state='ORDER_TAKEN';m._taken()}
     if(noStk.length)stockOut(g,noStk);sfx('order')})}
+// birden çok sipariş (grup) tek seferde baristaya iletilir
+function submitOrders(L){L=L.filter(o=>o.state==='TAKEN'&&!o.submitQueued);if(!L.length)return;if(L.length===1)return submitOrder(L[0]);for(const o of L)o.submitQueued=true;
+  enqueue('submit',async w=>{const ch=w.ch;const k=await claimSpot('prep',w);const P=PREP_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('IDLE_WORK',1.4);
+    for(const o of L){if(o.cancel){o.state='CANCELLED';o.cleared=true;continue}o.state='WAITING_FOR_PREPARATION';baristaQ.push(o)}sfx('chime')})}
 function submitOrder(o){if(o.state!=='TAKEN'||o.submitQueued)return;o.submitQueued=true;
   enqueue('submit',async w=>{const ch=w.ch;const k=await claimSpot('prep',w);const P=PREP_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('IDLE_WORK',1.2);
     if(o.cancel){o.state='CANCELLED';o.cleared=true;return}o.state='WAITING_FOR_PREPARATION';baristaQ.push(o);sfx('chime')})}
 // grup siparişleri: aynı grubun hazır tabakları tek tepside, tek seferde götürülür
 function servSibs(o){const g=o.customer&&o.customer.group;if(!g||!g.members)return [];return g.members.map(m=>m.order).filter(x=>x&&x!==o&&!x.cancel&&!x.cleared&&!x.delivery)}
 const NOT_READY=new Set(['TAKEN','WAITING_FOR_PREPARATION','PREPARING','IN_PREPARATION']);
-// otomatik modda garson, grubun diğer tabakları da hazır olana dek (en çok 25 sn) bekler
-function batchWaitOk(o){const sb=servSibs(o);if(!sb.some(x=>NOT_READY.has(x.state)))return true;return gameT-(o.readyT||0)>25}
+// otomatik modda garson, grubun diğer tabakları da hazır olana dek (en çok 60 sn) bekler
+function batchWaitOk(o){const sb=servSibs(o);if(!sb.some(x=>NOT_READY.has(x.state)))return true;return gameT-(o.readyT||0)>60}
 const TRAY_SLOTS=[[0,0],[-0.075,0.05],[0.075,0.05],[0,-0.07]];
 function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueued=true;
   const flag=servSibs(o).filter(x=>x.state==='READY'&&!x.pickupQueued);for(const x of flag)x.pickupQueued=true;   // kardeşleri de bu iş götürecek
@@ -2282,7 +2314,7 @@ $('mkEdit').onclick=()=>enterEdit();
 function setMode(m){if(UI.mode==='market'&&m!=='market')revertPreview();if(UI.mode==='edit'&&m!=='edit')exitEdit(true);
   if(UI.mode==='ce'&&m!=='ce')pvStop();
   if(m==='edit'&&UI.mode!=='edit'&&!S.closed&&S.tut==='done'&&!window.__editTip){window.__editTip=1;setTimeout(()=>toast('İpucu: dükkanı kapatırsan düzenlerken yeni müşteri gelmez',ic('lock'),2600),400)}
-  UI.mode=m;document.querySelectorAll('[data-nav]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.nav===(m==='edit'||m==='place'?'market':m==='ce'?'team':m))));
+  UI.mode=m;try{gridShow(m==='place'||m==='edit')}catch(e){}document.querySelectorAll('[data-nav]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.nav===(m==='edit'||m==='place'?'market':m==='ce'?'team':m))));
   if($('ce')){$('ce').hidden=m!=='ce';$('team').hidden=m!=='team';$('game').classList.toggle('nonav',m!=='cafe');   // bir menüye girilince alt menü gizlenir
     syncNavMin();if(m==='team')renderTeam()}
   if($('guide'))$('guide').hidden=m!=='guide';if($('menuScr'))$('menuScr').hidden=m!=='menu';
@@ -2315,15 +2347,22 @@ function updateUI(){for(const e of els.values())e._seen=false;
     let b=c.bubble?BUB[c.bubble]:null;if(multi&&c.bubble==='think')b=null;
     if(!b&&!multi&&c.order&&waitSt(c.state)){const e=el('bubw'+c.id,'bubble wait',waitHTML());patStyle(e,g);place(e,head)}
     else if(b)place(el('bub'+c.id,'bubble',b),head)}
-  const taken=orders.filter(o=>o.state==='TAKEN'&&!o.submitQueued);taken.forEach((o,i)=>place(el('prep'+o.id,'act prep',`${ic('chef')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Hazırla`,()=>submitOrder(o)),PREP_ANCHOR,-i*44));
-  const ready=orders.filter(o=>o.state==='READY'&&!o.pickupQueued);ready.forEach((o,i)=>place(el('pick'+o.id,'act pick',`${ic('tray')}<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">Teslim al`,()=>pickupOrder(o)),PICKUP_ANCHOR,-i*44));
+  // grup siparişleri tek düğmede: "Hazırla" grubun bütün siparişlerini birden iletir; "Teslim al" grubun hepsi hazır olunca çıkar
+  const gOf=o=>o.customer&&o.customer.group&&o.customer.group.size>1?o.customer.group:null;
+  const byG=list=>{const M=new Map();for(const o of list){const g=gOf(o);const k=g?'g'+g.id:'o'+o.id;if(!M.has(k))M.set(k,[]);M.get(k).push(o)}return [...M.values()]};
+  const thumbs=L=>L.slice(0,3).map(o=>`<img src="${productThumb(o.item.id)}" alt="" style="width:24px;height:24px">`).join('')+(L.length>3?`<b>+${L.length-3}</b>`:'');
+  const taken=orders.filter(o=>o.state==='TAKEN'&&!o.submitQueued);
+  byG(taken).forEach((L,i)=>place(el('prep'+L[0].id,'act prep',`${ic('chef')}${thumbs(L)}Hazırla${L.length>1?` · ${L.length}`:''}`,()=>submitOrders(L)),PREP_ANCHOR,-i*44));
+  const ready=orders.filter(o=>o.state==='READY'&&!o.pickupQueued&&!o.cancel);
+  const readyG=byG(ready).filter(L=>{const g=gOf(L[0]);return !g||!servSibs(L[0]).some(x=>NOT_READY.has(x.state))});
+  readyG.forEach((L,i)=>place(el('pick'+L[0].id,'act pick',`${ic('tray')}${thumbs(L)}Teslim al${L.length>1?` · ${L.length}`:''}`,()=>pickupOrder(L[0])),PICKUP_ANCHOR,-i*44));
   for(const b of BSTAFF)if(b.job){const hp=new THREE.Vector3();b.ch.head.getWorldPosition(hp);hp.y+=0.55;const k=Math.min(1,b.job.done/b.job.total);
     place(el(b.i?'posa'+b.i:'posa','progress',`<img src="${productThumb(b.job.o.item.id)}" alt=""><i style="width:${(k*62).toFixed(0)}px"></i>`),hp)}
   fxUI();dlvUI();stockUI();
   for(const [k,e] of els)if(!e._seen){e.remove();els.delete(k)}
   let hint='';
   const NM=S.chars||{waiter:{name:'Yosun'},barista:{name:'Poşa'},cashier:{name:'Fındık'}};
-  if(ready.length)hint='Sipariş hazır! Tezgahtaki “Teslim al”a dokun';else if(taken.length)hint='Siparişi baristaya iletmek için “Hazırla”ya dokun';
+  if(readyG.length)hint='Sipariş hazır! Tezgahtaki “Teslim al”a dokun';else if(taken.length)hint='Siparişi baristaya iletmek için “Hazırla”ya dokun';
   else if(customers.some(c=>c.group&&c===c.group.leader&&groupReady(c.group)))hint='Masadaki “Sipariş al”a dokun';else if(customers.some(c=>c.state==='WAITING_TO_ORDER'&&!c.orderQueued))hint='Grup yerleşiyor…';else if(customers.some(c=>c.state==='ENTERING'||c.state==='WALKING_TO_TABLE'))hint='Yeni bir müşteri geldi';
   if(S.auto&&(ready.length||taken.length||customers.some(c=>c.state==='WAITING_TO_ORDER')))hint=WSTAFF.length>1?'Otomatik mod: garsonlar işleri kendileri yapıyor':`Otomatik mod: ${NM.waiter.name} işleri kendisi yapıyor`;
   else if(baristaQ.length||BSTAFF.some(b=>b.job))hint=BSTAFF.length>1?'Baristalar hazırlıyor…':`${NM.barista.name} hazırlıyor…`;else if(customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='PAYING'))hint=`${CSTAFF.length>1?'Müşteri kasada ödüyor':'Müşteri kasada ödüyor · kasiyer '+NM.cashier.name}`;else if(!customers.length)hint=WSTAFF.length>1?'Garsonlar müşteri bekliyor…':`${NM.waiter.name} müşteri bekliyor…`;
@@ -2376,7 +2415,7 @@ function restyleTable(R){scene.remove(R.group);const G=buildFurnGroup(R.rec);pla
 // ================= YERLEŞTİRME MODU =================
 let PL=null;const raycaster=new THREE.Raycaster();const floorPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function screenToFloor(cx,cy){const r=renderer.domElement.getBoundingClientRect();const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1);raycaster.setFromCamera(v,camera);const p=new THREE.Vector3();return raycaster.ray.intersectPlane(floorPlane,p)?p:null}
-const snap=v=>Math.round(v*20)/20;
+const snap=v=>Math.round(v/0.25)*0.25;   // 25 cm'lik kareler (p31_grid)
 function ghostify(G,ok){G.traverse(m=>{if(m.isMesh){m.material=ok?GHOST_OK:GHOST_BAD;m.castShadow=false}})}
 function findSpot(rec){const c=CAT[rec.id];if(c.kind==='walldecor')return;const ctr=screenToFloor(innerWidth/2,innerHeight*0.45)||new THREE.Vector3(1.5,0,0);
   const base={x:THREE.MathUtils.clamp(ctr.x,-1.5,3.8),z:THREE.MathUtils.clamp(ctr.z,-3,3)};
@@ -2386,9 +2425,9 @@ function startPlacement({rec,isNew,price,fromStore=false,fromEdit=false}){const 
   const orig={...rec};if(!isNew&&!fromStore){despawnFurn(rec.uid);refreshWorld()}
   if(isNew||fromStore)findSpot(rec);
   PL={rec,isNew,price,fromStore,fromEdit,orig,ghost:null,why:null};setMode('place');$('market').classList.remove('open');updateGhost();renderPlacebar()}
-function updateGhost(){if(!PL)return;if(PL.ghost)scene.remove(PL.ghost);const G=buildFurnGroup(PL.rec);placeGroup(G,PL.rec);PL.why=validatePlacement(PL.rec,PL.rec.uid);ghostify(G,!PL.why);
+function updateGhost(){if(!PL)return;setTimeout(()=>{try{GRID.key='';gridRefresh()}catch(e){}},0);if(PL.ghost)scene.remove(PL.ghost);const G=buildFurnGroup(PL.rec);placeGroup(G,PL.rec);PL.why=validatePlacement(PL.rec,PL.rec.uid);ghostify(G,!PL.why);
   if(CAT[PL.rec.id].kind==='walldecor')G.position.z+=G.rotation.y?0:0.01;scene.add(G);PL.ghost=G;renderPlacebar()}
-function moveGhost(){if(!PL||!PL.ghost)return;placeGroup(PL.ghost,PL.rec);const why=validatePlacement(PL.rec,PL.rec.uid);if(why!==PL.why){PL.why=why;ghostify(PL.ghost,!why);renderPlacebar()}}
+function moveGhost(){if(!PL||!PL.ghost)return;placeGroup(PL.ghost,PL.rec);const why=validatePlacement(PL.rec,PL.rec.uid);if(why!==PL.why){PL.why=why;ghostify(PL.ghost,!why);renderPlacebar()}try{gridFoot()}catch(e){}}
 function renderPlacebar(){const pb=$('placebar');pb.hidden=false;const c=CAT[PL.rec.id];const wall=c.kind==='walldecor';
   $('placeMsg').className='msg'+(PL.why?' bad':'');$('placeMsg').textContent=PL.why||(wall?'Okla duvardaki yerini seç':'Parmağınla sürükleyerek taşı');
   const rot=c.kind==='table'||c.rot||c.kind==='decor';
@@ -3200,7 +3239,7 @@ function toggleAuto(){S.auto=!S.auto;markDirty();drawAuto();const n=NMs().waiter
 const AUTO_T=new Map();
 function autoTick(dt){if(!S.auto)return;const due=(key,ok)=>{if(!ok){AUTO_T.delete(key);return false}const t=(AUTO_T.get(key)||0)+dt;AUTO_T.set(key,t);if(t>=0.9){AUTO_T.delete(key);return true}return false};
   for(const c of customers)if(due('t'+c.id,c.state==='WAITING_TO_ORDER'&&!c.orderQueued))takeOrder(c);
-  for(const o of orders){if(due('s'+o.id,o.state==='TAKEN'&&!o.submitQueued))submitOrder(o);if(due('p'+o.id,o.state==='READY'&&!o.pickupQueued&&!o.cancel&&batchWaitOk(o)))pickupOrder(o)}}
+  for(const o of orders){if(due('s'+o.id,o.state==='TAKEN'&&!o.submitQueued))submitOrders([o,...servSibs(o).filter(x=>x.state==='TAKEN'&&!x.submitQueued)]);if(due('p'+o.id,o.state==='READY'&&!o.pickupQueued&&!o.cancel&&batchWaitOk(o)))pickupOrder(o)}}
 
 // ================= İKİNCİ ÖĞRETİCİLER: Ekip ilk açılış · Tarifler → Birleştir → Tarifler → Menü =================
 {const st=document.createElement('style');st.textContent=`.cell.tuthl{box-shadow:0 0 0 4px var(--gold) inset;border-radius:12px;animation:tuthl 1s ease-in-out infinite}@keyframes tuthl{50%{box-shadow:0 0 0 7px var(--gold) inset}}
@@ -4757,6 +4796,43 @@ async function cashierIdle(k){const R=REGS[k.i],st=R.stand,ch=k.ch;k.ready=false
     await ch.face(0)}finally{k.idleBusy=false;k.ready=REGS.length>k.i}}
 function staffIdleTick(dt){if(!IDLE.on||!S.created)return;if(!CASH_CHAIR)cashChair();for(const k of CSTAFF){if(k.idleBusy)continue;if(!cashIdleOk(k)){k.idleT=0;continue}k.idleT=(k.idleT||0)+dt;
     if(k.idleT>(k.idleNext||(k.idleNext=irnd(6,11)))){k.idleT=0;k.idleNext=irnd(12,22);cashierIdle(k)}}}
+
+// ================= KARELİ YERLEŞTİRME ALANI =================
+// Düzenleme/yerleştirme sırasında zemine 25 cm'lik kareler çizilir; eşya bu karelere oturur.
+// Eşyanın kapladığı kareler yeşil (uygun) ya da kırmızı (olmaz) yanar; sandalyelere yaklaşma/servis noktaları mavi,
+// kapı ve tezgah önündeki yürüme yolları turuncu gösterilir. Her konumda kapıdan bütün masalara, garson köşesine ve
+// tezgaha yol kaldığı denetlenir (validatePlacement) — servis yolunu kapatan konum kırmızı olur.
+const GRID_STEP=0.25;
+const gsnap=v=>Math.round(v/GRID_STEP)*GRID_STEP;
+const GRID={g:null,lines:null,foot:null,res:null,on:false,key:''};
+function gridBuild(){if(GRID.g)return;const G=new THREE.Group();G.renderOrder=5;scene.add(G);GRID.g=G;
+  // çizgiler: her 25 cm ince, her metre kalın
+  const nx=Math.round(ROOM_W/GRID_STEP),nz=Math.round(ROOM_D/GRID_STEP),S=24,cv=document.createElement('canvas');cv.width=nx*S;cv.height=nz*S;const c=cv.getContext('2d');
+  for(let i=0;i<=nx;i++){c.fillStyle=i%4===0?'rgba(255,255,255,.55)':'rgba(255,255,255,.28)';c.fillRect(i*S-(i%4===0?1.5:0.75),0,i%4===0?3:1.5,cv.height)}
+  for(let k=0;k<=nz;k++){c.fillStyle=k%4===0?'rgba(255,255,255,.55)':'rgba(255,255,255,.28)';c.fillRect(0,k*S-(k%4===0?1.5:0.75),cv.width,k%4===0?3:1.5)}
+  const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=4;
+  const pl=new THREE.Mesh(new THREE.PlaneGeometry(nx*GRID_STEP,nz*GRID_STEP),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
+  pl.rotation.x=-Math.PI/2;pl.position.set(0,0.032,0);G.add(pl);GRID.lines=pl;
+  const quad=new THREE.PlaneGeometry(GRID_STEP*0.92,GRID_STEP*0.92);quad.rotateX(-Math.PI/2);
+  const mk=(n,op)=>{const m=new THREE.InstancedMesh(quad,new THREE.MeshBasicMaterial({transparent:true,opacity:op,depthWrite:false,vertexColors:false}),n);m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.count=0;m.frustumCulled=false;G.add(m);return m};
+  GRID.res=mk(1500,0.24);GRID.foot=mk(800,0.62);G.visible=false}
+const _gm=new THREE.Matrix4(),_gc=new THREE.Color();
+function gridCells(boxes){const out=new Set();for(const b of boxes){const i0=Math.floor((b.minX+ROOM_W/2)/GRID_STEP+1e-6),i1=Math.ceil((b.maxX+ROOM_W/2)/GRID_STEP-1e-6),k0=Math.floor((b.minZ+ROOM_D/2)/GRID_STEP+1e-6),k1=Math.ceil((b.maxZ+ROOM_D/2)/GRID_STEP-1e-6);
+    for(let i=Math.max(0,i0);i<i1;i++)for(let k=Math.max(0,k0);k<k1;k++)out.add(i+','+k)}return out}
+const cellPt=p=>Math.floor((p.x+ROOM_W/2)/GRID_STEP)+','+Math.floor((p.z+ROOM_D/2)/GRID_STEP);
+function gridPut(m,list){m.count=0;for(const [key,col,y] of list){if(m.count>=m.instanceMatrix.count)break;const [i,k]=key.split(',').map(Number);_gm.makeTranslation(-ROOM_W/2+(i+0.5)*GRID_STEP,y||0.036,-ROOM_D/2+(k+0.5)*GRID_STEP);m.setMatrixAt(m.count,_gm);m.setColorAt(m.count,_gc.set(col));m.count++}
+  m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
+// sabit bilgiler: yürüme yolları (turuncu) + mevcut masaların servis/yaklaşma noktaları (mavi)
+function gridReserved(exUid){const L=[];for(const k of gridCells(NO_BUILD))L.push([k,0xf2b45a]);
+  for(const [u,R] of FURN)if(u!==exUid&&R.table)for(const s of R.table.seats)for(const p of [s.A,s.serve])L.push([cellPt(p),0x5aa9e6]);
+  for(const p of [staffSeat.A,PREP_SPOT,PICKUP_SPOT])L.push([cellPt(p),0x5aa9e6]);return L}
+function gridShow(on){gridBuild();GRID.on=on;GRID.g.visible=on;if(!on){GRID.foot.count=0;GRID.key='';return}gridRefresh()}
+function gridRefresh(){if(!GRID.on)return;const ex=PL&&PL.rec?PL.rec.uid:null;gridPut(GRID.res,gridReserved(ex));gridFoot()}
+// yerleştirilen eşyanın kapladığı kareler
+function gridFoot(){if(!GRID.on||!GRID.foot)return;if(UI.mode!=='place'||!PL||!PL.rec||CAT[PL.rec.id].kind==='walldecor'){GRID.foot.count=0;return}
+  const rec=PL.rec,c=CAT[rec.id];const ok=!validatePlacement(rec,rec.uid);const key=rec.id+'|'+rec.x+'|'+rec.z+'|'+rec.rot+'|'+ok;if(key===GRID.key)return;GRID.key=key;
+  let boxes,points=[];if(c.flat){let [hx,hz]=c.half;if((rec.rot||0)%2)[hx,hz]=[hz,hx];boxes=[{minX:rec.x-hx,maxX:rec.x+hx,minZ:rec.z-hz,maxZ:rec.z+hz}]}else{const I=candidateInfo(rec);boxes=I.boxes.length?I.boxes:[{minX:rec.x-(c.half?c.half[0]:0.2),maxX:rec.x+(c.half?c.half[0]:0.2),minZ:rec.z-(c.half?c.half[1]:0.2),maxZ:rec.z+(c.half?c.half[1]:0.2)}];points=I.points}
+  const L=[];for(const k of gridCells(boxes))L.push([k,ok?0x5ccf6a:0xe5534b,0.04]);for(const p of points)L.push([cellPt(p),ok?0x5aa9e6:0xe5534b,0.041]);gridPut(GRID.foot,L)}
 
 // ================= BAŞLAT =================
 function applyState(){applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]>1)setEquip(k,S.equip[k]);
