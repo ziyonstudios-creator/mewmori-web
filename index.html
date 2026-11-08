@@ -285,7 +285,7 @@ function registerOuter(objs){for(const o of objs){if(o===SHELL.g||SHELL.plants.s
     const sx=c.x>SHELL.base.x1+0.3?1:0,sz=c.z>SHELL.base.z1+0.3?1:0;if(sx||sz)SHELL.outer.push({o,p:o.position.clone(),sx,sz})}}
 function shiftOuter(){const dx=RM.x1-SHELL.base.x1,dz=RM.z1-SHELL.base.z1;for(const r of SHELL.outer){r.o.position.set(r.p.x+r.sx*dx,r.p.y,r.p.z+r.sz*dz)}}
 // odayı yeniden boyutlandır (yalnız sağa/öne büyür)
-function setRoom(x1,z1){RM.x1=Math.max(SHELL.base.x1,x1);RM.z1=Math.max(SHELL.base.z1,z1);try{S.room={x1:RM.x1,z1:RM.z1}}catch(e){}roomDims();buildShell();ENV.hide={back:null,left:null};for(const p of SHELL.plants)placeCornerPlant(p);
+function setRoom(x1,z1,temp){RM.x1=Math.max(SHELL.base.x1,x1);RM.z1=Math.max(SHELL.base.z1,z1);if(!temp)try{S.room={x1:RM.x1,z1:RM.z1}}catch(e){}roomDims();buildShell();ENV.hide={back:null,left:null};for(const p of SHELL.plants)placeCornerPlant(p);
   envShell();shiftOuter();navResize();gridRebuild();buildGrid();camFit();
   try{SCOOT.route[1].z=SCOOT.route[2].z=SUP_ENTRY[0].z=RM.z1+5.6}catch(e){}}   // ön sokak da öne kayar
 // kamera: hedef oda ortasına, uzaklık oda boyuna göre
@@ -1449,11 +1449,12 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
     staff:{waiter:1,barista:1,cashier:1},seen:{},tr:null,navMin:false,
-    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
+    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
 let S=defaultState();
 // kayıt bozulursa (yarım yazılmış/elle değişmiş) otomatik yedekten açılır
 const AUTO_BAK='posa-yosun-kafe-oto-yedek';let autoBakT=0;
-function readSave(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e){}if(raw){try{const d=JSON.parse(raw);if(d&&typeof d==='object')return d}catch(e){console.warn('kayıt bozuk, yedeğe bakılıyor',e)}}
+function readSave(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)}catch(e){}if(!raw)return null;   // kayıt hiç yoksa (yeni oyuncu / sıfırlama) yedekten AÇILMAZ
+  try{const d=JSON.parse(raw);if(d&&typeof d==='object')return d}catch(e){console.warn('kayıt bozuk, yedeğe bakılıyor',e)}
   try{const b=localStorage.getItem(AUTO_BAK);if(b){const d=JSON.parse(b);if(d&&typeof d==='object'){window.__restoredBak=true;return d}}}catch(e){}return null}
 function loadState(){const d0=readSave();
   if(!d0)return false;try{const d=d0;const base=defaultState();
@@ -1480,7 +1481,7 @@ function loadState(){const d0=readSave();
     return true}catch(e){console.warn('kayıt okunamadı',e);return false}}
 let saveTimer=0;
 let RESETTING=false;
-function saveNow(){clearTimeout(saveTimer);saveTimer=0;if(RESETTING)return;S.lastSeen=nowT();S.saveT=Date.now();try{const j=JSON.stringify(S);localStorage.setItem(SAVE_KEY,j);if(Date.now()-autoBakT>300000&&S.created){autoBakT=Date.now();localStorage.setItem(AUTO_BAK,j)}}catch(e){console.warn('kayıt yazılamadı',e)}try{cloudMark()}catch(e){}}
+function saveNow(){clearTimeout(saveTimer);saveTimer=0;if(RESETTING||(typeof VISIT!=='undefined'&&VISIT.on&&!VISIT.allowSave))return;S.lastSeen=nowT();S.saveT=Date.now();try{const j=JSON.stringify(S);localStorage.setItem(SAVE_KEY,j);if(Date.now()-autoBakT>300000&&S.created){autoBakT=Date.now();localStorage.setItem(AUTO_BAK,j)}}catch(e){console.warn('kayıt yazılamadı',e)}try{cloudMark()}catch(e){}}
 function markDirty(){if(!saveTimer)saveTimer=setTimeout(saveNow,400)}
 
 // ---------- seviye / XP ----------
@@ -5042,6 +5043,89 @@ function expandUI(){if(UI.mode!=='cafe'||!S.created||S.tut!=='done')return;const
   const right=e.x1>RM.x1;const p=new THREE.Vector3(right?(RM.x1+e.x1)/2:(RM.x0+RM.x1)/2,1.0,right?(RM.z0+RM.z1)/2:(RM.z1+e.z1)/2);
   place(el('expbtn','act expbtn',`${ic('plus')}Genişlet`,()=>{setMode('market');UI.tab='expand';UI.sel=e.id;renderMarket()}),p)}
 {const st=document.createElement('style');st.textContent=`.card .exarea{display:block;font-size:10.5px;font-weight:800;opacity:.7;margin-top:2px}.act.expbtn{background:#e9f7e6}`;document.head.appendChild(st)}
+
+// ================= KAFELER DÜNYASI: ziyaret, beğeni, haftalık sıralama =================
+// Oturum açan oyuncunun kafe düzeni (oda ölçüsü, duvar, zemin, eşyalar) bulut kaydıyla birlikte public.cafes'e yayımlanır.
+// "Kafeler" panelinde haftalık sıralama ve kendi kafen; bir kafeye girince düzeni salt-okunur gösterilir (oyun durur,
+// kendi eşyaların gizlenir, hiçbir şey kaydedilmez). Günde kafe başına bir beğeni + hazır tepki; beğenen oyuncuya küçük ödül.
+const REACTS=[['heart','Çok şirin!'],['cup','Kahvesi harika'],['plant','Dekor süper'],['paw','Yine geleceğim'],['star','Favorim']];
+const SOC={tab:'rank',rank:null,mine:null,book:null,loading:false,err:''};
+const VISIT={on:false,groups:[],cafe:null,room:null,liked:false};
+const cafeName=()=>S.cafeName||'Yosun Kafe';
+function cafeLayout(){return {v:1,room:S.room||null,wall:S.wall,floor:S.floor,f:S.furniture.filter(f=>!f.stored).map(f=>({id:f.id,x:f.x,z:f.z,rot:f.rot||0,chair:f.chair,col:f.col,slot:f.slot}))}}
+// bulut kaydı başarıyla gidince kafe de (değiştiyse) yayımlanır
+async function cafePublish(force){if(!cloudOn()||!S.created||S.lvl<2)return;const lay=cafeLayout(),h=JSON.stringify([lay,cafeName(),S.lvl]);if(!force&&h===CLOUD.cafeH)return;
+  try{const sb=await sbClient();const {error}=await sb.from('cafes').upsert({user_id:SB.user.id,name:cafeName(),layout:lay,lvl:S.lvl});if(error)throw error;CLOUD.cafeH=h}catch(e){console.warn('kafe yayımlanamadı',e)}}
+{const _p=cloudPush;cloudPush=async function(f){await _p(f);if(CLOUD.ok)cafePublish()}}
+// ---- panel ----
+function openWorld(){if(!cloudOn()){toast('<b>Kafeler Dünyası</b><br>Diğer kafeleri gezmek için giriş yap',ic('star'),2600);try{authOpen&&authOpen()}catch(e){}return}
+  let p=$('worldP');if(!p){p=document.createElement('section');p.id='worldP';p.className='screen world';p.setAttribute('role','dialog');p.setAttribute('aria-label','Kafeler Dünyası');$('game').appendChild(p)}
+  p.hidden=false;UI.modal=true;renderWorld();socLoad()}
+function closeWorld(){const p=$('worldP');if(p)p.hidden=true;UI.modal=false}
+async function socLoad(){SOC.loading=true;SOC.err='';renderWorld();
+  try{const sb=await sbClient();await cafePublish(true);
+    const r=await sb.rpc('cafe_ranking',{lim:50});if(r.error)throw r.error;SOC.rank=r.data||[];
+    const me=SOC.rank.find(x=>x.user_id===SB.user.id);SOC.mine=me||null;
+    const g=await sb.rpc('cafe_guestbook',{target:SB.user.id});SOC.book=g.error?[]:(g.data||[])}
+  catch(e){console.warn(e);SOC.err='Bağlantı kurulamadı, biraz sonra tekrar dene.'}
+  SOC.loading=false;renderWorld()}
+function renderWorld(){const p=$('worldP');if(!p||p.hidden)return;const R=SOC.rank||[];const myI=R.findIndex(x=>x.user_id===(SB.user&&SB.user.id));
+  const row=(x,i)=>`<li class="wr${x.user_id===SB.user.id?' me':''}"><span class="wn">${i+1}</span><span class="wt"><b></b><small>Seviye ${x.lvl} · toplam ${x.likes_total} ${ic('heart')}</small></span><span class="wl">${x.week_likes}${ic('heart')}</span>${x.user_id===SB.user.id?'<span class="wme">Sen</span>':`<button class="btn light sm" type="button" data-visit="${x.user_id}">Gez</button>`}</li>`;
+  const counts=REACTS.map((r,k)=>[(SOC.book||[]).filter(b=>b.reaction===k).length,r]);
+  p.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${ic('star')}</span><h2>Kafeler Dünyası</h2><button class="iconbtn" id="wdClose" type="button" aria-label="Kapat">${ic('close')}</button></div>
+   <div class="tabs" role="tablist"><button type="button" role="tab" data-wt="rank" aria-selected="${SOC.tab==='rank'}">${ic('star')}Haftanın kafeleri</button><button type="button" role="tab" data-wt="mine" aria-selected="${SOC.tab==='mine'}">${ic('paw')}Kafem</button></div>
+   <div class="scroll">${SOC.loading?'<p class="wmsg">Yükleniyor…</p>':SOC.err?`<p class="wmsg">${SOC.err}</p>`:SOC.tab==='rank'?
+     `<p class="wmsg">Sıralama her pazartesi sıfırlanır. Beğendiğin her kafe için ${ic('coin')}5 kazanırsın (günde 10 kafeye kadar).</p><ol class="wlist">${R.map(row).join('')||'<p class="wmsg">Henüz yayımlanmış kafe yok.</p>'}</ol>`:
+     `<div class="wmine"><label>Kafenin adı<input id="wdName" maxlength="24" value=""></label><button class="btn" type="button" id="wdSave">${ic('check')}Kaydet</button>
+       <p class="wmsg">${myI>=0?`Bu hafta <b>${myI+1}.</b> sıradasın · ${R[myI].week_likes} beğeni · toplam ${R[myI].likes_total}`:'Kafen sıralamada henüz görünmüyor (seviye 2 olunca yayımlanır).'}</p>
+       <h3>Ziyaretçi defteri</h3><div class="wbook">${counts.map(([n,r])=>`<span>${ic(r[0])}${r[1]} <b>${n}</b></span>`).join('')}</div></div>`}</div>`;
+  // adlar metin olarak (kullanıcı verisi)
+  p.querySelectorAll('.wr').forEach((li,i)=>{li.querySelector('.wt b').textContent=R[i].name});const ni=$('wdName');if(ni)ni.value=cafeName();
+  $('wdClose').onclick=closeWorld;p.querySelectorAll('[data-wt]').forEach(b=>b.onclick=()=>{SOC.tab=b.dataset.wt;renderWorld()});
+  p.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>visitCafe(b.dataset.visit));
+  const sv=$('wdSave');if(sv)sv.onclick=()=>{const v=($('wdName').value||'').replace(/\s+/g,' ').trim();if(v.length<2||v.length>24||/[<>]/.test(v)||badWord(v)){toast('Ad 2–24 harf olmalı ve uygun olmalı',ic('alert'),2200);return}
+    S.cafeName=v;markDirty();saveNow();cafePublish(true).then(socLoad);toast(`Kafenin adı: <b>${v.replace(/[&<>]/g,'')}</b>`,ic('check'),2000)}}
+const BADW=['amk','aq','sik','orospu','piç','yarrak','göt','fuck','shit','bitch','sex'];
+const badWord=t=>{const s=t.toLocaleLowerCase('tr').replace(/[^a-zçğıöşü0-9]/g,'');return BADW.some(w=>s.includes(w))};
+// ---- ziyaret ----
+async function visitCafe(uid){try{const sb=await sbClient();const {data,error}=await sb.from('cafes').select('user_id,name,layout,lvl,likes_total').eq('user_id',uid).maybeSingle();if(error||!data)throw error||new Error('yok');
+    closeWorld();visitEnter(data)}catch(e){console.warn(e);toast('Bu kafeye şu an girilemiyor',ic('alert'),2200)}}
+function visitEnter(c){const L=c.layout||{};VISIT.on=true;VISIT.cafe=c;VISIT.liked=false;VISIT.groups=[];
+  for(const R of FURN.values())R.group.visible=false;scene.traverse(o=>{if(o.userData&&o.userData.isChar&&o.visible){o.visible=false;(VISIT.hid=VISIT.hid||[]).push(o)}});
+  const rm=L.room||{x1:4.75,z1:4};VISIT.room={x1:RM.x1,z1:RM.z1};setRoom(rm.x1,rm.z1,true);applyWall(CAT[L.wall]?L.wall:'w_cream');applyFloor(CAT[L.floor]?L.floor:'f_classic');
+  const tabs=[];for(const f of (L.f||[]).slice(0,120)){if(!CAT[f.id])continue;const rec={...f,uid:900000+VISIT.groups.length,chair:CAT[f.chair]?f.chair:'c_cushion'};try{const G=buildFurnGroup(rec);placeGroup(G,rec);scene.add(G);VISIT.groups.push(G);if(CAT[f.id].kind==='table')tabs.push(rec)}catch(e){}}
+  LAMP_POOL.forEach((pl,i)=>{const t=tabs[i];if(t){pl.position.set(t.x,WALL_H-0.7,t.z);pl.intensity=4}else{pl.intensity=0;pl.position.set(0,-5,0)}});
+  setMode('visit');$('game').classList.add('visiting');visitBar()}
+function visitLeave(){if(!VISIT.on)return;for(const G of VISIT.groups){scene.remove(G);disposeTree(G)}VISIT.groups=[];for(const R of FURN.values())R.group.visible=true;(VISIT.hid||[]).forEach(o=>o.visible=true);VISIT.hid=[];
+  setRoom(VISIT.room.x1,VISIT.room.z1,true);applyWall(S.wall);applyFloor(S.floor);refreshWorld();VISIT.on=false;const b=$('visitBar');if(b)b.remove();$('game').classList.remove('visiting');setMode('cafe');openWorld()}
+function visitBar(){let b=$('visitBar');if(!b){b=document.createElement('div');b.id='visitBar';$('game').appendChild(b)}const c=VISIT.cafe;
+  b.innerHTML=`<div class="vtop"><button class="iconbtn" type="button" id="vBack" aria-label="Geri dön">${ic('left')}</button><div class="vt"><b></b><small>Seviye ${c.lvl} · ${c.likes_total} ${ic('heart')}</small></div></div>
+   <div class="vbot">${VISIT.liked?`<p class="vdone">${ic('check')}Bugün beğendin, teşekkürler!</p>`:`<p>Bu kafeyi beğendin mi? Bir tepki seç:</p><div class="vreacts">${REACTS.map((r,k)=>`<button class="btn light" type="button" data-rx="${k}">${ic(r[0])}${r[1]}</button>`).join('')}</div>`}</div>`;
+  b.querySelector('.vt b').textContent=c.name;$('vBack').onclick=visitLeave;b.querySelectorAll('[data-rx]').forEach(x=>x.onclick=()=>likeCafe(+x.dataset.rx))}
+async function likeCafe(k){const c=VISIT.cafe;if(!c||VISIT.liked)return;
+  try{const sb=await sbClient();const {error}=await sb.from('cafe_likes').insert({liker:SB.user.id,cafe:c.user_id,reaction:k});
+    if(error){if(error.code==='23505'){VISIT.liked=true;visitBar();toast('Bu kafeyi bugün zaten beğendin',ic('heart'),2000);return}
+      if(error.code==='42501'){toast('Beğenmek için kafen seviye 3 olmalı',ic('lock'),2400);return}throw error}
+    VISIT.liked=true;c.likes_total++;const d=new Date().toISOString().slice(0,10);if(!S.likeDay||S.likeDay.d!==d)S.likeDay={d,n:0};
+    if(S.likeDay.n<10){S.likeDay.n++;addCoins(5,'bonus');toast(`<b>${REACTS[k][1]}</b><br>Beğenin gönderildi · ${ic('coin')}+5`,ic(REACTS[k][0]),2200)}else toast('Beğenin gönderildi',ic(REACTS[k][0]),1800);
+    sfx('ding');markDirty();visitBar()}catch(e){console.warn(e);toast('Beğeni gönderilemedi, tekrar dene',ic('alert'),2200)}}
+// HUD düğmesi
+{const row=document.querySelector('button[aria-label="Müzik"]').parentElement;const b=document.createElement('button');b.type='button';b.className='iconbtn';b.id='worldBtn';b.style.cssText='width:36px;height:36px;padding:4px';b.setAttribute('aria-label','Kafeler Dünyası');b.innerHTML=UI_IC.star;b.onclick=()=>{sfx('tap');openWorld()};row.prepend(b)}
+{const st=document.createElement('style');st.textContent=`
+#worldP{z-index:40}#worldP .ic,#visitBar .ic{display:inline-grid;place-items:center;width:16px;height:16px;flex:none;vertical-align:-3px}#worldP .ic svg,#visitBar .ic svg{width:100%;height:100%}#worldP .panel-head .ic{width:auto;height:auto}
+#game.visiting>*:not(canvas):not(#visitBar):not(#toasts):not(#load){visibility:hidden!important}
+#worldP .tabs{display:flex;gap:6px;padding:0 12px 8px}#worldP .tabs button{flex:1;display:flex;gap:5px;align-items:center;justify-content:center;font:800 13px var(--font,inherit);padding:8px;border:2.5px solid var(--ink);border-radius:14px;background:var(--paper);cursor:pointer}
+#worldP .tabs button[aria-selected=true]{background:#ffe7a8}#worldP .tabs .ic,#worldP .tabs svg{width:18px;height:18px}
+#worldP .scroll{overflow:auto;padding:0 12px 14px}.wmsg{font-size:12.5px;line-height:1.4;margin:6px 2px 10px;opacity:.85}
+.wlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}.wr{display:flex;align-items:center;gap:8px;padding:8px 10px;border:2.5px solid var(--ink);border-radius:14px;background:var(--paper)}
+.wr.me{background:#fff3c4}.wn{font:900 16px var(--font,inherit);width:24px;text-align:center}.wt{flex:1;min-width:0;display:flex;flex-direction:column}.wt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wt small,.wl{font-size:11.5px;font-weight:800;display:inline-flex;align-items:center;gap:3px}.wl{font-size:14px}.wr svg,.wr .ic{width:15px;height:15px}.wme{font-weight:900;font-size:12px}.btn.sm{padding:6px 10px;font-size:12px}
+.wmine label{display:flex;flex-direction:column;gap:4px;font-weight:800;font-size:13px}.wmine input{font:700 15px inherit;padding:9px 10px;border:2.5px solid var(--ink);border-radius:12px}.wmine .btn{margin-top:8px}
+.wbook{display:flex;flex-wrap:wrap;gap:6px}.wbook>span{display:inline-flex;gap:4px;align-items:center;padding:5px 9px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);font-size:12px;font-weight:800}.wbook svg{width:15px;height:15px}
+#visitBar{position:absolute;inset:0;pointer-events:none;z-index:55}#visitBar .vtop{pointer-events:auto;position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;right:12px;display:flex;gap:10px;align-items:center;padding:8px 12px;border:3px solid var(--ink);border-radius:18px;background:var(--paper)}
+#visitBar .vt{display:flex;flex-direction:column}#visitBar .vt small{display:inline-flex;gap:3px;align-items:center;font-weight:800;font-size:12px}#visitBar .vt svg{width:14px;height:14px}
+#visitBar .vbot{pointer-events:auto;position:absolute;bottom:calc(env(safe-area-inset-bottom) + 12px);left:12px;right:12px;padding:10px 12px;border:3px solid var(--ink);border-radius:18px;background:var(--paper)}
+#visitBar .vbot p{margin:0 0 8px;font-weight:800;font-size:13px}.vreacts{display:flex;flex-wrap:wrap;gap:6px}.vreacts .btn{padding:7px 10px;font-size:12px}.vreacts svg{width:16px;height:16px}.vdone{display:flex;gap:6px;align-items:center;margin:0!important}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){if(S.room&&(S.room.x1>RM.x1||S.room.z1>RM.z1))setRoom(S.room.x1,S.room.z1);   // genişletilmiş kafe: eşyalardan önce oda kurulur
