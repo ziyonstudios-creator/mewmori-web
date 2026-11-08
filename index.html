@@ -806,7 +806,7 @@ const NO_BUILD=[{minX:-ROOM_W/2,maxX:-2.9,minZ:0.95,maxZ:2.65},{minX:-ROOM_W/2,m
 
 // ---------- SABİT DEKOR ----------
 function plant(x,z){cyl(0.22,0.17,0.35,M.terracotta,x,0.175,z,12);for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const l=sph(0.17,M.leaf,x+Math.cos(a)*0.15,0.45+(i%2)*0.12,z+Math.sin(a)*0.15);l.scale.set(1,0.7,1)}sph(0.2,M.leaf,x,0.6,z);obst(x-0.35,x+0.35,z-0.35,z+0.35)}
-cornerPlant(1,-1);cornerPlant(-1,1);cornerPlant(1,1);   // köşeler oda büyüyünce kayar (p0_room)
+// köşe saksıları kaldırıldı: oyuncu dilediği bitkiyi marketten alır
 {const x=-3.65,z=-0.55;cyl(0.008,0.008,0.5,M.dark,x,WALL_H-0.25,z,6);const shade=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.2,0.17,16,1,true),M.cream.clone());shade.material.side=THREE.DoubleSide;shade.position.set(x,WALL_H-0.58,z);scene.add(shade);const bulb=sph(0.05,M.warmLight,x,WALL_H-0.64,z);bulb.castShadow=false;const pl=new THREE.PointLight(0xffd9a0,4,5);pl.position.set(x,WALL_H-0.7,z);scene.add(pl)}
 {const x=-ROOM_W/2+0.6,z=-ROOM_D/2+0.3;box(0.04,0.04,0.32,M.woodDark,x,3.0,-ROOM_D/2+0.16);cyl(0.008,0.008,0.14,M.dark,x,2.93,z,6);cyl(0.2,0.14,0.25,M.terracotta,x,2.75,z,10);cyl(0.17,0.17,0.02,M.woodDark,x,2.865,z,10);/* sarkan yeşil kaldırıldı */}
 // masa lambaları için ışık havuzu (sayı sabit: gölgelendirici yeniden derlenmez)
@@ -1032,6 +1032,12 @@ const EV_RECIPES={it:[['espresso',1,1],['cappuccino',1,1],['biscotti',1,1],['gel
   tr:[['turk_kahvesi',1,1],['simit',1,1],['cay',1,1],['lokum',2],['sahlep',3],['ayran',3],['baklava',4],['menemen',5],['sutlac',6],['gozleme',7],['kunefe',8]]};
 if(EVMODE){const L=EV_RECIPES[EVMODE]||[],keep=[];for(const [id,lv,def] of L){const r=RECIPES.find(x=>x.id===id);if(!r)continue;r.lvl=lv;r.def=!!def;delete r.br;keep.push(r)}RECIPES.length=0;RECIPES.push(...keep);
   for(const c of CATALOG)if(c.ev===EVMODE)c.lvl=c.evLvl}
+// etkinlik kafesinde birleştirme tahtası: ülkeye özgü ürünler bu birleşimlerle keşfedilir (ana kafenin birleşimleri yerine)
+const EV_COMBOS={it:[['sut3','cilek2','it_gelato','Gelato kâsesi'],['kahve3','sut2','it_affogato','Affogato'],['kahve3','yum2','it_tiramisu','Tiramisu kreması'],['un2','peynir2','it_bruschetta','Bruschetta'],
+    ['un3','peynir3','it_pizza','Pizza hamuru'],['un2','seker3','it_cannoli','Cannoli'],['un3','yum3','it_lasagna','Lazanya katları']],
+  tr:[['seker2','cilek2','tr_lokum','Lokum'],['sut3','seker2','tr_sahlep','Sahlep'],['sut3','limon1','tr_ayran','Ayran'],['un3','seker3','tr_baklava','Baklava yufkası'],
+    ['yum2','peynir2','tr_menemen','Menemen'],['sut3','un2','tr_sutlac','Sütlaç'],['un2','peynir3','tr_gozleme','Gözleme'],['peynir3','seker3','tr_kunefe','Künefe']]};
+if(EVMODE&&EV_COMBOS[EVMODE]){COMBOS.length=0;for(const [a,b,r,name] of EV_COMBOS[EVMODE]){const c={a,b,r,name};COMBOS.push(c);ITEMS[r]={id:r,name,chain:null,lv:0,max:0,fam:'combo',next:null,combo:c}}}
 const CAT=Object.fromEntries(CATALOG.map(c=>[c.id,c]));
 const MK_TABS=[{id:'upg',name:'Geliştir',icon:'up'},{id:'table',name:'Masalar',icon:'table'},{id:'chair',name:'Sandalyeler',icon:'chair'},{id:'wall',name:'Duvar',icon:'paint'},{id:'floor',name:'Zemin',icon:'floor'},{id:'decor',name:'Dekor',icon:'plant'},{id:'equip',name:'Ekipman',icon:'machine'},{id:'clothes',name:'Kıyafet',icon:'shirt'},{id:'store',name:'Depom',icon:'box'},{id:'expand',name:'Genişlet',icon:'plus'}];
 
@@ -2898,7 +2904,7 @@ function scheduleBar(i,t0){const fi=Math.floor(i/8)%4,sec=FORM[fi],b=i%8;if(i%32
   if(b===7&&fi===3){kal(72,at8(t0,6),0.05)}}
 function musicTick(){if(!AU.playing||!AU.gen)return;const ctx=AU.ctx;while(AU.next<ctx.currentTime+0.4){scheduleBar(AU.bar,AU.next);AU.bar++;AU.next+=4*BEAT}}
 // ---- fon müziği: oyuncunun gönderdiği parça (kesintisiz döngü); yüklenemezse üretilen müzik yedek olarak çalar ----
-const TRACK={url:'music/kedi_kafe.mp3',buf:null,src:null,gain:null,state:'none',vol:0.4};
+const TRACK={url:'music/meow_brew.mp3',buf:null,src:null,gain:null,state:'none',vol:0.4};
 function loadTrack(){if(TRACK.state!=='none')return;TRACK.state='loading';
   fetch(TRACK.url).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(ab=>new Promise((res,rej)=>AU.ctx.decodeAudioData(ab,res,rej))).then(buf=>{
     // kodlayıcının başa/sona eklediği sessiz dolguyu bul → döngü sınırları
@@ -5008,9 +5014,9 @@ function phoneFor(ch){if(ch.phone!==undefined)return ch.phone;const side=CLIPS.S
 function sitPick(ch,dt){if(!CLIPS.SIT_BASE)return 'Chair_Sit_Idle_F';ch.sitT=(ch.sitT||0)-dt;
   if(ch.sitT<=0){const m=ch.sitMode||'calm';let next='SIT_BASE',dur=4+Math.random()*5;
     if(m==='chat'&&ch.sitCur!=='SIT_CHAT'&&Math.random()<0.75){next='SIT_CHAT';dur=4+Math.random()*4}
-    else if(m==='phone'&&ch.sitCur!=='SIT_PHONE'&&Math.random()<0.7){next='SIT_PHONE';dur=7+Math.random()*8}
+    // telefonla konuşma pozu kaldırıldı (tek müşteri sakin oturur)
     ch.sitCur=CLIPS[next]?next:'SIT_BASE';ch.sitT=dur}
-  const ph=ch.sitCur==='SIT_PHONE'?phoneFor(ch):ch.phone;if(ph)ph.visible=ch.sitCur==='SIT_PHONE';
+  if(ch.sitCur==='SIT_PHONE')ch.sitCur='SIT_BASE';if(ch.phone)ch.phone.visible=false;
   return ch.sitCur||'SIT_BASE'}
 
 // ================= ÇALIŞANLARIN BOŞ ZAMANI =================
@@ -5281,6 +5287,8 @@ const EV_JOIN_LVL=3;
 const evFlagHTML=E=>E.id==='tr'?`<span class="mflag trf"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#e30a17"/><circle cx="11" cy="10" r="5" fill="#fff"/><circle cx="12.3" cy="10" r="4" fill="#e30a17"/><path d="M16.2 10 L20.6 8.6 L17.9 12.3 L17.9 7.7 L20.6 11.4 Z" fill="#fff"/></svg></span>`:`<span class="mflag">${E.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`;
 function evLeft(){const ms=Math.max(0,evEnds()-Date.now()),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);return d?`${d} gün ${h} sa`:h?`${h} sa ${m} dk`:`${m} dk`}
 const evArch=id=>S.evs&&S.evs[id]||null;
+// etkinlik kafesinin kendi gelişimi (ödül aşamaları): seviye artık ana kafeyle ortak, aşama etkinlikte kazanılan XP'den gelir
+const evlOf=d=>d?((d.evl!=null?d.evl:d.lvl)|0):0;
 const evTransRecipes=id=>(EV_RECIPES[id]||[]).map(x=>x[0]).filter(k=>RECIPE[k]&&RECIPE[k].br===id);
 const evItems=id=>CATALOG.filter(c=>c.ev===id);
 
@@ -5291,10 +5299,16 @@ let EV_NOTE=[];
   if(EVMODE){const E=EVENTS[EVMODE];
     if(S.ev!==EVMODE){S.ev=EVMODE;S.created=false;S.setupOffered=true;S.tut='done';S.tr='done';S.guideSeen=true;S.cafeName=E.cafe;S.wall=E.wall;S.floor=E.floor;S.owned[E.wall]=true;S.owned[E.floor]=true;
       S.lastSeen=Date.now();S.dayStart=0;S.evNew=true}
-    for(const r of RECIPES)S.recipes[r.id]=true;S.evs={};S.br={};
+    for(const r of RECIPES)if(r.def)S.recipes[r.id]=true;S.evs={};S.br={};
+    // seviye, XP ve elmas ana kafeyle ortak: her açılışta ana kayıttan alınır
+    if(S.evl==null){S.evl=S.created?Math.max(1,S.lvl|0):1;S.evx=S.created?(S.xp|0):0}
+    try{const M=JSON.parse(localStorage.getItem('posa-yosun-kafe-kayit-v3')||'null');if(M&&M.lvl){S.lvl=M.lvl;S.xp=M.xp|0;S.gems=M.gems|0;S.evShared=true}}catch(e){}
   }else{
     // etkinlikten dönüş (ya da hafta bitti): etkinlik kaydını ana kaydın içine arşivle
-    try{const raw=localStorage.getItem(EV_SAVE);if(raw){const d=JSON.parse(raw);if(d&&d.ev&&EVENTS[d.ev]){d.lastSeen=Date.now();S.evs[d.ev]=d}localStorage.removeItem(EV_SAVE);localStorage.removeItem('mewmori-etkinlik-yedek');EV_NOTE.push('back')}
+    try{const raw=localStorage.getItem(EV_SAVE);if(raw){const d=JSON.parse(raw);if(d&&d.ev&&EVENTS[d.ev]){d.lastSeen=Date.now();
+        // etkinlikte kazanılan seviye/XP/elmas ana kafeye geçer; atlanan her seviyenin altın ödülü ana kafeye de verilir
+        if(d.evShared&&(d.lvl|0)>=(S.lvl|0)){let g=0;for(let L=(S.lvl|0)+1;L<=(d.lvl|0);L++)g+=lvCoins(L);if(g){S.coins+=g;EV_NOTE.push(['lvl',d.lvl,g])}S.lvl=d.lvl;S.xp=d.xp|0;S.gems=d.gems|0}
+        S.evs[d.ev]=d}localStorage.removeItem(EV_SAVE);localStorage.removeItem('mewmori-etkinlik-yedek');EV_NOTE.push('back')}
       const del=localStorage.getItem('mewmori-ev-sil');if(del){delete S.evs[del];delete S.evClaim[del];localStorage.removeItem('mewmori-ev-sil')}}catch(e){console.warn(e)}
     for(const id in S.evGot)if(S.evGot[id]&&CAT[id])CAT[id].lvl=1;
     // eski Roma şubesi sistemi kaldırıldı: harcanan altın iade
@@ -5314,10 +5328,10 @@ function evHome(why){if(!EVMODE)return;try{clearTimeout(saveTimer)}catch(e){}sav
 function evTravel(E,go,why){RESETTING=true;const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div>${evFlagHTML(E)}<b>${go?E.city+'’ya gidiliyor…':why||'Ana kafene dönülüyor…'}</b></div>`;document.body.appendChild(o);setTimeout(()=>location.reload(),650)}
 
 // ---- ödüller ve getirilebilenler (ana kafede) ----
-function evClaim(){if(EVMODE)return 0;let tot=0;for(const id in S.evs){const E=EVENTS[id],d=S.evs[id];if(!E||!d)continue;const c=S.evClaim[id]||1;let n=0;for(const [L,g] of E.tiers)if(L>c&&L<=(d.lvl|0))n+=g;
-    if((d.lvl|0)>c)S.evClaim[id]=d.lvl|0;if(n){tot+=n;addCoins(n,'event')}}if(tot){sfx('coin');markDirty();saveNow()}return tot}
+function evClaim(){if(EVMODE)return 0;let tot=0;for(const id in S.evs){const E=EVENTS[id],d=S.evs[id];if(!E||!d)continue;const c=S.evClaim[id]||1;let n=0;for(const [L,g] of E.tiers)if(L>c&&L<=evlOf(d))n+=g;
+    if(evlOf(d)>c)S.evClaim[id]=evlOf(d);if(n){tot+=n;addCoins(n,'event')}}if(tot){sfx('coin');markDirty();saveNow()}return tot}
 function evRecState(id,k){const d=evArch(id);if(S.unlocked[k])return {done:true};if(!d||!d.unlocked||!d.unlocked[k])return {ok:false,why:`Etkinlikte Sv ${(EV_RECIPES[id].find(x=>x[0]===k)||[])[1]} · aç`};return {ok:true}}
-function evItemState(id,c){if(S.evGot[c.id])return {done:true};const d=evArch(id);if(!d||(d.lvl|0)<c.evLvl)return {ok:false,why:`Etkinlikte Sv ${c.evLvl}`};return {ok:true}}
+function evItemState(id,c){if(S.evGot[c.id])return {done:true};const d=evArch(id);if(!d||evlOf(d)<c.evLvl)return {ok:false,why:`Etkinlikte ${c.evLvl}. aşama`};return {ok:true}}
 function evTake(kind,id,k){if(kind==='rec'){if(!evRecState(id,k).ok)return;S.recipes[k]=S.unlocked[k]=S.menu[k]=true;toast(`<b>${RECIPE[k].name} ana kafende!</b><br>Menüne eklendi`,`<img src="${productThumb(k)}" alt="">`,2600)}
   else{const c=CAT[k];if(!evItemState(id,c).ok)return;S.evGot[k]=true;c.lvl=1;toast(`<b>${c.name}</b><br>Artık ana kafenin marketinde`,ic('market'),2600)}sfx('goal');markDirty();saveNow();renderEvents();evBadge()}
 function evTakeable(){if(EVMODE)return 0;let n=0;for(const id in S.evs){if(!EVENTS[id])continue;for(const k of evTransRecipes(id))if(evRecState(id,k).ok)n++;for(const c of evItems(id))if(evItemState(id,c).ok)n++}return n}
@@ -5409,17 +5423,17 @@ function openEvents(){let p=$('evP');if(!p){p=document.createElement('section');
 var openMap=openEvents;
 function closeEvents(){const p=$('evP');if(p)p.hidden=true;UI.modal=false}
 function renderEvents(){const p=$('evP');if(!p||p.hidden)return;const w=evWeek(),id=EVMODE||evOfWeek(w),E=EVENTS[id],nx=EVENTS[evOfWeek(w+1)],nxR=EV_LIST.find(x=>x.id===evOfWeek(w+1));
-  const d=EVMODE?S:evArch(id),lv=d?d.lvl|0:0,claimed=EVMODE?0:(S.evClaim[id]||1);
-  const tierRows=E.tiers.map(([L,g])=>{const got=EVMODE?lv>=L:claimed>=L&&lv>=L;return `<li class="evt${got?' got':lv>=L?' reach':''}"><span class="evl">Sv ${L}</span><span class="evg">${got?ic('check'):''}${UI_GOLD(g)}</span></li>`}).join('');
-  const recs=evTransRecipes(id).map(k=>{const r=RECIPE[k];let st;if(EVMODE){st=S.unlocked[k]?{note:'Açtın · eve dönünce getir'}:{note:`Sv ${r.lvl} · tariflerden aç`}}else st=evRecState(id,k);
+  const d=EVMODE?S:evArch(id),lv=evlOf(d),claimed=EVMODE?0:(S.evClaim[id]||1);
+  const tierRows=E.tiers.map(([L,g])=>{const got=EVMODE?lv>=L:claimed>=L&&lv>=L;return `<li class="evt${got?' got':lv>=L?' reach':''}"><span class="evl">${L}. aşama</span><span class="evg">${got?ic('check'):''}${UI_GOLD(g)}</span></li>`}).join('');
+  const recs=evTransRecipes(id).map(k=>{const r=RECIPE[k];let st;if(EVMODE){st=S.unlocked[k]?{note:'Açtın · eve dönünce getir'}:{note:S.recipes[k]?`Seviye ${r.lvl} · tariflerden aç`:'Birleştirmede keşfet'}}else st=evRecState(id,k);
     return `<li class="bu"><img src="${productThumb(k)}" alt=""><span class="but"><b>${r.name}</b><small>${st.done?'Ana kafende':st.note||st.why||'Getirmeye hazır'}</small></span>${!EVMODE&&st.ok?`<button class="btn sm green" type="button" data-take="rec:${k}">Kafeme ekle</button>`:st.done?`<span class="bumax">${ic('check')}</span>`:''}</li>`}).join('');
-  const items=evItems(id).map(c=>{let st;if(EVMODE)st={note:lv>=c.evLvl?'Açıldı · eve dönünce getir':`Sv ${c.evLvl}`};else st=evItemState(id,c);
+  const items=evItems(id).map(c=>{let st;if(EVMODE)st={note:lv>=c.evLvl?'Açıldı · eve dönünce getir':`${c.evLvl}. aşamada`};else st=evItemState(id,c);
     return `<li class="bu"><img src="${itemThumb(c.id)}" alt=""><span class="but"><b>${c.name}</b><small>${st.done?'Ana kafenin marketinde':st.note||st.why||'Getirmeye hazır'}</small></span>${!EVMODE&&st.ok?`<button class="btn sm green" type="button" data-take="item:${c.id}">Kafeme ekle</button>`:st.done?`<span class="bumax">${ic('check')}</span>`:''}</li>`}).join('');
   const go=EVMODE?`<button class="btn" type="button" id="evHome">${ic('cafe')}Ana kafeye dön</button>`:S.lvl<EV_JOIN_LVL?`<button class="btn" type="button" disabled>${ic('lock')}Seviye ${EV_JOIN_LVL} gerekli</button>`:`<button class="btn green" type="button" id="evGo">${ic('event')}${d?'Kaldığın yerden devam':E.city+'’ya git'}</button>`;
   p.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${ic('event')}</span><h2>Haftalık etkinlik</h2><button class="iconbtn" id="evClose" type="button" aria-label="Kapat">${ic('close')}</button></div>
    <div class="scroll"><div class="evhero"><div class="evsky">${id==='tr'?EV_SCENE_TR:EV_SCENE}</div><div class="evht">${evFlagHTML(E)}<b>${E.name}</b><span class="evtime">${ic('clock')}Bitmesine ${evLeft()}</span></div>
-     <p>${E.desc}</p><p class="evsub">${EVMODE?`Burada kazandığın ${ic('coin')} etkinlik parası sadece bu kafede geçer. Ödüller ve açtıkların ana kafene dönünce eklenir.`:d?`${E.cafe} seni bekliyor · Sv ${lv}. Hafta bitince kafe kapanır, ${E.country} tekrar gelince kaldığın yerden devam edersin.`:`0’dan başlarsın; ayrı bir etkinlik parası kazanırsın. Hafta bitince kafe kapanır, ${E.country} tekrar gelince kaldığın yerden devam edersin.`}</p>${go}</div>
-    <h3 class="evh">Ana kafene altın ödülleri</h3><p class="evsub">${E.cafe} bu seviyelere ulaşınca ana kafene altın gelir.</p><ul class="evtiers">${tierRows}</ul>
+     <p>${E.desc}</p><p class="evsub">${EVMODE?`Burada kazandığın ${ic('coin')} etkinlik parası sadece bu kafede geçer. Ödüller ve açtıkların ana kafene dönünce eklenir.`:d?`${E.cafe} seni bekliyor · ${lv}. aşama. Hafta bitince kafe kapanır, ${E.country} tekrar gelince kaldığın yerden devam edersin.`:`0’dan başlarsın; ayrı bir etkinlik parası kazanırsın. Hafta bitince kafe kapanır, ${E.country} tekrar gelince kaldığın yerden devam edersin.`}</p>${go}</div>
+    <h3 class="evh">Ana kafene altın ödülleri</h3><p class="evsub">Seviyen ana kafeyle ortak. ${E.cafe}’de kazandığın deneyim kafeyi aşama aşama geliştirir; her aşamada ana kafene altın gelir.${EVMODE?` Şu an <b>${lv}. aşama</b>.`:''}</p><ul class="evtiers">${tierRows}</ul>
     <h3 class="evh">${E.country}’dan kafene getirebileceklerin</h3><ul class="bul">${recs}${items}</ul>
     <p class="wmsg">Sıradaki hafta: <b>${nxR&&nxR.ready?nx.name:EVENTS.it.name}</b>${nx.id!=='it'&&!(nxR&&nxR.ready)?` (${nx.name} yakında)`:''}</p></div>`;
   $('evClose').onclick=closeEvents;if($('evGo'))$('evGo').onclick=()=>{sfx('tap');evGo()};if($('evHome'))$('evHome').onclick=()=>{sfx('tap');evHome()};
@@ -5435,17 +5449,17 @@ const EV_SCENE=`<svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid slice" 
  <g fill="#e8a066" stroke="#4a2e1c" stroke-width="2.4" stroke-linejoin="round"><path d="M70 120 V64 Q70 40 112 40 H168 Q210 40 210 64 V120 Z"/></g>
  <g fill="#ffd9a0" stroke="#4a2e1c" stroke-width="2"><path d="M84 120 V96 Q84 86 94 86 Q104 86 104 96 V120 Z M118 120 V96 Q118 86 128 86 Q138 86 138 96 V120 Z M152 120 V96 Q152 86 162 86 Q172 86 172 96 V120 Z M186 120 V96 Q186 86 196 86 Q206 86 206 96 V120Z M90 72 Q90 62 98 62 Q106 62 106 72 V78 H90Z M122 72 Q122 62 130 62 Q138 62 138 72 V78 H122Z M154 72 Q154 62 162 62 Q170 62 170 72 V78 H154Z M184 72 Q184 62 192 62 Q200 62 200 72 V78 H184Z"/></g>
  <g fill="#5f8a3a" stroke="#4a2e1c" stroke-width="2"><path d="M24 120 V70 Q30 30 36 70 V120Z M272 120 V60 Q280 18 288 60 V120Z M298 120 V78 Q304 46 310 78 V120Z"/></g></svg>`;
-function evBadge(){const b=$('evBtn');if(!b)return;b.classList.toggle('dot',!EVMODE&&(evTakeable()>0||(()=>{for(const id in S.evs){const E=EVENTS[id];if(E&&E.tiers.some(([L])=>L>(S.evClaim[id]||1)&&L<=(S.evs[id].lvl|0)))return true}return false})()))}
+function evBadge(){const b=$('evBtn');if(!b)return;b.classList.toggle('dot',!EVMODE&&(evTakeable()>0||(()=>{for(const id in S.evs){const E=EVENTS[id];if(E&&E.tiers.some(([L])=>L>(S.evClaim[id]||1)&&L<=evlOf(S.evs[id])))return true}return false})()))}
 // HUD düğmesi (+ etkinlik modunda üst şerit)
 {const w=$('worldBtn'),row=(w&&w.parentElement)||document.querySelector('button[aria-label="Müzik"]').parentElement;const b=document.createElement('button');b.type='button';b.className='iconbtn';b.id='evBtn';b.style.cssText='width:36px;height:36px;padding:4px';
   b.setAttribute('aria-label','Haftalık etkinlik');b.innerHTML=UI_IC.event;b.onclick=()=>{sfx('tap');openEvents()};row.prepend(b);setInterval(evBadge,30000);setTimeout(evBadge,2500)}
 if(EVMODE){const E=EVENTS[EVMODE];document.documentElement.classList.add('evmode');try{$('worldBtn').style.display='none'}catch(e){}
-  const nb=document.querySelector('[data-nav="merge"]');if(nb)nb.style.display='none';
   const chip=document.createElement('button');chip.type='button';chip.id='evChip';chip.innerHTML=`${evFlagHTML(E)}<span><b>${E.name}</b><small id="evChipT">${evLeft()}</small></span><span class="evhome">${ic('cafe')}Ana kafe</span>`;
   chip.onclick=()=>{sfx('tap');openEvents()};$('game').appendChild(chip);const W0=evWeek();
   setInterval(()=>{const t=$('evChipT');if(t)t.textContent=evLeft();if(evWeek()!==W0&&!RESETTING){toast(`<b>${E.name} bitti!</b><br>Kafen kapandı · ${E.country} tekrar gelince devam edeceksin`,ic('event'),3000);setTimeout(()=>evHome(E.name+' bitti · ana kafene dönülüyor…'),3200)}},20000)}
 // açılışta notlar (iade, dönüş ödülleri)
 setTimeout(function evIntro(){if(!started||UI.modal){setTimeout(evIntro,1500);return}
+  for(const n of EV_NOTE)if(n[0]==='lvl')toast(`<b>Seviye ${n[1]}!</b><br>Etkinlikte atladığın seviyeler ana kafene geçti · ${ic('coin')}${n[2]} altın`,ic('star'),3600);
   for(const n of EV_NOTE)if(n[0]==='refund')toast(`<b>Roma şubesi kapandı</b><br>Dünya haritası yerine haftalık etkinlikler geldi · harcadığın ${ic('coin')}${n[1]} altın iade edildi`,ic('event'),4200);
   if(!EVMODE){const g=evClaim();if(g)setTimeout(()=>toast(`<b>Etkinlik ödülü</b><br>Ana kafene ${ic('coin')}${g} altın eklendi`,ic('coin'),2800),EV_NOTE.length?4400:0);evBadge()}
   else if(S.evNew&&!S.evHi){S.evHi=1;toast(`<b>${EVENTS[EVMODE].cafe}’ye hoş geldin!</b><br>Boş bir dükkân · tezgâhtan ekibe her şeyi burada kuracaksın`,ic('event'),3600)}},4000);
@@ -5472,10 +5486,17 @@ setTimeout(function evIntro(){if(!started||UI.modal){setTimeout(evIntro,1500);re
 #game.nonav #evChip,#game.visiting #evChip{display:none}
 .evtravel{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#ffd9a0;animation:evf .4s ease}.evtravel div{display:flex;flex-direction:column;align-items:center;gap:12px}.evtravel .mflag{width:60px;height:40px;border-width:3px;border-radius:8px}.evtravel b{font:800 20px var(--font-display,inherit);color:var(--ink)}@keyframes evf{from{opacity:0}}`;document.head.appendChild(st)}
 
+// etkinlikte kazanılan XP hem ortak seviyeye hem de etkinlik kafesinin aşamasına işler
+if(EVMODE){const _ax=addXP;addXP=function(n){if(n>0){S.evx=(S.evx|0)+Math.round(n);S.evl=S.evl||1;let up=false;while(S.evx>=CONFIG.xpNeed(S.evl)){S.evx-=CONFIG.xpNeed(S.evl);S.evl++;up=true}
+    if(up){const E=EVENTS[EVMODE],t=E.tiers.find(([L])=>L===S.evl);setTimeout(()=>toast(`<b>${E.cafe} ${S.evl}. aşamada!</b>${t?`<br>Ana kafene ${ic('coin')}${t[1]} altın ödülü hazır`:''}`,ic('event'),3000),1500)}}
+  return _ax(n)}}
+// etkinlik birleşimlerinin görseli: ürünün kendi küçük resmi
+if(EVMODE&&EV_COMBOS[EVMODE])for(const [,,r] of EV_COMBOS[EVMODE]){const rec=recipeByDisc[r];if(rec)Object.defineProperty(ITEM_ART,r,{configurable:true,get(){return `<img src="${productThumb(rec.id)}" alt="" draggable="false">`}})}
+
 // ================= PERFORMANS: grafik kalitesi, kare hızı sınırı, gölge seyreltme, örtülüyken çizmeme =================
 // eco: pil tasarrufu · bal: dengeli (telefon varsayılanı) · high: yüksek (bilgisayar varsayılanı). Cihaza özel, kayda girmez.
-const GFX={eco:{name:'Pil tasarrufu',pr:1,fps:30,idle:24,shadow:1024,soft:false,shEvery:3,lamps:false,far:true},
-  bal:{name:'Dengeli',pr:1.5,fps:60,idle:30,shadow:1024,soft:true,shEvery:2,lamps:true,far:true},
+const GFX={eco:{name:'Pil tasarrufu',pr:1,fps:30,idle:30,shadow:1024,soft:false,shEvery:2,lamps:false,far:true},
+  bal:{name:'Dengeli',pr:1.5,fps:60,idle:60,shadow:1024,soft:true,shEvery:1,lamps:true,far:true},
   high:{name:'Yüksek',pr:2,fps:60,idle:60,shadow:2048,soft:true,shEvery:1,lamps:true,far:false}};
 const GFX_KEY='mewmori-grafik';
 const PERF={q:null,lastF:0,touchT:0,frame:0,covered:false,coverT:0,show:false,n:0,t0:0,fps:0,box:null};
