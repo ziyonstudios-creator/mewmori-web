@@ -245,16 +245,17 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 const $=id=>document.getElementById(id);
 // ================= HAFTALIK ETKİNLİK MODU (sayfa açılırken belirlenir) =================
 // Her hafta (pazartesi 00:00 TR) sıradaki ülkenin etkinliği açılır. Oyuncu etkinliğe girince sayfa etkinlik kaydıyla
 // yeniden yüklenir (EVMODE = ülke kodu); ana kafeye dönünce ana kayıtla yüklenir. Hazır olmayan ülkenin haftasında İtalya gelir.
-var EV_LIST=[{id:'it',ready:true},{id:'tr',ready:false}];
+var EV_LIST=[{id:'it',ready:true},{id:'tr',ready:true}];
 var EV_EPOCH=Date.UTC(2026,10,8,21,0,0),EV_WEEKMS=7*864e5;   // 9 Kasım 2026 Pazartesi 00:00 (TR)
 function evWeek(t){return Math.floor(((t||Date.now())-EV_EPOCH)/EV_WEEKMS)}
 function evEnds(w){return EV_EPOCH+((w==null?evWeek():w)+1)*EV_WEEKMS}
-function evOfWeek(w){const n=EV_LIST.length,e=EV_LIST[((w%n)+n)%n];return e.ready?e.id:'it'}
+function evOfWeek(w){const n=EV_LIST.length,e=EV_LIST[(((w+1)%n)+n)%n];return e.ready?e.id:'it'}   // 2–8 Kasım İtalya, 9–15 Kasım Türkiye, sonra sırayla
 var EV_FLAG='mewmori-etkinlik',EV_SAVE='mewmori-etkinlik-kayit';
 var EVMODE=(()=>{try{const f=JSON.parse(localStorage.getItem(EV_FLAG)||'null');if(f&&f.id&&f.week===evWeek()&&f.id===evOfWeek(f.week))return f.id;if(f)localStorage.removeItem(EV_FLAG)}catch(e){}return null})();
 // ================= ODA (kafe kabuğu) — değişken ölçülü =================
@@ -276,6 +277,12 @@ function buildShell(){if(SHELL.g){scene.remove(SHELL.g);disposeTree(SHELL.g)}
    sh.holes.push(archHole(new THREE.Path(),WIN.x,WIN.y,WIN.w,WIN.h));
    const m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:0.2,bevelEnabled:false,curveSegments:24}),M.wall);m.position.z=z0-0.2;m.receiveShadow=true;WB.add(m);
    const gl=new THREE.Mesh(new THREE.ShapeGeometry(archHole(new THREE.Shape(),WIN.x,WIN.y,WIN.w,WIN.h),24),M.glass);gl.position.z=z0-0.1;WB.add(gl)}
+  // pencere doğraması: pervaz, kemer, kayıtlar (pencere taşınınca birlikte gelir)
+  {const P1=PARENT;PARENT=WB;try{const {x:wx,y:wy,w:ww,h:wh}=WIN;const z=z0+0.02;
+   box(ww+0.3,0.1,0.3,M.woodDark,wx,wy-wh/2-0.05,z0+0.05);
+   const archF=new THREE.Mesh(new THREE.TorusGeometry(ww/2+0.05,0.06,8,32,Math.PI),M.green);archF.position.set(wx,wy+wh/2,z);archF.castShadow=true;WB.add(archF);
+   box(0.12,wh,0.12,M.green,wx-ww/2-0.05,wy,z);box(0.12,wh,0.12,M.green,wx+ww/2+0.05,wy,z);
+   box(0.06,wh+ww/2,0.06,M.green,wx,wy-wh/2+(wh+ww/2)/2,z0-0.1);box(ww,0.06,0.06,M.green,wx,wy+wh/2,z0-0.1)}finally{PARENT=P1}}
   // sol duvar (kapı ve yan cam boşluklu)
   const WL=new THREE.Group();WL.userData.wall='left';G.add(WL);
   {const sh=new THREE.Shape();sh.moveTo(z0-0.2,-0.2);sh.lineTo(z1+0.2,-0.2);sh.lineTo(z1+0.2,WALL_H);sh.lineTo(z0-0.2,WALL_H);sh.lineTo(z0-0.2,-0.2);
@@ -362,13 +369,6 @@ const rug=box(4.3,0.024,3.3,M.pink,1.35,0.012,1.35,{shadow:false,round:0.01});ru
 const WIN={x:1.6,y:1.5,w:2.0,h:1.2}, DOOR={z:1.8,w:1.2,h:2.3}, SIDEL={z:0.55,y:1.2,w:0.44,h:1.2};
 function archHole(path,cx,cy,w,h){path.moveTo(cx-w/2,cy-h/2);path.lineTo(cx+w/2,cy-h/2);path.lineTo(cx+w/2,cy+h/2);path.absarc(cx,cy+h/2,w/2,0,Math.PI,false);path.lineTo(cx-w/2,cy-h/2);return path}
 buildShell();
-// pencere doğraması: pervaz, kemer, kayıtlar (hepsi duvara gömülü)
-{const {x:wx,y:wy,w:ww,h:wh}=WIN;const z=-ROOM_D/2+0.02;const WG=new THREE.Group();WG.userData.wall='back';scene.add(WG);const _PP=PARENT;PARENT=WG;
- box(ww+0.3,0.1,0.34,M.woodDark,wx,wy-wh/2-0.038,-ROOM_D/2+0.07);   // pervaz boşluğun alt yüzünden biraz yüksekte: z-fighting yok
- const archF=new THREE.Mesh(new THREE.TorusGeometry(ww/2+0.05,0.06,8,32,Math.PI),M.green);archF.position.set(wx,wy+wh/2,z);WG.add(archF);
- box(0.12,wh,0.12,M.green,wx-ww/2-0.05,wy,z);box(0.12,wh,0.12,M.green,wx+ww/2+0.05,wy,z);
- box(0.06,wh+ww/2,0.06,M.green,wx,wy-wh/2+(wh+ww/2)/2,-ROOM_D/2-0.1);box(ww,0.06,0.06,M.green,wx,wy+wh/2,-ROOM_D/2-0.1);PARENT=_PP;
-}
 // kapı: pervazlar + kemer, kapalı kanat boşluğun yarısında, açık kanat menteşesinden içeri açılmış
 {const {z:dz,w:dw,h:dh}=DOOR;const x0=-ROOM_W/2;
  box(0.26,dh,0.12,M.steel,x0-0.06,dh/2,dz-dw/2-0.06);box(0.26,dh,0.12,M.steel,x0-0.06,dh/2,dz+dw/2+0.06);
@@ -489,10 +489,18 @@ function envTick(dt){ENV.t+=dt;const t=ENV.t;if(ENV.seaTex){ENV.seaTex.offset.x=
 // İstasyonlar ayrı gruplar halinde: ekipman yükseltmesinde yalnızca o grup değişir.
 const KIT={bx:-ROOM_W/2+1.9,bw:3.4,bz:-ROOM_D/2+0.35,bd:0.6,bh:0.62,cx:-ROOM_W/2+1.9,cz:-ROOM_D/2+2.0,cw:3.4,cd:0.7,ch:0.66};
 KIT.backTop=KIT.bh+0.06;KIT.ex=KIT.cx-1.1;
-function grp(x=0,y=0,z=0){const g=new THREE.Group();g.position.set(x,y,z);scene.add(g);return g}
+var GRP_PARENT=null;   // tezgâh/kasa yeniden kurulurken istasyon grupları onların grubuna eklenir
+function grp(x=0,y=0,z=0){const g=new THREE.Group();g.position.set(x,y,z);(GRP_PARENT||scene).add(g);return g}
 function inGroup(g,fn){const prev=PARENT;PARENT=g;try{fn()}finally{PARENT=prev}return g}
 const STATION={};      // görsel istasyon grupları + animasyon tutamakları
-{const {bx,bw,bz,bd,bh,cx,cz,cw,cd,ch}=KIT;
+// Tezgâh bloğu (arka dolap + ön tezgâh + istasyonlar) arka duvar boyunca kaydırılabilir: KIT'in x'leri kayar, bütün parçalar yeniden kurulur.
+const KIT0={bx:KIT.bx,cx:KIT.cx,ex:KIT.ex};let KX=0,KG=null,KOBST=[];
+function buildKitchen(){if(KG){scene.remove(KG);disposeTree(KG)}for(const o of KOBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}
+  KIT.bx=KIT0.bx+KX;KIT.cx=KIT0.cx+KX;KIT.ex=KIT0.ex+KX;KG=new THREE.Group();KG.name='kitchen';KG.userData.block='k';scene.add(KG);
+  const P0=PARENT,G0=GRP_PARENT;PARENT=KG;GRP_PARENT=KG;const n0=OBST.length;
+  try{buildKitchenParts();for(const k in EQUIP_BUILD)setEquip(k,(()=>{try{return S.equip[k]??1}catch(e){return 1}})());STATION.ovenGlow=buildOvenGlow()}finally{PARENT=P0;GRP_PARENT=G0}
+  KOBST=OBST.slice(n0)}
+function buildKitchenParts(){const {bx,bw,bz,bd,bh,cx,cz,cw,cd,ch}=KIT;
  // arka dolap (duvara dayalı): lavabo, fırın, raflar
  box(bw,bh,bd,M.cream,bx,bh/2,bz);box(bw+0.1,0.08,bd+0.1,M.wood,bx,bh+0.02,bz);
  box(0.6,0.12,0.4,M.steel,bx-0.9,bh+0.08,bz,{round:0.03});cyl(0.03,0.03,0.3,M.steel,bx-0.9,bh+0.3,bz-0.15,8);
@@ -501,7 +509,7 @@ const STATION={};      // görsel istasyon grupları + animasyon tutamakları
  // ön tezgah: arkasında geniş çalışma alanı
  box(cw,ch-0.08,cd,M.green,cx,(ch-0.08)/2,cz);box(cw+0.15,0.1,cd+0.15,M.wood,cx,ch-0.03,cz,{round:0.02});
  obst(cx-cw/2-0.1,cx+cw/2+0.1,cz-cd/2-0.1,cz+cd/2+0.1);
- box(0.8,ch-0.08,cd,M.green,-ROOM_W/2+0.5,(ch-0.08)/2,cz);box(0.95,0.1,cd+0.15,M.wood,-ROOM_W/2+0.5,ch-0.03,cz,{round:0.02});obst(-ROOM_W/2,cx-cw/2,cz-cd/2-0.1,cz+cd/2+0.1);
+ box(0.8,ch-0.08,cd,M.green,-ROOM_W/2+0.5+KX,(ch-0.08)/2,cz);box(0.95,0.1,cd+0.15,M.wood,-ROOM_W/2+0.5+KX,ch-0.03,cz,{round:0.02});obst(-ROOM_W/2+KX-(KX?0.05:0),cx-cw/2,cz-cd/2-0.1,cz+cd/2+0.1);
  // öğütücü (kolu döner)
  STATION.grinder=inGroup(grp(cx-0.45,0,cz-0.1),()=>{cyl(0.12,0.1,0.3,M.dark,0,ch+0.17,0,12);cyl(0.1,0.1,0.14,M.steel,0,ch+0.36,0,12)});
  {const crank=new THREE.Group();crank.position.set(0,ch+0.44,0);STATION.grinder.add(crank);const arm=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.02,0.02),M.woodDark);arm.position.x=0.08;crank.add(arm);const knob=new THREE.Mesh(new THREE.SphereGeometry(0.025,8,6),M.red);knob.position.set(0.16,0.03,0);crank.add(knob);STATION.crank=crank}
@@ -535,10 +543,11 @@ const EQUIP_BUILD={
     box(0.7,0.4,0.1,lv>1?toon(0xb5543a):M.dark,0,0.3,-0.02);box(0.6,0.25,0.02,M.glass,0,0.33,0.04);
     if(lv>1){box(0.74,0.06,0.12,M.gold,0,0.53,-0.02);for(const s of [-1,1])sph(0.025,M.gold,s*0.25,0.13,0.05)}})}};
 const EQUIP_GRP={};
-function setEquip(kind,lv){if(EQUIP_GRP[kind])scene.remove(EQUIP_GRP[kind]);EQUIP_GRP[kind]=EQUIP_BUILD[kind](lv)}
-for(const k in EQUIP_BUILD)setEquip(k,1);
+function setEquip(kind,lv){const o=EQUIP_GRP[kind];if(o&&o.parent)o.parent.remove(o);const G0=GRP_PARENT;GRP_PARENT=KG||G0;try{EQUIP_GRP[kind]=lv>=1?EQUIP_BUILD[kind](lv):grp(0,0,0)}finally{GRP_PARENT=G0}
+  if(kind==='espresso'&&STATION.grinder)STATION.grinder.visible=lv>=1}   // makine yoksa tezgâhta boş yer
 // fırın içi parıltı (pişirirken yanar)
-STATION.ovenGlow=(()=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(0.58,0.23),new THREE.MeshBasicMaterial({color:0xffa040,transparent:true,opacity:0}));m.position.set(KIT.bx+0.6,0.33,KIT.bz+KIT.bd/2+0.052);scene.add(m);return m})();
+function buildOvenGlow(){const m=new THREE.Mesh(new THREE.PlaneGeometry(0.58,0.23),new THREE.MeshBasicMaterial({color:0xffa040,transparent:true,opacity:0}));m.position.set(KIT.bx+0.6,0.33,KIT.bz+KIT.bd/2+0.052);(KG||scene).add(m);return m}
+buildKitchen();
 // Poşa'nın çalışma noktaları (tezgah arkası koridor, z=-2.78; arka dolap önü z=-2.95)
 const PZ=-2.78,PZB=-2.95,PLATE_Y=KIT.ch+0.05;
 const POSA_HOME={x:-3.3,z:PZ};
@@ -753,12 +762,12 @@ function makeRegister(rx){const {z,h}=CASH;const P={};const g=inGroup(grp(0,0,0)
   const scr=new THREE.Mesh(new THREE.PlaneGeometry(0.2,0.07),new THREE.MeshBasicMaterial({color:0x9fe0a8}));scr.position.set(rx,h+0.3,z+0.02);scr.rotation.x=-0.35;PARENT.add(scr);P.screen=scr;
   for(let i=0;i<3;i++)for(let j=0;j<2;j++)sph(0.014,j?M.cream:M.dark,rx-0.08+i*0.08,h+0.135,z+0.07+j*0.05);
   P.drawer=box(0.32,0.05,0.24,M.woodDark,rx,h+0.037,z+0.046);P.drawerZ=z+0.046   /* çekmece önü gövdenin önünden 6 mm dışarıda (aynı düzlemde titriyordu) */});P.group=g;return P}
-function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)return;
-  for(const R of REGS)scene.remove(R.parts.group);const old=REGS.splice(0);
+function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)return;const G0=GRP_PARENT;GRP_PARENT=CG||G0;try{
+  for(const R of REGS){const g=R.parts.group;if(g.parent)g.parent.remove(g)}const old=REGS.splice(0);
   const X=n===1?[{rx:CASH.x-0.25,sx:CASH.x,px:CASH.x}]:[{rx:CASH.x-0.27,sx:CASH.x-0.27,px:CASH.x-0.27},{rx:CASH.x+0.29,sx:CASH.x+0.29,px:CASH.x+0.29}];
   X.forEach((o,i)=>{REGS.push({i,rx:o.rx,stand:{x:o.sx,z:CASH.stand.z},pay:{x:o.px,z:-1.98},parts:makeRegister(o.rx),cust:old[i]?old[i].cust:null,busy:false})});
   // bahşiş kavanozu + tabela: tek kasada sağda, iki kasada ortada
-  const D=CASH_DECOR,{x,z,h}=CASH;if(D.g)scene.remove(D.g);
+  const D=CASH_DECOR,{x,z,h}=CASH;if(D.g&&D.g.parent)D.g.parent.remove(D.g);
   D.g=inGroup(grp(0,0,0),()=>{const jx=n===1?x+0.32:x+0.01,jz=n===1?z+0.12:z-0.12;
     cyl(0.06,0.06,0.13,M.glass,jx,h+0.067,jz,14);for(let i=0;i<4;i++)cyl(0.022,0.022,0.006,M.gold,jx+(i%2)*0.012-0.006,h+0.01+i*0.008,jz,10);
     const sx=n===1?x+0.08:x+0.01;
@@ -766,13 +775,19 @@ function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)retur
     c2.fillStyle='#fbf3e4';c2.font='800 64px "Baloo 2",Nunito,sans-serif';c2.textAlign='center';c2.textBaseline='middle';c2.fillText('KASA',128,68);
     const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const sign=new THREE.Mesh(new THREE.PlaneGeometry(0.34,0.17),new THREE.MeshBasicMaterial({map:tx}));sign.position.set(sx,h+0.33,z+0.14);PARENT.add(sign);
     cyl(0.008,0.008,0.22,M.woodDark,sx,h+0.12,z+0.13,6)});
-  CASH.reg={x:REGS[0].rx,z:CASH.z}}
+  CASH.reg={x:REGS[0].rx,z:CASH.z}}finally{GRP_PARENT=G0}}
 const CASH_PARTS={get drawer(){return REGS[0].parts.drawer},get drawerZ(){return REGS[0].parts.drawerZ},get screen(){return REGS[0].parts.screen}};
-{const {x,z,w,d,h}=CASH;
- box(w,h-0.08,d,M.green,x,(h-0.08)/2,z);box(w+0.12,0.1,d+0.12,M.wood,x,h-0.03,z,{round:0.02});
- box(w-0.1,0.05,0.02,M.gold,x,h-0.2,z+d/2+0.005);
- layoutRegisters(1);
- obst(x-w/2-0.06,x+w/2+0.06,z-d/2-0.06,z+d/2+0.06);obst(x-0.6,x+0.6,CASH.stand.z-0.3,CASH.stand.z+0.25)}
+// kasa bloğu arka duvar boyunca kaydırılabilir (CX): tezgâh + yazar kasalar + süs yeniden kurulur
+const CASH0={x:CASH.x};var CX=0,CG=null,COBST=[];
+function buildCash(){if(CG){scene.remove(CG);disposeTree(CG)}for(const o of COBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}
+  CASH.x=CASH0.x+CX;CASH.stand.x=CASH.x;CG=new THREE.Group();CG.name='cash';CG.userData.block='c';scene.add(CG);const P0=PARENT;PARENT=CG;const n0=OBST.length;
+  try{const {x,z,w,d,h}=CASH;
+    box(w,h-0.08,d,M.green,x,(h-0.08)/2,z);box(w+0.12,0.1,d+0.12,M.wood,x,h-0.03,z,{round:0.02});
+    box(w-0.1,0.05,0.02,M.gold,x,h-0.2,z+d/2+0.005);
+    const n=Math.max(1,REGS.length);REGS.length=0;CASH_DECOR.g=null;layoutRegisters(n);
+    obst(x-w/2-0.06,x+w/2+0.06,z-d/2-0.06,z+d/2+0.06);obst(x-0.6,x+0.6,CASH.stand.z-0.3,CASH.stand.z+0.25)}finally{PARENT=P0}
+  COBST=OBST.slice(n0)}
+buildCash();
 const NO_BUILD=[{minX:-ROOM_W/2,maxX:-2.9,minZ:0.95,maxZ:2.65},{minX:-ROOM_W/2,maxX:-0.85,minZ:-1.7,maxZ:-0.6},{minX:-ROOM_W/2,maxX:-2.6,minZ:-1.7,maxZ:0.15},
   {minX:-0.45,maxX:2.6,minZ:-3.7,maxZ:-1.15}];   // kasa + ödeme sırası
 
@@ -865,10 +880,23 @@ const RECIPES=[
  {id:'affogato',name:'Affogato',cat:'dessert',sub:'affogato',lvl:99,br:'it',disc:'it_affogato',prep:3,price:11,station:'coffee',needs:['kahve','sut','seker']},
  {id:'bruschetta',name:'Bruschetta',cat:'main',sub:'bruschetta',lvl:99,br:'it',disc:'it_bruschetta',prep:4,price:12,station:'main',needs:['un','peynir']},
  {id:'cannoli',name:'Cannoli',cat:'dessert',sub:'cannoli',lvl:99,br:'it',disc:'it_cannoli',prep:4,price:13,station:'dessert',needs:['un','peynir','seker']},
- {id:'lasagna',name:'Lazanya',cat:'main',sub:'lasagna',lvl:99,br:'it',disc:'it_lasagna',prep:6,price:19,station:'main',needs:['un','peynir','yum']}];
+ {id:'lasagna',name:'Lazanya',cat:'main',sub:'lasagna',lvl:99,br:'it',disc:'it_lasagna',prep:6,price:19,station:'main',needs:['un','peynir','yum']},
+ // Türkiye Haftası tarifleri
+ {id:'turk_kahvesi',name:'Türk Kahvesi',cat:'drink',sub:'coffee',lvl:99,br:'tr',disc:'tr_kahve',prep:4,price:7,station:'coffee',needs:['kahve','seker']},
+ {id:'simit',name:'Simit',cat:'dessert',sub:'pastry',lvl:99,br:'tr',disc:'tr_simit',prep:2,price:4,station:'dessert',needs:['un','seker']},
+ {id:'lokum',name:'Lokum',cat:'dessert',sub:'sweets',lvl:99,br:'tr',disc:'tr_lokum',prep:2,price:5,station:'dessert',needs:['seker','cilek']},
+ {id:'sahlep',name:'Sahlep',cat:'drink',sub:'milk',lvl:99,br:'tr',disc:'tr_sahlep',prep:3,price:8,station:'tea',needs:['sut','seker']},
+ {id:'ayran',name:'Ayran',cat:'drink',sub:'cold',lvl:99,br:'tr',disc:'tr_ayran',prep:2,price:6,station:'tea',needs:['sut']},
+ {id:'baklava',name:'Fıstıklı Baklava',cat:'dessert',sub:'baklava',lvl:99,br:'tr',disc:'tr_baklava',prep:4,price:13,station:'dessert',needs:['un','seker','yum']},
+ {id:'sutlac',name:'Fırın Sütlaç',cat:'dessert',sub:'pudding',lvl:99,br:'tr',disc:'tr_sutlac',prep:4,price:11,station:'dessert',needs:['sut','seker','un']},
+ {id:'menemen',name:'Menemen',cat:'main',sub:'egg',lvl:99,br:'tr',disc:'tr_menemen',prep:5,price:14,station:'main',needs:['yum','peynir']},
+ {id:'gozleme',name:'Peynirli Gözleme',cat:'main',sub:'flat',lvl:99,br:'tr',disc:'tr_gozleme',prep:5,price:15,station:'main',needs:['un','peynir']},
+ {id:'kunefe',name:'Künefe',cat:'dessert',sub:'kunefe',lvl:99,br:'tr',disc:'tr_kunefe',prep:6,price:17,station:'main',needs:['peynir','un','seker']}];
 const RECIPE=Object.fromEntries(RECIPES.map(r=>[r.id,r]));
 const RCAT=[{id:'drink',name:'İçecekler',icon:'cup'},{id:'dessert',name:'Tatlılar',icon:'cake'},{id:'main',name:'Ana Yemekler',icon:'plate'}];
 const STATION_OF={coffee:'coffee',tea:'kettle',dessert:'vitrine',main:'oven'};
+const EQUIP_OF={coffee:'espresso',tea:'kettle',dessert:'vitrine',main:'oven'};   // istasyon → tezgâhtaki makine (S.equip[slot]=0: makine yok)
+const machineOk=r=>{try{return (S.equip[EQUIP_OF[r.station]]|0)>=1}catch(e){return true}};
 
 // ================= BİRLEŞTİRME MALZEMELERİ =================
 // zincir: aynı iki ürün → bir üst seviye. fam: food | drink | combo
@@ -970,12 +998,25 @@ const CATALOG=[
  {id:'d_it_poster',kind:'walldecor',name:'Roma posteri',price:45,lvl:99,ev:'it',evLvl:5,desc:'Kolezyum silüetli eski usul afiş.'},
  {id:'d_it_oven',kind:'decor',name:'Odun fırını',price:180,lvl:99,ev:'it',evLvl:6,half:[0.65,0.6],rot:true,desc:'Tuğla kubbe fırın; içi hep çıtır çıtır yanar.'},
  {id:'d_it_espresso',kind:'decor',name:'Espresso standı',price:150,lvl:99,ev:'it',evLvl:7,half:[0.4,0.32],rot:true,desc:'Mermer tezgâh üstünde krom espresso makinesi.'},
+ {id:'w_tr_cini',kind:'wall',name:'İznik mavisi',price:40,lvl:99,ev:'tr',evLvl:1,color:0xbfdde6},
+ {id:'f_tr_cini',kind:'floor',name:'Çini karo',price:70,lvl:99,ev:'tr',evLvl:1,pat:'tile',c1:0xf3ead7,c2:0x3f8fb0},
+ {id:'d_tr_nazar',kind:'walldecor',name:'Nazar boncuğu',price:35,lvl:99,ev:'tr',evLvl:2,desc:'Kapıdan giren her misafire göz kulak olur.'},
+ {id:'d_tr_lale',kind:'decor',name:'Lale saksısı',price:45,lvl:99,ev:'tr',evLvl:3,half:[0.22,0.22],desc:'Kırmızı ve sarı İstanbul laleleri.'},
+ {id:'d_tr_lamp',kind:'decor',name:'Mozaik lamba',price:80,lvl:99,ev:'tr',evLvl:4,half:[0.2,0.2],desc:'Renkli camlarıyla ayaklı Osmanlı lambası.'},
+ {id:'d_tr_poster',kind:'walldecor',name:'Galata posteri',price:45,lvl:99,ev:'tr',evLvl:5,desc:'Galata Kulesi ve martılar.'},
+ {id:'d_tr_semaver',kind:'decor',name:'Semaver köşesi',price:150,lvl:99,ev:'tr',evLvl:6,half:[0.4,0.32],rot:true,desc:'Bakır semaver ve ince belli bardaklar.'},
+ {id:'d_tr_sedir',kind:'decor',name:'Sedir',price:180,lvl:99,ev:'tr',evLvl:7,half:[0.75,0.32],rot:true,desc:'Kilim minderli alçak oturma köşesi.'},
  {id:'d_garland',kind:'walldecor',name:'Bayrak süsü',price:35,lvl:6,desc:'Renkli üçgen bayraklar.'},
+ {id:'e_kettle1',kind:'equip',slot:'kettle',elv:1,name:'Çay ocağı',price:30,lvl:1,desc:'Çay ve sıcak içecekler bunsuz hazırlanamaz.'},
+ {id:'e_espresso1',kind:'equip',slot:'espresso',elv:1,name:'Espresso makinesi',price:45,lvl:1,desc:'Kahveler bunsuz hazırlanamaz; öğütücüsüyle birlikte gelir.'},
+ {id:'e_vitrine1',kind:'equip',slot:'vitrine',elv:1,name:'Tatlı vitrini',price:40,lvl:1,desc:'Tatlılar bunsuz sunulamaz.'},
+ {id:'e_oven1',kind:'equip',slot:'oven',elv:1,name:'Fırın',price:60,lvl:2,desc:'Ana yemekler ve kruvasan bunsuz pişmez.'},
  {id:'e_kettle',kind:'equip',slot:'kettle',name:'Bakır semaver',price:80,lvl:3,desc:'Çay ve sıcak içecekler %25 daha hızlı.'},
  {id:'e_espresso',kind:'equip',slot:'espresso',name:'Bakır espresso makinesi',price:120,lvl:4,desc:'Kahveler %25 daha hızlı hazırlanır.'},
  {id:'e_vitrine',kind:'equip',slot:'vitrine',name:'Pembe pasta vitrini',price:100,lvl:6,desc:'Tatlılar %25 daha hızlı hazırlanır.'},
  {id:'e_oven',kind:'equip',slot:'oven',name:'Taş fırın',price:110,lvl:8,desc:'Ana yemekler ve kruvasan %25 daha hızlı.'}];
-const EV_RECIPES={it:[['espresso',1,1],['cappuccino',1,1],['biscotti',1,1],['gelato',2],['affogato',3],['tiramisu',4],['bruschetta',5],['pizza',6],['cannoli',7],['lasagna',8]]};
+const EV_RECIPES={it:[['espresso',1,1],['cappuccino',1,1],['biscotti',1,1],['gelato',2],['affogato',3],['tiramisu',4],['bruschetta',5],['pizza',6],['cannoli',7],['lasagna',8]],
+  tr:[['turk_kahvesi',1,1],['simit',1,1],['cay',1,1],['lokum',2],['sahlep',3],['ayran',3],['baklava',4],['menemen',5],['sutlac',6],['gozleme',7],['kunefe',8]]};
 if(EVMODE){const L=EV_RECIPES[EVMODE]||[],keep=[];for(const [id,lv,def] of L){const r=RECIPES.find(x=>x.id===id);if(!r)continue;r.lvl=lv;r.def=!!def;delete r.br;keep.push(r)}RECIPES.length=0;RECIPES.push(...keep);
   for(const c of CATALOG)if(c.ev===EVMODE)c.lvl=c.evLvl}
 const CAT=Object.fromEntries(CATALOG.map(c=>[c.id,c]));
@@ -1149,7 +1190,7 @@ const MAT={cup:toon(0xfff8ec),coffee:toon(0x5a3a22),latte:toon(0xc89a6a),milk:to
   tray:toon(0x9a6a3a),crust:toon(0xe2a35a),bread:toon(0xe8b06a),cheese:toon(0xf6cf52),egg:toon(0xf6d24a),white:toon(0xffffff),green:toon(0x7fae4a),red:toon(0xe0483f),
   pink:toon(0xf2a6a0),mug:toon(0xd9534f),choco:toon(0x5a2e14),berry2:toon(0xb27ad6),lemonPeel:toon(0xf7dc4a),olive:toon(0x3a2a1e)};
 function mk(geo,mat,x,y,z,g){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;g.add(m);return m}
-const HOT=new Set(['cappuccino','espresso','latte','cay','sicak_sut','sicak_cik','meyveli_cay','moka']);
+const HOT=new Set(['turk_kahvesi','sahlep','cappuccino','espresso','latte','cay','sicak_sut','sicak_cik','meyveli_cay','moka']);
 function makeProduct(item){const g=new THREE.Group();g.userData.kind=item.id;g.userData.hot=HOT.has(item.id);
   const saucer=r=>mk(new THREE.CylinderGeometry(r,r*0.85,0.008,18),MAT.cup,0,0.004,0,g);
   const plate=r=>mk(new THREE.CylinderGeometry(r,r*0.8,0.008,20),MAT.cup,0,0.004,0,g);
@@ -1203,6 +1244,25 @@ function makeProduct(item){const g=new THREE.Group();g.userData.kind=item.id;g.u
      for(const e of [-1,1]){const c=mk(new THREE.SphereGeometry(0.012,10,8),MAT.cream,x+Math.sin(r)*0.035*e,0.016,Math.cos(r)*0.035*e,b);c.scale.set(1,1,0.6);mk(new THREE.SphereGeometry(0.004,6,4),toon(0x9fd06a),x+Math.sin(r)*0.04*e,0.02,Math.cos(r)*0.04*e,b)}}break}
    case 'lasagna':{plate(0.058);const b=body();[[MAT.crust,0.008],[toon(0xd2452f),0.008],[MAT.cream,0.007],[MAT.crust,0.008],[toon(0xd2452f),0.008],[MAT.cream,0.007]].reduce((y,[m,h])=>{mk(new THREE.BoxGeometry(0.066,h,0.052),m,0,y+h/2,0,b);return y+h},0.009);
      const top=mk(new THREE.BoxGeometry(0.068,0.006,0.054),toon(0xe8b04a),0,0.06,0,b);mk(new THREE.SphereGeometry(0.007,8,6),MAT.green,0.012,0.065,0.008,b).scale.set(1.4,0.3,0.8);break}
+   case 'turk_kahvesi':{saucer(0.042);const c=cup(0.026,0.045,MAT.coffee);const f=mk(new THREE.CylinderGeometry(0.024,0.024,0.004,14),toon(0xb07a4a),0,c.userData.h/2+0.001,0,c);
+     const b=body();const l=mk(new THREE.BoxGeometry(0.016,0.016,0.016),toon(0xf2a6a0),0.036,0.014,0.01,b);l.rotation.y=0.4;break}
+   case 'simit':{plate(0.055);const b=body();const t=mk(new THREE.TorusGeometry(0.036,0.013,10,24),toon(0xc9803c),0,0.02,0,b);t.rotation.x=Math.PI/2;
+     for(let i=0;i<22;i++){const a=i/22*Math.PI*2+(i%2)*0.1,r=0.036+(i%3-1)*0.006;mk(new THREE.SphereGeometry(0.0025,4,3),MAT.cream,Math.cos(a)*r,0.031,Math.sin(a)*r,b)}break}
+   case 'lokum':{plate(0.05);const b=body();[[0xf2a6a0,-0.015,-0.012],[0xfff3d0,0.015,-0.012],[0xf2a6a0,-0.015,0.014],[0x9fd06a,0.015,0.014]].forEach(([c,x,z],i)=>{const m=mk(new THREE.BoxGeometry(0.024,0.022,0.024),toon(c),x,0.019,z,b);m.rotation.y=i*0.2;
+     mk(new THREE.BoxGeometry(0.025,0.003,0.025),MAT.white,x,0.031,z,b).rotation.y=i*0.2});break}
+   case 'sahlep':{saucer(0.048);const c=cup(0.036,0.07,MAT.milk);const t=mk(new THREE.CylinderGeometry(0.033,0.033,0.004,16),toon(0xc08a5a),0,c.userData.h/2+0.001,0,c);break}
+   case 'ayran':{const b=body();const g=mk(new THREE.CylinderGeometry(0.026,0.022,0.09,16),MAT.glass,0,0.045,0,b);g.material=MAT.glass.clone();
+     mk(new THREE.CylinderGeometry(0.023,0.02,0.075,14),MAT.milk,0,0.04,0,b);mk(new THREE.CylinderGeometry(0.024,0.024,0.012,14),MAT.white,0,0.083,0,b);break}
+   case 'baklava':{plate(0.058);const b=body();for(let i=0;i<4;i++){const x=(i%2-0.5)*0.034,z=(Math.floor(i/2)-0.5)*0.03;const d=mk(new THREE.CylinderGeometry(0.02,0.02,0.02,4),toon(0xe2a35a),x,0.019,z,b);d.rotation.y=Math.PI/4;d.scale.set(1,1,0.75);
+     mk(new THREE.CylinderGeometry(0.008,0.008,0.004,8),toon(0x7fae4a),x,0.031,z,b)}break}
+   case 'sutlac':{plate(0.045);const b=body();mk(new THREE.CylinderGeometry(0.036,0.028,0.032,16),toon(0xb5562f),0,0.024,0,b);mk(new THREE.CylinderGeometry(0.033,0.033,0.004,16),MAT.cream,0,0.039,0,b);
+     const t=mk(new THREE.CylinderGeometry(0.026,0.026,0.003,16),toon(0xb06a34),0,0.042,0,b);t.scale.set(1,1,0.8);break}
+   case 'menemen':{const b=body();mk(new THREE.CylinderGeometry(0.05,0.044,0.022,20),toon(0x3a3a3a),0,0.011,0,b);mk(new THREE.CylinderGeometry(0.046,0.046,0.006,20),toon(0xe0603a),0,0.022,0,b);
+     for(let i=0;i<5;i++){const a=i*1.3;mk(new THREE.SphereGeometry(0.01,8,6),toon(0xf6d24a),Math.cos(a)*0.025,0.026,Math.sin(a)*0.025,b).scale.y=0.4}mk(new THREE.BoxGeometry(0.05,0.006,0.008),toon(0x3a3a3a),0.07,0.016,0,b);break}
+   case 'gozleme':{plate(0.06);const b=body();const g=mk(new THREE.CylinderGeometry(0.05,0.05,0.012,24,1,false,0,Math.PI),toon(0xe8c07a),0,0.015,0,b);g.rotation.y=0.3;
+     for(let i=0;i<5;i++)mk(new THREE.SphereGeometry(0.006,6,4),toon(0xc9803c),Math.cos(0.3+i*0.6)*0.025,0.022,-Math.sin(0.3+i*0.6)*0.025,b).scale.y=0.3;break}
+   case 'kunefe':{plate(0.055);const b=body();mk(new THREE.CylinderGeometry(0.042,0.042,0.018,24),toon(0xe08a2a),0,0.018,0,b);mk(new THREE.CylinderGeometry(0.04,0.04,0.003,24),toon(0xf0b04a),0,0.028,0,b);
+     for(let i=0;i<9;i++){const a=i*0.7;mk(new THREE.SphereGeometry(0.004,5,4),toon(0x7fae4a),Math.cos(a)*0.02*(i%3+1)/2,0.031,Math.sin(a)*0.02*(i%3+1)/2,b)}break}
    default:saucer(0.046)}
   return g}
 // pişirme sırasında "oluşma" animasyonu: içecek dolar, yiyecek büyür
@@ -1411,7 +1471,8 @@ const WALL_BUILD={
     const tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),20,0.005,4),M.dark);g.add(tube);const cols=[M.red,M.gold,M.pink,toon(0x8fae58),toon(0x86b8d8)];
     for(let i=0;i<5;i++){const t=(i+0.5)/5;const s=new THREE.Shape();s.moveTo(-0.045,0);s.lineTo(0.045,0);s.lineTo(0,-0.1);s.lineTo(-0.045,0);const m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:0.008,bevelEnabled:false}),cols[i]);m.position.set(-0.3+0.6*t,-Math.sin(t*Math.PI)*0.1,0.02);m.castShadow=true;g.add(m)}});return g}};
 const WALL_SLOTS=[{x:-0.65,z:-ROOM_D/2+0.004,ry:0},{x:0.1,z:-ROOM_D/2+0.004,ry:0},{x:3.2,z:-ROOM_D/2+0.004,ry:0},{x:4.05,z:-ROOM_D/2+0.004,ry:0},
-  {x:-ROOM_W/2+0.004,z:-0.9,ry:Math.PI/2},{x:-ROOM_W/2+0.004,z:0.35,ry:Math.PI/2},{x:-ROOM_W/2+0.004,z:3.15,ry:Math.PI/2}].map(s=>({...s,y:1.85}));
+  {x:-ROOM_W/2+0.004,z:-0.9,ry:Math.PI/2},{x:-ROOM_W/2+0.004,z:0.35,ry:Math.PI/2},{x:-ROOM_W/2+0.004,z:3.15,ry:Math.PI/2},
+  {x:1.15,z:-ROOM_D/2+0.004,ry:0},{x:2.05,z:-ROOM_D/2+0.004,ry:0},{x:-1.45,z:-ROOM_D/2+0.004,ry:0}].map(s=>({...s,y:1.85}));   // son üçü: pencere/tezgâh taşınınca açılan arka duvar yerleri
 
 // --- yüzeyler: duvar boyası ve zemin ---
 function floorTex(pat,c1,c2){const cv=document.createElement('canvas');cv.width=cv.height=256;const x=cv.getContext('2d');const C=c=>'#'+c.toString(16).padStart(6,'0');
@@ -1499,7 +1560,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
-    staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},ev:null,evs:{},evGot:{},evClaim:{},tr:null,navMin:false,
+    staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},ev:null,evs:{},evGot:{},evClaim:{},layout:null,tr:null,navMin:false,
     objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
 let S=defaultState();
 // kayıt bozulursa (yarım yazılmış/elle değişmiş) otomatik yedekten açılır
@@ -1554,13 +1615,13 @@ function discoverItem(id){if(S.items[id])return;S.items[id]=true;addXP(CONFIG.xp
     toast(`<b>Yeni tarif keşfedildi!</b><br>${r.name}${S.lvl<r.lvl?` · Seviye ${r.lvl}’de açılabilir`:' · Tarifler’den ürünü açabilirsin'}`,`<img src="${productThumb(r.id)}" alt="">`,3600);checkObj()}markDirty()}
 // ürün aç: keşif + seviye + (ilk ürün hariç) altın
 const unlockCost=r=>r.def||r.free?0:Math.round(r.price*12/5)*5;
-function unlockState(r){if(S.unlocked[r.id])return {ok:false,done:true};if(r.br)return {ok:false,why:'İtalya Haftası etkinliğinden getirilir'};if(!S.recipes[r.id])return {ok:false,why:'Önce birleştirme tahtasında keşfet'};
+function unlockState(r){if(S.unlocked[r.id])return {ok:false,done:true};if(r.br)return {ok:false,why:`${(typeof EVENTS!=='undefined'&&EVENTS[r.br]||{name:'Etkinlik'}).name} etkinliğinden getirilir`};if(!S.recipes[r.id])return {ok:false,why:'Önce birleştirme tahtasında keşfet'};
   if(S.lvl<r.lvl)return {ok:false,why:`Seviye ${r.lvl} gerekli`};const c=unlockCost(r);if(S.coins<c)return {ok:false,why:`${c} altın gerekli`,cost:c};return {ok:true,cost:c}}
 function unlockRecipe(id){const r=RECIPE[id];const u=unlockState(r);if(!u.ok)return false;if(u.cost)addCoins(-u.cost,'recipe');S.unlocked[id]=true;sfx('goal');markDirty();
   toast(`<b>${r.name} açıldı!</b><br>Menü’den menüne ekleyebilirsin`,`<img src="${productThumb(id)}" alt="">`,3000);return true}
 function setMenu(id,on){if(!S.unlocked[id])return false;if(!on&&RECIPES.filter(r=>S.menu[r.id]).length<=1)return false;if(on)S.menu[id]=true;else delete S.menu[id];markDirty();return true}
 // menüde olan VE stoğu yeten ürünler (Aşama 8). Stok yoksa liste boş olabilir: o zaman müşteri gelmez.
-const availableRecipes=()=>{const a=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]);return (a.length?a:RECIPES.filter(r=>r.def)).filter(stockOk)};
+const availableRecipes=()=>{const a=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]);return (a.length?a:RECIPES.filter(r=>r.def)).filter(stockOk).filter(machineOk)};
 // ---------- hedefler ----------
 function bump(k,n=1){S.stats[k]=(S.stats[k]||0)+n;checkObj();markDirty()}
 // aynı anda en fazla 3 hedef açık; ilerleme her zaman sayılır
@@ -1591,8 +1652,9 @@ async function waitSpotClear(w,p){const near=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z)<
 const atSpot=(ch,p,e=0.05)=>!ch.path.length&&Math.hypot(ch.pos.x-p.x,ch.pos.z-p.z)<e;
 async function waiterLoop(w){let idle=0;const ch=w.ch;
   while(true){const P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);
+    if(stTired(w)){await staffRest(w,P,yaw);continue}   // yorgun: molaya çıkar, işleri diğer garsonlar alır
     if(w.i===0&&!jobs.length&&idle>16&&atSpot(ch,P)&&await idleChat(w)){idle=0;continue}
-    if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w)}   // bir iş hata verse de garson çalışmaya devam eder
+    if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w);stDrain(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w)}   // bir iş hata verse de garson çalışmaya devam eder
     else if(!atSpot(ch,P)){const ok=await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(ok&&!jobs.length)await ch.face(yaw)}
     else{await sleep(0.1);idle+=0.1;if(idle>(w.wanderAt||(w.wanderAt=7+Math.random()*7))&&!jobs.length){idle=0;w.wanderAt=0;if(Math.random()<0.7)await waiterWander(w,P,yaw);else{await ch.doFor('IDLE_LOOK',1.2);if(!jobs.length)await ch.face(yaw)}}}}}
 const yosunLoop=()=>{};   // eski ad (artık her garson kendi döngüsünde)
@@ -1601,7 +1663,7 @@ function enqueue(name,run){jobs.push({name,run})}
 // ================= BARİSTALAR: kategoriye göre hazırlık =================
 // Tezgah arkası iki bölgeye ayrılır: S (sol: kahve+çay) ve G (sağ: tatlı+yemek). Bir bölgede aynı anda tek barista çalışır,
 // teslim noktası da kilitlidir. Böylece iki barista asla aynı yerde durmaz.
-const equipFactor=r=>S.equip[STATION_OF[r.station]]>1?CONFIG.equipFactor:1;
+const equipFactor=r=>S.equip[EQUIP_OF[r.station]]>1?CONFIG.equipFactor:1;
 const _w3=new THREE.Vector3();
 const cupTop=m=>m.visible?_w3.set(m.position.x,m.position.y+0.1,m.position.z).clone():null;
 const zoneOf=r=>r.station==='coffee'||r.station==='tea'?'L':'R';
@@ -1618,7 +1680,7 @@ async function bGo(b,p){const ch=b.ch;const o=BSTAFF.find(x=>x!==b);
 const posaGo=p=>bGo(BSTAFF[0],p);
 async function lockZ(k,b){while(ZLOCK[k]&&ZLOCK[k]!==b)await sleep(0.15);ZLOCK[k]=b}
 const unlockZ=(k,b)=>{if(ZLOCK[k]===b)ZLOCK[k]=null};
-async function prepare(b,o){const ch=b.ch,r=o.item,T=r.prep*equipFactor(r)*prepMul(),Z=zoneOf(r);
+async function prepare(b,o){const ch=b.ch,r=o.item,T=r.prep*equipFactor(r)*prepMul()*stPrepMul(b),Z=zoneOf(r);o.qual=Math.max(1,Math.min(5,(o.qual||3)+stQual(b)));
   const m=makeProduct(r);m.visible=false;scene.add(m);o.mesh=m;
   b.job={o,done:0,total:T};if(b.i===0)posaJob=b.job;
   const step=async(dur,fn)=>{const t0=b.job.done;await Promise.all([ch.doFor('IDLE_WORK',dur),tween(dur,u=>{fn&&fn(u);b.job.done=t0+dur*u})]);b.job.done=t0+dur};
@@ -1655,9 +1717,9 @@ function bIdleSpot(b){const mine=B_HOME[b.i]||B_HOME[0];if(BSTAFF.length<2)retur
 function takeable(b){const o2=BSTAFF.find(x=>x!==b);return baristaQ.findIndex(o=>{const Z=zoneOf(o.item);if(ZLOCK[Z]&&ZLOCK[Z]!==b)return false;
   if(o2&&!o2.busy&&o2.idleAt&&o2.idleAt.zone===Z&&!(b.idleAt&&b.idleAt.zone===Z)&&Math.hypot(o2.ch.pos.x-o2.idleAt.x,o2.ch.pos.z-o2.idleAt.z)<0.4)return false;return true})}
 async function baristaLoop(b){let idle=0;const ch=b.ch;
-  while(true){const i=takeable(b);
+  while(true){if(stTired(b)){const h=bIdleSpot(b);await staffRest(b,h,0);continue}const i=takeable(b);
     if(i>=0){idle=0;b.idleAt=null;b.busy=true;const o=baristaQ.splice(i,1)[0];const Z=zoneOf(o.item);ZLOCK[Z]=b;o.state='PREPARING';
-      try{await prepare(b,o)}finally{unlockZ(Z,b);unlockZ('pick',b);b.busy=false}
+      try{await prepare(b,o);stDrain(b)}finally{unlockZ(Z,b);unlockZ('pick',b);b.busy=false}
       continue}
     const h=bIdleSpot(b);b.idleAt=h;
     if(!atSpot(ch,h)){unlockZ('pick',b);await bGo(b,{x:h.x,z:h.z});await ch.face(0);continue}
@@ -1746,11 +1808,11 @@ async function customerLife(c){const ch=c.char,g=c.group;
   scene.remove(ch.o);customers.splice(customers.indexOf(c),1)}
 const payCount=()=>CASH.queue.length+REGS.filter(r=>r.cust).length;
 // ---------- KASİYERLER ----------
-async function cashierServe(R,c){const k=CSTAFF[R.i]||CSTAFF[0];while(k.chasing)await sleep(0.2);R.busy=true;const ca=k.ch;const P=R.parts,dr=P.drawer,z0=P.drawerZ;await ca.face(0);
+async function cashierServe(R,c){const k=CSTAFF[R.i]||CSTAFF[0];while(k.chasing||k.resting)await sleep(0.2);const cm=stCashMul(k);R.busy=true;const ca=k.ch;const P=R.parts,dr=P.drawer,z0=P.drawerZ;await ca.face(0);
   P.screen.material.color.setHex(0xfff3a0);
-  await Promise.all([ca.doFor('IDLE_WORK',1.5),(async()=>{await sleep(0.6);sfx('register');await tween(0.25,u=>dr.position.z=z0+0.16*u)})()]);
+  await Promise.all([ca.doFor('IDLE_WORK',1.5*cm),(async()=>{await sleep(0.6*cm);sfx('register');await tween(0.25,u=>dr.position.z=z0+0.16*u)})()]);
   pay(c,R);await sleep(0.45);await tween(0.25,u=>dr.position.z=z0+0.16*(1-u));P.screen.material.color.setHex(0x9fe0a8);
-  ca.doFor('Wave_One_Hand',1.2).then(()=>ca.face(0));R.busy=false}
+  ca.doFor('Wave_One_Hand',1.2).then(()=>ca.face(0));R.busy=false;stDrain(k)}
 function chooseRecipe(c){const av=availableRecipes();if(!av.length)return null;const rq=S.req&&av.find(r=>r.id===S.req.rid);if(rq&&Math.random()<0.55)return rq;
   const w=av.map(r=>(c.persona.pref[r.cat]||1)*(c.vip?r.price:1));let s=w.reduce((a,b)=>a+b,0)*Math.random();for(let i=0;i<av.length;i++){s-=w[i];if(s<=0)return av[i]}return av[av.length-1]}
 // grubun siparişi tek seferde alınır: garson masaya bir kez gelir, her üye için ayrı ürün yazılır
@@ -1782,7 +1844,8 @@ function pickupOrder(o){if(o.state!=='READY'||o.pickupQueued)return;o.pickupQueu
   enqueue('serve',async w=>{if(o.cancel||!o.mesh||o.state!=='READY'){unflag();return}const ch=w.ch;const k=await claimSpot('pick',w);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await ch.doFor('Idle_12',0.35);if(o.cancel||!o.mesh){freeSpot('pick',w);unflag();return}
     const tray=ch.tray;tray.visible=false;ch.carry=tray;await sleep(0.45);   // önce tepsi tutma pozu otursun, sonra tepsi görünsün
     // o anda hazır olan grup tabakları (en çok 4) birlikte alınır
-    const B=[o,...servSibs(o).filter(x=>x.state==='READY'&&x.mesh)].slice(0,4);
+    const B=[o,...servSibs(o)].filter(x=>x.state==='READY'&&x.mesh&&!x.cancel).slice(0,4);   // beklerken iptal olan tabak alınmaz
+    if(!B.length){tray.visible=false;ch.carry=null;freeSpot('pick',w);unflag();return}
     B.forEach((x,i)=>{slotUsed[x.slot]=null;x.slot=-1;x.pickupQueued=true;tray.add(x.mesh);const f=TRAY_SLOTS[B.length===1?0:i];x.mesh.position.set(f[0],tray.userData.top,f[1]);x.mesh.rotation.set(0,0,0);x.state='PICKED_UP'});
     tray.visible=true;sfx('clink');freeSpot('pick',w);unflag();
     // yakın koltuktan uzağa doğru sırayla bırakır
@@ -1803,7 +1866,7 @@ async function consume(o,dur){const m=o.mesh;
 function pay(c,R,at){const g=c.group||{members:[c]};const os=g.members.map(m=>m.order).filter(o=>o&&!o.paid&&!o.cancel);if(!os.length)return;const o=os[0];
   for(const x of os){x.paid=true;x.state='COMPLETED'}const rx=R?R.rx:CASH.reg.x;const p=at||new THREE.Vector3(rx,CASH.h+0.55,CASH.z);
   const price=os.reduce((a,x)=>a+(x.price||priceOf(x.item)),0);addCoins(price,'sale');for(const x of os)finEv('sold:'+x.item.id,1);floatCoin(price,p);rateGroup(c.group);afkEarn(price,os.length);finEv('srv',os.length);finEv('cogs',os.reduce((a,x)=>a+(x.cost||0),0));
-  const tipCh=c.vip?1:c.persona.tip+tipBonus()+0.1*regTier(c.look.name);
+  const tipCh=c.vip?1:c.persona.tip+tipBonus()+stTipBonus()+0.1*regTier(c.look.name);
   if(Math.random()<tipCh){let tip=1+Math.floor(price*0.2);if(c.vip)tip=tip*2+3;o.tip=tip;setTimeout(()=>{addCoins(tip,'tip');sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true);if(c.vip)toast(`<b>VIP gurme memnun kaldı!</b><br>+${tip} bahşiş bıraktı`,ic('star'),2600)},450)}
   addXP(os.reduce((a,x)=>a+CONFIG.xp.complete+Math.round(x.item.price*CONFIG.xp.perPrice),0));
   for(const m of g.members)if(!m.vip&&!m.ranAway)addVisit(m);for(const x of os)reqServed(x.item);bump('orders',os.length)}
@@ -2415,7 +2478,7 @@ function furnThumb(id){const c=CAT[id];return thumb('f:'+id,()=>{
   if(c.kind==='chair'){const g=new THREE.Group();chairMeshes(g,frame(0,0,0),id,0);return g}
   if(c.kind==='decor')return DECOR_BUILD[id]();
   if(c.kind==='walldecor')return WALL_BUILD[id]();
-  if(c.kind==='equip'){const g=EQUIP_BUILD[c.slot](2);scene.remove(g);g.position.set(0,0,0);return g}},c.kind==='walldecor'?{dir:[0.35,0.2,1],pad:1.0}:c.kind==='chair'?{dir:[1.2,0.7,0.9]}:{})}
+  if(c.kind==='equip'){const g=EQUIP_BUILD[c.slot](c.elv||2);scene.remove(g);g.position.set(0,0,0);return g}},c.kind==='walldecor'?{dir:[0.35,0.2,1],pad:1.0}:c.kind==='chair'?{dir:[1.2,0.7,0.9]}:{})}
 function swatch(id){const c=CAT[id];if(TH.cache.has('s:'+id))return TH.cache.get('s:'+id);const cv=document.createElement('canvas');cv.width=cv.height=128;const x=cv.getContext('2d');const H=v=>'#'+v.toString(16).padStart(6,'0');
   if(c.kind==='wall'){x.fillStyle=H(c.color);x.fillRect(0,0,128,128);x.fillStyle='#6f8a3a';x.fillRect(0,104,128,24);x.strokeStyle='rgba(74,46,28,.25)';x.lineWidth=2;for(let i=0;i<4;i++){x.beginPath();x.moveTo(0,22+i*22);x.lineTo(128,22+i*22);x.globalAlpha=.25;x.stroke();x.globalAlpha=1}}
   else{if(c.pat==='plank'){x.fillStyle=H(c.c1);x.fillRect(0,0,128,128);x.fillStyle=H(c.c2);for(let i=0;i<6;i++)x.fillRect(0,i*22+18,128,4)}else x.drawImage(floorTex(c.pat,c.c1,c.c2).image,0,0,256,256,0,0,128,128)}
@@ -2548,7 +2611,7 @@ function renderMarket(){const tabs=$('mkTabs');tabs.innerHTML=MK_TABS.map(t=>`<b
   if(UI.tab==='upg'){renderUpg(g);return}
   if(UI.tab==='expand'){renderExpand(g);return}
   if(UI.tab==='store'){const st=S.furniture.filter(f=>f.stored);g.innerHTML=st.length?st.map(f=>`<button class="card" type="button" data-uid="${f.uid}" aria-current="${UI.sel==='u'+f.uid}"><div class="th"><img src="${itemThumb(f.id)}" alt=""></div><b>${CAT[f.id].name}</b><span class="price">Ücretsiz yerleştir</span></button>`).join(''):'<div class="empty">Depon boş. Düzenle modunda eşyaları depoya kaldırabilirsin.</div>'}
-  else{items=CATALOG.filter(c=>(c.kind===UI.tab||(UI.tab==='decor'&&c.kind==='walldecor'))&&(!c.ev||(EVMODE?c.ev===EVMODE:S.evGot&&S.evGot[c.id]))).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
+  else{items=CATALOG.filter(c=>(c.kind===UI.tab||(UI.tab==='decor'&&c.kind==='walldecor'))&&(!c.ev||(EVMODE?c.ev===EVMODE:S.evGot&&S.evGot[c.id]))&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
     g.innerHTML=items.map(c=>{const lock=S.lvl<c.lvl;const owned=S.owned[c.id];const using=(c.kind==='wall'&&S.wall===c.id)||(c.kind==='floor'&&S.floor===c.id)||(c.kind==='equip'&&owned);
       return `<button class="card${lock?' locked':''}" type="button" data-id="${c.id}" aria-current="${UI.sel===c.id}"><div class="th"><img src="${itemThumb(c.id)}" alt=""></div>${lock?`<span class="tag">${ic('lock')}Sv ${c.lvl}</span>`:''}${using?'<span class="own">Kullanımda</span>':owned&&c.kind!=='table'&&c.kind!=='decor'&&c.kind!=='walldecor'?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${c.price?ic('coin')+c.price:'Ücretsiz'}</span></button>`}).join('')}
   g.onclick=e=>{const b=e.target.closest('.card');if(!b)return;if(b.dataset.uid){UI.sel='u'+b.dataset.uid}else{UI.sel=b.dataset.id;previewSurface(UI.sel)}renderMarket()};
@@ -2564,13 +2627,14 @@ function renderDetail(){const d=$('mkDetail');const sel=UI.sel;if(!sel){d.hidden
   else if(c.kind==='table'){const cap=tableCap(S.lvl),n=placedTables();note=`${c.desc} Masa sınırı: ${n}/${cap}.`;btn=n>=cap?`<button class="btn" type="button" disabled>Sınır dolu · Seviye ${CONFIG.tableCap.find(t=>t.n>cap)?.lv||'—'} ile artar</button>`:`<button class="btn" type="button" id="dAct" ${afford?'':'disabled'}>${ic('coin')}${c.price} · Satın al ve yerleştir</button>`}
   else if(c.kind==='chair'){btn=owned?`<button class="btn green" type="button" id="dAct">${ic('check')}Tüm masalara uygula</button>`:`<button class="btn" type="button" id="dAct" ${afford?'':'disabled'}>${ic('coin')}${c.price} · Satın al</button>`;note+=' Masa masa değiştirmek için Düzenle’yi kullan.'}
   else if(c.kind==='wall'||c.kind==='floor'){const cur=(c.kind==='wall'?S.wall:S.floor)===c.id;note=cur?'Şu an kullanılıyor.':'Önizleme kafede görünüyor.';btn=cur?'':owned?`<button class="btn green" type="button" id="dAct">${ic('check')}Uygula</button>`:`<button class="btn" type="button" id="dAct" ${afford?'':'disabled'}>${ic('coin')}${c.price} · Satın al</button>`}
+  else if(c.kind==='equip'&&!c.elv&&(S.equip[c.slot]|0)<1){btn=`<button class="btn" type="button" disabled>${ic('lock')}Önce ${CATALOG.find(x=>x.elv===1&&x.slot===c.slot).name}</button>`}
   else if(c.kind==='equip'){btn=owned?`<button class="btn green" type="button" disabled>${ic('check')}Kurulu</button>`:`<button class="btn" type="button" id="dAct" ${afford?'':'disabled'}>${ic('coin')}${c.price} · Satın al ve kur</button>`}
   else{btn=`<button class="btn" type="button" id="dAct" ${afford?'':'disabled'}>${ic('coin')}${c.price} · Satın al ve yerleştir</button>`}
   if(!lock&&!afford&&!owned&&c.price)note+=' Yeterli paran yok.';
   d.innerHTML=`<div class="th"><img src="${itemThumb(c.id)}" alt=""></div><div class="tx"><b>${c.name}</b><p>${note}</p><div class="row">${btn}</div></div>`;
   const a=$('dAct');if(a)a.onclick=()=>buy(c)}
 function firstXP(id){if(!S.first[id]){S.first[id]=true;addXP(CONFIG.xp.firstPlace)}}
-function freeSlot(ex){const used=new Set(S.furniture.filter(f=>!f.stored&&CAT[f.id].kind==='walldecor'&&f.uid!==ex).map(f=>f.slot));for(let i=0;i<WALL_SLOTS.length;i++)if(!used.has(i))return i;return -1}
+function freeSlot(ex){const used=new Set(S.furniture.filter(f=>!f.stored&&CAT[f.id].kind==='walldecor'&&f.uid!==ex).map(f=>f.slot));for(let i=0;i<WALL_SLOTS.length;i++)if(!used.has(i)&&!slotBlocked(i))return i;return -1}
 function buy(c){if(S.lvl<c.lvl)return;
   if(c.kind==='table'){if(placedTables()>=tableCap(S.lvl))return;if(S.coins<c.price)return;
     if(c.chair&&!S.owned[c.chair]){S.owned[c.chair]=true;markDirty()}   // masa kendi takım sandalyeleriyle gelir
@@ -2581,7 +2645,7 @@ function buy(c){if(S.lvl<c.lvl)return;
     sfx('buy');for(const R of FURN.values())if(R.table){R.rec.chair=c.id;restyleTable(R)}toast(`${c.name} tüm masalara uygulandı`,`<img src="${itemThumb(c.id)}" alt="">`);markDirty();renderMarket();return}
   if(c.kind==='wall'||c.kind==='floor'){if(!S.owned[c.id]){if(S.coins<c.price)return;addCoins(-c.price,'decor');S.owned[c.id]=true;firstXP(c.id)}
     sfx('buy');if(c.kind==='wall'){S.wall=c.id;applyWall(c.id);bump('wall')}else{S.floor=c.id;applyFloor(c.id);bump('floor')}UI.preview=null;markDirty();renderMarket();return}
-  if(c.kind==='equip'){if(S.owned[c.id]||S.coins<c.price)return;addCoins(-c.price,'equip');sfx('buy');S.owned[c.id]=true;S.equip[c.slot]=2;setEquip(c.slot,2);firstXP(c.id);bump('equip');toast(`${c.name} kuruldu!`,`<img src="${itemThumb(c.id)}" alt="">`);markDirty();renderMarket()}}
+  if(c.kind==='equip'){if(S.owned[c.id]||S.coins<c.price)return;if(!c.elv&&(S.equip[c.slot]|0)<1)return;addCoins(-c.price,'equip');sfx('buy');S.owned[c.id]=true;S.equip[c.slot]=c.elv||2;setEquip(c.slot,c.elv||2);firstXP(c.id);bump('equip');toast(`${c.name} kuruldu!`,`<img src="${itemThumb(c.id)}" alt="">`);markDirty();renderMarket()}}
 function restyleTable(R){scene.remove(R.group);const G=buildFurnGroup(R.rec);placeGroup(G,R.rec);G.userData.uid=R.rec.uid;scene.add(G);R.group=G}
 
 // ================= YERLEŞTİRME MODU =================
@@ -2609,7 +2673,7 @@ function renderPlacebar(){const pb=$('placebar');pb.hidden=false;const c=CAT[PL.
   $('plNo').onclick=cancelPlacement;$('plOk').onclick=confirmPlacement;
   if($('plRot'))$('plRot').onclick=()=>{PL.rec.rot=((PL.rec.rot||0)+1)%4;updateGhost()};
   if(wall){const cyc=d=>{for(let k=1;k<=WALL_SLOTS.length;k++){const s=(PL.rec.slot+d*k+WALL_SLOTS.length*3)%WALL_SLOTS.length;if(freeSlotOk(s)){PL.rec.slot=s;break}}updateGhost()};$('plPrev').onclick=()=>cyc(-1);$('plNext').onclick=()=>cyc(1)}}
-const freeSlotOk=s=>!S.furniture.some(f=>!f.stored&&f.uid!==PL.rec.uid&&CAT[f.id].kind==='walldecor'&&f.slot===s);
+const freeSlotOk=s=>!slotBlocked(s)&&!S.furniture.some(f=>!f.stored&&f.uid!==PL.rec.uid&&CAT[f.id].kind==='walldecor'&&f.slot===s);
 function endPlacement(){if(PL&&PL.ghost)scene.remove(PL.ghost);const back=PL&&PL.fromEdit;PL=null;$('placebar').hidden=true;setMode(back?'edit':'cafe');if(back)enterEdit(true)}
 function cancelPlacement(){if(!PL)return;if(!PL.isNew&&!PL.fromStore){Object.assign(PL.rec,PL.orig);spawnFurn(PL.rec);refreshWorld()}endPlacement()}
 function confirmPlacement(){if(!PL)return;const why=validatePlacement(PL.rec,PL.rec.uid);if(why){PL.why=why;renderPlacebar();return}
@@ -2661,11 +2725,11 @@ function comboHTML(r){const d=r.disc;const mi=id=>`<span class="mi" title="${ITE
 function renderBook(){$('rbTabs').innerHTML=RCAT.map(t=>`<button class="tab" role="tab" type="button" data-t="${t.id}" aria-selected="${UI.rbTab===t.id}">${ic(t.icon)}${t.name}</button>`).join('');
   $('rbTabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b){UI.rbTab=b.dataset.t;renderBook()}};
   $('rbList').innerHTML=RECIPES.filter(r=>r.cat===UI.rbTab).map(r=>{const disc=!!S.recipes[r.id]||!!r.br,open=!!S.unlocked[r.id],onM=!!S.menu[r.id],u=unlockState(r);
-    const st=open?(onM?'<span class="status">Menüde</span>':'<span class="status lv">Açık · menüde değil</span>'):r.br?'<span class="status lv brtag">İtalya Haftası etkinliğinden getirilir</span>':disc?`<span class="status lv">Keşfedildi · ${u.ok?'açmaya hazır':u.why}</span>`:`<span class="status un">${S.lvl>=r.lvl?'Keşfedilmedi':'Keşfedilmedi · Sv '+r.lvl}</span>`;
+    const st=open?(onM?'<span class="status">Menüde</span>':'<span class="status lv">Açık · menüde değil</span>'):r.br?`<span class="status lv brtag">${EVENTS[r.br].name} etkinliğinden getirilir</span>`:disc?`<span class="status lv">Keşfedildi · ${u.ok?'açmaya hazır':u.why}</span>`:`<span class="status un">${S.lvl>=r.lvl?'Keşfedilmedi':'Keşfedilmedi · Sv '+r.lvl}</span>`;
     const cost=unlockCost(r);
     const act=open?'':r.br?`<div class="rbact"><button class="btn light" type="button" data-brmap="1">${ic('event')}Haftalık etkinliği aç</button></div>`:`<div class="rbact"><button class="btn ${u.ok?'green':''}" type="button" data-un="${r.id}" ${u.ok?'':'disabled'}>${ic(u.ok?'check':'lock')}Ürünü aç${cost?` · ${ic('coin')}${cost}`:' · ücretsiz'}</button>${u.ok?'':`<small>${u.why}</small>`}</div>`;
     return `<div class="rc${disc?'':' unk'}" data-rc="${r.id}"><div class="th"><img src="${productThumb(r.id)}" alt="">${disc?'':'<span class="q">?</span>'}</div><div class="tx"><b>${r.name}</b>${st}
-      <div class="meta"><span>${r.br?ic('event')+'İtalya':ic('star')+'Sv '+r.lvl}</span><span>${ic('clock')}${r.prep} sn</span><span>${ic('coin')}${priceOf(r)}</span></div><div class="combo">${comboHTML(r)}</div>${act}${disc?'':`<div class="rbact"><button class="btn ${S.target===r.id?'green':'light'}" type="button" data-tgt="${r.id}" aria-pressed="${S.target===r.id}">${ic('target')}${S.target===r.id?'Hedefte ✓':'Hedefle'}</button>${S.target===r.id?'<small>Torbalar malzemelerini daha sık verir</small>':''}</div>`}</div></div>`}).join('');
+      <div class="meta"><span>${r.br?ic('event')+EVENTS[r.br].country:ic('star')+'Sv '+r.lvl}</span><span>${ic('clock')}${r.prep} sn</span><span>${ic('coin')}${priceOf(r)}</span></div><div class="combo">${comboHTML(r)}</div>${act}${disc?'':`<div class="rbact"><button class="btn ${S.target===r.id?'green':'light'}" type="button" data-tgt="${r.id}" aria-pressed="${S.target===r.id}">${ic('target')}${S.target===r.id?'Hedefte ✓':'Hedefle'}</button>${S.target===r.id?'<small>Torbalar malzemelerini daha sık verir</small>':''}</div>`}</div></div>`}).join('');
   $('rbList').onclick=e=>{if(e.target.closest('[data-brmap]')){setMode('cafe');openEvents();return}const tg=e.target.closest('[data-tgt]');if(tg){setTarget(tg.dataset.tgt);renderBook();return}const b=e.target.closest('[data-un]');if(!b||b.disabled)return;if(unlockRecipe(b.dataset.un)){renderBook();if(typeof tut2Event==='function')tut2Event('unlock',b.dataset.un)}}}
 // ================= MENÜ: açılan ürünlerden hangileri satılsın =================
 {const st=document.createElement('style');st.textContent=`
@@ -2686,7 +2750,7 @@ function renderBook(){$('rbTabs').innerHTML=RCAT.map(t=>`<button class="tab" rol
 function renderMenu(){const L=$('menuList');if(menuTab==='price')return renderPrices(L);if(menuTab==='stock')return renderStock(L);const on=RECIPES.filter(r=>S.menu[r.id]).length;
   L.innerHTML=`${mtabsHTML()}<div class="mhead">Müşteriler yalnızca menündeki ürünlerden sipariş verir. Ürünleri <b>Tarifler</b>’de açarsın; burada menüye ekleyip çıkarırsın. Menüde ${on} ürün var.</div>`+
    RCAT.map(c=>{const rs=RECIPES.filter(r=>r.cat===c.id&&S.unlocked[r.id]);
-    return `<div class="mcat">${ic(c.icon)}${c.name}</div>`+(rs.length?rs.map(r=>{const m=!!S.menu[r.id];return `<div class="mi2" data-mi="${r.id}"><img src="${productThumb(r.id)}" alt=""><div class="tx"><b>${r.name}</b><span>${ic('coin')}${priceOf(r)} · ${r.prep} sn${stockTag(r)}${S.req&&S.req.rid===r.id?' · <b class="rqtag">Özel istek</b>':''}</span></div>
+    return `<div class="mcat">${ic(c.icon)}${c.name}</div>`+(rs.length?rs.map(r=>{const m=!!S.menu[r.id];return `<div class="mi2" data-mi="${r.id}"><img src="${productThumb(r.id)}" alt=""><div class="tx"><b>${r.name}</b><span>${ic('coin')}${priceOf(r)} · ${r.prep} sn${machineOk(r)?'':` · <b class="rqtag" style="background:#f8d2cc">${CATALOG.find(x=>x.elv===1&&x.slot===EQUIP_OF[r.station]).name} yok</b>`}${stockTag(r)}${S.req&&S.req.rid===r.id?' · <b class="rqtag">Özel istek</b>':''}</span></div>
       <button class="tgl" type="button" data-tg="${r.id}" aria-pressed="${m}">${m?'Menüde ✓':'Menüye ekle'}</button></div>`}).join(''):`<div class="mempty">Henüz açılmış ürün yok · Tarifler’den keşfet ve aç</div>`)}).join('');
   L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return}const b=e.target.closest('[data-tg]');if(!b)return;const id=b.dataset.tg,want=!S.menu[id];
     if(!setMenu(id,want)){sfx('nope');toast('Menüde en az bir ürün kalmalı',ic('menu'),2000);return}sfx(want?'place':'tap');toast(want?`${RECIPE[id].name} menüye eklendi`:`${RECIPE[id].name} menüden çıkarıldı`,`<img src="${productThumb(id)}" alt="">`,1600);renderMenu();if(typeof tut2Event==='function')tut2Event('menu',id)}}
@@ -2709,14 +2773,21 @@ function renderInfo(){const box=$('mgInfo');const i=UI.mgSel;const id=i!=null?S.
   if(it.chain)t=`<b>${it.name}</b>Seviye ${it.lv}/${it.max}. ${it.next?`İki tane birleştir → ${S.items[it.next]?ITEMS[it.next].name:'?'}`:'Zincirin en üst seviyesi.'}`;else t=`<b>${it.name}</b>Özel birleşim.`;
   const cs=COMBOS.filter(c=>c.a===id||c.b===id).map(c=>{const o=c.a===id?c.b:c.a;return `${ITEMS[o].name} ile → ${S.items[c.r]?ITEMS[c.r].name:'?'}`});if(cs.length)t+=`<br>${cs.join(' · ')}`;
   const r=recipeByDisc[id];if(r)t+=`<br>Tarif: ${r.name}`;
-  box.innerHTML=`<span class="mi">${itemArt(id)}</span><div class="tx">${t}</div><button class="btn light" type="button" id="mgDel">${ic('trash')}Kaldır</button>`;
-  $('mgDel').onclick=()=>{S.board[i]=null;UI.mgSel=null;markDirty();refreshCell(i);renderInfo()}}
+  const val=sellVal(it),ask=it.chain?it.lv>=3:true;
+  box.innerHTML=`<span class="mi">${itemArt(id)}</span><div class="tx">${t}</div><button class="btn light" type="button" id="mgDel">${ic('coin')}Sat · ${val}</button>`;
+  let armed=false;$('mgDel').onclick=()=>{if(ask&&!armed){armed=true;const b=$('mgDel');b.classList.remove('light');b.classList.add('red');b.innerHTML=`${ic('coin')}Emin misin? Sat · ${val}`;sfx('tap');return}
+    S.board[i]=null;UI.mgSel=null;addCoins(val,'sell');sfx('coin');floatSell(i,val);markDirty();refreshCell(i);renderInfo()}}
+// birleştirme tahtasında satış: seviye arttıkça değeri katlanır (birleştirip satmak daha kârlı)
+const sellVal=it=>it.chain?[0,1,3,8,20,50,120,260][it.lv]||1:15;
+function floatSell(i,v){try{const c=board.querySelector(`[data-c="${i}"]`);if(!c)return;const r=c.getBoundingClientRect();const e=document.createElement('div');e.className='sellfx';e.innerHTML=`+${v} ${ic('coin')}`;
+  e.style.left=(r.left+r.width/2)+'px';e.style.top=(r.top+r.height/2)+'px';document.body.appendChild(e);setTimeout(()=>e.remove(),1000)}catch(e){}}
+{const st=document.createElement('style');st.textContent=`.sellfx{position:fixed;transform:translate(-50%,-50%);z-index:60;font:900 18px var(--font-display,inherit);color:#b8860b;text-shadow:0 2px 0 #fff8ec;pointer-events:none;animation:sellup 1s ease-out forwards;display:flex;align-items:center;gap:3px}.sellfx .ic{width:18px;height:18px;display:inline-grid}@keyframes sellup{to{transform:translate(-50%,-160%);opacity:0}}`;document.head.appendChild(st)}
 function nearestEmpty(from){const W=CONFIG.board.w;const fx=from%W,fy=Math.floor(from/W);let best=-1,bd=1e9;S.board.forEach((v,i)=>{if(v)return;const d=Math.hypot(i%W-fx,Math.floor(i/W)-fy);if(d<bd){bd=d;best=i}});return best}
 function tapBag(i){const it=ITEMS[S.board[i]];const b=bagState(it.bag);const cellEl=board.querySelector(`[data-c="${i}"] .it`);
   const fail=msg=>{sfx('nope');cellEl&&(cellEl.classList.remove('shake'),void cellEl.offsetWidth,cellEl.classList.add('shake'));toast(msg,ic('bolt'),1800)};
   const tutOut=typeof tut2Bag==='function'?tut2Bag(it.bag):null;   // öğretici: ücretsiz, sabit çıktı
   if(!tutOut){if(b.cool){sfx('nope');return openRecover('bag',it.bag)}const E=energyNow();if(E.v<CONFIG.energy.cost){sfx('nope');return openRecover('energy')}}
-  const t=nearestEmpty(i);if(t<0)return fail('Tahta dolu: birleştir ya da kaldır');
+  const t=nearestEmpty(i);if(t<0)return fail('Tahta dolu: birleştir ya da sat');
   const W=BAG_OUT[it.bag];let s=W.reduce((a,x)=>a+x[1],0)*Math.random(),out=W[0][0];for(const [id,w] of W){s-=w;if(s<=0){out=id;break}}
   if(tutOut)out=tutOut;else{const tb=targetBases();if(tb){const opt=W.filter(x=>tb.has(x[0]));if(opt.length&&Math.random()<CONFIG.targetBias)out=opt[Math.floor(Math.random()*opt.length)][0]}
     const MX=energyMax();S.energy.v-=CONFIG.energy.cost;if(S.energy.v<MX&&S.energy.v+CONFIG.energy.cost>=MX)S.energy.ts=nowT();
@@ -2998,7 +3069,7 @@ const ownsCloth=id=>{const c=CLO[id];return !!(c&&(c.free||S.clothes[id]))};
 function grantCloth(id){const c=CLO[id];S.clothes[id]=true;if(c.set)for(const k in c.set)S.clothes[c.set[k]]=true}
 // ---- canlı önizleme (küçük ayrı çizici) ----
 const PV={r:null,sc:null,cam:null,model:null,mixer:null,yaw:0.35,raf:0,host:null,t:0};
-function pvInit(host){if(!PV.r){const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));r.outputColorSpace=THREE.SRGBColorSpace;r.toneMapping=THREE.ACESFilmicToneMapping;
+function pvInit(host){if(!PV.r){const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,(typeof PERF!=='undefined'&&GFX[PERF.q]||{pr:2}).pr));r.outputColorSpace=THREE.SRGBColorSpace;r.toneMapping=THREE.ACESFilmicToneMapping;
     const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xfff1dc,0x6b4a2a,1.05));const d=new THREE.DirectionalLight(0xffe4bf,1.8);d.position.set(2,4,3);sc.add(d);
     const disc=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.58,0.05,40),toon(0xe9cfa6));disc.position.y=-0.025;sc.add(disc);
     PV.r=r;PV.sc=sc;PV.cam=new THREE.PerspectiveCamera(30,1,0.05,20);
@@ -3281,7 +3352,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <li>${ic('paw')}<span><b>Kaçak müşteri:</b> bazıları ödemeden kapıya koşar! Kasiyerin fark ederse koşup yakalar; fark etmezse kaçağın üstündeki ${tagb('paw','Yakala!')} düğmesine dokun.</span></li></ul>`},
    {t:'Geliştirmeler',art:`${ic('up')}${ic('coin')}${ic('chef')}${ic('bolt')}`,body:`<p>${tagb('market','Market','l')} → ${tagb('up','Geliştir','l')} sekmesinde kalıcı yükseltmeler var: ürünleri daha pahalıya sat, baristaları hızlandır, bahşişleri artır, enerji deposunu büyüt.</p><p>Oyun kapalıyken de ekibin çalışır: geri döndüğünde biriken altını toplarsın (en fazla 2 saatlik).</p>`},
    {t:'Ekip ve kıyafetler',art:`${ic('paw')}${ic('shirt')}<span class="ic">${clothIcon('bow_red')}</span><span class="ic">${clothIcon('hat_beret')}</span>`,body:`<p>${tagb('paw','Ekip','l')} menüsünde kedilerini düzenle: kürk, desen, göz, kulak, yüz, vücut ve isim. Her kedinin <b>bir ücretsiz görünüm değişikliği</b> var; sonrası ${CONFIG.edit.coins} altın ya da ${CONFIG.edit.gems} elmas. Önizleme ve vazgeçmek her zaman ücretsiz, isim değiştirmek de.</p>
-     <p>${tagb('plus','Yeni eleman ekle','g')} ile ekibini büyüt: en fazla 3 garson, 2 barista, 2 kasiyer. Her yeni eleman bir seviye ve altın ister; işler aralarında paylaşılır.</p>
+     <p>${tagb('plus','İşçi bul','g')} ile ekibini büyüt ya da birini daha iyisiyle değiştir: en fazla 3 garson, 2 barista, 2 kasiyer. Her çalışanın hız, dayanıklılık ve ustalık yıldızı, bir de günlük maaşı vardır; maaşlar gün sonunda hasılattan düşülür. Yorulan çalışan kısa bir mola verir, işleri diğerleri üstlenir.</p>
      <p>Market’teki ${tagb('shirt','Kıyafet','l')} sekmesinde önlük, üst, şort, papyon, atkı, şapka ve takımlar var. Önce kedinin üstünde dene, sonra satın al; aldığın kıyafet kalıcı olarak senin.</p>`},
    {t:'Küçük ipuçları',art:`${ic('heart')}${ic('music')}${ic('speaker')}`,body:`<ul class="gsteps"><li>${ic('clock')}<span>Menü, Market, Tarifler, Birleştir ya da Ekip açıkken kafede zaman durur; telaşlanma.</span></li>
      <li>${ic('table')}<span>Kafen 2 dört kişilik ve 2 iki kişilik masayla (12 kişi) açılır; müşteriler tek, 2, 3 ya da 4 kişilik gruplar halinde gelir; seviye atladıkça daha fazla masa koyabilirsin.</span></li><li>${ic('music')}<span>Sağ üstteki düğmelerle müziği ve sesleri açıp kapatabilirsin.</span></li>
@@ -3385,7 +3456,7 @@ function tutCafeStart(){spawnT=Math.min(spawnT,3);tutSpawned=false}
 function tutHoldArrivals(){return S.tut&&/^cafe/.test(S.tut)&&(customers.length>0||tutSpawned)}
 const NMs=()=>S.chars||{waiter:{name:'Yosun'},barista:{name:'Poşa'},cashier:{name:'Fındık'}};
 let tutShown='';
-function tutTick(){autoBtnVis();if(!S.tut||S.tut==='done'||S.tut==='create')return;if(UI.mode!=='cafe'||UI.modal){if(tutShown){coachOff();tutShown=''}return}const st=S.tut;const N=NMs();const c=customers[0];
+function tutTick(){autoBtnVis();if(!S.tut||S.tut==='done'||S.tut==='create'||S.tut.startsWith('b_'))return;if(UI.mode!=='cafe'||UI.modal){if(tutShown){coachOff();tutShown=''}return}const st=S.tut;const N=NMs();const c=customers[0];
   const show=(key,opt)=>{if(tutShown===key)return;tutShown=key;coach(opt)};
   if(st==='cafe1'){if(customers.length)tutSpawned=true;
     if(c&&c.state==='WAITING_TO_ORDER'&&!c.orderQueued&&els.get('take'+c.id)){S.tut='cafe2';return}
@@ -3433,7 +3504,7 @@ function tut2Tick(){const m=UI.mode;
   // --- Ekip: ilk açılışta işe alım bilgisi ---
   if(m==='team'&&S.created&&!(S.seen&&S.seen.team)&&!UI.modal){const btn=$('tmHire');if(btn){if(t2Shown!=='team'){scrollToEl(btn,0.85)}
       const f=r=>{const h=HIRE[r][0];return `${ROLE_NAME[r]}: Seviye ${h.lv} · ${h.c} altın`};
-      t2Show('team',{title:'Ekibini büyüt!',text:`<b>Yeni eleman ekle</b> ile yeni garson, barista ya da kasiyer işe alabilirsin. Her yeni eleman bir <b>seviye</b> ve <b>altın</b> ister:<br>${f('waiter')}<br>${f('barista')}<br>${f('cashier')}<br>En fazla 3 garson, 2 barista, 2 kasiyer çalışabilir.`,target:()=>$('tmHire'),place:'top',
+      t2Show('team',{title:'Ekibini büyüt!',text:`<b>İşçi bul</b>’da her gün yeni adaylar var. Her çalışanın 3 özelliği (hız, dayanıklılık, ustalık) ve günlük bir <b>maaşı</b> olur; maaşlar gün sonunda hasılattan düşülür. Yıldızı düşük çalışan çabuk yorulur ve molaya çıkar. Daha iyi adaylar için gazete ya da ajans ilanı ver; ekibi büyütmek için seviye gerekir.`,target:()=>$('tmHire'),place:'top',
         buttons:[{label:'Anladım',green:true,onClick:()=>{S.seen={...(S.seen||{}),team:true};markDirty();t2Hide()}}]});return}}
   if(t2Shown==='team'&&(m!=='team'||UI.modal)){t2Hide();return}
   // --- Tarif → Birleştir → Tarif → Menü ---
@@ -3456,7 +3527,7 @@ function tut2Tick(){const m=UI.mode;
     if(n2.length>=2){cellEl(n2[1])&&cellEl(n2[1]).classList.add('tuthl');t2Show('mg3',{title:'Son adım!',text:`İki <b>${ITEMS[T2_MID].name}</b> malzemesini üst üste sürükle; <b>${ITEMS[T2_DISC].name}</b> olsun ve tarif keşfedilsin.`,target:()=>cellEl(n2[0]),drag:{from:()=>cellEl(n2[0]),to:()=>cellEl(n2[1])},place:'head'});return}
     if(n1.length>=2){cellEl(n1[1])&&cellEl(n1[1]).classList.add('tuthl');t2Show('mg2'+n2.length,{title:n2.length?'Bir tane daha!':'Şimdi birleştir',text:`Bir <b>${ITEMS[T2_BASE].name}</b> malzemesini parmağınla tut ve parlayan diğerinin üstüne bırak. Aynı iki malzeme birleşince bir üst seviye olur: <b>${ITEMS[T2_MID].name}</b>.`,target:()=>cellEl(n1[0]),drag:{from:()=>cellEl(n1[0]),to:()=>cellEl(n1[1])},place:'head'});return}
     const bag=B.indexOf('bag_drink');const full=!B.some(v=>!v);
-    if(full){t2Show('mgfull',{text:'Tahtan dolu! Bir malzemeye dokun ve <b>Kaldır</b>’a bas, sonra torbaya dokun.',place:'head'});return}
+    if(full){t2Show('mgfull',{text:'Tahtan dolu! Bir malzemeye dokun ve <b>Sat</b>’a bas (altın kazanırsın), sonra torbaya dokun.',place:'head'});return}
     t2Show('mg1'+n1.length+n2.length,{title:n1.length||n2.length?'Bir süt daha':'Torbaya dokun',text:n1.length||n2.length?`Torbaya bir kez daha dokun.${n2.length?' Bir tane daha '+ITEMS[T2_MID].name+' yapacağız.':''}`:`<b>İçecek torbasına</b> dokun; içinden malzeme çıkar. Bu öğreticide torba ücretsiz ve hep <b>${ITEMS[T2_BASE].name}</b> verecek.`,target:()=>bag>=0?cellEl(bag):null,place:'head'});return}
   if(S.tr==='mgdone'){clearTutHL();
     if(m==='book'){S.tr='rbopen';markDirty();t2Shown='';return}
@@ -4484,7 +4555,7 @@ const SIDEG=(()=>{const g=new THREE.Group();g.userData.wall='left';scene.add(g);
   for(const s of [-1,1]){const r=add(new THREE.CylinderGeometry(0.004,0.004,0.17,4),M.dark,x0-0.075,y+0.34,z+s*0.08,{sh:false});r.rotation.x=s*0.52}
   return g})();
 // ---------- tezgah arkası raf: ahşap raflar, demir konsollar, kavanozlar, fincanlar, demlik, sarkan bitki ----------
-function buildBackShelf(bx,bw){const g=new THREE.Group();scene.add(g);const zw=-ROOM_D/2;const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
+function buildBackShelf(bx,bw){const g=new THREE.Group();g.userData.static=true;PARENT.add(g);const zw=-ROOM_D/2;const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
   const add=(geo,mat,x,y,z,o={})=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(o.rx)m.rotation.x=o.rx;if(o.ry)m.rotation.y=o.ry;if(o.rz)m.rotation.z=o.rz;m.castShadow=o.sh!==false;m.receiveShadow=true;g.add(m);return m};
   // fayans duvar paneli (tezgah üstünden rafların arkasına)
   {const cv=document.createElement('canvas');cv.width=512;cv.height=256;const c=cv.getContext('2d');c.fillStyle='#e7dccb';c.fillRect(0,0,512,256);
@@ -4530,7 +4601,7 @@ function buildBackShelf(bx,bw){const g=new THREE.Group();scene.add(g);const zw=-
 // Her altın hareketi addCoins üzerinden kategorisiyle kaydedilir (uydurma sayı yok). Olaylar (ağırlanan, kaybedilen,
 // paket teslimi…) ayrıca sayılır. "Son 60 dk" = şu andan geriye kayan 60 dakikalık pencere (gerçek saat).
 // Not: kayıtlar cihazda tutulur (prototip); üretimde ödemeler ve harcamalar sunucuda doğrulanmalıdır.
-const FIN_IN={sale:'Masa satışları',tip:'Bahşişler',dlv:'Paket satışları',afk:'Sen yokken hasılat',bonus:'Görev / istek ödülleri',other:'Diğer gelir'};
+const FIN_IN={sale:'Masa satışları',sell:'Tahtadan satış',tip:'Bahşişler',dlv:'Paket satışları',afk:'Sen yokken hasılat',bonus:'Görev / istek ödülleri',other:'Diğer gelir'};
 const FIN_OUT={stock:'Malzeme (toptancı)',staff:'Ekip (işe alım)',decor:'Mobilya ve dekor',equip:'Ekipman',upg:'Geliştirmeler',recipe:'Tarif açma',style:'Kıyafet ve stil',other:'Diğer gider'};
 const FIN_KEEP=48*3600e3;
 function finS(){const F=S.fin||(S.fin={tx:[],ev:[],tot:{},evTot:{},since:nowT()});if(!F.tx)F.tx=[];if(!F.ev)F.ev=[];if(!F.tot)F.tot={};if(!F.evTot)F.evTot={};return F}
@@ -5187,11 +5258,13 @@ UI_IC.globe=UI_IC.event;
 FIN_IN.event='Etkinlik ödülleri';
 const EVENTS={
  it:{id:'it',name:'İtalya Haftası',country:'İtalya',city:'Roma',cafe:'Caffè Gattino',flag:['#3a8f4b','#fffaf0','#d9453b'],
-   desc:'Roma’da 0’dan bir köşe kafe kur: espresso, gelato, tiramisu ve odun fırınında pizza.',
+   desc:'Roma’da 0’dan bir köşe kafe kur: espresso, gelato, tiramisu ve odun fırınında pizza.',wall:'w_it_ocra',floor:'f_terra',
    tiers:[[2,150],[3,250],[4,400],[5,600],[6,800],[7,1000],[8,1300],[10,2000]]},
- tr:{id:'tr',name:'Türkiye Haftası',country:'Türkiye',city:'İstanbul',cafe:'İstanbul Kahvesi',flag:['#e0483f','#fffaf0','#e0483f'],desc:'Yakında',tiers:[]}};
+ tr:{id:'tr',name:'Türkiye Haftası',country:'Türkiye',city:'İstanbul',cafe:'Galata Kahvecisi',flag:['#e0483f'],wall:'w_tr_cini',floor:'f_tr_cini',
+   desc:'İstanbul’da Galata’nın dibinde 0’dan bir kahveci kur: Türk kahvesi, simit, baklava ve künefe.',
+   tiers:[[2,150],[3,250],[4,400],[5,600],[6,800],[7,1000],[8,1300],[10,2000]]}};
 const EV_JOIN_LVL=3;
-const evFlagHTML=E=>`<span class="mflag">${E.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`;
+const evFlagHTML=E=>E.id==='tr'?`<span class="mflag trf"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#e30a17"/><circle cx="11" cy="10" r="5" fill="#fff"/><circle cx="12.3" cy="10" r="4" fill="#e30a17"/><path d="M16.2 10 L20.6 8.6 L17.9 12.3 L17.9 7.7 L20.6 11.4 Z" fill="#fff"/></svg></span>`:`<span class="mflag">${E.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`;
 function evLeft(){const ms=Math.max(0,evEnds()-Date.now()),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);return d?`${d} gün ${h} sa`:h?`${h} sa ${m} dk`:`${m} dk`}
 const evArch=id=>S.evs&&S.evs[id]||null;
 const evTransRecipes=id=>(EV_RECIPES[id]||[]).map(x=>x[0]).filter(k=>RECIPE[k]&&RECIPE[k].br===id);
@@ -5202,7 +5275,7 @@ const EV_BR_COST={price:2500,up:{bar:[400,1100,2400],gelato:[500,1200,2600],past
 let EV_NOTE=[];
 {const _ls=loadState;loadState=function(){const had=_ls();
   if(EVMODE){const E=EVENTS[EVMODE];
-    if(S.ev!==EVMODE){S.ev=EVMODE;S.created=true;S.tut='done';S.tr='done';S.guideSeen=true;S.cafeName=E.cafe;S.wall='w_it_ocra';S.floor='f_terra';S.owned.w_it_ocra=true;S.owned.f_terra=true;
+    if(S.ev!==EVMODE){S.ev=EVMODE;S.created=false;S.setupOffered=true;S.tut='done';S.tr='done';S.guideSeen=true;S.cafeName=E.cafe;S.wall=E.wall;S.floor=E.floor;S.owned[E.wall]=true;S.owned[E.floor]=true;
       S.lastSeen=Date.now();S.dayStart=0;S.evNew=true}
     for(const r of RECIPES)S.recipes[r.id]=true;S.evs={};S.br={};
   }else{
@@ -5296,6 +5369,24 @@ WALL_BUILD.d_it_poster=()=>{const cv=document.createElement('canvas');cv.width=2
   x.fillStyle='#fff3c4';x.beginPath();x.arc(128,150,46,0,Math.PI*2);x.fill();x.fillStyle='#7a3b22';x.fillRect(30,170,196,80);x.fillStyle='#f6c26b';for(let r=0;r<2;r++)for(let i=0;i<7;i++){x.beginPath();x.ellipse(46+i*27,192+r*34,9,13,0,0,Math.PI*2);x.fill()}
   x.fillStyle='#3a8f4b';x.fillRect(0,262,256,58);x.fillStyle='#fff8ec';x.font='900 46px sans-serif';x.textAlign='center';x.fillText('ROMA',128,306);x.fillStyle='#4a2e1c';x.font='800 20px sans-serif';x.fillText('CAFFÈ GATTINO',128,40);
   const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.BoxGeometry(0.46,0.58,0.04),toon(0x4a2e1c)));const p=new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.52),new THREE.MeshToonMaterial({map:tx,gradientMap:grad}));p.position.z=0.022;g.add(p);g.children.forEach(m=>m.position.z+=0.02);return g};
+WALL_BUILD.d_tr_nazar=()=>{const g=new THREE.Group();[[0x1f5fa8,0.2],[0xfffaf0,0.13],[0x7fc6e8,0.09],[0x1d1d2a,0.05]].forEach(([c,r],i)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,0.02,28),toon(c));m.rotation.x=Math.PI/2;m.position.z=0.02+i*0.006;m.castShadow=true;g.add(m)});
+  const s=new THREE.Mesh(new THREE.TorusGeometry(0.035,0.006,6,14),toon(0xc9a24a));s.position.set(0,0.23,0.02);g.add(s);return g};
+WALL_BUILD.d_tr_poster=()=>{const cv=document.createElement('canvas');cv.width=256;cv.height=320;const x=cv.getContext('2d');const gr=x.createLinearGradient(0,0,0,320);gr.addColorStop(0,'#ffcf9e');gr.addColorStop(1,'#f08a6a');x.fillStyle=gr;x.fillRect(0,0,256,320);
+  x.fillStyle='#8fc6dc';x.fillRect(0,230,256,40);x.fillStyle='#7a4a3a';x.fillRect(104,90,48,150);x.beginPath();x.moveTo(96,92);x.lineTo(128,40);x.lineTo(160,92);x.fill();x.fillStyle='#ffe6b0';for(let i=0;i<3;i++)x.fillRect(116,110+i*36,24,16);
+  x.strokeStyle='#4a2e1c';x.lineWidth=3;x.beginPath();x.moveTo(40,70);x.quadraticCurveTo(48,62,56,70);x.quadraticCurveTo(64,62,72,70);x.stroke();
+  x.fillStyle='#e30a17';x.fillRect(0,270,256,50);x.fillStyle='#fff8ec';x.font='900 40px sans-serif';x.textAlign='center';x.fillText('GALATA',128,310);
+  const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.BoxGeometry(0.46,0.58,0.04),toon(0x4a2e1c)));const p=new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.52),new THREE.MeshToonMaterial({map:tx,gradientMap:grad}));p.position.z=0.022;g.add(p);g.children.forEach(m=>m.position.z+=0.02);return g};
+DECOR_BUILD.d_tr_lale=()=>{const G=new THREE.Group();bm(CY(0.16,0.12,0.26,12),0x3f8fb0,0,0.13,0,G);bm(CY(0.165,0.165,0.03,12),0xfffaf0,0,0.26,0,G);
+  for(let i=0;i<7;i++){const a=i/7*Math.PI*2,r=i?0.08:0;bm(CY(0.006,0.006,0.32,5),0x5f8a3a,Math.cos(a)*r,0.42,Math.sin(a)*r,G);const f=bm(new THREE.SphereGeometry(0.04,10,8),i%2?0xe0483f:0xf6c84a,Math.cos(a)*r,0.6,Math.sin(a)*r,G);f.scale.set(0.8,1.3,0.8)}return G};
+DECOR_BUILD.d_tr_lamp=()=>{const G=new THREE.Group();bm(CY(0.12,0.16,0.04,12),0xc9a24a,0,0.02,0,G);bm(CY(0.015,0.015,1.1,8),0xc9a24a,0,0.57,0,G);
+  const cols=[0xe0483f,0x3f8fb0,0xf6c84a,0x7fae4a,0xb27ad6];for(let i=0;i<10;i++){const a=i/10*Math.PI*2;const m=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.09,0.01),new THREE.MeshBasicMaterial({color:cols[i%5]}));m.position.set(Math.cos(a)*0.12,1.2,Math.sin(a)*0.12);m.rotation.y=-a+Math.PI/2;G.add(m)}
+  bm(new THREE.SphereGeometry(0.13,14,10,0,Math.PI*2,0,Math.PI/2),0xc9a24a,0,1.25,0,G);bm(CY(0.11,0.06,0.06,12),0xc9a24a,0,1.13,0,G);return G};
+DECOR_BUILD.d_tr_semaver=()=>{const G=new THREE.Group();bm(BX(0.78,0.72,0.56),0x7a4a2a,0,0.36,0,G);bm(BX(0.84,0.05,0.62),0xf1ece4,0,0.745,0,G);
+  bm(CY(0.11,0.13,0.3,16),0xc77b46,-0.15,0.92,0,G);bm(CY(0.06,0.1,0.06,14),0xc9a24a,-0.15,1.1,0,G);bm(CY(0.045,0.055,0.09,12),0xfff8ec,-0.15,1.17,0,G);
+  for(let i=0;i<4;i++){const x=0.08+(i%2)*0.1,z=-0.1+Math.floor(i/2)*0.18;bm(CY(0.022,0.016,0.07,10),new THREE.MeshPhysicalMaterial({color:0xb5401f,transparent:true,opacity:0.85}),x,0.81,z,G);bm(CY(0.035,0.035,0.006,12),0xc9a24a,x,0.773,z,G)}return G};
+DECOR_BUILD.d_tr_sedir=()=>{const G=new THREE.Group();bm(BX(1.5,0.3,0.62),0x8b5a32,0,0.15,0,G);bm(BX(1.48,0.1,0.58),0xb5402f,0,0.35,0.01,G);
+  for(let i=0;i<5;i++)bm(BX(0.22,0.02,0.58),i%2?0xf6c84a:0x3f8fb0,-0.6+i*0.3,0.405,0.01,G);
+  for(let i=0;i<3;i++){const c=bm(BX(0.42,0.34,0.12),[0xe0483f,0x3f8fb0,0xf6c84a][i],-0.48+i*0.48,0.58,-0.22,G);c.rotation.x=-0.15}return G};
 {const _e=envTick;envTick=function(dt){_e(dt);if(IT_GLOW.length){const t=performance.now();for(const o of IT_GLOW){if(o.isLight)o.intensity=2+Math.sin(t/130)*0.35;else o.material.color.setHSL(0.08,1,0.5+Math.sin(t/180)*0.06)}}}}
 
 // ---- ETKİNLİK PANELİ ----
@@ -5312,7 +5403,7 @@ function renderEvents(){const p=$('evP');if(!p||p.hidden)return;const w=evWeek()
     return `<li class="bu"><img src="${itemThumb(c.id)}" alt=""><span class="but"><b>${c.name}</b><small>${st.done?'Ana kafenin marketinde':st.note||st.why||'Getirmeye hazır'}</small></span>${!EVMODE&&st.ok?`<button class="btn sm green" type="button" data-take="item:${c.id}">Kafeme ekle</button>`:st.done?`<span class="bumax">${ic('check')}</span>`:''}</li>`}).join('');
   const go=EVMODE?`<button class="btn" type="button" id="evHome">${ic('cafe')}Ana kafeye dön</button>`:S.lvl<EV_JOIN_LVL?`<button class="btn" type="button" disabled>${ic('lock')}Seviye ${EV_JOIN_LVL} gerekli</button>`:`<button class="btn green" type="button" id="evGo">${ic('event')}${d?'Kaldığın yerden devam':E.city+'’ya git'}</button>`;
   p.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${ic('event')}</span><h2>Haftalık etkinlik</h2><button class="iconbtn" id="evClose" type="button" aria-label="Kapat">${ic('close')}</button></div>
-   <div class="scroll"><div class="evhero"><div class="evsky">${EV_SCENE}</div><div class="evht">${evFlagHTML(E)}<b>${E.name}</b><span class="evtime">${ic('clock')}Bitmesine ${evLeft()}</span></div>
+   <div class="scroll"><div class="evhero"><div class="evsky">${id==='tr'?EV_SCENE_TR:EV_SCENE}</div><div class="evht">${evFlagHTML(E)}<b>${E.name}</b><span class="evtime">${ic('clock')}Bitmesine ${evLeft()}</span></div>
      <p>${E.desc}</p><p class="evsub">${EVMODE?`Burada kazandığın ${ic('coin')} etkinlik parası sadece bu kafede geçer. Ödüller ve açtıkların ana kafene dönünce eklenir.`:d?`${E.cafe} seni bekliyor · Sv ${lv}. Hafta bitince kafe kapanır, ${E.country} tekrar gelince kaldığın yerden devam edersin.`:`0’dan başlarsın; ayrı bir etkinlik parası kazanırsın. Hafta bitince kafe kapanır, ${E.country} tekrar gelince kaldığın yerden devam edersin.`}</p>${go}</div>
     <h3 class="evh">Ana kafene altın ödülleri</h3><p class="evsub">${E.cafe} bu seviyelere ulaşınca ana kafene altın gelir.</p><ul class="evtiers">${tierRows}</ul>
     <h3 class="evh">${E.country}’dan kafene getirebileceklerin</h3><ul class="bul">${recs}${items}</ul>
@@ -5321,6 +5412,11 @@ function renderEvents(){const p=$('evP');if(!p||p.hidden)return;const w=evWeek()
   p.querySelectorAll('[data-take]').forEach(b=>b.onclick=()=>{const [kind,k]=b.dataset.take.split(':');evTake(kind,id,k)})}
 const UI_GOLD=g=>`<span class="evgold">${UI_IC_GOLD}${g}</span>`;
 const UI_IC_GOLD=`<span class="ic">${SV(`<circle cx="32" cy="32" r="24" fill="#f2c14e"/><circle cx="32" cy="32" r="16" fill="#f7d77a" stroke-width="3"/><path d="M32 22 V42 M26 27 H36 M26 37 H38" stroke-width="3.5"/>`)}</span>`;
+const EV_SCENE_TR=`<svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="120" fill="#ffd2b0"/><circle cx="60" cy="40" r="22" fill="#fff3c4"/><rect y="96" width="320" height="24" fill="#8fc6dc"/>
+ <g fill="#c9a0b8" stroke="#4a2e1c" stroke-width="2.2" stroke-linejoin="round"><path d="M120 96 V74 H200 V96 Z"/><path d="M130 74 Q160 30 190 74 Z"/><path d="M112 80 Q122 64 132 80 Z M188 80 Q198 64 208 80 Z"/></g>
+ <g fill="#e8d6c8" stroke="#4a2e1c" stroke-width="2"><path d="M104 96 V46 L107 38 L110 46 V96 Z M210 96 V46 L213 38 L216 46 V96 Z"/></g>
+ <g fill="#d9a066" stroke="#4a2e1c" stroke-width="2.2" stroke-linejoin="round"><path d="M252 96 V44 H274 V96 Z"/><path d="M248 44 H278 L263 18 Z" fill="#7a8fa8"/><path d="M256 58 H270 M256 70 H270" fill="none"/></g>
+ <g fill="none" stroke="#4a2e1c" stroke-width="1.6"><path d="M40 70 q4 -4 8 0 q4 -4 8 0 M290 52 q3 -3 6 0 q3 -3 6 0"/></g></svg>`;
 const EV_SCENE=`<svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="120" fill="#ffd9a0"/><circle cx="250" cy="44" r="26" fill="#fff3c4"/>
  <g fill="#e8a066" stroke="#4a2e1c" stroke-width="2.4" stroke-linejoin="round"><path d="M70 120 V64 Q70 40 112 40 H168 Q210 40 210 64 V120 Z"/></g>
  <g fill="#ffd9a0" stroke="#4a2e1c" stroke-width="2"><path d="M84 120 V96 Q84 86 94 86 Q104 86 104 96 V120 Z M118 120 V96 Q118 86 128 86 Q138 86 138 96 V120 Z M152 120 V96 Q152 86 162 86 Q172 86 172 96 V120 Z M186 120 V96 Q186 86 196 86 Q206 86 206 96 V120Z M90 72 Q90 62 98 62 Q106 62 106 72 V78 H90Z M122 72 Q122 62 130 62 Q138 62 138 72 V78 H122Z M154 72 Q154 62 162 62 Q170 62 170 72 V78 H154Z M184 72 Q184 62 192 62 Q200 62 200 72 V78 H184Z"/></g>
@@ -5338,7 +5434,7 @@ if(EVMODE){const E=EVENTS[EVMODE];document.documentElement.classList.add('evmode
 setTimeout(function evIntro(){if(!started||UI.modal){setTimeout(evIntro,1500);return}
   for(const n of EV_NOTE)if(n[0]==='refund')toast(`<b>Roma şubesi kapandı</b><br>Dünya haritası yerine haftalık etkinlikler geldi · harcadığın ${ic('coin')}${n[1]} altın iade edildi`,ic('event'),4200);
   if(!EVMODE){const g=evClaim();if(g)setTimeout(()=>toast(`<b>Etkinlik ödülü</b><br>Ana kafene ${ic('coin')}${g} altın eklendi`,ic('coin'),2800),EV_NOTE.length?4400:0);evBadge()}
-  else if(S.evNew){delete S.evNew;markDirty();toast(`<b>${EVENTS[EVMODE].cafe}’ye hoş geldin!</b><br>0’dan başlıyorsun · ekibin seninle geldi`,ic('event'),3600)}},4000);
+  else if(S.evNew&&!S.evHi){S.evHi=1;toast(`<b>${EVENTS[EVMODE].cafe}’ye hoş geldin!</b><br>Boş bir dükkân · tezgâhtan ekibe her şeyi burada kuracaksın`,ic('event'),3600)}},4000);
 {const st=document.createElement('style');st.textContent=`
 #evP{z-index:40}#evP .ic{display:inline-grid;place-items:center;width:16px;height:16px;flex:none;vertical-align:-3px}#evP .ic svg{width:100%;height:100%}#evP .panel-head .ic{width:auto;height:auto}
 #evP .scroll{overflow:auto;padding:0 12px 16px}
@@ -5350,7 +5446,7 @@ setTimeout(function evIntro(){if(!started||UI.modal){setTimeout(evIntro,1500);re
 .evtiers{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .evt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:2px solid var(--ink);border-radius:12px;background:#fffaf0;font-weight:800}
 .evt.reach{background:#fff1c9}.evt.got{background:#e6f2d9}.evl{font-size:11px;opacity:.75}.evg{display:flex;align-items:center;gap:2px;font-size:12.5px}.evgold{display:inline-flex;align-items:center;gap:2px}.evt .ic{width:14px!important;height:14px!important}
-.mflag{display:inline-flex;width:30px;height:20px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;flex:none}.mflag i{flex:1}
+.mflag{display:inline-flex;width:30px;height:20px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;flex:none}.mflag i{flex:1}.mflag svg{width:100%;height:100%;display:block}
 #evP .bul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
 #evP .bu{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 8px;padding:6px 8px;border:2px solid var(--ink);border-radius:12px;background:#fffaf0}
 #evP .bu img{width:40px;height:40px;border-radius:8px;background:#f6e6cc;object-fit:cover}.but{display:flex;flex-direction:column;min-width:0}.but b{font:800 14px var(--font-display,inherit)}.but small{font-size:11.5px;font-weight:700;line-height:1.3;opacity:.8}
@@ -5362,9 +5458,333 @@ setTimeout(function evIntro(){if(!started||UI.modal){setTimeout(evIntro,1500);re
 #game.nonav #evChip,#game.visiting #evChip{display:none}
 .evtravel{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#ffd9a0;animation:evf .4s ease}.evtravel div{display:flex;flex-direction:column;align-items:center;gap:12px}.evtravel .mflag{width:60px;height:40px;border-width:3px;border-radius:8px}.evtravel b{font:800 20px var(--font-display,inherit);color:var(--ink)}@keyframes evf{from{opacity:0}}`;document.head.appendChild(st)}
 
+// ================= PERFORMANS: grafik kalitesi, kare hızı sınırı, gölge seyreltme, örtülüyken çizmeme =================
+// eco: pil tasarrufu · bal: dengeli (telefon varsayılanı) · high: yüksek (bilgisayar varsayılanı). Cihaza özel, kayda girmez.
+const GFX={eco:{name:'Pil tasarrufu',pr:1,fps:30,idle:24,shadow:1024,soft:false,shEvery:3,lamps:false,far:true},
+  bal:{name:'Dengeli',pr:1.5,fps:60,idle:30,shadow:1024,soft:true,shEvery:2,lamps:true,far:true},
+  high:{name:'Yüksek',pr:2,fps:60,idle:60,shadow:2048,soft:true,shEvery:1,lamps:true,far:false}};
+const GFX_KEY='mewmori-grafik';
+const PERF={q:null,lastF:0,touchT:0,frame:0,covered:false,coverT:0,show:false,n:0,t0:0,fps:0,box:null};
+function gfxAuto(){const mob=matchMedia('(pointer:coarse)').matches||/iPhone|iPad|Android/i.test(navigator.userAgent);return mob?'bal':'high'}
+function gfxApply(q,init){if(!GFX[q])q=gfxAuto();PERF.q=q;const G=GFX[q];try{localStorage.setItem(GFX_KEY,q)}catch(e){}
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,G.pr));try{resize()}catch(e){}
+  renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
+  const soft=G.soft?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;const typeCh=renderer.shadowMap.type!==soft;renderer.shadowMap.type=soft;
+  if(sun.shadow.mapSize.x!==G.shadow){sun.shadow.mapSize.set(G.shadow,G.shadow);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}}
+  try{for(const L of LAMP_POOL)L.visible=G.lamps}catch(e){}
+  gfxFarShadows(G.far);
+  if(typeCh&&!init)scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true)})}
+// odadan uzak (dış mahalle) nesnelerin gölgesi düşük ayarlarda kapanır: gölge haritası sadece kafe çevresini çizer
+const FAR_SH=[];function gfxFarShadows(off){if(off&&!FAR_SH.length){const box=new THREE.Box3(),c=new THREE.Vector3();
+    for(const o of scene.children){if(o===SHELL.g||(o.userData&&o.userData.isChar))continue;box.setFromObject(o);if(box.isEmpty())continue;box.getCenter(c);
+      if(Math.max(Math.abs(c.x),Math.abs(c.z))>14)o.traverse(m=>{if(m.isMesh&&m.castShadow){m.castShadow=false;FAR_SH.push(m)}})}}
+  else if(!off&&FAR_SH.length){FAR_SH.forEach(m=>m.castShadow=true);FAR_SH.length=0}renderer.shadowMap.needsUpdate=true}
+// döngü kapısı: bu karede çalışılsın mı?
+function perfGate(now){const G=GFX[PERF.q]||GFX.bal;
+  if(now-PERF.coverT>300){PERF.coverT=now;PERF.covered=perfCovered()}
+  const active=now-PERF.touchT<2500;const fps=PERF.covered?10:active?G.fps:G.idle;
+  if(fps<60&&now-PERF.lastF<1000/fps-4)return false;PERF.lastF=now;return true}
+function perfShadow(){const G=GFX[PERF.q]||GFX.bal;PERF.frame++;if(PERF.frame%G.shEvery===0)renderer.shadowMap.needsUpdate=true}
+function perfCovered(){if(document.hidden)return true;const pts=[[0.5,0.42],[0.5,0.7]];let n=0;
+  for(const [px,py] of pts){const el=document.elementFromPoint(innerWidth*px,innerHeight*py);if(!el||el.tagName==='CANVAS')return false;
+    const p=el.closest('.screen,section,[role=dialog],#recipes,#menuScr,#merge,#team,#guide,#ce');if(!p)return false;const r=p.getBoundingClientRect();if(r.width>=innerWidth*0.9&&r.height>=innerHeight*0.75)n++}
+  return n===pts.length}
+function perfTick(now){if(!PERF.show)return;PERF.n++;if(now-PERF.t0>=1000){PERF.fps=Math.round(PERF.n*1000/(now-PERF.t0));PERF.n=0;PERF.t0=now;const i=renderer.info;
+  PERF.box.textContent=`${PERF.fps} fps · ${i.render.calls} çizim · ${(i.render.triangles/1000).toFixed(0)}k üçgen · ${renderer.getPixelRatio()}x · ${GFX[PERF.q].name}${PERF.covered?' · örtülü':''}`}}
+function perfShow(on){PERF.show=on;if(on&&!PERF.box){PERF.box=document.createElement('div');PERF.box.id='perfBox';document.body.appendChild(PERF.box)}if(PERF.box)PERF.box.hidden=!on;try{localStorage.setItem('mewmori-fps',on?'1':'0')}catch(e){}}
+['pointerdown','pointermove','wheel','keydown'].forEach(ev=>addEventListener(ev,()=>{PERF.touchT=performance.now()},{passive:true}));
+try{controls.addEventListener('change',()=>{PERF.touchT=performance.now()})}catch(e){}
+gfxApply((()=>{try{return localStorage.getItem(GFX_KEY)}catch(e){return null}})(),true);
+try{if(localStorage.getItem('mewmori-fps')==='1')perfShow(true)}catch(e){}
+// dünya kurulduktan sonra (uzak nesneler eklenince) uzak gölgeleri yeniden uygula
+setTimeout(()=>{const G=GFX[PERF.q];FAR_SH.length=0;gfxFarShadows(G.far)},3000);
+// rehberin altına grafik ayarı
+{const r=$('gdReset');if(r){const d=document.createElement('div');d.className='gfxset';d.innerHTML=`<b>Grafik kalitesi</b><div class="gfxseg" role="radiogroup" aria-label="Grafik kalitesi">${Object.keys(GFX).map(k=>`<button type="button" role="radio" data-gfx="${k}">${GFX[k].name}</button>`).join('')}</div>
+  <label class="gfxfps"><input type="checkbox" id="gfxFps"> Performans göstergesi</label><small>Telefon ısınıyorsa “Pil tasarrufu”nu seç.</small>`;r.parentElement.insertBefore(d,r);
+  const sync=()=>{d.querySelectorAll('[data-gfx]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.gfx===PERF.q)));$('gfxFps').checked=PERF.show};sync();
+  d.querySelectorAll('[data-gfx]').forEach(b=>b.onclick=()=>{sfx('tap');gfxApply(b.dataset.gfx);sync();toast(`Grafik: <b>${GFX[PERF.q].name}</b>`,ic('check'),1600)});
+  $('gfxFps').onchange=e=>perfShow(e.target.checked)}}
+{const st=document.createElement('style');st.textContent=`
+#perfBox{position:fixed;left:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);z-index:9998;background:rgba(40,26,16,.82);color:#fff8ec;font:700 11px/1.3 ui-monospace,monospace;padding:4px 7px;border-radius:8px;pointer-events:none}
+.gfxset{display:flex;flex-direction:column;gap:6px;align-items:stretch;padding:10px 12px;border:2.5px solid var(--ink);border-radius:14px;background:var(--paper);margin-bottom:10px}
+.gfxset b{font:800 14px var(--font-display,inherit)}.gfxset small{font-size:11.5px;font-weight:700;opacity:.75}
+.gfxseg{display:flex;gap:4px}.gfxseg button{flex:1;font:800 12px var(--font,inherit);padding:7px 4px;border:2px solid var(--ink);border-radius:10px;background:#fffaf0;cursor:pointer}.gfxseg button[aria-checked=true]{background:#ffe7a8}
+.gfxfps{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800}`;document.head.appendChild(st)}
+// uzak mahalle (evler, ağaçlar): her grubun parçaları malzemeye göre tek ağa birleştirilir → yüzlerce çizim çağrısı azalır
+// aynı görünen malzemeler (renk/doku/tip aynı) tek malzeme sayılır: birçok parça kendi kopyasını yaratıyor
+function matSig(m){const c=x=>x&&x.getHexString?x.getHexString():'';return [m.type,c(m.color),c(m.emissive),m.emissiveIntensity,m.map?m.map.uuid:'',m.gradientMap?m.gradientMap.uuid:'',m.opacity,m.side,m.vertexColors,m.roughness,m.metalness,m.flatShading,m.alphaTest,m.depthWrite,m.toneMapped].join(',')}
+function mergeStatic(G){let bad=false;G.traverse(o=>{if(o.isSkinnedMesh||o.isLight||o.isPoints||o.isLine||o.isSprite)bad=true});if(bad)return 0;
+  G.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(G.matrixWorld).invert();const by=new Map();
+  G.traverse(o=>{if(!o.isMesh||!o.visible||Array.isArray(o.material)||o.material.transparent||o.renderOrder||o.onBeforeRender!==THREE.Object3D.prototype.onBeforeRender)return;
+    let p=o.parent,vis=true;while(p&&p!==G){if(!p.visible)vis=false;p=p.parent}if(!vis)return;
+    const k=matSig(o.material)+'|'+o.castShadow+'|'+o.receiveShadow;if(!by.has(k))by.set(k,[]);by.get(k).push(o)});
+  let saved=0;const M=new THREE.Matrix4();
+  for(const list of by.values()){if(list.length<2)continue;const geos=[];let ok=true;
+    for(const m of list){let g=m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone();for(const a of Object.keys(g.attributes))if(!['position','normal','uv'].includes(a))g.deleteAttribute(a);
+      if(!g.attributes.normal)g.computeVertexNormals();if(!g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));
+      g.morphAttributes={};g.clearGroups();M.multiplyMatrices(inv,m.matrixWorld);g.applyMatrix4(M);geos.push(g)}
+    let mg=null;try{mg=BufferGeometryUtils.mergeGeometries(geos,false)}catch(e){mg=null}geos.forEach(g=>g.dispose());if(!mg)continue;
+    const nm=new THREE.Mesh(mg,list[0].material);nm.castShadow=list[0].castShadow;nm.receiveShadow=list[0].receiveShadow;G.add(nm);
+    for(const m of list){m.parent.remove(m)}saved+=list.length-1}
+  return saved}
+function mergeFar(){let n=0;const box=new THREE.Box3(),c=new THREE.Vector3();
+  for(const o of scene.children){if(!o.isGroup||o===SHELL.g||o===ENV.shell||o.userData.uid||o.userData.isChar||o.userData.merged)continue;if((ENV.gulls||[]).some(q=>q.g===o))continue;
+    box.setFromObject(o);if(box.isEmpty())continue;box.getCenter(c);if(Math.hypot(c.x,c.z)<12)continue;try{n+=mergeStatic(o);o.userData.merged=true}catch(e){console.warn('merge',e)}}
+  renderer.shadowMap.needsUpdate=true;return n}
+setTimeout(()=>{try{const n=mergeFar();if(n)console.log('birleştirildi',n)}catch(e){console.warn(e)}},2600);
+// mobilya grupları (masa+sandalye+lamba ≈ 30–60 parça) kurulurken birleştirilir
+{const _b=buildFurnGroup;buildFurnGroup=function(rec){const G=_b(rec);try{mergeStatic(G)}catch(e){console.warn('merge furn',e)}return G}}
+// kaldırım/bordür/yol çizgileri (≈150 parça): kurulunca birleştirilir
+{const _e=envShell;envShell=function(){_e();try{mergeStatic(ENV.shell)}catch(e){console.warn('merge env',e)}};try{if(ENV.shell)mergeStatic(ENV.shell)}catch(e){}}
+// sabit işaretli süs grupları (arka raf vb.)
+for(const o of scene.children)if(o.userData&&o.userData.static&&!o.userData.merged){try{mergeStatic(o);o.userData.merged=true}catch(e){}}
+
+// ================= TAŞINABİLİR TEZGÂH VE KASA (arka duvar boyunca) =================
+// S.layout={k,c}: tezgâh bloğu (KX) ve kasa bloğu (CX) kayması (m). Kapı sabit; tezgâh her zaman kasanın solunda kalır.
+// Açılışta bloklar yeniden kurulur ve çalışanların/müşterilerin bütün durma noktaları aynı miktarda kaydırılır.
+// Düzenle modunda taşıma önizlemedir; "Tamam" deyince kaydedilip sayfa yenilenir (çalışanlar yeni yerlerinde başlar).
+const LAY_STEP=0.25;
+const K_SPAN=()=>[-ROOM_W/2+KX,KIT0.cx+KIT.cw/2+0.88+KX];             // tezgâh bloğunun x aralığı (menü tahtası dahil)
+const K_SHELF=()=>[KIT0.bx-KIT.bw/2-0.05+KX,KIT0.bx+KIT.bw/2+0.05+KX];   // arka duvardaki raflar
+const C_SPAN=()=>[CASH0.x-0.66+CX,CASH0.x+2.3+CX];                     // kasa + sandalye + ödeme sırası
+// açılışta: mantık noktalarını kaydır (yalnız bir kez, personel doğmadan önce)
+function layoutShiftLogic(dk,dc){const seen=new Set();const sh=(o,d,keys=['x'])=>{if(!o||seen.has(o)||!d)return;seen.add(o);for(const k of keys)o[k]+=d};
+  if(dk){for(const k in PST)sh(PST[k],dk);sh(POSA_HOME,dk);for(const k in PLATE_SPOT)sh(PLATE_SPOT[k],dk);sh(PREP_SPOT,dk);sh(PICKUP_SPOT,dk);sh(PREP_ANCHOR,dk);sh(PICKUP_ANCHOR,dk);
+    PICKUP_SLOTS.forEach(v=>sh(v,dk));PREP_SPOTS.forEach(v=>sh(v,dk));PICK_SPOTS.forEach(v=>sh(v,dk));B_HOME.forEach(v=>sh(v,dk));W_WAIT.slice(1).forEach(v=>sh(v,dk));
+    sh(BOX_COUNTER.stand,dk);sh(BOX_COUNTER.top,dk);sh(NO_BUILD[1],dk,['minX','maxX']);sh(NO_BUILD[2],dk,['minX','maxX'])}
+  if(dc){QLINE.forEach(v=>sh(v,dc));QSPOTS.forEach(v=>sh(v,dc));sh(CASH_GATE,dc,['L','R']);sh(COURIER_IDLE,dc);sh(NO_BUILD[3],dc,['minX','maxX'])}}
+function layoutBoot(){const L=S.layout;if(!L)return;if(L.w!=null&&L.w!==WIN.x){WIN.x=L.w;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}const k=+L.k||0,c=+L.c||0;if(!k&&!c)return;
+  if(layoutCheck(k,c,true)){console.warn('kayıtlı tezgâh/kasa yeri geçersiz:',layoutCheck(k,c,true));S.layout=null;return}
+  KX=k;CX=c;buildKitchen();buildCash();layoutShiftLogic(k,c);try{buildGrid()}catch(e){}LAY.bootK=k;LAY.bootC=c}
+const LAY={on:null,k0:0,c0:0,w0:1.6,bootK:0,bootC:0,mark:null};
+// yerleşim geçerli mi? (null = geçerli, yoksa sebep)
+function layoutCheck(k,c,boot){const kx0=-ROOM_W/2+k,kx1=KIT0.cx+KIT.cw/2+0.88+k,cx0=CASH0.x-0.66+c,cx1=CASH0.x+2.3+c;
+  if(k<0)return 'Tezgâh sol duvarın dışına çıkamaz';if(c<k-0.001)return 'Kasa tezgâhın sağında kalmalı';
+  if(cx1>RM.x1-0.15)return 'Kasa ve ödeme sırası duvara sığmıyor';
+  const s0=KIT0.bx-KIT.bw/2-0.05+k,s1=KIT0.bx+KIT.bw/2+0.05+k,w0=WIN.x-WIN.w/2-0.05,w1=WIN.x+WIN.w/2+0.05;if(s1>w0&&s0<w1)return LAY.on==='w'?'Pencere tezgâh raflarının arkasına geliyor':'Tezgâhın rafları pencerenin önüne geliyor';
+  if(w0<RM.x0+0.3||w1>RM.x1-0.3)return 'Pencere duvara sığmıyor';
+  if(boot)return null;
+  // mobilya ve duvar süsleri
+  const zoneK={minX:kx0,maxX:kx1,minZ:RM.z0,maxZ:0.2},zoneC={minX:cx0,maxX:cx1,minZ:RM.z0,maxZ:-1.1};
+  const ov=(a,b)=>a.minX<b.maxX&&a.maxX>b.minX&&a.minZ<b.maxZ&&a.maxZ>b.minZ;
+  for(const [u,R] of FURN){const ck=CAT[R.rec.id];if(ck.kind==='walldecor'){const sl=WALL_SLOTS[R.rec.slot];if(sl&&!sl.ry&&sl.x>s0-0.3&&sl.x<s1+0.3)return `Duvardaki “${ck.name}” rafların arkasında kalıyor: önce onu taşı`;if(sl&&!sl.ry&&Math.abs(sl.x-WIN.x)<WIN.w/2+0.35)return `Duvardaki “${ck.name}” pencereye denk geliyor: önce onu taşı`;continue}
+    for(const b of R.boxes||[])if(ov(b,zoneK)||ov(b,zoneC))return `“${ck.name}” yolu kapatıyor: önce onu taşı`}
+  return null}
+// ---- düzenle modu: tezgâha / kasaya dokununca taşıma çubuğu ----
+{const _t=editTap;editTap=function(x,y){const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
+  const fh=raycaster.intersectObjects([...FURN.values()].map(R=>R.group),true),bh=raycaster.intersectObjects([KG,CG].filter(Boolean),true);
+  if(bh.length&&(!fh.length||bh[0].distance<fh[0].distance)){let o=bh[0].object;while(o&&!o.userData.block)o=o.parent;if(o){layStart(o.userData.block);return}}
+  {const wb=SHELL.g&&SHELL.g.children.find(o=>o.userData.wall==='back');if(wb&&wb.visible){const wh=raycaster.intersectObject(wb,true);const near=fh.length?fh[0].distance:1e9;
+    if(wh.length&&wh[0].distance<near){const p=wh[0].point;if(Math.abs(p.x-WIN.x)<WIN.w/2+0.15&&p.y>WIN.y-WIN.h/2-0.2&&p.y<WIN.y+WIN.h/2+WIN.w/2+0.15){layStart('w');return}}}}
+  if(LAY.on)return;_t(x,y)}}
+{const _d=drawEditBar;drawEditBar=function(){if(LAY.on){layBar();return}_d();const m=$('placeMsg');if(m&&UI.edit==null)m.textContent='Düzenlemek istediğin eşyaya dokun · tezgâh ve kasa da taşınabilir'}}
+{const _x=exitEdit;exitEdit=function(){if(LAY.on)layCancel();_x()}}
+function layStart(b){if(!LAY.on){LAY.k0=KX;LAY.c0=CX;LAY.w0=WIN.x}LAY.on=b;UI.edit=null;try{if(selRing){scene.remove(selRing);selRing=null}}catch(e){}sfx('tap');layMark();layBar()}
+function layBar(){const pb=$('placebar');pb.hidden=false;const b=LAY.on,why=layoutCheck(KX,CX),moved=KX!==LAY.k0||CX!==LAY.c0||WIN.x!==LAY.w0;
+  $('placeMsg').className='msg'+(why?' bad':'');$('placeMsg').textContent=why||(b==='k'?'Tezgâh · oklarla arka duvar boyunca kaydır':b==='w'?'Pencere · oklarla arka duvar boyunca kaydır':'Kasa · oklarla arka duvar boyunca kaydır');
+  $('placeRow').innerHTML=`<button class="btn light" type="button" id="lyL" aria-label="Sola">${ic('left')}</button><button class="btn light" type="button" id="lyR" aria-label="Sağa">${ic('right')}</button>`+
+    `<button class="btn light" type="button" id="lyNo">${ic('close')}Vazgeç</button><button class="btn green" type="button" id="lyOk" ${why||!moved?'disabled':''}>${ic('check')}Tamam</button>`;
+  $('lyL').onclick=()=>layNudge(-1);$('lyR').onclick=()=>layNudge(1);$('lyNo').onclick=()=>{layCancel();drawEditBar()};$('lyOk').onclick=layConfirm}
+function layNudge(d){const b=LAY.on;if(b==='w'){const nx=+(WIN.x+d*LAY_STEP).toFixed(2);if(nx-WIN.w/2<RM.x0+0.3||nx+WIN.w/2>RM.x1-0.3){sfx('nope');toast('Pencere duvarın dışına taşamaz',ic('close'),1600);return}WIN.x=nx;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}sfx('tap');layMark();layBar();return}
+  let k=KX,c=CX;if(b==='k')k=+(k+d*LAY_STEP).toFixed(2);else c=+(c+d*LAY_STEP).toFixed(2);
+  // sınırlar: tezgâh 0..kasa, kasa tezgâh..duvar (kurulumda kasa henüz yokken tezgâh onu önüne katar)
+  if(b==='k'&&c<k&&typeof buildOn==='function'&&buildOn()&&S.tut==='b_counter'){c=k}
+  if(k<0||c<k||CASH0.x+2.3+c>RM.x1-0.15){sfx('nope');toast(k<0?'Tezgâh daha sola gidemez':c<k?(b==='k'?'Önce kasayı sağa kaydır':'Kasa tezgâhın soluna geçemez'):'Kasa ve ödeme sırası için yer kalmadı',ic('close'),1800);return}
+  const cMoved=c!==CX;KX=k;CX=c;if(b==='k'){buildKitchen();if(cMoved){buildCash();if(typeof buildVis==='function')buildVis()}}else{buildCash();if(CASH_CHAIR)CASH_CHAIR.G.position.x=CX-LAY.bootC}sfx('tap');layMark();layBar()}
+// zemin işareti: geçerliyse yeşil, değilse kırmızı
+function layMark(){if(LAY.mark){scene.remove(LAY.mark);disposeTree(LAY.mark);LAY.mark=null}if(!LAY.on)return;if(LAY.on==='w'){const ok=!layoutCheck(KX,CX);const m=new THREE.Mesh(new THREE.PlaneGeometry(WIN.w+0.3,WIN.h+WIN.w/2+0.3),new THREE.MeshBasicMaterial({color:ok?0x8fd16a:0xe0483f,transparent:true,opacity:0.3,depthWrite:false}));m.position.set(WIN.x,WIN.y+WIN.w/4,RM.z0+0.06);m.renderOrder=2;scene.add(m);LAY.mark=m;return}const [x0,x1]=LAY.on==='k'?K_SPAN():C_SPAN();const z1=LAY.on==='k'?0.15:-1.15;
+  const ok=!layoutCheck(KX,CX);const m=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-RM.z0),new THREE.MeshBasicMaterial({color:ok?0x8fd16a:0xe0483f,transparent:true,opacity:0.28,depthWrite:false}));
+  m.rotation.x=-Math.PI/2;m.position.set((x0+x1)/2,0.02,(RM.z0+z1)/2);m.renderOrder=2;scene.add(m);LAY.mark=m}
+function layCancel(){if(!LAY.on)return;if(WIN.x!==LAY.w0){WIN.x=LAY.w0;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}const kc=KX!==LAY.k0,cc=CX!==LAY.c0;KX=LAY.k0;CX=LAY.c0;if(kc)buildKitchen();if(cc){buildCash();if(CASH_CHAIR)CASH_CHAIR.G.position.x=CX-LAY.bootC}LAY.on=null;layMark()}
+function layConfirm(){const why=layoutCheck(KX,CX);if(why){toast(why,ic('close'),2200);return}
+  if(customers.length&&!(KX===LAY.k0&&CX===LAY.c0)){toast('<b>İçeride müşteri var</b><br>Taşımak için önce dükkânı kapat, müşteriler çıksın',ic('lock'),3000);return}
+  const onlyW=KX===LAY.k0&&CX===LAY.c0;S.layout={k:KX,c:CX,w:WIN.x};LAY.on=null;layMark();if(onlyW){markDirty();saveNow();sfx('place');toast('Pencere taşındı',ic('check'),1600);drawEditBar();return}try{clearTimeout(saveTimer)}catch(e){}saveNow();RESETTING=true;
+  const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div><b>Kafe yeniden düzenleniyor…</b></div>`;document.body.appendChild(o);setTimeout(()=>location.reload(),500)}
+// duvar süsü rafların arkasındaki yuvaya konamaz
+// arka duvardaki süs yeri pencereye ya da tezgâh raflarına denk geliyor mu?
+function slotBlocked(i){const sl=WALL_SLOTS[i];if(!sl||sl.ry)return false;const [s0,s1]=K_SHELF();if(sl.x>s0-0.3&&sl.x<s1+0.3)return 'shelf';if(Math.abs(sl.x-WIN.x)<WIN.w/2+0.35)return 'win';if(sl.x>RM.x1-0.3)return 'out';return false}
+{const _v=validatePlacement;validatePlacement=function(rec,...a){const r=_v(rec,...a);if(r)return r;const c=CAT[rec.id];if(c&&c.kind==='walldecor'){const b=slotBlocked(rec.slot);if(b==='shelf')return 'Burası tezgâh raflarının arkasında kalıyor';if(b==='win')return 'Burası pencerenin üstü';if(b)return 'Duvarda boş yer yok'}return null}}
+// mevcut tezgâh rafları ilk açılışta da birleştirilsin (p36 sonrası kurulan gruplar)
+{const _b=buildKitchen;buildKitchen=function(){_b();try{KG.traverse(o=>{if(o.userData&&o.userData.static&&!o.userData.merged){mergeStatic(o);o.userData.merged=true}})}catch(e){}}}
+try{KG.traverse(o=>{if(o.userData&&o.userData.static&&!o.userData.merged){mergeStatic(o);o.userData.merged=true}})}catch(e){}
+
+// ================= ÇALIŞANLAR: yıldız, 3 özellik, maaş, yorgunluk, işçi arama =================
+// Her çalışanın 3 özelliği (1–5): Hız (yürüme + iş), Dayanıklılık (yorulma/mola), role özel (garson: Güler yüz → bahşiş,
+// barista: Ustalık → kalite + hazırlama, kasiyer: Dikkat → ödeme hızı). Maaş her gün sonunda hasılattan düşülür.
+// Enerji her işte azalır; bitince çalışan molaya çıkar (başında uyku balonu), süre bitince işe döner.
+FIN_OUT.wage='Maaşlar';FIN_OUT.hire='İşe alım';
+const ST_SPC={waiter:'Güler yüz',barista:'Ustalık',cashier:'Dikkat'};
+const ST_TXT={spd:['Ağır aksak','Telaşsız','Çevik','Hızlı','Şimşek gibi'],sta:['Çabuk yorulur','Sık mola verir','Dengeli','Az yorulur','Yorulmak bilmez'],
+  waiter:['Biraz soğuk','Nazik','Güler yüzlü','Müşteriler bayılır','Bahşişleri bol'],barista:['Acemi','Özenli','Usta eller','Ustalar ustası','Şef dokunuşu'],cashier:['Dalgın','Dikkatli','Hesabı kuvvetli','Çok seri','Göz açıp kapayıncaya']};
+const ST_NAMES=['Pamuk','Tarçın','Fıstık','Mocha','Zencefil','Bal','Lokum','Kestane','Duman','Leo','Mia','Simba','Luna','Badem','Susam','Kurabiye','Fındık','Biber','Çilek','Limon','Mırmır','Paşa','Boncuk','Tombik','Yumak','Maviş','Sütlaç','Kuki'];
+const stAvg=st=>(st.spd+st.sta+st.spc)/3;
+const stWage=st=>Math.round(2+(st.spd+st.sta+st.spc-3)*3);
+const stSign=st=>stWage(st)*2;                                  // işe alım (imza) ücreti
+function stOf(key){const c=S.chars&&S.chars[key];if(!c)return {spd:2,sta:2,spc:2,en:100};if(!c.st){const up=S.upg||{},role=roleOfKey(key),b=S.created?2:1;   // mevcut oyuncular 2★, yeni başlayan 1★
+    c.st={spd:Math.min(5,b+(S.created?(up.speed|0):0)),sta:b,spc:Math.min(5,b+(S.created&&role==='waiter'?(up.tip|0):0)),en:100}}return c.st}
+const stByObj=o=>stOf(o.key);
+// eski "Hızlı Eller" / "Güler Yüz" geliştirmeleri çalışan yıldızlarına taşındı
+{const i1=UPG.findIndex(u=>u.id==='speed');if(i1>=0)UPG.splice(i1,1);const i2=UPG.findIndex(u=>u.id==='tip');if(i2>=0)UPG.splice(i2,1)}
+{const _ls=loadState;loadState=function(){const r=_ls();try{if(S.chars&&S.upg&&((S.upg.speed|0)||(S.upg.tip|0))){for(const k in S.chars)stOf(k);S.upg.speed=0;S.upg.tip=0}}catch(e){}return r}}
+// ---- etkiler ----
+const stSpdMul=st=>0.8+0.1*st.spd;                                 // 2★ = bugünkü hız
+function stApply(o){if(!o||!o.ch)return;const st=stByObj(o);if(o.ch.speedBase==null)o.ch.speedBase=o.ch.speed||1;o.ch.speed=o.ch.speedBase*stSpdMul(st)*(S.unpaid?0.88:1)}
+function stPrepMul(b){const st=stByObj(b);return (1.1-0.05*st.spd)*(1.05-0.025*st.spc)*(S.unpaid?1.12:1)}
+function stQual(b){return 0.15*(stByObj(b).spc-2)}
+function stCashMul(k){const st=stByObj(k);return (1.1-0.05*st.spd)*(1.12-0.06*st.spc)}
+function stTipBonus(){if(!WSTAFF.length)return 0;return WSTAFF.reduce((a,w)=>a+0.04*(stByObj(w).spc-2),0)/WSTAFF.length}
+{const _s=spawnStaff;spawnStaff=function(key,hired){const r=_s(key,hired);try{for(const L of [WSTAFF,BSTAFF,CSTAFF]){const o=L.find(x=>x.key===key);if(o)stApply(o)}}catch(e){}return r}}
+// ---- yorgunluk ----
+const stDrainAmt=st=>9-1.6*st.sta;                                 // 1★ ≈ 14 iş, 3★ ≈ 24 iş, 5★ ≈ 100 iş
+const stRestSec=st=>30-4*st.sta;                                   // 1★ 26 sn, 3★ 18 sn, 5★ 10 sn
+function stDrain(o){if(!o||!S.created||S.tut!=='done')return;const st=stByObj(o);st.en=Math.max(0,(st.en??100)-stDrainAmt(st));
+  if(st.en<=0&&o.ch&&CSTAFF.includes(o)&&!o.resting)cashRest(o)}
+// yorgun çalışan, işi devralacak bir arkadaşı yoksa önce eldeki işleri bitirir, ilk boş anında molaya çıkar
+const stTired=o=>{const st=stByObj(o);if((st.en??100)>0)return false;const W=WSTAFF.includes(o),L=W?WSTAFF:BSTAFF,pend=W?jobs.length:baristaQ.length;
+  return !pend||L.some(x=>x!==o&&!x.resting)};
+async function staffRest(o,P,yaw){const st=stByObj(o),ch=o.ch,dur=stRestSec(st);o.resting=true;try{await ch.standUp()}catch(e){}
+  try{if(P&&!atSpot(ch,P,0.2))await ch.walkTo(P.x,P.z);if(yaw!=null)await ch.face(yaw)}catch(e){}
+  staffBubble(ch,'sleepy',dur);const t0=gameT;while(gameT-t0<dur){await sleep(0.5);st.en=Math.min(100,(gameT-t0)/dur*100)}st.en=100;o.resting=false;markDirty()}
+async function cashRest(k){const st=stByObj(k);if(k.restWait)return;k.restWait=true;while(CASH.queue.length&&!CSTAFF.some(x=>x!==k&&!x.resting))await sleep(0.5);k.restWait=false;k.resting=true;const dur=stRestSec(st);while(k.chasing)await sleep(0.3);staffBubble(k.ch,'sleepy',dur);const t0=gameT;
+  while(gameT-t0<dur){await sleep(0.5);st.en=Math.min(100,(gameT-t0)/dur*100)}st.en=100;k.resting=false;markDirty()}
+// boşken yavaşça dinlenir; yeni günde herkes dinç
+{let regT=0;const _st=simStep;simStep=function(dt){_st(dt);regT+=dt;if(regT<1)return;regT=0;if(!S.created)return;
+  for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const o of L){if(o.resting)continue;const st=stByObj(o);const idle=L===WSTAFF?!jobs.length:L===BSTAFF?!o.busy:!REGS.some(r=>r.busy);if(idle&&st.en<100)st.en=Math.min(100,st.en+0.12)}}}
+// ---- maaş: gün sonunda ----
+function payWages(){const F=dayFlags();if(F.wage||!S.created||S.tut!=='done')return 0;F.wage=1;let w=0;for(const k of allStaffKeys())w+=stWage(stOf(k));
+  const paid=Math.min(w,Math.max(0,S.coins));if(paid>0)addCoins(-paid,'wage');const was=!!S.unpaid;S.unpaid=w-paid>0?w-paid:0;
+  if(S.unpaid)setTimeout(()=>toast(`<b>Maaşların ${S.unpaid} altını ödenemedi</b><br>Ekip küskün: yarın biraz yavaş çalışacaklar`,ic('alert')||ic('close'),3600),1200);
+  if(was!==!!S.unpaid)for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const o of L)stApply(o);
+  for(const k of allStaffKeys())stOf(k).en=100;markDirty();return paid}
+{const _r=showDayReport;showDayReport=function(){try{payWages()}catch(e){console.warn(e)}return _r()}}
+{const _d=dayEndTick;dayEndTick=function(){try{const F=dayFlags(),t=dayPhase();if(F.nc&&!inNight(t)&&t<CONFIG.day.lastCall&&!dayRepOpen&&!F.wage)payWages()}catch(e){}return _d()}}
+// ---- yıldız gösterimi ----
+const stStars=(v,cls='')=>{let h='';for(let i=1;i<=5;i++)h+=`<i class="ss${v>=i-0.25?' on':v>=i-0.75?' half':''}"></i>`;return `<span class="sstars ${cls}" aria-label="${v.toFixed(1)} yıldız">${h}</span>`};
+function stRows(role,st){return [['spd','Hız'],['sta','Dayanıklılık'],['spc',ST_SPC[role]]].map(([k,n])=>`<div class="srow"><span>${n}</span>${stStars(st[k])}<em>${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</em></div>`).join('')}
+// ---- ekip ekranı: yıldızlar, enerji, maaş ----
+{const _rt=renderTeam;renderTeam=function(){_rt();if(!S.created)return;const l=$('teamList');
+  l.querySelectorAll('[data-ed]').forEach(b=>{const key=b.dataset.ed,tc=b.closest('.tc');if(!tc||tc.querySelector('.sbox'))return;const st=stOf(key),role=roleOfKey(key);const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===key);
+    const d=document.createElement('div');d.className='sbox';d.innerHTML=`<div class="shead">${stStars(stAvg(st),'big')}<span>Maaş ${ic('coin')}${stWage(st)}/gün</span></div>${stRows(role,st)}
+      <div class="sen"><span>${o&&o.resting?'Molada':'Enerji'}</span><div class="ebar"><i style="width:${Math.round(st.en??100)}%"></i></div></div>`;
+    tc.querySelector('.tx').appendChild(d);const rb=document.createElement('button');rb.type='button';rb.className='btn light';rb.innerHTML=`${ic('paw')}Yerine birini bul`;rb.onclick=()=>openHire(role);b.parentElement.appendChild(rb)});
+  const hb=$('tmHire');if(hb)hb.innerHTML=`${ic('plus')}İşçi bul <small>${['waiter','barista','cashier'].reduce((a,r)=>a+S.staff[r],0)}/${HIRE_MAX.waiter+HIRE_MAX.barista+HIRE_MAX.cashier}</small>`;
+  const w=allStaffKeys().reduce((a,k)=>a+stWage(stOf(k)),0);if(!l.querySelector('.wsum')){const p=document.createElement('p');p.className='wsum';p.innerHTML=`Günlük toplam maaş: <b>${ic('coin')}${w}</b> · her gün sonunda hasılattan düşülür`;l.appendChild(p)}}}
+// ---- İŞÇİ ARAMA ----
+const ADS=[{id:'free',name:'Ücretsiz ilan',cost:0,odds:[[1,50],[2,40],[3,10]],desc:'Her gün yeni adaylar'},
+  {id:'paper',name:'Gazete ilanı',cost:60,odds:[[2,40],[3,40],[4,20]],desc:'Daha deneyimli adaylar'},
+  {id:'agency',name:'İş ajansı',cost:250,odds:[[3,30],[4,45],[5,25]],desc:'Usta adaylar'}];
+function stRoll(odds){const tot=odds.reduce((a,o)=>a+o[1],0);let r=Math.random()*tot;for(const [v,w] of odds){r-=w;if(r<=0)return v}return odds[odds.length-1][0]}
+function makeCand(role,ad){const A=ADS.find(a=>a.id===ad)||ADS[0];const lvB=Math.min(0.6,S.lvl/25);const roll=()=>Math.min(5,stRoll(A.odds)+(Math.random()<lvB*0.4?1:0));
+  const used=new Set(allStaffKeys().map(k=>S.chars[k]&&S.chars[k].name));const pool=ST_NAMES.filter(n=>!used.has(n));const name=pool[Math.floor(Math.random()*pool.length)]||'Pati';
+  return {id:Math.random().toString(36).slice(2,8),role,name,look:randomLook(),wear:JSON.parse(JSON.stringify(ROLE_DEF[role].wear)),st:{spd:roll(),sta:roll(),spc:roll(),en:100}}}
+function candList(force,ad){const C=S.cand;if(!force&&C&&C.day===S.dayN&&C.list&&C.list.length)return C.list;S.cand={day:S.dayN,ad:ad||'free',list:['waiter','barista','cashier'].map(r=>makeCand(r,ad||'free'))};markDirty();return S.cand.list}
+const HIRE_CAP=role=>{let n=1;for(const h of HIRE[role])if(S.lvl>=h.lv)n++;return Math.min(HIRE_MAX[role],n)};
+const candThumbs=new Map();
+function candThumb(c){if(candThumbs.has(c.id))return candThumbs.get(c.id);try{const m=buildCat({name:c.name,look:{...LOOK_DEF,...c.look},wear:c.wear},384);const mx=new THREE.AnimationMixer(m);mx.clipAction(CLIPS.Idle_12).play();mx.update(0.6);poseFix(poseRig(m),0);
+  const u=renderThumb(m,{dir:[0.35,0.15,1],pad:0.95});candThumbs.set(c.id,u);return u}catch(e){return ''}}
+openHire=function(only){const m=$('lvModal');UI.modal=true;const list=candList(false);const filt=only?list.filter(c=>c.role===only):list;
+  const card=c=>{const R=ROLES.find(x=>x.id===c.role),n=S.staff[c.role],cap=HIRE_CAP(c.role),sign=stSign(c.st);const same=allStaffKeys().filter(k=>roleOfKey(k)===c.role);
+    const btns=(n<cap?`<button class="btn green" type="button" data-hire="${c.id}">${ic('plus')}İşe al · ${ic('coin')}${sign}</button>`:'')+
+      same.map(k=>`<button class="btn light" type="button" data-swap="${c.id}:${k}">${S.chars[k].name} yerine</button>`).join('');
+    return `<div class="cand"><div class="cth"><img src="${candThumb(c)}" alt=""></div><div class="ctx"><b>${c.name} <small>${R.name}</small></b>${stStars(stAvg(c.st),'big')}${stRows(c.role,c.st)}
+      <span class="cw">Maaş ${ic('coin')}${stWage(c.st)}/gün · imza ${ic('coin')}${sign}</span>${n>=cap&&n<HIRE_MAX[c.role]?`<small class="cnote">Yeni ${R.name.toLowerCase()} kadrosu: Seviye ${HIRE[c.role].find(h=>S.lvl<h.lv).lv}</small>`:''}<div class="cbtn">${btns}</div></div></div>`};
+  m.innerHTML=`<div class="lvcard hirecard2" role="dialog" aria-label="İşçi bul"><h3>İşçi bul</h3><p>Adaylar her gün yenilenir. Daha iyi adaylar için ilan ver; yıldızı yüksek olanın maaşı da yüksektir.</p>
+    <div class="adrow">${ADS.slice(1).map(a=>`<button class="btn light" type="button" data-ad="${a.id}" ${S.coins<a.cost?'disabled':''}><b>${a.name}</b><small>${a.desc} · ${ic('coin')}${a.cost}</small></button>`).join('')}</div>
+    <div class="clist">${filt.map(card).join('')||'<p>Bugün aday yok</p>'}</div><button class="btn light" type="button" id="hrClose">${ic('close')}Kapat</button></div>`;m.hidden=false;
+  $('hrClose').onclick=()=>{m.hidden=true;UI.modal=false;if(UI.mode==='team')renderTeam()};
+  m.querySelectorAll('[data-ad]').forEach(b=>b.onclick=()=>{const A=ADS.find(a=>a.id===b.dataset.ad);if(S.coins<A.cost)return;addCoins(-A.cost,'hire');sfx('buy');candList(true,A.id);toast(`<b>${A.name} verildi</b><br>Yeni adaylar geldi`,ic('paw'),1800);openHire(only)});
+  m.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>hireCand(b.dataset.hire,null,only));
+  m.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{const [id,k]=b.dataset.swap.split(':');hireCand(id,k,only)})};
+function hireCand(id,swapKey,only){const C=S.cand,c=C&&C.list.find(x=>x.id===id);if(!c)return;const sign=stSign(c.st);if(S.coins<sign){toast(`İmza ücreti için ${sign} altın gerekli`,ic('coin'),2000);return}
+  const cfg={name:c.name,look:{...LOOK_DEF,...c.look},wear:c.wear,freeEdits:1,st:{...c.st,en:100}};
+  if(swapKey){const old=S.chars[swapKey];S.chars[swapKey]={...cfg};applyCharToGame(swapKey);const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===swapKey);if(o)stApply(o)
+    addCoins(-sign,'hire');toast(`<b>${c.name} işe başladı</b><br>${old?old.name:''} ayrıldı · imza −${sign}`,ic('paw'),3000)}
+  else{const n=S.staff[c.role];if(n>=HIRE_CAP(c.role))return;const key=staffKey(c.role,n+1);S.chars[key]=cfg;S.staff[c.role]++;addCoins(-sign,'hire');spawnStaff(key,true);toast(`<b>${c.name} ekibe katıldı!</b><br>Yeni ${ROLE_NAME[c.role].toLowerCase()} · imza −${sign}`,ic('paw'),3000)}
+  C.list=C.list.filter(x=>x!==c);candThumbs.delete(id);sfx('levelup');markDirty();saveNow();openHire(only)}
+{const st=document.createElement('style');st.textContent=`
+.sstars{display:inline-flex;gap:1px;vertical-align:middle}.sstars i{width:11px;height:11px;background:#e2d3bb;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.sstars i.on{background:#f2b134}.sstars i.half{background:linear-gradient(90deg,#f2b134 50%,#e2d3bb 50%)}.sstars.big i{width:15px;height:15px}
+.sbox{margin-top:6px;display:flex;flex-direction:column;gap:2px}.shead{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800}.shead .ic{width:14px;height:14px;display:inline-grid;vertical-align:-2px}
+.srow{display:grid;grid-template-columns:86px auto 1fr;align-items:center;gap:6px;font-size:11.5px;font-weight:700}.srow em{font-style:normal;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sen{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800}.ebar{flex:1;height:8px;border:2px solid var(--ink);border-radius:99px;background:#f3e3bf;overflow:hidden}.ebar i{display:block;height:100%;background:#8fd16a}
+.wsum{font-size:12.5px;font-weight:700;text-align:center;margin:10px 0}.wsum .ic{width:14px;height:14px;display:inline-grid;vertical-align:-2px}
+.hirecard2{max-height:88vh;display:flex;flex-direction:column;gap:8px;width:min(440px,94vw)}.hirecard2 p{margin:0;font-size:12.5px}
+.adrow{display:flex;gap:6px}.adrow .btn{flex:1;flex-direction:column;align-items:flex-start;gap:0;padding:6px 8px;text-align:left}.adrow small{font-size:10.5px;font-weight:700;opacity:.8}.adrow .ic{width:12px;height:12px;display:inline-grid}
+.clist{overflow:auto;display:flex;flex-direction:column;gap:8px;min-height:0}
+.cand{display:grid;grid-template-columns:76px 1fr;gap:8px;padding:8px;border:2.5px solid var(--ink);border-radius:14px;background:#fffaf0}
+.cth img{width:76px;height:76px;border-radius:12px;background:#f6e6cc;object-fit:cover}.ctx{display:flex;flex-direction:column;gap:2px;min-width:0}.ctx b{font:800 15px var(--font-display,inherit)}.ctx b small{font-size:11px;opacity:.7;margin-left:4px}
+.cw{font-size:11.5px;font-weight:800;margin-top:2px}.cw .ic{width:13px;height:13px;display:inline-grid;vertical-align:-2px}.cnote{font-size:11px;font-weight:700;opacity:.7}
+.cbtn{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.cbtn .btn{font-size:12px;padding:5px 8px}.cbtn .ic{width:13px;height:13px}`;document.head.appendChild(st)}
+
+// ================= BOŞ DÜKKÂNDAN BAŞLANGIÇ (yeni oyuncu) =================
+// Sıra: tezgâh → kasa → masa → barista → kasiyer → garson → kafeyi aç → ilk müşteri öğreticisi (cafe1…).
+// S.tut: 'b_counter' | 'b_cash' | 'b_table' | 'b_barista' | 'b_cashier' | 'b_waiter' | 'b_open'. S.build.hired: işe alınmış roller.
+const BUILD_ORDER=['b_counter','b_cash','b_table','b_barista','b_cashier','b_waiter','b_open'];
+const BUILD_ROLE={b_barista:'barista',b_cashier:'cashier',b_waiter:'waiter'};
+const buildOn=()=>typeof S.tut==='string'&&S.tut.startsWith('b_');
+let BSHOWN='';
+function buildStart(){delete S.evNew;delete S.evHi;S.tut='b_counter';S.build={hired:{}};S.closed=true;S.equip={espresso:1,kettle:1,vitrine:1,oven:0};
+  for(const f of S.furniture.slice())if(!f.stored){try{despawnFurn(f.uid)}catch(e){}}S.furniture=[];S.giftTable=false;
+  for(const k in EQUIP_GRP)setEquip(k,S.equip[k]|0);try{refreshWorld()}catch(e){}markDirty();saveNow();buildVis();buildStep()}
+// tezgâh / kasa / çalışanlar adım gelene kadar görünmez
+function buildVis(){if(!buildOn())return;const i=BUILD_ORDER.indexOf(S.tut);if(KG)KG.visible=i>=1||LAY.on==='k';if(CG)CG.visible=i>=2||LAY.on==='c';
+  const H=(S.build&&S.build.hired)||{};for(const [L,r] of [[WSTAFF,'waiter'],[BSTAFF,'barista'],[CSTAFF,'cashier']])for(const o of L)o.ch.o.visible=!!H[r];
+  try{if(CASH_CHAIR)CASH_CHAIR.G.visible=i>=2}catch(e){}}
+function buildNext(){const i=BUILD_ORDER.indexOf(S.tut);S.tut=BUILD_ORDER[i+1]||'cafe1';BSHOWN='';markDirty();saveNow();buildVis();buildStep()}
+function buildStep(){if(!buildOn()){coachOff();return}if(BSHOWN===S.tut)return;BSHOWN=S.tut;const st=S.tut;
+  if(st==='b_counter')coach({title:'Burası artık senin!',text:'Boş bir dükkân, kocaman bir hayal. Önce baristanın çalışacağı <b>tezgâhı</b> kuralım: arka duvar boyunca istediğin yere yerleştir.',dim:true,center:true,
+    buttons:[{label:'Tezgâhı yerleştir',green:true,icon:'move',onClick:()=>{coachOff();buildPlace('k')}}]});
+  else if(st==='b_cash')coach({title:'Tezgâh hazır!',text:'Çay ocağı, espresso makinesi ve tatlı vitrini tezgâha yerleşti. Şimdi müşterilerin ödeme yapacağı <b>kasayı</b> kuralım; tezgâhın sağında bir yer seç.',dim:true,center:true,
+    buttons:[{label:'Kasayı yerleştir',green:true,icon:'move',onClick:()=>{coachOff();buildPlace('c')}}]});
+  else if(st==='b_table')coach({title:'Kasa tamam!',text:'Müşterilerimiz otursun diye ilk <b>masayı</b> koyalım. Bu masa hediye!',dim:true,center:true,
+    buttons:[{label:'Masayı yerleştir',green:true,icon:'table',onClick:()=>{coachOff();buildTable()}}]});
+  else if(BUILD_ROLE[st]){const r=BUILD_ROLE[st],R=ROLES.find(x=>x.id===r);const why={barista:'Siparişleri hazırlayacak bir <b>barista</b> alalım.',cashier:'Ödemeleri alacak bir <b>kasiyer</b> gerekiyor.',waiter:'Son olarak siparişleri alıp masalara taşıyacak bir <b>garson</b> alalım.'}[r];
+    coach({title:st==='b_barista'?'Dükkân hazır, sıra ekipte!':'Harika!',text:`${why} İlana gelen adaylardan birini seç; ilk ekibin maaşı düşük, sonra daha iyilerini bulursun.`,dim:true,center:true,
+      buttons:[{label:'Adaylara bak',green:true,icon:'paw',onClick:()=>{coachOff();buildHire(r)}}]})}
+  else if(st==='b_open'){const N=['barista','cashier','waiter'].map(r=>S.chars[r].name);sfx('levelup');
+    coach({title:'Kafen hazır!',text:`Tezgâh, kasa, masa ve ekip tamam: <b>${N[0]}</b>, <b>${N[1]}</b> ve <b>${N[2]}</b> seni bekliyor. Kapıyı açıp ilk müşterimizi karşılayalım!`,dim:true,center:true,
+      buttons:[{label:'Kafeyi aç',green:true,icon:'cafe',onClick:()=>{coachOff();buildOpen()}}]})}}
+function buildOpen(){S.created=true;S.closed=false;for(const r of ROLES)S.chars[r.id].freeEdits=Math.max(1,S.chars[r.id].freeEdits|0);S.tut=EVMODE?'done':'cafe1';delete S.build;BSHOWN='';try{hudShop()}catch(e){}
+  for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const o of L)o.ch.o.visible=true;if(KG)KG.visible=true;if(CG)CG.visible=true;markDirty();saveNow();if(!EVMODE)tutCafeStart();else toast(`<b>${EVENTS[EVMODE].cafe} açıldı!</b><br>İlk müşteriler yolda`,ic('event'),2600)}
+// tezgâh/kasa yerleştirme: düzenleme çubuğu, "Buraya kur" ile canlı uygulanır (sayfa yenilenmez)
+function buildPlace(b){setMode('edit');UI.edit=null;LAY.on=null;layStart(b);buildVis()}
+{const _lb=layBar;layBar=function(){_lb();if(!buildOn())return;const why=layoutCheck(KX,CX);const no=$('lyNo');if(no)no.remove();const ok=$('lyOk');
+  if(ok){ok.disabled=!!why;ok.innerHTML=`${ic('check')}Buraya kur`;ok.onclick=()=>{if(layoutCheck(KX,CX))return;layApplyLive();LAY.on=null;layMark();$('placebar').hidden=true;setMode('cafe');sfx('place');buildNext()}}}}
+// mantık noktalarını yeni yere taşı (çalışanlar görünmezken: güvenli)
+function layApplyLive(){const dk=KX-LAY.bootK,dc=CX-LAY.bootC;layoutShiftLogic(dk,dc);LAY.bootK=KX;LAY.bootC=CX;S.layout={...(S.layout||{}),k:KX,c:CX,w:WIN.x};
+  try{if(CASH_CHAIR){CASH_CHAIR.G.parent&&CASH_CHAIR.G.parent.remove(CASH_CHAIR.G);CASH_CHAIR=null}}catch(e){}try{buildGrid()}catch(e){}
+  for(const b of BSTAFF){const h=B_HOME[b.i]||B_HOME[0];b.ch.path=[];b.ch.pos.set(h.x,0,h.z);b.idleAt=null}
+  for(const k of CSTAFF){const R=REGS[k.i]||REGS[0];const s=R?R.stand:CASH.stand;k.ch.path=[];k.ch.pos.set(s.x,0,s.z)}
+  for(const w of WSTAFF){const P=W_WAIT[w.i];w.ch.path=[];w.ch.pos.set(P.x,0,P.z)}markDirty();saveNow()}
+function buildTable(){const T=START_TABLES[0];const rec={uid:++S.uid,id:T[2],x:T[0],z:T[1],rot:T[3],chair:'c_cushion',col:0};S.owned[T[2]]=true;
+  setMode('cafe');startPlacement({rec,isNew:true,price:0})}
+// aday seçimi: iki ücretsiz 1★ aday; seçince görünüm düzenleyicisi açılır
+function buildHire(role){const m=$('lvModal');UI.modal=true;const C=[makeCand(role,'free'),makeCand(role,'free')].map(c=>({...c,st:{spd:1,sta:1,spc:1,en:100}}));C[1].st[['spd','sta','spc'][Math.floor(Math.random()*3)]]=2;
+  const R=ROLES.find(x=>x.id===role);
+  m.innerHTML=`<div class="lvcard hirecard2" role="dialog" aria-label="${R.name} adayları"><h3>${R.name} adayları</h3><p>İlk ekibin imza ücreti yok. Maaşlar her gün sonunda hasılattan düşülür.</p>
+    <div class="clist">${C.map(c=>`<div class="cand"><div class="cth"><img src="${candThumb(c)}" alt=""></div><div class="ctx"><b>${c.name} <small>${R.name}</small></b>${stStars(stAvg(c.st),'big')}${stRows(role,c.st)}
+      <span class="cw">Maaş ${ic('coin')}${stWage(c.st)}/gün</span><div class="cbtn"><button class="btn green" type="button" data-bh="${c.id}">${ic('check')}${c.name} işe başlasın</button></div></div></div>`).join('')}</div></div>`;m.hidden=false;
+  m.querySelectorAll('[data-bh]').forEach(b=>b.onclick=()=>{const c=C.find(x=>x.id===b.dataset.bh);m.hidden=true;UI.modal=false;const key=role;
+    S.chars[key]={name:c.name,look:{...LOOK_DEF,...c.look},wear:JSON.parse(JSON.stringify(ROLE_DEF[role].wear)),freeEdits:1,st:{...c.st}};S.build.hired[role]=true;applyCharToGame(key);
+    const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===key);if(o){o.ch.o.visible=true;stApply(o);o.ch.pos.set(DOOR_IN.x,0,DOOR_IN.z)}
+    markDirty();saveNow();sfx('goal');UI.backTo='cafe';openEditor(key,'create')})}
+// düzenleyici "create" modunda: kaydet → sıradaki adım (eski üçlü tasarım zinciri yerine)
+{const _c=commitEditor;commitEditor=function(pay){if(buildOn()&&CE.mode==='create'){const [nm]=validName(CE.cfg.name);if(!nm)return false;const k=CE.key,c=S.chars[k];
+    c.name=nm;c.look=JSON.parse(JSON.stringify(CE.cfg.look));c.wear=JSON.parse(JSON.stringify(CE.cfg.wear));applyCharToGame(k);markDirty();saveNow();sfx('goal');closeEditor(true);
+    toast(`<b>${nm} ekibe katıldı!</b>`,ic('paw'),2000);setTimeout(buildNext,400);return true}return _c(pay)}}
+// yeni oyuncu: eski "ekibini tasarla" yerine boş dükkân
+{const _o=offerSetup;offerSetup=function(isNew){if(S.created)return;if(isNew&&!window.__oldSetup){buildStart();return}return _o(isNew)}}
+// adım takibi: masa konunca ilerle; menü/ekran açılınca balonu kapat, dönünce yeniden göster
+{let t=0;const _e=envTick;envTick=function(dt){_e(dt);if(!started||!buildOn())return;t+=dt;if(t<0.4)return;t=0;
+  if(S.tut==='b_table'&&S.furniture.some(f=>!f.stored&&CAT[f.id]&&CAT[f.id].kind==='table')&&!PL){buildNext();return}
+  if(UI.modal||UI.mode!=='cafe'||PL||LAY.on){if(BSHOWN&&!LAY.on&&!PL&&UI.mode!=='ce'){coachOff();BSHOWN=''}return}buildVis();buildStep()}}
+// eski kayıtlarda yarım kalmış kurulum: açılışta görünürlükleri uygula
+setTimeout(function bv(){if(!started){setTimeout(bv,800);return}if(EVMODE&&S.evNew&&!S.created&&!buildOn()){setTimeout(buildStart,4600);return}if(buildOn()){buildVis();buildStep()}},1200);
+
 // ================= BAŞLAT =================
 function applyState(){if(S.room&&(S.room.x1>RM.x1||S.room.z1>RM.z1))setRoom(S.room.x1,S.room.z1);   // genişletilmiş kafe: eşyalardan önce oda kurulur
-  applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]>1)setEquip(k,S.equip[k]);
+  try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
+  applyWall(S.wall);applyFloor(S.floor);for(const k in S.equip)if(S.equip[k]!==1)setEquip(k,S.equip[k]);
   let moved=0,stored=0;
   for(const rec of S.furniture)if(!rec.stored){const k=CAT[rec.id].kind;if(k==='walldecor'&&(rec.slot==null||rec.slot<0))continue;
     if(k!=='walldecor'&&validatePlacement(rec,rec.uid)){const o={x:rec.x,z:rec.z,rot:rec.rot};let ok=false;
@@ -5440,12 +5860,12 @@ function simStep(dt){lastDt=dt;gameT+=dt;
     for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)tk('staff',()=>k.ch.update(dt));for(const c of customers)tk('cust',()=>c.char.update(dt));if(COURIER)tk('courier',()=>COURIER.ch.update(dt));if(SCOOT.rider)tk('scoot',()=>scootRider());
     tk('cash',()=>cashLayoutTick());
     tk('steam',()=>steamUpdate(dt))}
-function loop(){requestAnimationFrame(loop);const raw=Math.min(clock.getDelta(),0.1);
+function loop(){requestAnimationFrame(loop);const now=performance.now();if(!perfGate(now))return;const raw=Math.min(clock.getDelta(),0.1);
   if(started&&!paused()){simStep(raw);updateUI()}
   else lastDt=0;
   envTick(raw);
   if(started){tutTick();tut2Tick()}
-  controls.update();renderer.render(scene,camera)}
+  controls.update();if(!PERF.covered){perfShadow();renderer.render(scene,camera);perfTick(now)}}
 init();loop();
 
 </script>
