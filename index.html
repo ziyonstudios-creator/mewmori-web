@@ -494,22 +494,32 @@ function grp(x=0,y=0,z=0){const g=new THREE.Group();g.position.set(x,y,z);(GRP_P
 function inGroup(g,fn){const prev=PARENT;PARENT=g;try{fn()}finally{PARENT=prev}return g}
 const STATION={};      // görsel istasyon grupları + animasyon tutamakları
 // Tezgâh bloğu (arka dolap + ön tezgâh + istasyonlar) arka duvar boyunca kaydırılabilir: KIT'in x'leri kayar, bütün parçalar yeniden kurulur.
-const KIT0={bx:KIT.bx,cx:KIT.cx,ex:KIT.ex};let KX=0,KG=null,KOBST=[];
-function buildKitchen(){if(KG){scene.remove(KG);disposeTree(KG)}for(const o of KOBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}
-  KIT.bx=KIT0.bx+KX;KIT.cx=KIT0.cx+KX;KIT.ex=KIT0.ex+KX;KG=new THREE.Group();KG.name='kitchen';KG.userData.block='k';scene.add(KG);
-  const P0=PARENT,G0=GRP_PARENT;PARENT=KG;GRP_PARENT=KG;const n0=OBST.length;
+// Bloklar (tezgâh, kasa) temel koordinatlarda kurulur; dış grup konum (x,z) ve 90°'lik dönüşle yerleştirilir.
+// blkW: temel → dünya, blkL: dünya → temel (three.js rotation.y ile aynı dönüş).
+function blkW(P,piv,x,z){const dx=x-piv.x,dz=z-piv.z,c=Math.cos(P.r),s=Math.sin(P.r);return {x:piv.x+P.x+dx*c+dz*s,z:piv.z+P.z-dx*s+dz*c}}
+function blkL(P,piv,x,z){const dx=x-piv.x-P.x,dz=z-piv.z-P.z,c=Math.cos(P.r),s=Math.sin(P.r);return {x:piv.x+dx*c-dz*s,z:piv.z+dx*s+dz*c}}
+function boxW(b,P,piv){const pts=[[b.minX,b.minZ],[b.maxX,b.minZ],[b.minX,b.maxZ],[b.maxX,b.maxZ]].map(([x,z])=>blkW(P,piv,x,z));
+  return {minX:Math.min(...pts.map(p=>p.x)),maxX:Math.max(...pts.map(p=>p.x)),minZ:Math.min(...pts.map(p=>p.z)),maxZ:Math.max(...pts.map(p=>p.z))}}
+const KIT0={bx:KIT.bx,cx:KIT.cx,ex:KIT.ex};var KP={x:0,z:0,r:0};const K_PIV={x:KIT.cx,z:KIT.cz};let KG=null,KGI=null,KOBST=[],KOBST_BASE=[],KSHELF=null;
+const kW=(x,z)=>blkW(KP,K_PIV,x,z),kL=(x,z)=>blkL(KP,K_PIV,x,z);
+const kW3=(x,y,z)=>{const p=kW(x,z);return new THREE.Vector3(p.x,y,p.z)};
+function kPose(){if(!KG)return;KG.position.set(K_PIV.x+KP.x,0,K_PIV.z+KP.z);KG.rotation.y=KP.r;KG.updateMatrixWorld(true)}
+function kObstSync(){for(const o of KOBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}KOBST=KOBST_BASE.map(b=>boxW(b,KP,K_PIV));OBST.push(...KOBST)}
+function buildKitchen(){if(KG){scene.remove(KG);disposeTree(KG)}for(const o of KOBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}KOBST=[];
+  KG=new THREE.Group();KG.name='kitchen';KG.userData.block='k';KGI=new THREE.Group();KGI.position.set(-K_PIV.x,0,-K_PIV.z);KG.add(KGI);scene.add(KG);kPose();
+  const P0=PARENT,G0=GRP_PARENT;PARENT=KGI;GRP_PARENT=KGI;const n0=OBST.length;
   try{buildKitchenParts();for(const k in EQUIP_BUILD)setEquip(k,(()=>{try{return S.equip[k]??1}catch(e){return 1}})());STATION.ovenGlow=buildOvenGlow()}finally{PARENT=P0;GRP_PARENT=G0}
-  KOBST=OBST.slice(n0)}
+  KOBST_BASE=OBST.splice(n0);kObstSync();KSHELF=KGI.children.find(o=>o.userData&&o.userData.static)||null}
 function buildKitchenParts(){const {bx,bw,bz,bd,bh,cx,cz,cw,cd,ch}=KIT;
  // arka dolap (duvara dayalı): lavabo, fırın, raflar
  box(bw,bh,bd,M.cream,bx,bh/2,bz);box(bw+0.1,0.08,bd+0.1,M.wood,bx,bh+0.02,bz);
  box(0.6,0.12,0.4,M.steel,bx-0.9,bh+0.08,bz,{round:0.03});cyl(0.03,0.03,0.3,M.steel,bx-0.9,bh+0.3,bz-0.15,8);
  buildBackShelf(bx,bw);   // yeni raf tasarımı (p25)
- obst(bx-bw/2-0.05,bx+bw/2+0.05,-ROOM_D/2,bz+bd/2+0.05);
+ obst(bx-bw/2-0.05,bx+bw/2+0.05,-4,bz+bd/2+0.05);
  // ön tezgah: arkasında geniş çalışma alanı
  box(cw,ch-0.08,cd,M.green,cx,(ch-0.08)/2,cz);box(cw+0.15,0.1,cd+0.15,M.wood,cx,ch-0.03,cz,{round:0.02});
  obst(cx-cw/2-0.1,cx+cw/2+0.1,cz-cd/2-0.1,cz+cd/2+0.1);
- box(0.8,ch-0.08,cd,M.green,-ROOM_W/2+0.5+KX,(ch-0.08)/2,cz);box(0.95,0.1,cd+0.15,M.wood,-ROOM_W/2+0.5+KX,ch-0.03,cz,{round:0.02});obst(-ROOM_W/2+KX-(KX?0.05:0),cx-cw/2,cz-cd/2-0.1,cz+cd/2+0.1);
+ box(0.8,ch-0.08,cd,M.green,-4.25,(ch-0.08)/2,cz);box(0.95,0.1,cd+0.15,M.wood,-4.25,ch-0.03,cz,{round:0.02});obst(-4.75,cx-cw/2,cz-cd/2-0.1,cz+cd/2+0.1);
  // öğütücü (kolu döner)
  STATION.grinder=inGroup(grp(cx-0.45,0,cz-0.1),()=>{cyl(0.12,0.1,0.3,M.dark,0,ch+0.17,0,12);cyl(0.1,0.1,0.14,M.steel,0,ch+0.36,0,12)});
  {const crank=new THREE.Group();crank.position.set(0,ch+0.44,0);STATION.grinder.add(crank);const arm=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.02,0.02),M.woodDark);arm.position.x=0.08;crank.add(arm);const knob=new THREE.Mesh(new THREE.SphereGeometry(0.025,8,6),M.red);knob.position.set(0.16,0.03,0);crank.add(knob);STATION.crank=crank}
@@ -543,10 +553,10 @@ const EQUIP_BUILD={
     box(0.7,0.4,0.1,lv>1?toon(0xb5543a):M.dark,0,0.3,-0.02);box(0.6,0.25,0.02,M.glass,0,0.33,0.04);
     if(lv>1){box(0.74,0.06,0.12,M.gold,0,0.53,-0.02);for(const s of [-1,1])sph(0.025,M.gold,s*0.25,0.13,0.05)}})}};
 const EQUIP_GRP={};
-function setEquip(kind,lv){const o=EQUIP_GRP[kind];if(o&&o.parent)o.parent.remove(o);const G0=GRP_PARENT;GRP_PARENT=KG||G0;try{EQUIP_GRP[kind]=lv>=1?EQUIP_BUILD[kind](lv):grp(0,0,0)}finally{GRP_PARENT=G0}
+function setEquip(kind,lv){const o=EQUIP_GRP[kind];if(o&&o.parent)o.parent.remove(o);const G0=GRP_PARENT;GRP_PARENT=KGI||G0;try{EQUIP_GRP[kind]=lv>=1?EQUIP_BUILD[kind](lv):grp(0,0,0)}finally{GRP_PARENT=G0}
   if(kind==='espresso'&&STATION.grinder)STATION.grinder.visible=lv>=1}   // makine yoksa tezgâhta boş yer
 // fırın içi parıltı (pişirirken yanar)
-function buildOvenGlow(){const m=new THREE.Mesh(new THREE.PlaneGeometry(0.58,0.23),new THREE.MeshBasicMaterial({color:0xffa040,transparent:true,opacity:0}));m.position.set(KIT.bx+0.6,0.33,KIT.bz+KIT.bd/2+0.052);(KG||scene).add(m);return m}
+function buildOvenGlow(){const m=new THREE.Mesh(new THREE.PlaneGeometry(0.58,0.23),new THREE.MeshBasicMaterial({color:0xffa040,transparent:true,opacity:0}));m.position.set(KIT.bx+0.6,0.33,KIT.bz+KIT.bd/2+0.052);(KGI||scene).add(m);return m}
 buildKitchen();
 // Poşa'nın çalışma noktaları (tezgah arkası koridor, z=-2.78; arka dolap önü z=-2.95)
 const PZ=-2.78,PZB=-2.95,PLATE_Y=KIT.ch+0.05;
@@ -742,7 +752,7 @@ function buildSet4Group(type,chair,colIdx,withLamp=true){const G=new THREE.Group
 box(1.9,0.2,1.5,M.steel,-ROOM_W/2-0.95-0.2,-0.1,DOOR.z);
 const OUTSIDE={x:-6.0,z:DOOR.z},DOOR_IN={x:-4.15,z:DOOR.z};
 // ---------- tezgah noktaları ----------
-const PREP_SPOT={x:-2.85,z:-1.15},PICKUP_SPOT={x:-1.5,z:-1.15},COUNTER_FACE=Math.PI;
+const PREP_SPOT={x:-2.85,z:-1.15},PICKUP_SPOT={x:-1.5,z:-1.15};var COUNTER_FACE=Math.PI;   // tezgâh dönünce güncellenir
 const PREP_ANCHOR=new THREE.Vector3(-3.95,1.55,-2.0),PICKUP_ANCHOR=new THREE.Vector3(-1.5,1.35,-2.0);
 const PICKUP_SLOTS=[new THREE.Vector3(-1.62,0.715,-1.9),new THREE.Vector3(-1.38,0.715,-1.9),new THREE.Vector3(-1.5,0.715,-2.12),new THREE.Vector3(-1.74,0.715,-2.12),new THREE.Vector3(-1.26,0.715,-2.12)];   // 4 kişilik grubun bütün tabakları sığsın
 const slotUsed=[null,null,null,null,null];
@@ -762,10 +772,10 @@ function makeRegister(rx){const {z,h}=CASH;const P={};const g=inGroup(grp(0,0,0)
   const scr=new THREE.Mesh(new THREE.PlaneGeometry(0.2,0.07),new THREE.MeshBasicMaterial({color:0x9fe0a8}));scr.position.set(rx,h+0.3,z+0.02);scr.rotation.x=-0.35;PARENT.add(scr);P.screen=scr;
   for(let i=0;i<3;i++)for(let j=0;j<2;j++)sph(0.014,j?M.cream:M.dark,rx-0.08+i*0.08,h+0.135,z+0.07+j*0.05);
   P.drawer=box(0.32,0.05,0.24,M.woodDark,rx,h+0.037,z+0.046);P.drawerZ=z+0.046   /* çekmece önü gövdenin önünden 6 mm dışarıda (aynı düzlemde titriyordu) */});P.group=g;return P}
-function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)return;const G0=GRP_PARENT;GRP_PARENT=CG||G0;try{
+function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)return;const G0=GRP_PARENT;GRP_PARENT=CGI||G0;try{
   for(const R of REGS){const g=R.parts.group;if(g.parent)g.parent.remove(g)}const old=REGS.splice(0);
   const X=n===1?[{rx:CASH.x-0.25,sx:CASH.x,px:CASH.x}]:[{rx:CASH.x-0.27,sx:CASH.x-0.27,px:CASH.x-0.27},{rx:CASH.x+0.29,sx:CASH.x+0.29,px:CASH.x+0.29}];
-  X.forEach((o,i)=>{REGS.push({i,rx:o.rx,stand:{x:o.sx,z:CASH.stand.z},pay:{x:o.px,z:-1.98},parts:makeRegister(o.rx),cust:old[i]?old[i].cust:null,busy:false})});
+  X.forEach((o,i)=>{REGS.push({i,rx:o.rx,stand:cW(o.sx,CASH.stand.z),pay:cW(o.px,-1.98),regW:cW(o.rx,CASH.z),parts:makeRegister(o.rx),cust:old[i]?old[i].cust:null,busy:false})});   // ayakta durma/ödeme noktaları dünya koordinatında
   // bahşiş kavanozu + tabela: tek kasada sağda, iki kasada ortada
   const D=CASH_DECOR,{x,z,h}=CASH;if(D.g&&D.g.parent)D.g.parent.remove(D.g);
   D.g=inGroup(grp(0,0,0),()=>{const jx=n===1?x+0.32:x+0.01,jz=n===1?z+0.12:z-0.12;
@@ -775,18 +785,21 @@ function layoutRegisters(n){n=Math.max(1,Math.min(2,n));if(REGS.length===n)retur
     c2.fillStyle='#fbf3e4';c2.font='800 64px "Baloo 2",Nunito,sans-serif';c2.textAlign='center';c2.textBaseline='middle';c2.fillText('KASA',128,68);
     const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const sign=new THREE.Mesh(new THREE.PlaneGeometry(0.34,0.17),new THREE.MeshBasicMaterial({map:tx}));sign.position.set(sx,h+0.33,z+0.14);PARENT.add(sign);
     cyl(0.008,0.008,0.22,M.woodDark,sx,h+0.12,z+0.13,6)});
-  CASH.reg={x:REGS[0].rx,z:CASH.z}}finally{GRP_PARENT=G0}}
+  CASH.reg=cW(REGS[0].rx,CASH.z)}finally{GRP_PARENT=G0}}
 const CASH_PARTS={get drawer(){return REGS[0].parts.drawer},get drawerZ(){return REGS[0].parts.drawerZ},get screen(){return REGS[0].parts.screen}};
 // kasa bloğu arka duvar boyunca kaydırılabilir (CX): tezgâh + yazar kasalar + süs yeniden kurulur
-const CASH0={x:CASH.x};var CX=0,CG=null,COBST=[];
-function buildCash(){if(CG){scene.remove(CG);disposeTree(CG)}for(const o of COBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}
-  CASH.x=CASH0.x+CX;CASH.stand.x=CASH.x;CG=new THREE.Group();CG.name='cash';CG.userData.block='c';scene.add(CG);const P0=PARENT;PARENT=CG;const n0=OBST.length;
+const CASH0={x:CASH.x};var CP={x:0,z:0,r:0};const C_PIV={x:CASH.x,z:CASH.z};let CG=null,CGI=null,COBST=[],COBST_BASE=[];
+const cW=(x,z)=>blkW(CP,C_PIV,x,z),cL=(x,z)=>blkL(CP,C_PIV,x,z);
+function cPose(){if(!CG)return;CG.position.set(C_PIV.x+CP.x,0,C_PIV.z+CP.z);CG.rotation.y=CP.r;CG.updateMatrixWorld(true)}
+function cObstSync(){for(const o of COBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}COBST=COBST_BASE.map(b=>boxW(b,CP,C_PIV));OBST.push(...COBST)}
+function buildCash(){if(CG){scene.remove(CG);disposeTree(CG)}for(const o of COBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}COBST=[];
+  CG=new THREE.Group();CG.name='cash';CG.userData.block='c';CGI=new THREE.Group();CGI.position.set(-C_PIV.x,0,-C_PIV.z);CG.add(CGI);scene.add(CG);cPose();const P0=PARENT;PARENT=CGI;const n0=OBST.length;
   try{const {x,z,w,d,h}=CASH;
     box(w,h-0.08,d,M.green,x,(h-0.08)/2,z);box(w+0.12,0.1,d+0.12,M.wood,x,h-0.03,z,{round:0.02});
     box(w-0.1,0.05,0.02,M.gold,x,h-0.2,z+d/2+0.005);
     const n=Math.max(1,REGS.length);REGS.length=0;CASH_DECOR.g=null;layoutRegisters(n);
     obst(x-w/2-0.06,x+w/2+0.06,z-d/2-0.06,z+d/2+0.06);obst(x-0.6,x+0.6,CASH.stand.z-0.3,CASH.stand.z+0.25)}finally{PARENT=P0}
-  COBST=OBST.slice(n0)}
+  COBST_BASE=OBST.splice(n0);cObstSync()}
 buildCash();
 const NO_BUILD=[{minX:-ROOM_W/2,maxX:-2.9,minZ:0.95,maxZ:2.65},{minX:-ROOM_W/2,maxX:-0.85,minZ:-1.7,maxZ:-0.6},{minX:-ROOM_W/2,maxX:-2.6,minZ:-1.7,maxZ:0.15},
   {minX:-0.45,maxX:2.6,minZ:-3.7,maxZ:-1.15}];   // kasa + ödeme sırası
@@ -1671,11 +1684,11 @@ const ZLOCK={L:null,R:null,pick:null};
 const B_HOME=[{x:POSA_HOME.x,z:PZ,zone:'L'},{x:-1.92,z:PZ,zone:'R'}];
 function trayTopWorld(b){const t=b.ch.tray;return new THREE.Vector3(t.position.x,t.position.y+t.userData.top,t.position.z)}
 // diğer barista aradaysa koridorda yandan geçer (içinden geçmez)
-async function bGo(b,p){const ch=b.ch;const o=BSTAFF.find(x=>x!==b);
-  if(o){const ox=o.ch.pos.x,oz=o.ch.pos.z,x0=ch.pos.x,x1=p.x;const lo=Math.min(x0,x1)-0.3,hi=Math.max(x0,x1)+0.3;
-    const gz=o.ch.path.length&&o.ch.goal?o.ch.goal.z:oz;if(ox>lo&&ox<hi&&Math.abs(x1-x0)>0.25){const lane=(oz<-2.86||gz<-2.86)?-2.44:b.i===0?-3.2:-2.44;
-      if(Math.abs(ch.pos.z-lane)>0.05&&Math.abs(ch.pos.z-oz)<0.36)await ch.walkTo(x0+(x1>x0?0.08:-0.08),lane,{direct:true});
-      await ch.walkTo(x1+(x1>x0?-0.05:0.05),lane,{direct:true})}}
+async function bGo(b,p){const ch=b.ch;const o=BSTAFF.find(x=>x!==b);const W=(x,z)=>{const q=kW(x,z);return ch.walkTo(q.x,q.z,{direct:true})};
+  if(o){const me=kL(ch.pos.x,ch.pos.z),ot=kL(o.ch.pos.x,o.ch.pos.z),tg=kL(p.x,p.z);const ox=ot.x,oz=ot.z,x0=me.x,x1=tg.x;const lo=Math.min(x0,x1)-0.3,hi=Math.max(x0,x1)+0.3;
+    const gz=o.ch.path.length&&o.ch.goal?kL(o.ch.goal.x,o.ch.goal.z).z:oz;if(ox>lo&&ox<hi&&Math.abs(x1-x0)>0.25){const lane=(oz<-2.86||gz<-2.86)?-2.44:b.i===0?-3.2:-2.44;
+      if(Math.abs(me.z-lane)>0.05&&Math.abs(me.z-oz)<0.36)await W(x0+(x1>x0?0.08:-0.08),lane);
+      await W(x1+(x1>x0?-0.05:0.05),lane)}}
   await ch.walkTo(p.x,p.z,{direct:true});if(p.yaw!=null)await ch.face(p.yaw)}
 const posaGo=p=>bGo(BSTAFF[0],p);
 async function lockZ(k,b){while(ZLOCK[k]&&ZLOCK[k]!==b)await sleep(0.15);ZLOCK[k]=b}
@@ -1687,10 +1700,10 @@ async function prepare(b,o){const ch=b.ch,r=o.item,T=r.prep*equipFactor(r)*prepM
   const show=spot=>{m.position.copy(spot);m.visible=true;setBuilt(m,0);m.scale.setScalar(1)};
   if(r.station==='coffee'){
     await bGo(b,PST.grind);sfx('grind',T*0.3);await step(T*0.3,u=>{STATION.crank.rotation.y=u*Math.PI*8});
-    await bGo(b,PST.brew);show(PLATE_SPOT.coffee);sfx('clink');sfx('steam',T*0.5);const e1=steamOn(()=>new THREE.Vector3(KIT.ex-0.05,KIT.ch+0.25,KIT.cz+0.07),3),e2=steamOn(()=>cupTop(m),2);
+    await bGo(b,PST.brew);show(PLATE_SPOT.coffee);sfx('clink');sfx('steam',T*0.5);const e1=steamOn(()=>kW3(KIT.ex-0.05,KIT.ch+0.25,KIT.cz+0.07),3),e2=steamOn(()=>cupTop(m),2);
     await step(T*0.5,u=>setBuilt(m,u));steamOff(e1);await step(T*0.2,u=>{m.rotation.y=u*Math.PI*2});steamOff(e2)}
   else if(r.station==='tea'){
-    await bGo(b,PST.kettle);sfx('kettle',T*0.4);const e1=steamOn(()=>new THREE.Vector3(KIT.bx-0.35+0.1,KIT.backTop+0.22,KIT.bz-0.02),4);await step(T*0.4);steamOff(e1);
+    await bGo(b,PST.kettle);sfx('kettle',T*0.4);const e1=steamOn(()=>kW3(KIT.bx-0.35+0.1,KIT.backTop+0.22,KIT.bz-0.02),4);await step(T*0.4);steamOff(e1);
     await bGo(b,PST.teaPour);show(PLATE_SPOT.tea);sfx('clink');sfx('steam',T*0.35);const e2=m.userData.hot?steamOn(()=>cupTop(m),2):null;await step(T*0.6,u=>setBuilt(m,u));e2&&steamOff(e2)}
   else if(r.station==='dessert'){
     await bGo(b,PST.vitrine);await step(T*0.35);await bGo(b,PST.plate);show(PLATE_SPOT.food);sfx('clink');await step(T*0.65,u=>setBuilt(m,u))}
@@ -1722,7 +1735,7 @@ async function baristaLoop(b){let idle=0;const ch=b.ch;
       try{await prepare(b,o);stDrain(b)}finally{unlockZ(Z,b);unlockZ('pick',b);b.busy=false}
       continue}
     const h=bIdleSpot(b);b.idleAt=h;
-    if(!atSpot(ch,h)){unlockZ('pick',b);await bGo(b,{x:h.x,z:h.z});await ch.face(0);continue}
+    if(!atSpot(ch,h)){unlockZ('pick',b);await bGo(b,{x:h.x,z:h.z});await ch.face(KP.r);continue}
     unlockZ('pick',b);await sleep(0.1);idle+=0.1;if(idle>(b.wanderAt||(b.wanderAt=8+Math.random()*6))){idle=0;b.wanderAt=0;b.busy=true;try{if(Math.random()<0.75)await baristaWander(b,h);else await ch.doFor('IDLE_LOOK',1.4)}finally{b.busy=false}}}}
 const posaLoop=()=>{};   // eski ad
 
@@ -1798,21 +1811,21 @@ async function customerLife(c){const ch=c.char,g=c.group;
   c.state='WALKING_TO_PAY';let idx=-2,R=null;
   while(true){
     if(!R&&CASH.queue[0]===c){const f=REGS.find(r=>!r.cust&&CSTAFF[r.i]&&CSTAFF[r.i].ready);if(f){R=f;R.cust=c;CASH.queue.shift();
-      if(REGS.length>1&&R.i===0&&ch.pos.x>R.pay.x+0.4)await ch.walkTo(R.pay.x+0.3,-1.5);   // diğer ödeme noktasının içinden geçmesin
-      await ch.walkTo(R.pay.x,R.pay.z);await ch.faceTo(R.rx,CASH.z);if(R.cust!==c||!REGS.includes(R)){R=null;continue}break}}
+      if(REGS.length>1&&R.i===0){const me=cL(ch.pos.x,ch.pos.z),pl=cL(R.pay.x,R.pay.z);if(me.x>pl.x+0.4){const q=cW(pl.x+0.3,-1.5);await ch.walkTo(q.x,q.z)}}   // diğer ödeme noktasının içinden geçmesin
+      await ch.walkTo(R.pay.x,R.pay.z);await ch.faceTo(R.regW.x,R.regW.z);if(R.cust!==c||!REGS.includes(R)){R=null;continue}break}}
     if(R)break;
-    const i=CASH.queue.indexOf(c);if(i!==idx){idx=i;const q=QLINE[Math.max(0,Math.min(i,QLINE.length-1))];await ch.walkTo(q.x,q.z);const f=i===0?{x:CASH.x,z:CASH.z}:QLINE[i-1];await ch.faceTo(f.x,f.z);continue}
+    const i=CASH.queue.indexOf(c);if(i!==idx){idx=i;const q=QLINE[Math.max(0,Math.min(i,QLINE.length-1))];await ch.walkTo(q.x,q.z);const f=i===0?cW(CASH.x,CASH.z):QLINE[i-1];await ch.faceTo(f.x,f.z);continue}
     await sleep(0.2)}
   c.state='PAYING';c.reg=R;await cashierServe(R,c);R.cust=null;c.reg=null;
   c.state='LEAVING';ch.doFor('Wave_One_Hand',1.0);await sleep(0.5);await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});
   scene.remove(ch.o);customers.splice(customers.indexOf(c),1)}
 const payCount=()=>CASH.queue.length+REGS.filter(r=>r.cust).length;
 // ---------- KASİYERLER ----------
-async function cashierServe(R,c){const k=CSTAFF[R.i]||CSTAFF[0];while(k.chasing||k.resting)await sleep(0.2);const cm=stCashMul(k);R.busy=true;const ca=k.ch;const P=R.parts,dr=P.drawer,z0=P.drawerZ;await ca.face(0);
+async function cashierServe(R,c){const k=CSTAFF[R.i]||CSTAFF[0];while(k.chasing||k.resting)await sleep(0.2);const cm=stCashMul(k);R.busy=true;const ca=k.ch;const P=R.parts,dr=P.drawer,z0=P.drawerZ;await ca.face(CP.r);
   P.screen.material.color.setHex(0xfff3a0);
   await Promise.all([ca.doFor('IDLE_WORK',1.5*cm),(async()=>{await sleep(0.6*cm);sfx('register');await tween(0.25,u=>dr.position.z=z0+0.16*u)})()]);
   pay(c,R);await sleep(0.45);await tween(0.25,u=>dr.position.z=z0+0.16*(1-u));P.screen.material.color.setHex(0x9fe0a8);
-  ca.doFor('Wave_One_Hand',1.2).then(()=>ca.face(0));R.busy=false;stDrain(k)}
+  ca.doFor('Wave_One_Hand',1.2).then(()=>ca.face(CP.r));R.busy=false;stDrain(k)}
 function chooseRecipe(c){const av=availableRecipes();if(!av.length)return null;const rq=S.req&&av.find(r=>r.id===S.req.rid);if(rq&&Math.random()<0.55)return rq;
   const w=av.map(r=>(c.persona.pref[r.cat]||1)*(c.vip?r.price:1));let s=w.reduce((a,b)=>a+b,0)*Math.random();for(let i=0;i<av.length;i++){s-=w[i];if(s<=0)return av[i]}return av[av.length-1]}
 // grubun siparişi tek seferde alınır: garson masaya bir kez gelir, her üye için ayrı ürün yazılır
@@ -1864,7 +1877,7 @@ async function consume(o,dur){const m=o.mesh;
     else if(m.userData.body){const k=Math.max(0.001,1-u);m.userData.body.scale.set(k,k,k)}})}
 // hesap: grubun tüm siparişleri tek ödemede (her sipariş yalnızca bir kez ödenir)
 function pay(c,R,at){const g=c.group||{members:[c]};const os=g.members.map(m=>m.order).filter(o=>o&&!o.paid&&!o.cancel);if(!os.length)return;const o=os[0];
-  for(const x of os){x.paid=true;x.state='COMPLETED'}const rx=R?R.rx:CASH.reg.x;const p=at||new THREE.Vector3(rx,CASH.h+0.55,CASH.z);
+  for(const x of os){x.paid=true;x.state='COMPLETED'}const rw=R?R.regW:CASH.reg;const p=at||new THREE.Vector3(rw.x,CASH.h+0.55,rw.z);
   const price=os.reduce((a,x)=>a+(x.price||priceOf(x.item)),0);addCoins(price,'sale');for(const x of os)finEv('sold:'+x.item.id,1);floatCoin(price,p);rateGroup(c.group);afkEarn(price,os.length);finEv('srv',os.length);finEv('cogs',os.reduce((a,x)=>a+(x.cost||0),0));
   const tipCh=c.vip?1:c.persona.tip+tipBonus()+stTipBonus()+0.1*regTier(c.look.name);
   if(Math.random()<tipCh){let tip=1+Math.floor(price*0.2);if(c.vip)tip=tip*2+3;o.tip=tip;setTimeout(()=>{addCoins(tip,'tip');sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true);if(c.vip)toast(`<b>VIP gurme memnun kaldı!</b><br>+${tip} bahşiş bıraktı`,ic('star'),2600)},450)}
@@ -3746,7 +3759,7 @@ function custTag(c){if(c.vip){c.tag=`${ic('star')}VIP gurme`;toast('<b>VIP gurme
 async function idleChat(w){const b=BSTAFF[0];if(!b||b.busy||b.job||baristaQ.length||!b.idleAt||!atSpot(b.ch,b.idleAt,0.1)||customers.some(c=>PENDING.has(c.state))||Math.random()<0.5)return false;
   const ch=w.ch,P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);await ch.faceTo(b.ch.pos.x,b.ch.pos.z);if(jobs.length)return true;
   b.ch.faceTo(ch.pos.x,ch.pos.z);staffBubble(ch,'heart',2.4);staffBubble(b.ch,'heart',2.2,0.6);
-  await Promise.all([ch.doFor('Wave_One_Hand',1.2),(async()=>{await sleep(0.5);if(!b.busy&&!b.job)await b.ch.doFor('IDLE_TALK',1.4);if(!b.busy&&!b.job)b.ch.face(0)})()]);
+  await Promise.all([ch.doFor('Wave_One_Hand',1.2),(async()=>{await sleep(0.5);if(!b.busy&&!b.job)await b.ch.doFor('IDLE_TALK',1.4);if(!b.busy&&!b.job)b.ch.face(KP.r)})()]);
   if(!jobs.length)await ch.doFor('IDLE_LOOK',1.6);if(!jobs.length)await ch.face(yaw);return true}
 const SBUB=[];let sbSeq=0;
 function staffBubble(ch,icon,dur,delay=0){const t=gameT+delay;SBUB.push({ch,icon,from:t,until:t+dur,id:++sbSeq})}
@@ -3782,12 +3795,13 @@ async function catchRunner(c,k){const ch=k.ch,cc=c.char;c.caughtDone=new Promise
   c._cd()}
 async function chaseBack(k){const R=REGS[k.i]||REGS[0];const st=R.stand;const ch=k.ch;
   // kasa arkasına: tezgahın yanından dolaşarak dön
-  await cashEnter(ch,st);await ch.face(0);k.chasing=false;k.ready=REGS.length>k.i}
+  await cashEnter(ch,st);await ch.face(CP.r);k.chasing=false;k.ready=REGS.length>k.i}
 // kasa tezgahının arkasından çıkış/giriş: tezgahın yanındaki geçitten (içinden geçmeden)
 const CASH_GATE={L:-0.6,R:1.3,back:-3.4,front:-2.12};
 function gateX(x){return CASH_GATE.L}   // sağ tarafta kasiyer sandalyesi var: tezgah arkasından hep sol geçitten çıkılır
-async function cashExit(ch,tx){if(ch.pos.z>CASH_GATE.front-0.05)return;const g=gateX(tx);await ch.walkTo(g,ch.pos.z,{direct:true});await ch.walkTo(g,CASH_GATE.front,{direct:true})}
-async function cashEnter(ch,st){if(ch.pos.z<CASH_GATE.front-0.05){await ch.walkTo(st.x,st.z,{direct:true});return}const g=gateX(ch.pos.x);await ch.walkTo(g,CASH_GATE.front);await ch.walkTo(g,st.z,{direct:true});await ch.walkTo(st.x,st.z,{direct:true})}
+// geçit kuralları kasanın kendi (temel) koordinatlarında: kasa döndürülünce de tezgâhın yanından dolaşılır
+async function cashExit(ch,tx){const me=cL(ch.pos.x,ch.pos.z);if(me.z>CASH_GATE.front-0.05)return;const g=gateX(tx);let q=cW(g,me.z);await ch.walkTo(q.x,q.z,{direct:true});q=cW(g,CASH_GATE.front);await ch.walkTo(q.x,q.z,{direct:true})}
+async function cashEnter(ch,st){const me=cL(ch.pos.x,ch.pos.z),sl=cL(st.x,st.z);if(me.z<CASH_GATE.front-0.05){await ch.walkTo(st.x,st.z,{direct:true});return}const g=gateX(me.x);let q=cW(g,CASH_GATE.front);await ch.walkTo(q.x,q.z);q=cW(g,sl.z);await ch.walkTo(q.x,q.z,{direct:true});await ch.walkTo(st.x,st.z,{direct:true})}
 
 // ---------- hediye masa (ilk müşteriden sonra) ----------
 function giftTable(){if(placedTables()>=tableCap(S.lvl))return false;const rec={uid:++S.uid,id:'t_round',x:0,z:0,rot:1,chair:S.chairDefault||'c_cushion',col:2};
@@ -3899,7 +3913,7 @@ const waitHTML=(txt='')=>`<span class="wi">${UI_IC.wait}</span>${txt?`<small>${t
 // ================= AŞAMA 4: PAKET SERVİS (Seviye 5'te açılır) =================
 // Telefon kasanın yanında çalar → oyuncu dokunur → sipariş paneli → kabul → barista hazırlar → paketlenir → kurye götürür → ödeme gelir.
 Object.assign(CONFIG,{dlv:{lvl:5,first:20,gap:[150,240],ring:30,trip:[26,38],fee:6,maxItems:3}});
-const COURIER_IDLE={x:1.45,z:-2.85},COURIER_YAW=-Math.PI/2;
+const COURIER_IDLE={x:1.45,z:-2.85};var COURIER_YAW=-Math.PI/2;   // kasa dönünce güncellenir
 const DLV={call:null,active:null,cd:0,seq:0,ringT:0,say:null};let COURIER=null,PHONE=null;
 const COURIER_CFG={name:'Pati',look:{...LOOK_DEF,fur1:2,fur2:6},wear:{apron:'ap_sun',top:'polo_stripe',neck:'nk_none',hat:'hat_beret_red',bottom:'bt_navy'}};
 const DLV_STREETS=['Lavanta Sk.','Martı Cd.','Begonvil Sk.','Zeytin Sk.','Fener Yolu','Kiraz Sk.','Liman Cd.','Papatya Sk.'];
@@ -3991,7 +4005,7 @@ function autoPhone(){const c=DLV.call;if(PHONE_BUSY||!c||DLV.active||$('dlvPanel
       await ch.doFor('IDLE_TALK',1.6);await tween(0.25,u=>{hs.position.y=0.195-0.12*u});lift=false;
       if(DLV.call!==c)return;
       if(!acceptCall(c)){DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);toast(`<b>${NMs().cashier?NMs().cashier.name:'Kasiyer'} siparişi alamadı</b><br>Stok yetmiyor`,ic('box'),2200)}}
-    catch(e){console.warn('autoPhone',e)}finally{PHONE_BUSY=false;k.idleBusy=false;k.ready=REGS.length>k.i;try{await ch.face(0)}catch(e){}}})()}
+    catch(e){console.warn('autoPhone',e)}finally{PHONE_BUSY=false;k.idleBusy=false;k.ready=REGS.length>k.i;try{await ch.face(CP.r)}catch(e){}}})()}
 // ---------- arayüz: telefon düğmesi, kurye konuşma balonu, durum çipi ----------
 {const r=document.createElement('div');r.className='goal dlvchip';r.id='dlvChip';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;$('req').after(r);r.onclick=()=>{if(DLV.call)openCall()}}
 function dlvUI(){const hp=new THREE.Vector3();
@@ -4555,7 +4569,7 @@ const SIDEG=(()=>{const g=new THREE.Group();g.userData.wall='left';scene.add(g);
   for(const s of [-1,1]){const r=add(new THREE.CylinderGeometry(0.004,0.004,0.17,4),M.dark,x0-0.075,y+0.34,z+s*0.08,{sh:false});r.rotation.x=s*0.52}
   return g})();
 // ---------- tezgah arkası raf: ahşap raflar, demir konsollar, kavanozlar, fincanlar, demlik, sarkan bitki ----------
-function buildBackShelf(bx,bw){const g=new THREE.Group();g.userData.static=true;PARENT.add(g);const zw=-ROOM_D/2;const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
+function buildBackShelf(bx,bw){const g=new THREE.Group();g.userData.static=true;PARENT.add(g);const zw=-4;const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
   const add=(geo,mat,x,y,z,o={})=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(o.rx)m.rotation.x=o.rx;if(o.ry)m.rotation.y=o.ry;if(o.rz)m.rotation.z=o.rz;m.castShadow=o.sh!==false;m.receiveShadow=true;g.add(m);return m};
   // fayans duvar paneli (tezgah üstünden rafların arkasına)
   {const cv=document.createElement('canvas');cv.width=512;cv.height=256;const c=cv.getContext('2d');c.fillStyle='#e7dccb';c.fillRect(0,0,512,256);
@@ -5012,13 +5026,13 @@ async function waiterWander(w,P,yaw){const ch=w.ch;for(let n=0;n<8;n++){const a=
     await ch.face(Math.random()*Math.PI*2);await sleep(irnd(1.2,2.6));if(jobs.length)return;
     await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(!jobs.length)await ch.face(yaw);return}}
 // barista: tezgah arkasında kendi bölgesinde birkaç adım
-async function baristaWander(b,h){if(baristaQ.length)return;const ch=b.ch;const span=BSTAFF.length>1?0.35:0.7;const x=h.x+(Math.random()<0.5?-1:1)*irnd(0.25,span);
-  await ch.walkTo(x,h.z,{direct:true});if(baristaQ.length)return;await ch.face(Math.random()<0.5?Math.PI:0);await sleep(irnd(1,2.2));
-  if(!baristaQ.length&&Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(h.x,h.z,{direct:true});await ch.face(0)}
-// kasiyerin sandalyesi: kasanın sağında, duvar dibinde (yüzü salona dönük)
+async function baristaWander(b,h){if(baristaQ.length)return;const ch=b.ch;const span=BSTAFF.length>1?0.35:0.7;const hl=kL(h.x,h.z);const q=kW(hl.x+(Math.random()<0.5?-1:1)*irnd(0.25,span),hl.z);
+  await ch.walkTo(q.x,q.z,{direct:true});if(baristaQ.length)return;await ch.face(KP.r+(Math.random()<0.5?Math.PI:0));await sleep(irnd(1,2.2));
+  if(!baristaQ.length&&Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(h.x,h.z,{direct:true});await ch.face(KP.r)}
+// kasiyerin sandalyesi: yazar kasanın tam arkasında (yüzü tezgâha dönük); kasa dönünce o da döner
 let CASH_CHAIR=null;
-function cashChair(){if(CASH_CHAIR)return CASH_CHAIR;const x=CASH.x+0.78,z=CASH.stand.z+0.02;const f=frame(x,z,0);const G=new THREE.Group();scene.add(G);chairMeshes(G,f,'c_cushion',2);
-  const seat=seatData(f);seat.A={x:x-0.36,z:z+0.06};seat.cash=true;CASH_CHAIR={G,seat,used:null};return CASH_CHAIR}
+function cashChair(){if(CASH_CHAIR)return CASH_CHAIR;const p=cW(CASH.x,CASH.stand.z-0.36),a=cW(CASH.x,CASH.stand.z+0.02);const f=frame(p.x,p.z,CP.r);const G=new THREE.Group();scene.add(G);chairMeshes(G,f,'c_cushion',2);
+  const seat=seatData(f);seat.A={x:a.x,z:a.z};seat.cash=true;CASH_CHAIR={G,seat,used:null};return CASH_CHAIR}
 // kasa ve telefon boşsa oturmaya uygun
 function cashCalm(k){const R=REGS[k.i];return R&&!R.busy&&!R.cust&&!CASH.queue.length&&!k.chasing&&!cashMoving&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING'||c.state==='WAITING_TO_PAY')&&!(S.auto&&typeof DLV!=='undefined'&&DLV.call)}
 async function cashierSit(k){const C=cashChair(),ch=k.ch,R=REGS[k.i];if(C.used)return false;C.used=k;
@@ -5030,13 +5044,13 @@ async function cashierSit(k){const C=cashChair(),ch=k.ch,R=REGS[k.i];if(C.used)r
 // kasiyer: kasa boşken
 function cashIdleOk(k){const R=REGS[k.i];return k.ready&&!k.chasing&&!cashMoving&&R&&!R.busy&&!R.cust&&!CASH.queue.length&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING')}
 async function cashierIdle(k){const R=REGS[k.i],st=R.stand,ch=k.ch;k.ready=false;k.idleBusy=true;
-  try{if(k.i===REGS.length-1&&Math.random()<0.55){await cashierSit(k);await ch.face(0);return}
+  try{if(k.i===REGS.length-1&&Math.random()<0.55){await cashierSit(k);await ch.face(CP.r);return}
     const mates=[...BSTAFF.filter(b=>!b.busy&&!baristaQ.length),...WSTAFF.filter(w=>!jobs.length)].map(x=>x.ch).filter(c=>Math.hypot(c.pos.x-ch.pos.x,c.pos.z-ch.pos.z)<4.2&&!c.path.length);
     if(mates.length&&Math.random()<0.55){const m=mates[Math.floor(Math.random()*mates.length)];await ch.faceTo(m.pos.x,m.pos.z);staffBubble(ch,'heart',2.2);
       await Promise.all([ch.doFor(Math.random()<0.5?'Wave_One_Hand':'IDLE_TALK',1.4),(async()=>{await sleep(0.5);if(!m.act&&!m.path.length){staffBubble(m,'heart',1.8);await m.doFor('IDLE_TALK',1.2)}})()])}
-    else{const x=Math.max(-0.12,Math.min(0.82,st.x+(Math.random()<0.5?-1:1)*irnd(0.2,0.38)));await ch.walkTo(x,st.z,{direct:true});await ch.face(Math.PI);await sleep(irnd(1,2));
+    else{const sl=cL(st.x,st.z);const q=cW(Math.max(CASH0.x-0.47,Math.min(CASH0.x+0.47,sl.x+(Math.random()<0.5?-1:1)*irnd(0.2,0.38))),sl.z);await ch.walkTo(q.x,q.z,{direct:true});await ch.face(CP.r+Math.PI);await sleep(irnd(1,2));
       if(Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(st.x,st.z,{direct:true})}
-    await ch.face(0)}finally{k.idleBusy=false;k.ready=REGS.length>k.i}}
+    await ch.face(CP.r)}finally{k.idleBusy=false;k.ready=REGS.length>k.i}}
 function staffIdleTick(dt){if(!IDLE.on||!S.created)return;if(!CASH_CHAIR)cashChair();for(const k of CSTAFF){if(k.idleBusy)continue;if(!cashIdleOk(k)){k.idleT=0;continue}k.idleT=(k.idleT||0)+dt;
     if(k.idleT>(k.idleNext||(k.idleNext=irnd(6,11)))){k.idleT=0;k.idleNext=irnd(12,22);cashierIdle(k)}}}
 
@@ -5539,74 +5553,120 @@ setTimeout(()=>{try{const n=mergeFar();if(n)console.log('birleştirildi',n)}catc
 // sabit işaretli süs grupları (arka raf vb.)
 for(const o of scene.children)if(o.userData&&o.userData.static&&!o.userData.merged){try{mergeStatic(o);o.userData.merged=true}catch(e){}}
 
-// ================= TAŞINABİLİR TEZGÂH VE KASA (arka duvar boyunca) =================
-// S.layout={k,c}: tezgâh bloğu (KX) ve kasa bloğu (CX) kayması (m). Kapı sabit; tezgâh her zaman kasanın solunda kalır.
-// Açılışta bloklar yeniden kurulur ve çalışanların/müşterilerin bütün durma noktaları aynı miktarda kaydırılır.
-// Düzenle modunda taşıma önizlemedir; "Tamam" deyince kaydedilip sayfa yenilenir (çalışanlar yeni yerlerinde başlar).
+// ================= TAŞINABİLİR VE DÖNDÜRÜLEBİLİR TEZGÂH / KASA + TAŞINABİLİR PENCERE =================
+// S.layout={k:{x,z,r},c:{x,z,r},w}: tezgâh (KP) ve kasa (CP) bloğunun temel konumdan kayması ve dönüşü (90°'lik), pencere x'i.
+// Bütün durma noktaları (barista, garson, kasiyer, kuyruk, kurye, koli) temel değerlerinden bu dönüşümle yeniden hesaplanır.
+// Düzenle modunda taşıma önizlemedir; "Tamam" deyince kaydedilip sayfa yenilenir. Kurulum rehberinde canlı uygulanır.
 const LAY_STEP=0.25;
-const K_SPAN=()=>[-ROOM_W/2+KX,KIT0.cx+KIT.cw/2+0.88+KX];             // tezgâh bloğunun x aralığı (menü tahtası dahil)
-const K_SHELF=()=>[KIT0.bx-KIT.bw/2-0.05+KX,KIT0.bx+KIT.bw/2+0.05+KX];   // arka duvardaki raflar
-const C_SPAN=()=>[CASH0.x-0.66+CX,CASH0.x+2.3+CX];                     // kasa + sandalye + ödeme sırası
-// açılışta: mantık noktalarını kaydır (yalnız bir kez, personel doğmadan önce)
-function layoutShiftLogic(dk,dc){const seen=new Set();const sh=(o,d,keys=['x'])=>{if(!o||seen.has(o)||!d)return;seen.add(o);for(const k of keys)o[k]+=d};
-  if(dk){for(const k in PST)sh(PST[k],dk);sh(POSA_HOME,dk);for(const k in PLATE_SPOT)sh(PLATE_SPOT[k],dk);sh(PREP_SPOT,dk);sh(PICKUP_SPOT,dk);sh(PREP_ANCHOR,dk);sh(PICKUP_ANCHOR,dk);
-    PICKUP_SLOTS.forEach(v=>sh(v,dk));PREP_SPOTS.forEach(v=>sh(v,dk));PICK_SPOTS.forEach(v=>sh(v,dk));B_HOME.forEach(v=>sh(v,dk));W_WAIT.slice(1).forEach(v=>sh(v,dk));
-    sh(BOX_COUNTER.stand,dk);sh(BOX_COUNTER.top,dk);sh(NO_BUILD[1],dk,['minX','maxX']);sh(NO_BUILD[2],dk,['minX','maxX'])}
-  if(dc){QLINE.forEach(v=>sh(v,dc));QSPOTS.forEach(v=>sh(v,dc));sh(CASH_GATE,dc,['L','R']);sh(COURIER_IDLE,dc);sh(NO_BUILD[3],dc,['minX','maxX'])}}
-function layoutBoot(){const L=S.layout;if(!L)return;if(L.w!=null&&L.w!==WIN.x){WIN.x=L.w;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}const k=+L.k||0,c=+L.c||0;if(!k&&!c)return;
-  if(layoutCheck(k,c,true)){console.warn('kayıtlı tezgâh/kasa yeri geçersiz:',layoutCheck(k,c,true));S.layout=null;return}
-  KX=k;CX=c;buildKitchen();buildCash();layoutShiftLogic(k,c);try{buildGrid()}catch(e){}LAY.bootK=k;LAY.bootC=c}
-const LAY={on:null,k0:0,c0:0,w0:1.6,bootK:0,bootC:0,mark:null};
-// yerleşim geçerli mi? (null = geçerli, yoksa sebep)
-function layoutCheck(k,c,boot){const kx0=-ROOM_W/2+k,kx1=KIT0.cx+KIT.cw/2+0.88+k,cx0=CASH0.x-0.66+c,cx1=CASH0.x+2.3+c;
-  if(k<0)return 'Tezgâh sol duvarın dışına çıkamaz';if(c<k-0.001)return 'Kasa tezgâhın sağında kalmalı';
-  if(cx1>RM.x1-0.15)return 'Kasa ve ödeme sırası duvara sığmıyor';
-  const s0=KIT0.bx-KIT.bw/2-0.05+k,s1=KIT0.bx+KIT.bw/2+0.05+k,w0=WIN.x-WIN.w/2-0.05,w1=WIN.x+WIN.w/2+0.05;if(s1>w0&&s0<w1)return LAY.on==='w'?'Pencere tezgâh raflarının arkasına geliyor':'Tezgâhın rafları pencerenin önüne geliyor';
-  if(w0<RM.x0+0.3||w1>RM.x1-0.3)return 'Pencere duvara sığmıyor';
+const LAY={on:null,k0:null,c0:null,w0:1.6,mark:null,base:null};
+const poseEq=(a,b)=>a.x===b.x&&a.z===b.z&&((a.r-b.r)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)<1e-6;
+// temel (dönüşümsüz) değerlerin kopyası: ilk kullanımda bir kez alınır
+function layBase(){if(LAY.base)return LAY.base;const P=[],B=[];const seen=new Set();const pt=(o,b)=>{if(!o||seen.has(o))return;seen.add(o);P.push({o,b,x:o.x,z:o.z,yaw:o.yaw})};
+  for(const k in PST)pt(PST[k],'k');pt(POSA_HOME,'k');for(const k in PLATE_SPOT)pt(PLATE_SPOT[k],'k');pt(PREP_SPOT,'k');pt(PICKUP_SPOT,'k');pt(PREP_ANCHOR,'k');pt(PICKUP_ANCHOR,'k');
+  PICKUP_SLOTS.forEach(v=>pt(v,'k'));PREP_SPOTS.forEach(v=>pt(v,'k'));PICK_SPOTS.forEach(v=>pt(v,'k'));B_HOME.forEach(v=>pt(v,'k'));W_WAIT.slice(1).forEach(v=>pt(v,'k'));pt(BOX_COUNTER.stand,'k');pt(BOX_COUNTER.top,'k');
+  QLINE.forEach(v=>pt(v,'c'));QSPOTS.forEach(v=>pt(v,'c'));pt(COURIER_IDLE,'c');
+  for(const [i,b] of [[1,'k'],[2,'k'],[3,'c']])B.push({o:NO_BUILD[i],b,minX:NO_BUILD[i].minX,maxX:NO_BUILD[i].maxX,minZ:NO_BUILD[i].minZ,maxZ:NO_BUILD[i].maxZ});
+  return LAY.base={P,B,shelf:{minX:KIT0.bx-KIT.bw/2-0.05,maxX:KIT0.bx+KIT.bw/2+0.05,minZ:-4.05,maxZ:-3.9}}}
+// bir pozu mantığa uygula (aynı pozla tekrar çağrılabilir)
+function layApply(){const L=layBase();for(const p of L.P){const P=p.b==='k'?KP:CP,piv=p.b==='k'?K_PIV:C_PIV;const w=blkW(P,piv,p.x,p.z);p.o.x=w.x;p.o.z=w.z;if(p.yaw!=null)p.o.yaw=p.yaw+P.r}
+  for(const b of L.B){const w=boxW(b,b.b==='k'?KP:CP,b.b==='k'?K_PIV:C_PIV);Object.assign(b.o,w)}
+  COUNTER_FACE=Math.PI+KP.r;COURIER_YAW=-Math.PI/2+CP.r;
+  try{if(PHONE){const p=cW(CASH.x+0.5,CASH.z-0.08);PHONE.g.position.set(p.x,CASH.h,p.z);PHONE.g.rotation.y=-0.35+CP.r}}catch(e){}
+  try{if(CASH_CHAIR){CASH_CHAIR.G.parent&&CASH_CHAIR.G.parent.remove(CASH_CHAIR.G);CASH_CHAIR=null}}catch(e){}
+  kShelfVis();try{buildGrid()}catch(e){}}
+// raflar yalnız tezgâhın sırtı bir duvara dayalıyken görünür
+function shelfWall(P){const b=boxW(LAY.base?LAY.base.shelf:layBase().shelf,P||KP,K_PIV);if(b.minZ<RM.z0+0.12&&b.maxX-b.minX>b.maxZ-b.minZ)return {wall:'back',b};if(b.minX<RM.x0+0.12&&b.maxZ-b.minZ>b.maxX-b.minX)return {wall:'left',b};return null}
+function kShelfVis(){if(KSHELF)KSHELF.visible=!!shelfWall()}
+function layoutBoot(){const L=S.layout;if(!L)return;if(L.w!=null&&L.w!==WIN.x){WIN.x=L.w;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}
+  const pk=typeof L.k==='number'?{x:L.k,z:0,r:0}:L.k,pc=typeof L.c==='number'?{x:L.c,z:0,r:0}:L.c;layBase();
+  if(!pk&&!pc)return;const k=pk||{x:0,z:0,r:0},c=pc||{x:0,z:0,r:0};
+  const why=layoutCheck(k,c,true);if(why){console.warn('kayıtlı tezgâh/kasa yeri geçersiz:',why);S.layout={w:L.w};return}
+  Object.assign(KP,k);Object.assign(CP,c);kPose();kObstSync();buildCash();layApply()}
+// ---- geçerlilik ----
+const boxOv=(a,b,m=0)=>a.minX<b.maxX+m&&a.maxX>b.minX-m&&a.minZ<b.maxZ+m&&a.maxZ>b.minZ-m;
+function layoutCheck(k,c,boot){k=k||KP;c=c||CP;const L=layBase();
+  const noC=typeof buildOn==='function'&&buildOn()&&S.tut==='b_counter';   // kurulumda kasa henüz yokken yalnız tezgâh denetlenir
+  const kb=KOBST_BASE.map(b=>boxW(b,k,K_PIV)),cb=noC?[]:COBST_BASE.map(b=>boxW(b,c,C_PIV));
+  const kz=L.B.filter(b=>b.b==='k').map(b=>boxW(b,k,K_PIV)),cz=noC?[]:L.B.filter(b=>b.b==='c').map(b=>boxW(b,c,C_PIV));
+  for(const b of kb)if(b.minX<RM.x0-0.02||b.maxX>RM.x1+0.02||b.minZ<RM.z0-0.02||b.maxZ>RM.z1+0.02)return 'Tezgâh odanın dışına taşıyor';
+  for(const b of cb)if(b.minX<RM.x0-0.02||b.maxX>RM.x1+0.02||b.minZ<RM.z0-0.02||b.maxZ>RM.z1+0.02)return 'Kasa odanın dışına taşıyor';
+  for(const a of kb)for(const b of cb)if(boxOv(a,b,-0.1))return 'Tezgâh ile kasa üst üste geliyor';
+  for(const a of kb)for(const b of cz)if(boxOv(a,b,-0.2))return 'Tezgâh kasanın önünü kapatıyor';
+  for(const a of cb)for(const b of kz)if(boxOv(a,b,-0.2))return 'Kasa tezgâhın önünü kapatıyor';
+  const fixed=OBST.filter(o=>!KOBST.includes(o)&&!COBST.includes(o));
+  for(const a of kb.concat(cb))for(const o of fixed)if(boxOv(a,o,-0.02))return 'Bir duvar süsüne, kapıya ya da saksıya denk geliyor';
+  for(const a of kb.concat(cb,kz,cz))if(boxOv(a,NO_BUILD[0]))return 'Kapı girişini kapatıyor';
+  const sw=shelfWall(k);if(sw){const b=sw.b;if(sw.wall==='back'){const w0=WIN.x-WIN.w/2-0.05,w1=WIN.x+WIN.w/2+0.05;if(b.maxX>w0&&b.minX<w1)return LAY.on==='w'?'Pencere tezgâh raflarının arkasına geliyor':'Tezgâhın rafları pencerenin önüne geliyor'}
+    else{const d0=DOOR.z-DOOR.w/2-0.1,d1=DOOR.z+DOOR.w/2+0.1,s0=SIDEL.z-SIDEL.w/2-0.05,s1=SIDEL.z+SIDEL.w/2+0.05;if((b.maxZ>d0&&b.minZ<d1)||(b.maxZ>s0&&b.minZ<s1))return 'Tezgâhın rafları kapıya ya da pencereye denk geliyor'}}
+  {const w0=WIN.x-WIN.w/2-0.05,w1=WIN.x+WIN.w/2+0.05;if(w0<RM.x0+0.3||w1>RM.x1-0.3)return 'Pencere duvara sığmıyor'}
   if(boot)return null;
-  // mobilya ve duvar süsleri
-  const zoneK={minX:kx0,maxX:kx1,minZ:RM.z0,maxZ:0.2},zoneC={minX:cx0,maxX:cx1,minZ:RM.z0,maxZ:-1.1};
-  const ov=(a,b)=>a.minX<b.maxX&&a.maxX>b.minX&&a.minZ<b.maxZ&&a.maxZ>b.minZ;
-  for(const [u,R] of FURN){const ck=CAT[R.rec.id];if(ck.kind==='walldecor'){const sl=WALL_SLOTS[R.rec.slot];if(sl&&!sl.ry&&sl.x>s0-0.3&&sl.x<s1+0.3)return `Duvardaki “${ck.name}” rafların arkasında kalıyor: önce onu taşı`;if(sl&&!sl.ry&&Math.abs(sl.x-WIN.x)<WIN.w/2+0.35)return `Duvardaki “${ck.name}” pencereye denk geliyor: önce onu taşı`;continue}
-    for(const b of R.boxes||[])if(ov(b,zoneK)||ov(b,zoneC))return `“${ck.name}” yolu kapatıyor: önce onu taşı`}
+  for(const [u,R] of FURN){const ck=CAT[R.rec.id];if(ck.kind==='walldecor'){const sl=WALL_SLOTS[R.rec.slot];if(!sl)continue;
+      if(sw&&((sw.wall==='back'&&!sl.ry&&sl.x>sw.b.minX-0.3&&sl.x<sw.b.maxX+0.3)||(sw.wall==='left'&&sl.ry&&sl.z>sw.b.minZ-0.3&&sl.z<sw.b.maxZ+0.3)))return `Duvardaki “${ck.name}” rafların arkasında kalıyor: önce onu taşı`;
+      if(!sl.ry&&Math.abs(sl.x-WIN.x)<WIN.w/2+0.35)return `Duvardaki “${ck.name}” pencereye denk geliyor: önce onu taşı`;continue}
+    for(const b of R.boxes||[])for(const a of kb.concat(cb,kz,cz))if(boxOv(a,b))return `“${ck.name}” yolu kapatıyor: önce onu taşı`}
+  // erişim: kapıdan tezgâh önüne, teslim noktalarına, kasa sırasına ve garson köşesine yol kalmalı
+  const g=makeGrid(fixed.concat(kb,cb,furnBoxes()));const seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
+  const P=pt=>blkW(k,K_PIV,pt.x,pt.z),Q=pt=>blkW(c,C_PIV,pt.x,pt.z),Lb=L.P;
+  const need=[staffSeat.A,...Lb.filter(p=>p.b==='k'&&(PREP_SPOTS.includes(p.o)||PICK_SPOTS.includes(p.o))).map(P),...(noC?[]:[...Lb.filter(p=>p.b==='c'&&QLINE.includes(p.o)).map(Q),Q({x:CASH.x,z:-1.98})])];
+  for(const p of need)if(!pointReachable(g,seen,p))return 'Bu yerleşim bir yolu kapatıyor (tezgâh önü, kasa sırası ya da garson köşesi)';
+  // çalışanların arkaya geçtiği yer de açık olmalı
+  // (çalışanlar dar aralıktan da geçer: bu denetim daha ince bir payla yapılır)
+  if(!noC){const sh=b=>({minX:b.minX+0.16,maxX:b.maxX-0.16,minZ:b.minZ+0.16,maxZ:b.maxZ-0.16});const g2=makeGrid(fixed.concat(kb,cb,furnBoxes()).map(sh));
+    if(!pointReachable(g2,floodFrom(g2,DOOR_IN.x,DOOR_IN.z),Q({x:CASH_GATE.L,z:CASH_GATE.front})))return 'Kasiyerin tezgâh arkasına geçeceği yer kapalı'}
   return null}
-// ---- düzenle modu: tezgâha / kasaya dokununca taşıma çubuğu ----
+// ---- düzenle modu: tezgâha / kasaya / pencereye dokununca taşıma çubuğu ----
 {const _t=editTap;editTap=function(x,y){const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
   const fh=raycaster.intersectObjects([...FURN.values()].map(R=>R.group),true),bh=raycaster.intersectObjects([KG,CG].filter(Boolean),true);
   if(bh.length&&(!fh.length||bh[0].distance<fh[0].distance)){let o=bh[0].object;while(o&&!o.userData.block)o=o.parent;if(o){layStart(o.userData.block);return}}
   {const wb=SHELL.g&&SHELL.g.children.find(o=>o.userData.wall==='back');if(wb&&wb.visible){const wh=raycaster.intersectObject(wb,true);const near=fh.length?fh[0].distance:1e9;
     if(wh.length&&wh[0].distance<near){const p=wh[0].point;if(Math.abs(p.x-WIN.x)<WIN.w/2+0.15&&p.y>WIN.y-WIN.h/2-0.2&&p.y<WIN.y+WIN.h/2+WIN.w/2+0.15){layStart('w');return}}}}
   if(LAY.on)return;_t(x,y)}}
-{const _d=drawEditBar;drawEditBar=function(){if(LAY.on){layBar();return}_d();const m=$('placeMsg');if(m&&UI.edit==null)m.textContent='Düzenlemek istediğin eşyaya dokun · tezgâh ve kasa da taşınabilir'}}
+{const _d=drawEditBar;drawEditBar=function(){if(LAY.on){layBar();return}_d();const m=$('placeMsg');if(m&&UI.edit==null)m.textContent='Düzenlemek istediğin eşyaya dokun · tezgâh, kasa ve pencere de taşınır'}}
 {const _x=exitEdit;exitEdit=function(){if(LAY.on)layCancel();_x()}}
-function layStart(b){if(!LAY.on){LAY.k0=KX;LAY.c0=CX;LAY.w0=WIN.x}LAY.on=b;UI.edit=null;try{if(selRing){scene.remove(selRing);selRing=null}}catch(e){}sfx('tap');layMark();layBar()}
-function layBar(){const pb=$('placebar');pb.hidden=false;const b=LAY.on,why=layoutCheck(KX,CX),moved=KX!==LAY.k0||CX!==LAY.c0||WIN.x!==LAY.w0;
-  $('placeMsg').className='msg'+(why?' bad':'');$('placeMsg').textContent=why||(b==='k'?'Tezgâh · oklarla arka duvar boyunca kaydır':b==='w'?'Pencere · oklarla arka duvar boyunca kaydır':'Kasa · oklarla arka duvar boyunca kaydır');
-  $('placeRow').innerHTML=`<button class="btn light" type="button" id="lyL" aria-label="Sola">${ic('left')}</button><button class="btn light" type="button" id="lyR" aria-label="Sağa">${ic('right')}</button>`+
-    `<button class="btn light" type="button" id="lyNo">${ic('close')}Vazgeç</button><button class="btn green" type="button" id="lyOk" ${why||!moved?'disabled':''}>${ic('check')}Tamam</button>`;
-  $('lyL').onclick=()=>layNudge(-1);$('lyR').onclick=()=>layNudge(1);$('lyNo').onclick=()=>{layCancel();drawEditBar()};$('lyOk').onclick=layConfirm}
-function layNudge(d){const b=LAY.on;if(b==='w'){const nx=+(WIN.x+d*LAY_STEP).toFixed(2);if(nx-WIN.w/2<RM.x0+0.3||nx+WIN.w/2>RM.x1-0.3){sfx('nope');toast('Pencere duvarın dışına taşamaz',ic('close'),1600);return}WIN.x=nx;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}sfx('tap');layMark();layBar();return}
-  let k=KX,c=CX;if(b==='k')k=+(k+d*LAY_STEP).toFixed(2);else c=+(c+d*LAY_STEP).toFixed(2);
-  // sınırlar: tezgâh 0..kasa, kasa tezgâh..duvar (kurulumda kasa henüz yokken tezgâh onu önüne katar)
-  if(b==='k'&&c<k&&typeof buildOn==='function'&&buildOn()&&S.tut==='b_counter'){c=k}
-  if(k<0||c<k||CASH0.x+2.3+c>RM.x1-0.15){sfx('nope');toast(k<0?'Tezgâh daha sola gidemez':c<k?(b==='k'?'Önce kasayı sağa kaydır':'Kasa tezgâhın soluna geçemez'):'Kasa ve ödeme sırası için yer kalmadı',ic('close'),1800);return}
-  const cMoved=c!==CX;KX=k;CX=c;if(b==='k'){buildKitchen();if(cMoved){buildCash();if(typeof buildVis==='function')buildVis()}}else{buildCash();if(CASH_CHAIR)CASH_CHAIR.G.position.x=CX-LAY.bootC}sfx('tap');layMark();layBar()}
+function layStart(b){if(!LAY.on){LAY.k0={...KP};LAY.c0={...CP};LAY.w0=WIN.x}LAY.on=b;UI.edit=null;try{if(selRing){scene.remove(selRing);selRing=null}}catch(e){}sfx('tap');layMark();layBar()}
+const layMoved=()=>!poseEq(KP,LAY.k0)||!poseEq(CP,LAY.c0)||WIN.x!==LAY.w0;
+function layBar(){const pb=$('placebar');pb.hidden=false;const b=LAY.on,why=layoutCheck(),moved=layMoved();
+  $('placeMsg').className='msg'+(why?' bad':'');$('placeMsg').textContent=why||(b==='k'?'Tezgâh · oklarla taşı, döndür':b==='w'?'Pencere · oklarla arka duvar boyunca kaydır':'Kasa · oklarla taşı, döndür');
+  const arr=b==='w'?`<button class="btn light" type="button" data-ly="l" aria-label="Sola">${ic('left')}</button><button class="btn light" type="button" data-ly="r" aria-label="Sağa">${ic('right')}</button>`
+    :`<div class="lypad"><button class="btn light" type="button" data-ly="u" aria-label="Yukarı">${ic('left')}</button><button class="btn light" type="button" data-ly="l" aria-label="Sola">${ic('left')}</button><button class="btn light" type="button" data-ly="r" aria-label="Sağa">${ic('right')}</button><button class="btn light" type="button" data-ly="d" aria-label="Aşağı">${ic('right')}</button></div><button class="btn light" type="button" id="lyRot">${ic('rotate')}Döndür</button>`;
+  $('placeRow').innerHTML=arr+`<button class="btn light" type="button" id="lyNo">${ic('close')}Vazgeç</button><button class="btn green" type="button" id="lyOk" ${why||!moved?'disabled':''}>${ic('check')}Tamam</button>`;
+  $('placeRow').querySelectorAll('[data-ly]').forEach(x=>x.onclick=()=>layNudge(x.dataset.ly));if($('lyRot'))$('lyRot').onclick=layRotate;
+  $('lyNo').onclick=()=>{layCancel();drawEditBar()};$('lyOk').onclick=layConfirm}
+// ekrana göre yön: kameranın sağı/ilerisi en yakın dünya eksenine yuvarlanır
+function scrDir(d){const f=new THREE.Vector3();camera.getWorldDirection(f);f.y=0;f.normalize();const rt={x:-f.z,z:f.x};const v=d==='r'?rt:d==='l'?{x:-rt.x,z:-rt.z}:d==='u'?{x:f.x,z:f.z}:{x:-f.x,z:-f.z};
+  return Math.abs(v.x)>=Math.abs(v.z)?{x:Math.sign(v.x),z:0}:{x:0,z:Math.sign(v.z)}}
+function layNudge(d){const b=LAY.on;if(typeof d==='number')d=d>0?'r':'l';
+  if(b==='w'){if(d!=='l'&&d!=='r')return;const a0=new THREE.Vector3(WIN.x,1,RM.z0).project(camera),a1=new THREE.Vector3(WIN.x+1,1,RM.z0).project(camera);const sx=Math.sign(a1.x-a0.x)||1;const nx=+(WIN.x+(d==='r'?sx:-sx)*LAY_STEP).toFixed(2);if(nx-WIN.w/2<RM.x0+0.3||nx+WIN.w/2>RM.x1-0.3){sfx('nope');toast('Pencere duvarın dışına taşamaz',ic('close'),1600);return}
+    WIN.x=nx;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}sfx('tap');layMark();layBar();return}
+  const dv=scrDir(d),P=b==='k'?KP:CP;const nx=+(P.x+dv.x*LAY_STEP).toFixed(2),nz=+(P.z+dv.z*LAY_STEP).toFixed(2);
+  const piv=b==='k'?K_PIV:C_PIV,base=b==='k'?KOBST_BASE:COBST_BASE;const test={...P,x:nx,z:nz};const out=base.map(x=>boxW(x,test,piv)).some(x=>x.minX<RM.x0-0.02||x.maxX>RM.x1+0.02||x.minZ<RM.z0-0.02||x.maxZ>RM.z1+0.02);
+  if(out){sfx('nope');toast('Odanın dışına çıkamaz',ic('close'),1400);return}
+  P.x=nx;P.z=nz;layPoseMeshes(b);sfx('tap');layMark();layBar()}
+function layRotate(){const b=LAY.on;if(b!=='k'&&b!=='c')return;const P=b==='k'?KP:CP;P.r=+(((P.r+Math.PI/2)%(2*Math.PI))).toFixed(6);layPoseMeshes(b);sfx('tap');layMark();layBar()}
+// önizleme: yalnız grup konumu değişir (hızlı); engeller kontrolde hesaplanır
+function layPoseMeshes(b){if(b==='k'){kPose();kObstSync();kShelfVis()}else{cPose();cObstSync();if(CASH_CHAIR){const p=cW(CASH.x,CASH.stand.z-0.36);CASH_CHAIR.G.visible=false}}if(typeof buildVis==='function')buildVis()}
 // zemin işareti: geçerliyse yeşil, değilse kırmızı
-function layMark(){if(LAY.mark){scene.remove(LAY.mark);disposeTree(LAY.mark);LAY.mark=null}if(!LAY.on)return;if(LAY.on==='w'){const ok=!layoutCheck(KX,CX);const m=new THREE.Mesh(new THREE.PlaneGeometry(WIN.w+0.3,WIN.h+WIN.w/2+0.3),new THREE.MeshBasicMaterial({color:ok?0x8fd16a:0xe0483f,transparent:true,opacity:0.3,depthWrite:false}));m.position.set(WIN.x,WIN.y+WIN.w/4,RM.z0+0.06);m.renderOrder=2;scene.add(m);LAY.mark=m;return}const [x0,x1]=LAY.on==='k'?K_SPAN():C_SPAN();const z1=LAY.on==='k'?0.15:-1.15;
-  const ok=!layoutCheck(KX,CX);const m=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-RM.z0),new THREE.MeshBasicMaterial({color:ok?0x8fd16a:0xe0483f,transparent:true,opacity:0.28,depthWrite:false}));
-  m.rotation.x=-Math.PI/2;m.position.set((x0+x1)/2,0.02,(RM.z0+z1)/2);m.renderOrder=2;scene.add(m);LAY.mark=m}
-function layCancel(){if(!LAY.on)return;if(WIN.x!==LAY.w0){WIN.x=LAY.w0;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}const kc=KX!==LAY.k0,cc=CX!==LAY.c0;KX=LAY.k0;CX=LAY.c0;if(kc)buildKitchen();if(cc){buildCash();if(CASH_CHAIR)CASH_CHAIR.G.position.x=CX-LAY.bootC}LAY.on=null;layMark()}
-function layConfirm(){const why=layoutCheck(KX,CX);if(why){toast(why,ic('close'),2200);return}
-  if(customers.length&&!(KX===LAY.k0&&CX===LAY.c0)){toast('<b>İçeride müşteri var</b><br>Taşımak için önce dükkânı kapat, müşteriler çıksın',ic('lock'),3000);return}
-  const onlyW=KX===LAY.k0&&CX===LAY.c0;S.layout={k:KX,c:CX,w:WIN.x};LAY.on=null;layMark();if(onlyW){markDirty();saveNow();sfx('place');toast('Pencere taşındı',ic('check'),1600);drawEditBar();return}try{clearTimeout(saveTimer)}catch(e){}saveNow();RESETTING=true;
+function layMark(){if(LAY.mark){scene.remove(LAY.mark);disposeTree(LAY.mark);LAY.mark=null}if(!LAY.on)return;const ok=!layoutCheck();const mat=new THREE.MeshBasicMaterial({color:ok?0x8fd16a:0xe0483f,transparent:true,opacity:0.3,depthWrite:false});
+  if(LAY.on==='w'){const m=new THREE.Mesh(new THREE.PlaneGeometry(WIN.w+0.3,WIN.h+WIN.w/2+0.3),mat);m.position.set(WIN.x,WIN.y+WIN.w/4,RM.z0+0.06);m.renderOrder=2;scene.add(m);LAY.mark=m;return}
+  const G=new THREE.Group();const bs=(LAY.on==='k'?KOBST:COBST).concat(layBase().B.filter(b=>b.b===LAY.on).map(b=>boxW(b,LAY.on==='k'?KP:CP,LAY.on==='k'?K_PIV:C_PIV)));
+  for(const b of bs){const m=new THREE.Mesh(new THREE.PlaneGeometry(b.maxX-b.minX,b.maxZ-b.minZ),mat);m.rotation.x=-Math.PI/2;m.position.set((b.minX+b.maxX)/2,0.02,(b.minZ+b.maxZ)/2);m.renderOrder=2;G.add(m)}scene.add(G);LAY.mark=G}
+function layCancel(){if(!LAY.on)return;if(WIN.x!==LAY.w0){WIN.x=LAY.w0;buildShell();try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}
+  Object.assign(KP,LAY.k0);Object.assign(CP,LAY.c0);kPose();kObstSync();kShelfVis();cPose();cObstSync();if(CASH_CHAIR)CASH_CHAIR.G.visible=true;LAY.on=null;layMark();if(typeof buildVis==='function')buildVis()}
+function layConfirm(){const why=layoutCheck();if(why){toast(why,ic('close'),2200);return}
+  const blocks=!poseEq(KP,LAY.k0)||!poseEq(CP,LAY.c0);
+  if(customers.length&&blocks){toast('<b>İçeride müşteri var</b><br>Taşımak için önce dükkânı kapat, müşteriler çıksın',ic('lock'),3000);return}
+  S.layout={k:{...KP},c:{...CP},w:WIN.x};LAY.on=null;layMark();if(!blocks){markDirty();saveNow();sfx('place');toast('Pencere taşındı',ic('check'),1600);drawEditBar();return}
+  try{clearTimeout(saveTimer)}catch(e){}saveNow();RESETTING=true;
   const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div><b>Kafe yeniden düzenleniyor…</b></div>`;document.body.appendChild(o);setTimeout(()=>location.reload(),500)}
-// duvar süsü rafların arkasındaki yuvaya konamaz
 // arka duvardaki süs yeri pencereye ya da tezgâh raflarına denk geliyor mu?
-function slotBlocked(i){const sl=WALL_SLOTS[i];if(!sl||sl.ry)return false;const [s0,s1]=K_SHELF();if(sl.x>s0-0.3&&sl.x<s1+0.3)return 'shelf';if(Math.abs(sl.x-WIN.x)<WIN.w/2+0.35)return 'win';if(sl.x>RM.x1-0.3)return 'out';return false}
+function slotBlocked(i){const sl=WALL_SLOTS[i];if(!sl)return false;const sw=shelfWall();
+  if(sw&&((sw.wall==='back'&&!sl.ry&&sl.x>sw.b.minX-0.3&&sl.x<sw.b.maxX+0.3)||(sw.wall==='left'&&sl.ry&&sl.z>sw.b.minZ-0.3&&sl.z<sw.b.maxZ+0.3)))return 'shelf';
+  if(sl.ry)return false;if(Math.abs(sl.x-WIN.x)<WIN.w/2+0.35)return 'win';if(sl.x>RM.x1-0.3)return 'out';return false}
 {const _v=validatePlacement;validatePlacement=function(rec,...a){const r=_v(rec,...a);if(r)return r;const c=CAT[rec.id];if(c&&c.kind==='walldecor'){const b=slotBlocked(rec.slot);if(b==='shelf')return 'Burası tezgâh raflarının arkasında kalıyor';if(b==='win')return 'Burası pencerenin üstü';if(b)return 'Duvarda boş yer yok'}return null}}
-// mevcut tezgâh rafları ilk açılışta da birleştirilsin (p36 sonrası kurulan gruplar)
+// tezgâh rafları birleştirilsin (p36 sonrası kurulan gruplar)
 {const _b=buildKitchen;buildKitchen=function(){_b();try{KG.traverse(o=>{if(o.userData&&o.userData.static&&!o.userData.merged){mergeStatic(o);o.userData.merged=true}})}catch(e){}}}
 try{KG.traverse(o=>{if(o.userData&&o.userData.static&&!o.userData.merged){mergeStatic(o);o.userData.merged=true}})}catch(e){}
+{const st=document.createElement('style');st.textContent=`.lypad{display:grid;grid-template-columns:repeat(4,auto);gap:4px}.lypad .btn{padding:6px 9px}.lypad [data-ly=u] .ic{transform:rotate(90deg)}.lypad [data-ly=d] .ic{transform:rotate(90deg)}`;document.head.appendChild(st)}
 
 // ================= ÇALIŞANLAR: yıldız, 3 özellik, maaş, yorgunluk, işçi arama =================
 // Her çalışanın 3 özelliği (1–5): Hız (yürüme + iş), Dayanıklılık (yorulma/mola), role özel (garson: Güler yüz → bahşiş,
@@ -5747,14 +5807,17 @@ function buildStep(){if(!buildOn()){coachOff();return}if(BSHOWN===S.tut)return;B
 function buildOpen(){S.created=true;S.closed=false;for(const r of ROLES)S.chars[r.id].freeEdits=Math.max(1,S.chars[r.id].freeEdits|0);S.tut=EVMODE?'done':'cafe1';delete S.build;BSHOWN='';try{hudShop()}catch(e){}
   for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const o of L)o.ch.o.visible=true;if(KG)KG.visible=true;if(CG)CG.visible=true;markDirty();saveNow();if(!EVMODE)tutCafeStart();else toast(`<b>${EVENTS[EVMODE].cafe} açıldı!</b><br>İlk müşteriler yolda`,ic('event'),2600)}
 // tezgâh/kasa yerleştirme: düzenleme çubuğu, "Buraya kur" ile canlı uygulanır (sayfa yenilenmez)
-function buildPlace(b){setMode('edit');UI.edit=null;LAY.on=null;layStart(b);buildVis()}
-{const _lb=layBar;layBar=function(){_lb();if(!buildOn())return;const why=layoutCheck(KX,CX);const no=$('lyNo');if(no)no.remove();const ok=$('lyOk');
-  if(ok){ok.disabled=!!why;ok.innerHTML=`${ic('check')}Buraya kur`;ok.onclick=()=>{if(layoutCheck(KX,CX))return;layApplyLive();LAY.on=null;layMark();$('placebar').hidden=true;setMode('cafe');sfx('place');buildNext()}}}}
-// mantık noktalarını yeni yere taşı (çalışanlar görünmezken: güvenli)
-function layApplyLive(){const dk=KX-LAY.bootK,dc=CX-LAY.bootC;layoutShiftLogic(dk,dc);LAY.bootK=KX;LAY.bootC=CX;S.layout={...(S.layout||{}),k:KX,c:CX,w:WIN.x};
-  try{if(CASH_CHAIR){CASH_CHAIR.G.parent&&CASH_CHAIR.G.parent.remove(CASH_CHAIR.G);CASH_CHAIR=null}}catch(e){}try{buildGrid()}catch(e){}
-  for(const b of BSTAFF){const h=B_HOME[b.i]||B_HOME[0];b.ch.path=[];b.ch.pos.set(h.x,0,h.z);b.idleAt=null}
-  for(const k of CSTAFF){const R=REGS[k.i]||REGS[0];const s=R?R.stand:CASH.stand;k.ch.path=[];k.ch.pos.set(s.x,0,s.z)}
+function buildPlace(b){setMode('edit');UI.edit=null;LAY.on=null;if(b==='c')cashAutoSpot();layStart(b);buildVis()}
+// tezgâh kasanın yerini kapattıysa kasayı en yakın uygun yere kaydır (oyuncu yine istediği gibi taşıyabilir)
+function cashAutoSpot(){if(!layoutCheck())return;const c0={...CP};const cand=[];for(const r of [0,Math.PI/2,Math.PI,3*Math.PI/2])for(let i=-16;i<=16;i++)for(let j=-12;j<=12;j++)cand.push({x:i*LAY_STEP,z:j*LAY_STEP,r:+r.toFixed(6)});
+  cand.sort((a,b)=>(Math.hypot(a.x-c0.x,a.z-c0.z)+(a.r?1.5:0))-(Math.hypot(b.x-c0.x,b.z-c0.z)+(b.r?1.5:0)));
+  for(const c of cand){if(!layoutCheck(KP,c)){Object.assign(CP,c);cPose();cObstSync();return}}}
+{const _lb=layBar;layBar=function(){_lb();if(!buildOn())return;const why=layoutCheck();const no=$('lyNo');if(no)no.remove();const ok=$('lyOk');
+  if(ok){ok.disabled=!!why;ok.innerHTML=`${ic('check')}Buraya kur`;ok.onclick=()=>{if(layoutCheck())return;layApplyLive();LAY.on=null;layMark();$('placebar').hidden=true;setMode('cafe');sfx('place');buildNext()}}}}
+// kurulumda yeni yerleşimi canlı uygula (çalışanlar henüz görünmezken: güvenli)
+function layApplyLive(){layBase();buildCash();layApply();S.layout={k:{...KP},c:{...CP},w:WIN.x};
+  for(const b of BSTAFF){const h=B_HOME[b.i]||B_HOME[0];b.ch.path=[];b.ch.pos.set(h.x,0,h.z);b.ch.o.rotation.y=KP.r;b.idleAt=null}
+  for(const k of CSTAFF){const R=REGS[k.i]||REGS[0];k.ch.path=[];k.ch.pos.set(R.stand.x,0,R.stand.z);k.ch.o.rotation.y=CP.r}
   for(const w of WSTAFF){const P=W_WAIT[w.i];w.ch.path=[];w.ch.pos.set(P.x,0,P.z)}markDirty();saveNow()}
 function buildTable(){const T=START_TABLES[0];const rec={uid:++S.uid,id:T[2],x:T[0],z:T[1],rot:T[3],chair:'c_cushion',col:0};S.owned[T[2]]=true;
   setMode('cafe');startPlacement({rec,isNew:true,price:0})}
@@ -5766,7 +5829,7 @@ function buildHire(role){const m=$('lvModal');UI.modal=true;const C=[makeCand(ro
       <span class="cw">Maaş ${ic('coin')}${stWage(c.st)}/gün</span><div class="cbtn"><button class="btn green" type="button" data-bh="${c.id}">${ic('check')}${c.name} işe başlasın</button></div></div></div>`).join('')}</div></div>`;m.hidden=false;
   m.querySelectorAll('[data-bh]').forEach(b=>b.onclick=()=>{const c=C.find(x=>x.id===b.dataset.bh);m.hidden=true;UI.modal=false;const key=role;
     S.chars[key]={name:c.name,look:{...LOOK_DEF,...c.look},wear:JSON.parse(JSON.stringify(ROLE_DEF[role].wear)),freeEdits:1,st:{...c.st}};S.build.hired[role]=true;applyCharToGame(key);
-    const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===key);if(o){o.ch.o.visible=true;stApply(o);o.ch.pos.set(DOOR_IN.x,0,DOOR_IN.z)}
+    const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===key);if(o){o.ch.o.visible=true;stApply(o);o.ch.path=[];if(role==='barista'){const h=B_HOME[o.i]||B_HOME[0];o.ch.pos.set(h.x,0,h.z);o.ch.o.rotation.y=KP.r}else if(role==='cashier'){const R=REGS[o.i]||REGS[0];o.ch.pos.set(R.stand.x,0,R.stand.z);o.ch.o.rotation.y=CP.r;o.ready=true}else{o.ch.pos.set(DOOR_IN.x,0,DOOR_IN.z)}}
     markDirty();saveNow();sfx('goal');UI.backTo='cafe';openEditor(key,'create')})}
 // düzenleyici "create" modunda: kaydet → sıradaki adım (eski üçlü tasarım zinciri yerine)
 {const _c=commitEditor;commitEditor=function(pay){if(buildOn()&&CE.mode==='create'){const [nm]=validName(CE.cfg.name);if(!nm)return false;const k=CE.key,c=S.chars[k];
@@ -5825,15 +5888,15 @@ function spawnStaff(key,hired){const role=roleOfKey(key),cfg=S.chars[key],xs=BOD
     if(i===0)yosun=ch;if(started)waiterLoop(w);return w}
   if(role==='barista'){const i=BSTAFF.length;ch.tray=makeTray();const b={key,ch,i,job:null,busy:false,idleAt:null};
     let h=B_HOME[i]||B_HOME[0];if(hired){const o=BSTAFF[0];if(o&&Math.hypot(o.ch.pos.x-h.x,o.ch.pos.z-h.z)<0.5)h=B_HOME.find(x=>x!==h)}
-    BSTAFF.push(b);ch.pos.set(h.x,0,h.z);ch.o.rotation.y=0;if(i===0)posa=ch;if(started)baristaLoop(b);return b}
+    BSTAFF.push(b);ch.pos.set(h.x,0,h.z);ch.o.rotation.y=KP.r;if(i===0)posa=ch;if(started)baristaLoop(b);return b}
   const i=CSTAFF.length;const k={key,ch,i,ready:false};CSTAFF.push(k);const R=REGS[i]||REGS[0];const st=R?R.stand:CASH.stand;
-  ch.pos.set(hired?CASH.x+0.29:st.x,0,st.z);ch.o.rotation.y=0;k.ready=!hired||REGS.length>i;if(i===0)cashier=ch;return k}
+  {const hp=cW(CASH.x+0.29,CASH.stand.z);ch.pos.set(hired?hp.x:st.x,0,hired?hp.z:st.z)}ch.o.rotation.y=CP.r;k.ready=!hired||REGS.length>i;if(i===0)cashier=ch;return k}
 function startStaffLoops(){for(const w of WSTAFF)waiterLoop(w);for(const b of BSTAFF)baristaLoop(b)}
 // ikinci kasiyer alınınca: kasada kimse yokken iki kasalı düzene geç, kasiyerler yerlerine yürür
 let cashMoving=false;
 function cashLayoutTick(){const n=Math.min(2,CSTAFF.length);if(cashMoving||REGS.length===n||REGS.some(r=>r.cust)||CSTAFF.some(k=>k.chasing))return;cashMoving=true;
   for(const k of CSTAFF)k.ready=false;layoutRegisters(n);
-  Promise.all(CSTAFF.map(async k=>{const st=REGS[k.i].stand;await k.ch.walkTo(st.x,st.z,{direct:true});await k.ch.face(0);k.ready=true})).then(()=>{cashMoving=false})}
+  Promise.all(CSTAFF.map(async k=>{const st=REGS[k.i].stand;await k.ch.walkTo(st.x,st.z,{direct:true});await k.ch.face(CP.r);k.ready=true})).then(()=>{cashMoving=false})}
 // müşteriler de şort giyer: kuyruksuz (pürüzsüz normalli) ortak geometri
 function cloneLook(tex,lk){custPrepare();const r=SkeletonUtils.clone(TEMPLATE);let sm;r.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.material.needsUpdate=true;if(o.isSkinnedMesh){o.geometry=NO_BOTTOMS?CM.geo:CM.geoNT;sm=o}}});
   if(sm&&lk&&lk._top){const B=CLO[lk._bt];dressGarments(r,sm,{cust:true,top:lk._top,bottom:B&&B.bt?{bt:B.bt,bt2:B.bt2,len:B.len||'short',denim:B.denim}:null})}
