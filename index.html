@@ -6029,6 +6029,92 @@ OP_READY=true;placeOpenings();try{envShell()}catch(e){}
 // duvar gizleme: açıklık pivotlarının etiketi duvarlarına göre (wallMeshes en üst etiketi kullanır)
 {const _w=wallMeshes;wallMeshes=function(){for(const k in OPG)if(OPG[k]&&OP[k])OPG[k].userData.wall=OP[k].wall;return _w()}}
 
+// ================= YENİ GÖRÜNÜM (görsel parçalar img/ui/*.webp) — ilk ekran: Ekibim =================
+// Pencere çerçevesi 9 dilimli (tente deseni tekrarlanır), başlık tabelası, kapat düğmesi, maskot kedi, sekmeler, kartlar, hap düğmeler.
+const UIIMG=n=>`img/ui/${n}.webp`;
+const uiIc=(n,cls='')=>`<img class="uic ${cls}" src="${UIIMG(n)}" alt="" draggable="false">`;
+// yıldızlar: tam / yarım / boş görsel
+const skStars=(v,cls='')=>{let h='';for(let i=1;i<=5;i++){const f=v>=i-0.25?1:v>=i-0.75?0.5:0;h+=`<span class="sks${f===0.5?' half':''}">${uiIc(f?'i_star':'i_star0')}${f===0.5?uiIc('i_star0','b'):''}</span>`}return `<span class="skstars ${cls}" aria-label="${v.toFixed(1)} yıldız">${h}</span>`};
+{const st=document.createElement('style');st.textContent=`
+.skwin{position:absolute;inset:calc(14px + var(--sat,0px)) 6px 4px 6px;display:flex;flex-direction:column;border-style:solid;border-width:0;
+  border-image-source:url(${UIIMG('frame9')});border-image-slice:107 105 128 148 fill;border-image-width:78px 76px 92px 107px;border-image-repeat:round stretch;padding:84px 24px 58px 24px;filter:drop-shadow(0 6px 10px rgba(60,30,10,.35))}
+.skwin>.napkin{position:absolute;left:50%;bottom:-6px;width:118px;transform:translateX(-50%);pointer-events:none}
+.skhead{position:absolute;left:0;right:0;top:-6px;height:84px;pointer-events:none}
+.skplaque{position:absolute;left:50%;top:2px;transform:translateX(-50%);width:min(56%,214px);aspect-ratio:760/246;background:url(${UIIMG('plaque')}) center/contain no-repeat;display:flex;align-items:center;justify-content:center;padding-top:5%}
+.skplaque h2{margin:0;font-family:var(--font-display);font-weight:900;font-size:clamp(19px,6vw,25px);color:#5a2f12;letter-spacing:.3px;text-shadow:0 1px 0 #fff3d8}
+.skcat{position:absolute;left:4px;top:-2px;width:66px;transform:rotate(-6deg)}
+.skclose{position:absolute;right:2px;top:6px;width:42px;height:42px;border:0;padding:0;background:url(${UIIMG('btn_close')}) center/contain no-repeat;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 2px 2px rgba(60,30,10,.3))}
+.skclose:active{transform:scale(.93)}
+.sktabs{display:flex;gap:4px;margin:0 -6px 6px;flex:none}
+.sktab{flex:1;min-width:0;border:0;background:none;border-image:url(${UIIMG('tab_off')}) 0 70 fill/0 18px stretch;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  font-family:var(--font-display);font-weight:800;font-size:11.5px;color:#5a2f12;padding:2px 2px 0;cursor:pointer;white-space:nowrap}
+.sktab .uic{width:20px;height:20px;object-fit:contain}
+.sktab[aria-selected=true]{border-image-source:url(${UIIMG('tab_on')})}
+.skscroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin:0 -8px;padding:0 8px 6px;scrollbar-width:none}.skscroll::-webkit-scrollbar{display:none}
+.skcard{border-image:url(${UIIMG('card')}) 56 fill/16px stretch;padding:9px 9px 9px 7px;display:flex;gap:7px;margin-bottom:8px}
+.skport{position:relative;width:76px;height:104px;flex:none;align-self:flex-start}
+.skport .bg,.skport .fr{position:absolute;inset:0;width:100%;height:100%}
+.skport .bg{object-fit:cover;border-radius:12px;inset:4px;width:calc(100% - 8px);height:calc(100% - 8px)}
+.skport .cat{position:absolute;left:4px;right:4px;bottom:5px;height:92%;width:calc(100% - 8px);object-fit:contain;object-position:bottom;transform:scale(1.22);transform-origin:50% 96%}
+
+.skport .crown{position:absolute;left:-6px;top:-8px;width:28px;transform:rotate(-18deg)}
+.skport .rest{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:#8fb1d8;color:#fff;font-size:10px;font-weight:900;border-radius:999px;padding:1px 7px;border:2px solid #4a2a14;white-space:nowrap}
+.skbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sktop{display:flex;align-items:center;gap:4px}
+.sktop b{font-family:var(--font-display);font-size:19px;line-height:1.05;color:#4a2a14;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sktop .uic{width:17px;height:17px;object-fit:contain;flex:none}
+.skwage{margin-left:auto;flex:none;border-image:url(${UIIMG('pill_gold')}) 0 100 fill/0 12px stretch;padding:2px 9px 3px;font-size:11.5px;font-weight:900;color:#5a2f12;display:flex;align-items:center;gap:2px}
+.skwage .uic{width:14px;height:14px}
+.skrole{display:flex;align-items:center;gap:6px}
+.skbadge{border-image:url(${UIIMG('pill_cream')}) 0 60 fill/0 11px stretch;padding:1px 9px 2px 6px;font-size:11.5px;font-weight:900;color:#5a2f12;display:inline-flex;align-items:center;gap:3px}
+.skbadge .uic{width:15px;height:15px;object-fit:contain}
+.skstars{display:inline-flex;gap:0}.sks{position:relative;width:11px;height:11px;display:inline-block}.sks .uic{width:11px;height:11px;object-fit:contain;position:absolute;inset:0}
+.sks.half .uic:first-child{clip-path:inset(0 50% 0 0);z-index:1}
+.skstars.big .sks,.skstars.big .sks .uic{width:15px;height:15px}
+.skrow{display:grid;grid-template-columns:14px minmax(0,1fr) auto minmax(0,72px);align-items:center;gap:3px;font-size:11px;font-weight:800;color:#5a2f12}
+.skrow>.uic{width:14px;height:14px;object-fit:contain}
+.skrow>span:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sktag{justify-self:end;max-width:100%;background:#fff3de;border:1.5px solid #e2c9a6;border-radius:999px;padding:0 5px;font-size:9.5px;font-weight:800;color:#6b4426;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.skbtns{display:flex;gap:6px;margin-top:5px}
+.skbtn{flex:1;min-width:0;height:32px;border:0;background:none;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-family:var(--font-display);font-weight:800;font-size:12px;color:#4a2a14;cursor:pointer;white-space:nowrap;padding:0 9px}
+.skbtn.cream{flex:0 0 auto}
+.skbtn .uic{width:17px;height:17px;object-fit:contain}
+.skbtn.cream{border-image:url(${UIIMG('pill_cream')}) 0 60 fill/0 17px stretch}
+.skbtn.green{border-image:url(${UIIMG('pill_green')}) 0 64 fill/0 17px stretch;color:#fff;text-shadow:0 1px 0 #3d6b14,0 0 2px #3d6b14}
+.skbtn:active{transform:translateY(1px) scale(.98)}
+.skbtn.big{height:46px;font-size:16px;width:100%;flex:none}
+.skfoot{flex:none;padding-top:6px;display:flex;flex-direction:column;gap:4px;align-items:stretch}
+.skfoot p{margin:0;text-align:center;font-size:11.5px;font-weight:800;color:#6b4426}.skfoot p .uic{width:13px;height:13px;vertical-align:-2px}
+.skempty{text-align:center;font-weight:800;color:#6b4426;padding:18px 8px;font-size:13px}
+#team.skin{background:rgba(52,30,12,.32)}
+`;document.head.appendChild(st)}
+// Ekibim ekranını yeni çerçeveyle kur (eski başlık ve liste yerine)
+const ROLE_IC={waiter:'i_cloche',barista:'i_cup',cashier:'i_register'},ROLE_DECO={waiter:'i_leaf',barista:'i_flower',cashier:'i_acorn'},SPC_IC={waiter:'i_smile',barista:'i_chef',cashier:'i_eye'};
+(function skTeamShell(){const tm=$('team');if(!tm)return;tm.classList.add('skin');
+  tm.innerHTML=`<div class="skwin"><div class="skhead">${uiIc('cat_peek','skcat')}<div class="skplaque"><h2>Ekibim</h2></div><button class="skclose" id="tmClose" type="button" aria-label="Kapat"></button></div>
+    <div class="sktabs" role="tablist" id="tmTabs"></div><div class="skscroll scroll" id="tmScroll"><div id="teamList"></div></div><div class="skfoot" id="tmFoot"></div>${uiIc('napkin','napkin')}</div>`;
+  $('tmClose').onclick=()=>setMode('cafe')})();
+renderTeam=function(){const l=$('teamList'),tabs=$('tmTabs'),foot=$('tmFoot');if(!l)return;const T=UI.teamTab||'all';
+  const TB=[['all','Tüm Ekip','i_team'],['waiter','Garson','i_cloche'],['barista','Barista','i_cup'],['cashier','Kasiyer','i_register']];
+  tabs.innerHTML=TB.map(([id,n,i])=>`<button class="sktab" type="button" role="tab" data-tt="${id}" aria-selected="${T===id}">${uiIc(i)}${n}</button>`).join('');
+  tabs.onclick=e=>{const b=e.target.closest('[data-tt]');if(!b)return;UI.teamTab=b.dataset.tt;sfx('tap');renderTeam();$('tmScroll').scrollTop=0};
+  if(!S.created){l.innerHTML=`<div class="skempty">Yeni! Ekibini kendine göre tasarla. İlk kurulum ücretsiz.</div>`;foot.innerHTML=`<button class="skbtn green big" type="button" id="tmSetup">${uiIc('i_paw')}Başla</button>`;
+    $('tmSetup').onclick=()=>{UI.backTo='cafe';openEditor('waiter','create')};return}
+  const keys=allStaffKeys().filter(k=>T==='all'||roleOfKey(k)===T);const all=[...WSTAFF,...BSTAFF,...CSTAFF];
+  l.innerHTML=keys.map((key,i)=>{const c=S.chars[key],role=roleOfKey(key),R=ROLES.find(x=>x.id===role),st=stOf(key),o=all.find(x=>x.key===key);
+    const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,n,ic2])=>`<div class="skrow">${uiIc(ic2)}<span>${n}</span>${skStars(st[k])}<span class="sktag">${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</span></div>`).join('');
+    const lead=keys.indexOf(key)===0&&T==='all';
+    return `<div class="skcard"><div class="skport"><img class="bg" src="${UIIMG('portrait_bg')}" alt=""><img class="cat" src="${charThumb(key)}" alt=""><img class="fr" src="${UIIMG('portrait_frame')}" alt="">${lead?uiIc('i_crown','crown'):''}${o&&o.resting?'<span class="rest">Molada</span>':''}</div>
+      <div class="skbody"><div class="sktop"><b>${c.name}</b>${uiIc(ROLE_DECO[role])}<span class="skwage">${uiIc('i_coin')}${stWage(st)}/gün</span></div>
+        <div class="skrole"><span class="skbadge">${uiIc(ROLE_IC[role])}${R.name}</span>${skStars(stAvg(st),'big')}</div>${rows}
+        <div class="skbtns"><button class="skbtn cream" type="button" data-ed="${key}">${uiIc('i_pencil')}Düzenle</button><button class="skbtn green" type="button" data-rp="${role}">${uiIc('i_paw')}Yerine birini bul</button></div></div></div>`}).join('')||`<div class="skempty">Bu bölümde henüz kimse yok.</div>`;
+  l.onclick=e=>{const b=e.target.closest('[data-ed]');if(b){UI.backTo='team';openEditor(b.dataset.ed,'edit');return}const r=e.target.closest('[data-rp]');if(r)openHire(r.dataset.rp)};
+  const total=['waiter','barista','cashier'].reduce((a,r)=>a+S.staff[r],0),maxT=HIRE_MAX.waiter+HIRE_MAX.barista+HIRE_MAX.cashier,w=allStaffKeys().reduce((a,k)=>a+stWage(stOf(k)),0);
+  foot.innerHTML=`<p>Günlük maaş: <b>${uiIc("i_coin")}${w}</b> · gün sonunda ödenir</p><button class="skbtn green big" type="button" id="tmHire">${uiIc('i_team')}İşçi bul <small>&nbsp;${total}/${maxT}</small></button>`;
+  $('tmHire').onclick=()=>openHire()};
+// görselleri önceden yükle (ilk açılışta boş kutu görünmesin)
+setTimeout(()=>{for(const n of ['frame9','plaque','btn_close','cat_peek','napkin','tab_on','tab_off','card','portrait_bg','portrait_frame','pill_green','pill_cream','pill_gold','i_star','i_star0'])new Image().src=UIIMG(n)},1500);
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
