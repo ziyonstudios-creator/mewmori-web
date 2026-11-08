@@ -6124,6 +6124,7 @@ setTimeout(()=>{for(const n of ['frame9','plaque','btn_close','cat_peek','napkin
   const A=force?(ad||'free'):(C&&C.day===S.dayN&&C.ad)||'free';S.cand={day:S.dayN,ad:A,n3:true,list:['waiter','barista','cashier'].flatMap(r=>[0,1,2].map(()=>makeCand(r,A)))};markDirty();return S.cand.list}}
 {const st=document.createElement('style');st.textContent=`
 .skmodal{position:absolute;inset:0;padding:0!important;background:rgba(52,30,12,.4)!important;display:block!important}
+.skmodal[hidden]{display:none!important}
 .skmodal .skwin{inset:calc(14px + var(--sat,0px)) 6px calc(8px + var(--sab,0px)) 6px}
 .skhire{border-image:url(${UIIMG('card')}) 56 fill/16px stretch;padding:10px;display:flex;gap:10px;flex:none}
 .skhire .skport{width:118px;height:156px}
@@ -6180,6 +6181,55 @@ openHire=function(only){let m=$('skHire');if(!m){m=document.createElement('div')
     m.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>{UI.hireSel=null;hireCand(b.dataset.hire,null,role)});
     m.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{const [id,k]=b.dataset.swap.split(':');UI.hireSel=null;hireCand(id,k,role)})};
   draw()};
+// ================= BİRLEŞTİRME TAHTASI (yeni görünüm) =================
+{const st=document.createElement('style');st.textContent=`
+#merge.skin{background:#c9a77a url(${UIIMG('street')}) center/cover no-repeat}
+#merge.skin>.panel-head{display:none}
+#merge.skin .skwin{padding-left:16px;padding-right:16px}
+#merge.skin .skwin>.scroll{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;margin:0 -10px;padding:0 6px}#merge.skin .skwin>.scroll::-webkit-scrollbar{display:none}
+#merge.skin .mtop{padding:2px 0 6px}
+#merge.skin .energy{border:0;box-shadow:none;background:none;border-image:url(${UIIMG('card')}) 56 fill/14px stretch;padding:6px 10px 6px 6px}
+#merge.skin .energy .ic{width:30px;height:30px;background:url(${UIIMG('i_bolt')}) center/contain no-repeat}#merge.skin .energy .ic>*{display:none}
+#merge.skin .energy .ebar{display:flex!important;flex-direction:column;gap:3px;height:auto!important;position:relative}
+#merge.skin .energy .ebar b{position:absolute;left:0;right:0;top:0;height:18px;display:flex;align-items:center;justify-content:center;z-index:1;font-size:12px;color:#fff;text-shadow:0 0 2px #3d6b14,0 1px 0 #3d6b14;line-height:1;margin:0;width:auto!important}
+#merge.skin .energy .ebar small{font-size:10.5px;color:#6b4426;text-align:center;opacity:1;width:auto!important;margin:0!important;padding:0!important;text-indent:0}
+#merge.skin .energy .ebar{min-width:0;padding:0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important;border-image:none!important}
+#merge.skin .enplus{border:0;box-shadow:none;background:url(${UIIMG('i_plus')}) center/contain no-repeat;width:38px;height:38px}#merge.skin .enplus>*{display:none}
+#merge.skin .energy .xpbar{height:18px!important;min-height:18px;flex:none;border:0;border-radius:0;background:none;border-image:url(${UIIMG('bar_track')}) 0 40 fill/0 8px stretch;overflow:visible;padding:4px 5px!important;box-sizing:border-box!important;display:block}
+#merge.skin .energy .xpbar i{display:block;height:10px!important;background:none;border-image:url(${UIIMG('bar_fill')}) 0 30 fill/0 5px stretch;min-width:10px;transition:width .3s}
+#merge.skin .mgtarget{width:100%;border:0;box-shadow:none;background:none;border-image:url(${UIIMG('card')}) 56 fill/14px stretch;padding:6px 8px}
+#merge.skin .mgtarget>.ic{background:url(${UIIMG('i_target')}) center/contain no-repeat}#merge.skin .mgtarget>.ic>*{display:none}
+#merge.skin .mgtarget .btn{border:0;box-shadow:none;background:none;border-image:url(${UIIMG('pill_gold')}) 0 100 fill/0 16px stretch;font-family:var(--font-display);font-weight:900;color:#5a2f12;padding:6px 16px}
+#merge.skin .board-wrap{padding:4px 0}
+#merge.skin .board{--cell:min(calc((100vw - 104px)/6),64px);border-width:24px;border-image:url(${UIIMG('tray')}) 92 fill/24px stretch;filter:drop-shadow(0 4px 6px rgba(60,30,10,.35));gap:4px;padding:2px}
+#merge.skin .cell{background-image:url(${UIIMG('c_empty')});border-radius:10px}
+#merge.skin .cell.hl{background-image:url(${UIIMG('c_match')})}
+#merge.skin .cell.sel{background-image:url(${UIIMG('c_sel')})}
+#merge.skin .cell.lock{background-image:url(${UIIMG('c_lock')})}
+#merge.skin .info{padding:0;margin:6px 0 6px}
+#merge.skin .info .box{border:0;box-shadow:none;background:none;border-image:url(${UIIMG('card')}) 56 fill/14px stretch;padding:8px 10px;position:relative}
+#merge.skin .info .box .mi{width:46px;height:46px}
+#merge.skin .info .box .mi>svg{display:none}#merge.skin .info .box>span.mi:first-child:not(:has(img)){background:url(${UIIMG('i_spoon')}) center/contain no-repeat}
+#merge.skin .info .box .btn{border:0;box-shadow:none;background:none;border-image:url(${UIIMG('pill_green')}) 0 64 fill/0 16px stretch;color:#fff;text-shadow:0 1px 0 #3d6b14;font-family:var(--font-display);font-weight:900}
+#merge.skin .info .box .btn.light{border-image-source:url(${UIIMG('pill_cream')});color:#4a2a14;text-shadow:none}
+#merge.skin .skhow{position:absolute;right:-6px;bottom:-8px;width:56px;height:auto;pointer-events:none;transform:rotate(6deg)}
+#merge.skin .info .box.how .tx{padding-right:44px}
+`;document.head.appendChild(st)}
+(function skMergeShell(){const mg=$('merge');if(!mg)return;mg.classList.add('skin');const sc=mg.querySelector('.scroll');
+  const w=document.createElement('div');w.className='skwin';w.innerHTML=`<div class="skhead">${uiIc('cat_hammer','skcat')}<div class="skplaque"><h2>Birleştir</h2></div><button class="skclose" type="button" aria-label="Kapat"></button></div>`;
+  mg.appendChild(w);w.appendChild(sc);w.insertAdjacentHTML('beforeend',uiIc('napkin','napkin'));w.querySelector('.skclose').onclick=()=>$('mgClose').click()})();
+// "Nasıl oynanır?" kutusuna tarif defteri süsü
+{const _ri=renderInfo;renderInfo=function(){_ri();const box=$('mgInfo');if(!box)return;const how=UI.mgSel==null||!S.board[UI.mgSel];box.classList.toggle('how',how);if(how&&!box.querySelector('.skhow'))box.insertAdjacentHTML('beforeend',uiIc('book','skhow'))}}
+// ================= REHBER PATİSİ =================
+{const st=document.createElement('style');st.textContent=`
+#coach .chand .in{position:relative}#coach .chand .in>svg{display:none}
+#coach .chand .paw{position:absolute;width:66px;height:auto;left:19.7px;top:0;transform-origin:2.3px 2.3px;transform:rotate(45deg);filter:drop-shadow(0 2px 2px rgba(60,30,10,.3))}
+#coach .chand .paw.grab{display:none;width:70px;left:11px;top:0;transform-origin:11px 2px}
+#coach .chand.drag .paw.pt{display:none}#coach .chand.drag .paw.grab{display:block}
+#coach .chand{filter:none}
+`;document.head.appendChild(st);
+ const h=document.querySelector('#coach .chand .in');if(h)h.insertAdjacentHTML('beforeend',`<img class="paw pt" src="${UIIMG('paw_point')}" alt="" draggable="false"><img class="paw grab" src="${UIIMG('paw_grab')}" alt="" draggable="false">`)}
+setTimeout(()=>{for(const n of ['street','tray','c_empty','c_match','c_sel','i_target','i_spoon','book','cat_hammer','paw_point','paw_grab','bar_track','bar_fill','i_bolt'])new Image().src=UIIMG(n)},1800);
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
