@@ -6149,27 +6149,29 @@ setTimeout(()=>{for(const n of ['frame9','plaque','btn_close','cat_peek','napkin
 .skc .ok{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);width:24px;height:24px}
 .skbell{position:absolute;right:40px;top:-4px;width:40px;height:auto;transform:rotate(4deg)}
 .skport .tag{position:absolute;left:-8px;top:-8px;width:34px;height:auto;transform:rotate(-12deg);z-index:2}
-.skads{display:flex;gap:6px;flex:none;margin-top:2px}.skads .skbtn{height:40px;flex-direction:column;gap:0;line-height:1.05;font-size:12px}.skads .skbtn small{font-size:10px;font-weight:800;opacity:.85;display:flex;align-items:center;gap:2px}.skads .skbtn small .uic{width:11px;height:11px}
+.skleft{display:flex;flex-direction:column;gap:8px;flex:none;width:118px}
+.skads{display:flex;flex-direction:column;gap:5px;flex:none}.skads>span{text-align:center;font-family:var(--font-display);font-weight:900;font-size:12px;color:#6b4426;margin-top:2px}.skads .skbtn{height:40px;width:100%;flex:none;padding:0 6px;flex-direction:column;gap:0;line-height:1.05;font-size:12px}.skads .skbtn small{font-size:10px;font-weight:800;opacity:.85;display:flex;align-items:center;gap:2px}.skads .skbtn small .uic{width:11px;height:11px}
 .skads .skbtn[disabled]{opacity:.5}
 `;document.head.appendChild(st)}
 openHire=function(only){let m=$('skHire');if(!m){m=document.createElement('div');m.id='skHire';m.className='modal skmodal';m.hidden=true;$('game').appendChild(m)}UI.modal=true;const list=candList(false);let role=only||UI.hireRole||'waiter';UI.hireRole=role;
   const draw=()=>{const L=list.filter(c=>c.role===role);let sel=L.find(c=>c.id===UI.hireSel)||L[0];if(sel)UI.hireSel=sel.id;
     const R=ROLES.find(x=>x.id===role),n=S.staff[role],cap=HIRE_CAP(role),same=allStaffKeys().filter(k=>roleOfKey(k)===role);
     const TB=[['waiter','Garson','i_cloche'],['barista','Barista','i_cup'],['cashier','Kasiyer','i_register']];
+    const adsH=ADS.slice(1).map(a=>`<button class="skbtn cream" type="button" data-ad="${a.id}" ${S.coins<a.cost?'disabled':''}>${a.name}<small>${uiIc('i_coin')}${a.cost}</small></button>`).join('');
     const detail=sel?(()=>{const st=sel.st,sign=stSign(st);
       const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,nm,i2])=>`<div class="skhrow">${uiIc(i2)}<span>${nm}</span>${skStars(st[k],'big')}<span class="sktag">${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</span></div>`).join('');
       const btns=(n<cap?`<button class="skbtn green" type="button" data-hire="${sel.id}">${uiIc('i_paw')}İşe al · ${uiIc('i_coin')}${sign}</button>`:'')+
         same.map(k=>`<button class="skbtn cream" type="button" data-swap="${sel.id}:${k}">${S.chars[k].name} yerine</button>`).join('');
       const note=n>=cap?(n<HIRE_MAX[role]?`<span class="sknote">Yeni ${R.name.toLowerCase()} kadrosu Seviye ${HIRE[role].find(h=>S.lvl<h.lv).lv}’de açılır</span>`:`<span class="sknote">${R.name} kadrosu dolu: biriyle değiştirebilirsin</span>`):'';
-      return `<div class="skhire"><div class="skport"><img class="bg" src="${UIIMG('portrait_bg')}" alt=""><img class="cat" src="${candThumb(sel)}" alt=""><img class="fr" src="${UIIMG('portrait_frame')}" alt="">${uiIc('d_tag','tag')}</div>
+      return `<div class="skhire"><div class="skleft"><div class="skport"><img class="bg" src="${UIIMG('portrait_bg')}" alt=""><img class="cat" src="${candThumb(sel)}" alt=""><img class="fr" src="${UIIMG('portrait_frame')}" alt="">${uiIc('d_tag','tag')}</div><div class="skads"><span>Yeni aday ara</span>${adsH}</div></div>
         <div class="skbody"><div class="sktop"><b>${sel.name}</b>${uiIc(ROLE_DECO[role])}</div><div class="skrole"><span>${R.name}</span></div>${skStars(stAvg(st),'big')}<div class="skdiv"></div>${rows}<div class="skdiv"></div>
-          <div class="skmoney"><span>${uiIc('i_coin')} Maaş <b>${stWage(st)}</b>/gün</span><span>İmza <b>${sign}</b></span></div>${note}<div class="skbtns">${btns}</div></div></div>`})():`<div class="skempty">Bugün ${R.name.toLowerCase()} adayı kalmadı. Yeni aday için ilan ver.</div>`;
+          <div class="skmoney"><span>${uiIc('i_coin')} Maaş <b>${stWage(st)}</b>/gün</span><span>İmza <b>${sign}</b></span></div>${note}<div class="skbtns">${btns}</div></div></div>`})():`<div class="skhire" style="flex-direction:column;align-items:center"><div class="skempty">Bugün ${R.name.toLowerCase()} adayı kalmadı. Yeni aday için ilan ver.</div><div class="skads" style="width:70%">${adsH}</div></div>`;
     m.innerHTML=`<div class="skwin" role="dialog" aria-label="Ekip alımı"><div class="skhead">${uiIc('cat_peek','skcat')}<div class="skplaque"><h2>Ekip Alımı</h2></div>${uiIc('d_bell','skbell')}<button class="skclose" id="hrClose" type="button" aria-label="Kapat"></button></div>
       <div class="sktabs" role="tablist" style="margin-top:6px">${TB.map(([id,nm,i])=>`<button class="sktab" type="button" role="tab" data-hr="${id}" aria-selected="${role===id}">${uiIc(i)}${nm}<small>${S.staff[id]}/${HIRE_CAP(id)}</small></button>`).join('')}</div>
       <div class="skscroll">${detail}
         <div class="sksec"><span>${uiIc('i_paw')}Aday Listesi${uiIc('i_paw')}</span></div>
         <div class="skclist">${L.map(c=>`<button class="skc" type="button" data-cs="${c.id}" aria-current="${sel&&c.id===sel.id}"><div class="th"><img src="${candThumb(c)}" alt=""></div><b>${c.name}</b>${skStars(stAvg(c.st))}<small>${uiIc('i_coin')}${stWage(c.st)}/gün</small>${sel&&c.id===sel.id?uiIc('d_check','ok'):''}</button>`).join('')}</div>
-      </div><div class="skfoot"><div class="skads">${ADS.slice(1).map(a=>`<button class="skbtn cream" type="button" data-ad="${a.id}" ${S.coins<a.cost?'disabled':''}>${a.name}<small>${uiIc('i_coin')}${a.cost} · ${a.desc}</small></button>`).join('')}</div></div>${uiIc('napkin','napkin')}</div>`;m.hidden=false;
+      </div>${uiIc('napkin','napkin')}</div>`;m.hidden=false;
     $('hrClose').onclick=()=>{m.hidden=true;UI.modal=false;if(UI.mode==='team')renderTeam()};
     m.querySelectorAll('[data-hr]').forEach(b=>b.onclick=()=>{role=b.dataset.hr;UI.hireRole=role;UI.hireSel=null;sfx('tap');draw()});
     m.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{UI.hireSel=b.dataset.cs;sfx('tap');draw()});
