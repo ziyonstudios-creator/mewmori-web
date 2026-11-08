@@ -3101,18 +3101,29 @@ const INTRO={done:false,ready:false,cb:null,el:null};
 function startIntro(){const el=document.createElement('div');el.id='intro';el.setAttribute('role','presentation');
   const pts=[[8,82,-20],[18,74,-10],[27,68,-25],[37,61,-12],[47,57,-28],[57,52,-15]];
   el.innerHTML=`<div class="paws">${pts.map(([x,y,r],i)=>`<span style="left:${x}%;top:${y}%;--r:rotate(${r+(i%2?14:-6)}deg);animation-delay:${i*0.17}s">${PAW}</span>`).join('')}</div>
-    ${logoSVG()}<div class="sub">Kedi şefin sıcacık kafesine hoş geldin</div><div class="ld" hidden><div><i id="introBar"></i></div><small>Kafe hazırlanıyor…</small></div><div class="skip">Geçmek için dokun</div>`;
+    ${logoSVG()}<div class="sub">Kedi şefin sıcacık kafesine hoş geldin</div><div class="ld" hidden><div><i id="introBar"></i></div><small>Kafe hazırlanıyor…</small></div>`;
   $('game').appendChild(el);INTRO.el=el;
   // yumuşak sesler (ses motoru açıksa): pati, harf, parıltı — yankısız
   if(AU.ctx&&AU.ctx.state==='running'&&SET.sfx){const t0=AU.ctx.currentTime;pts.forEach((_,i)=>introBlip(t0+i*0.17+0.05,260-i*6,0.06));for(let i=0;i<7;i++)introBlip(t0+1.2+i*0.08,520+i*45,0.05,'triangle');[1568,2093].forEach((f,i)=>introBlip(t0+2.9+i*0.09,f,0.04))}
-  const finish=()=>{if(INTRO.done)return;INTRO.done=true;el.querySelector('.logo').classList.add('still');introGo()};
-  el.addEventListener('pointerdown',()=>{auInit();finish()});setTimeout(finish,4300)}
+  // animasyon kendi saatiyle oynar: oyun arka planda yüklenirken ana iş parçacığı takılsa da kare atlanmaz (her karede en çok 50 ms ilerler),
+  // böylece logo, harfler ve alt yazı sırayla mutlaka görünür. Atlama yok; bitince oyun hazırsa kendiliğinden geçilir.
+  el.addEventListener('pointerdown',()=>auInit());
+  const anims=()=>el.getAnimations?el.getAnimations({subtree:true}):[];let A=anims();A.forEach(a=>{try{a.pause()}catch(e){}});
+  let vt=0,last=performance.now();const END=4300;
+  const tick=now=>{if(!INTRO.el)return;const dt=Math.min(50,Math.max(0,now-last));last=now;vt+=dt;
+    if(!A.length)A=anims();for(const a of A){try{a.pause();a.currentTime=vt}catch(e){}}
+    if(vt>=END&&!INTRO.done){INTRO.done=true;INTRO.doneAt=now;introGo()}
+    if(INTRO.done&&INTRO.ready)introSettle(now,dt);
+    requestAnimationFrame(tick)};
+  requestAnimationFrame(t=>{last=t;requestAnimationFrame(tick)})}
+// oyun hazır olduktan sonra kareler düzgün akana kadar (art arda 24 akıcı kare ya da en çok 3 sn) bekle, sonra geç
+function introSettle(now,dt){INTRO.ok=dt<40?(INTRO.ok|0)+1:0;INTRO.rt=INTRO.rt||now;if(INTRO.ok>=24||now-INTRO.rt>3000)introFinish()}
 function introBlip(t,f,v,type='sine'){const g=AU.ctx.createGain();g.connect(AU.sfx);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);
   const o=AU.ctx.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*0.92,t+0.2);o.connect(g);o.start(t);o.stop(t+0.25)}
 function introProgress(p){const b=$('introBar');if(b)b.style.width=Math.round(p*100)+'%'}
 function introReady(cb){INTRO.ready=true;INTRO.cb=cb;introGo()}
-function introGo(){if(!INTRO.el)return;if(INTRO.done&&!INTRO.ready){INTRO.el.querySelector('.ld').hidden=false;INTRO.el.querySelector('.skip').hidden=true;return}
-  if(INTRO.done&&INTRO.ready){const el=INTRO.el;INTRO.el=null;el.classList.add('out');setTimeout(()=>el.remove(),520);INTRO.cb&&INTRO.cb()}}
+function introGo(){if(!INTRO.el)return;if(INTRO.done&&!INTRO.ready){INTRO.el.querySelector('.ld').hidden=false;return}}
+function introFinish(){if(!INTRO.el)return;const el=INTRO.el;INTRO.el=null;el.classList.add('out');setTimeout(()=>el.remove(),520);INTRO.cb&&INTRO.cb()}
 startIntro();
 
 // ================= EKİP: karakter oluşturma, düzenleme, kıyafet =================
@@ -5100,11 +5111,23 @@ async function baristaWander(b,h){if(baristaQ.length)return;const ch=b.ch;const 
   if(!baristaQ.length&&Math.random()<0.5)await ch.doFor('IDLE_LOOK',1.6);await ch.walkTo(h.x,h.z,{direct:true});await ch.face(KP.r)}
 // kasiyerin sandalyesi: yazar kasanın tam arkasında (yüzü tezgâha dönük); kasa dönünce o da döner
 let CASH_CHAIR=null;
-function cashChair(){if(CASH_CHAIR)return CASH_CHAIR;const p=cW(CASH.x,CASH.stand.z-0.36),a=cW(CASH.x,CASH.stand.z+0.02);const f=frame(p.x,p.z,CP.r);const G=new THREE.Group();scene.add(G);chairMeshes(G,f,'c_cushion',2);
+// kasa sandalyesi: kasiyerin tam arkasında; arkada duvar ya da eşya varsa sığdığı kadar öne gelir, hiç sığmazsa yanına konur
+let CHAIR_LB=null;   // sandalye gövdesinin oturma noktasına göre yerel kutusu (bir kez ölçülür)
+function chairLocalBox(){if(CHAIR_LB)return CHAIR_LB;const g=new THREE.Group();chairMeshes(g,frame(0,0,0),'c_cushion',2);g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g);
+  CHAIR_LB={minX:b.min.x,maxX:b.max.x,minZ:b.min.z,maxZ:b.max.z};g.traverse(m=>{if(m.isMesh&&m.geometry)m.geometry.dispose()});return CHAIR_LB}
+function cashChairSpot(){const own=new Set(COBST);const obs=OBST.filter(b=>!own.has(b));let fb=[];try{fb=furnBoxes()}catch(e){}const LB=chairLocalBox(),c=Math.cos(CP.r),sn=Math.sin(CP.r);
+  const fits=(lx,lz)=>{const o=cW(lx,lz);const ps=[[LB.minX,LB.minZ],[LB.maxX,LB.minZ],[LB.minX,LB.maxZ],[LB.maxX,LB.maxZ],[-0.15,-0.15],[0.15,0.15]].map(([x,z])=>({x:o.x+c*x+sn*z,z:o.z-sn*x+c*z}));
+    const B={minX:Math.min(...ps.map(p=>p.x)),maxX:Math.max(...ps.map(p=>p.x)),minZ:Math.min(...ps.map(p=>p.z)),maxZ:Math.max(...ps.map(p=>p.z))};
+    if(B.minX<RM.x0+0.01||B.maxX>RM.x1-0.01||B.minZ<RM.z0+0.01||B.maxZ>RM.z1-0.01)return false;
+    for(const b of obs.concat(fb))if(B.maxX>b.minX&&B.minX<b.maxX&&B.maxZ>b.minZ&&B.minZ<b.maxZ)return false;return true};
+  const cx=CASH.x-(LB.minX+LB.maxX)/2;   // sandalye kasanın tam ortasına hizalı
+  for(let dz=0.36;dz>=-0.14;dz-=0.02)if(fits(cx,CASH.stand.z-dz))return {lx:cx,lz:CASH.stand.z-dz};
+  return null}
+function cashChair(){if(CASH_CHAIR)return CASH_CHAIR;const sp=cashChairSpot();if(!sp){CASH_CHAIR={G:new THREE.Group(),seat:null,used:null,none:true};return CASH_CHAIR}const p=cW(sp.lx,sp.lz),a=cW(sp.lx,Math.max(sp.lz,CASH.stand.z)+0.02);const f=frame(p.x,p.z,CP.r);const G=new THREE.Group();scene.add(G);chairMeshes(G,f,'c_cushion',2);
   const seat=seatData(f);seat.A={x:a.x,z:a.z};seat.cash=true;CASH_CHAIR={G,seat,used:null};return CASH_CHAIR}
 // kasa ve telefon boşsa oturmaya uygun
 function cashCalm(k){const R=REGS[k.i];return R&&!R.busy&&!R.cust&&!CASH.queue.length&&!k.chasing&&!cashMoving&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING'||c.state==='WAITING_TO_PAY')&&!(S.auto&&typeof DLV!=='undefined'&&DLV.call)}
-async function cashierSit(k){const C=cashChair(),ch=k.ch,R=REGS[k.i];if(C.used)return false;C.used=k;
+async function cashierSit(k){const C=cashChair(),ch=k.ch,R=REGS[k.i];if(C.used||C.none)return false;C.used=k;
   try{await ch.walkTo(C.seat.A.x,C.seat.A.z,{direct:true});if(!cashCalm(k))return true;
     await new Promise(res=>{ch.seat=C.seat;ch.crossTo(CLIPS.SIT_BASE?'SIT_BASE':'Chair_Sit_Idle_F',SIT_DUR);ch.trans={p0:{x:ch.pos.x,z:ch.pos.z},p1:C.seat.O,y0:ch.pos.y,y1:C.seat.rootY,r0:ch.o.rotation.y,r1:C.seat.frame.yaw,t:0,done:res}});
     const until=gameT+irnd(9,18);while(gameT<until&&cashCalm(k))await sleep(0.2);
@@ -5376,7 +5399,9 @@ let EV_NOTE=[];
 {const _ls=loadState;loadState=function(){const had=_ls();
   if(EVMODE){const E=EVENTS[EVMODE];
     if(S.ev!==EVMODE){S.ev=EVMODE;S.created=false;S.setupOffered=true;S.tut='done';S.tr='done';S.guideSeen=true;S.cafeName=E.cafe;S.wall=E.wall;S.floor=E.floor;S.owned[E.wall]=true;S.owned[E.floor]=true;
-      S.lastSeen=Date.now();S.dayStart=0;S.evNew=true}
+      S.lastSeen=Date.now();S.dayStart=0;S.evNew=true;
+      // yeni etkinlik kafesi ilk kareden boş dükkân olarak açılır (varsayılan kafe bir an bile görünmez)
+      S.furniture=[];S.giftTable=false;S.tut='b_counter';S.build={hired:{}};S.closed=true;S.equip={espresso:1,kettle:1,vitrine:1,oven:0}}
     for(const r of RECIPES)if(r.def)S.recipes[r.id]=true;S.evs={};S.br={};
     // seviye, XP ve elmas ana kafeyle ortak: her açılışta ana kayıttan alınır
     if(S.evl==null){S.evl=S.created?Math.max(1,S.lvl|0):1;S.evx=S.created?(S.xp|0):0}
@@ -5598,7 +5623,8 @@ function perfGate(now){const G=GFX[PERF.q]||GFX.bal;
   const active=now-PERF.touchT<2500;const fps=PERF.covered?10:active?G.fps:G.idle;
   if(fps<60&&now-PERF.lastF<1000/fps-4)return false;PERF.lastF=now;return true}
 function perfShadow(){const G=GFX[PERF.q]||GFX.bal;PERF.frame++;if(PERF.frame%G.shEvery===0)renderer.shadowMap.needsUpdate=true}
-function perfCovered(){if(document.hidden)return true;const pts=[[0.5,0.42],[0.5,0.7]];let n=0;
+function perfCovered(){if(document.hidden)return true;if(typeof INTRO!=='undefined'&&INTRO.el&&!INTRO.ready)return true;   // açılış animasyonu sürerken (oyun hazır olana dek) sahne çizilmez
+  const pts=[[0.5,0.42],[0.5,0.7]];let n=0;
   for(const [px,py] of pts){const el=document.elementFromPoint(innerWidth*px,innerHeight*py);if(!el||el.tagName==='CANVAS')return false;
     const p=el.closest('.screen,section,[role=dialog],#recipes,#menuScr,#merge,#team,#guide,#ce');if(!p)return false;const r=p.getBoundingClientRect();if(r.width>=innerWidth*0.9&&r.height>=innerHeight*0.75)n++}
   return n===pts.length}
@@ -5923,7 +5949,7 @@ function buildStep(){if(!buildOn()){coachOff();return}if(BSHOWN===S.tut)return;B
   else if(st==='b_open'){const N=['barista','cashier','waiter'].map(r=>S.chars[r].name);sfx('levelup');
     coach({title:'Kafen hazır!',text:`Tezgâh, kasa, masa ve ekip tamam: <b>${N[0]}</b>, <b>${N[1]}</b> ve <b>${N[2]}</b> seni bekliyor. Kapıyı açıp ilk müşterimizi karşılayalım!`,dim:true,center:true,
       buttons:[{label:'Kafeyi aç',green:true,icon:'cafe',onClick:()=>{coachOff();buildOpen()}}]})}}
-function buildOpen(){S.created=true;S.closed=false;for(const r of ROLES)S.chars[r.id].freeEdits=Math.max(1,S.chars[r.id].freeEdits|0);S.tut=EVMODE?'done':'cafe1';delete S.build;BSHOWN='';try{hudShop()}catch(e){}
+function buildOpen(){S.created=true;delete S.evNew;S.closed=false;for(const r of ROLES)S.chars[r.id].freeEdits=Math.max(1,S.chars[r.id].freeEdits|0);S.tut=EVMODE?'done':'cafe1';delete S.build;BSHOWN='';try{hudShop()}catch(e){}
   for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const o of L)o.ch.o.visible=true;if(KG)KG.visible=true;if(CG)CG.visible=true;markDirty();saveNow();if(!EVMODE)tutCafeStart();else toast(`<b>${EVENTS[EVMODE].cafe} açıldı!</b><br>İlk müşteriler yolda`,ic('event'),2600)}
 // tezgâh/kasa yerleştirme: düzenleme çubuğu, "Buraya kur" ile canlı uygulanır (sayfa yenilenmez)
 function buildPlace(b){setMode('edit');UI.edit=null;LAY.on=null;if(b==='c')cashAutoSpot();layStart(b);buildVis()}
@@ -5933,11 +5959,15 @@ function cashAutoSpot(){if(!layoutCheck())return;const c0={...CP};const cand=[];
   for(const c of cand){if(!layoutCheck(KP,c)){Object.assign(CP,c);cPose();cObstSync();return}}}
 {const _lb=layBar;layBar=function(){_lb();if(!buildOn())return;const why=layoutCheck();const no=$('lyNo');if(no)no.remove();const ok=$('lyOk');
   if(ok){ok.disabled=!!why;ok.innerHTML=`${ic('check')}Buraya kur`;ok.onclick=()=>{if(layoutCheck())return;layApplyLive();LAY.on=null;layMark();$('placebar').hidden=true;setMode('cafe');sfx('place');buildNext()}}}}
+// bir kediyi anında başka yere al: bekleyen yürüme/oturma/dönüş sözleri çözülür (aksi hâlde onu bekleyen iş döngüsü sonsuza dek takılır)
+function warpCh(ch,x,z,yaw){const r=ch.arrive;ch.arrive=null;ch.path=[];ch.vel=0;ch.direct=false;ch.goal=null;
+  if(ch.trans){const T=ch.trans;ch.trans=null;try{T.done&&T.done()}catch(e){}}if(ch.seat){ch.seat=null;try{ch.crossTo('Idle_12',0)}catch(e){}}
+  ch.pos.set(x,0,z);if(yaw!=null)ch.o.rotation.y=yaw;if(ch.turn){const t=ch.turn.res;ch.turn=null;t()}try{ch.endAct()}catch(e){}r&&r(false)}
 // kurulumda yeni yerleşimi canlı uygula (çalışanlar henüz görünmezken: güvenli)
 function layApplyLive(){layBase();buildCash();layApply();S.layout={k:{...KP},c:{...CP},w:WIN.x};
-  for(const b of BSTAFF){const h=B_HOME[b.i]||B_HOME[0];b.ch.path=[];b.ch.pos.set(h.x,0,h.z);b.ch.o.rotation.y=KP.r;b.idleAt=null}
-  for(const k of CSTAFF){const R=REGS[k.i]||REGS[0];k.ch.path=[];k.ch.pos.set(R.stand.x,0,R.stand.z);k.ch.o.rotation.y=CP.r}
-  for(const w of WSTAFF){const P=W_WAIT[w.i];w.ch.path=[];w.ch.pos.set(P.x,0,P.z)}markDirty();saveNow()}
+  for(const b of BSTAFF){const h=B_HOME[b.i]||B_HOME[0];warpCh(b.ch,h.x,h.z,KP.r);b.idleAt=null}
+  for(const k of CSTAFF){const R=REGS[k.i]||REGS[0];warpCh(k.ch,R.stand.x,R.stand.z,CP.r)}
+  for(const w of WSTAFF){const P=W_WAIT[w.i]||W_WAIT[0];warpCh(w.ch,P.x,P.z)}markDirty();saveNow()}
 function buildTable(){const T=START_TABLES[0];const rec={uid:++S.uid,id:T[2],x:T[0],z:T[1],rot:T[3],chair:'c_cushion',col:0};S.owned[T[2]]=true;
   setMode('cafe');startPlacement({rec,isNew:true,price:0})}
 // aday seçimi: iki ücretsiz 1★ aday; seçince görünüm düzenleyicisi açılır
@@ -5948,7 +5978,7 @@ function buildHire(role){const m=$('lvModal');UI.modal=true;const C=[makeCand(ro
       <span class="cw">Maaş ${ic('coin')}${stWage(c.st)}/gün</span><div class="cbtn"><button class="btn green" type="button" data-bh="${c.id}">${ic('check')}${c.name} işe başlasın</button></div></div></div>`).join('')}</div></div>`;m.hidden=false;
   m.querySelectorAll('[data-bh]').forEach(b=>b.onclick=()=>{const c=C.find(x=>x.id===b.dataset.bh);m.hidden=true;UI.modal=false;const key=role;
     S.chars[key]={name:c.name,look:{...LOOK_DEF,...c.look},wear:JSON.parse(JSON.stringify(ROLE_DEF[role].wear)),freeEdits:1,st:{...c.st}};S.build.hired[role]=true;applyCharToGame(key);
-    const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===key);if(o){o.ch.o.visible=true;stApply(o);o.ch.path=[];if(role==='barista'){const h=B_HOME[o.i]||B_HOME[0];o.ch.pos.set(h.x,0,h.z);o.ch.o.rotation.y=KP.r}else if(role==='cashier'){const R=REGS[o.i]||REGS[0];o.ch.pos.set(R.stand.x,0,R.stand.z);o.ch.o.rotation.y=CP.r;o.ready=true}else{o.ch.pos.set(DOOR_IN.x,0,DOOR_IN.z)}}
+    const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===key);if(o){o.ch.o.visible=true;stApply(o);if(role==='barista'){const h=B_HOME[o.i]||B_HOME[0];warpCh(o.ch,h.x,h.z,KP.r)}else if(role==='cashier'){const R=REGS[o.i]||REGS[0];warpCh(o.ch,R.stand.x,R.stand.z,CP.r);o.ready=true}else{warpCh(o.ch,DOOR_IN.x,DOOR_IN.z)}}
     markDirty();saveNow();sfx('goal');UI.backTo='cafe';openEditor(key,'create')})}
 // düzenleyici "create" modunda: kaydet → sıradaki adım (eski üçlü tasarım zinciri yerine)
 {const _c=commitEditor;commitEditor=function(pay){if(buildOn()&&CE.mode==='create'){const [nm]=validName(CE.cfg.name);if(!nm)return false;const k=CE.key,c=S.chars[k];
@@ -5957,7 +5987,7 @@ function buildHire(role){const m=$('lvModal');UI.modal=true;const C=[makeCand(ro
 // yeni oyuncu: eski "ekibini tasarla" yerine boş dükkân
 {const _o=offerSetup;offerSetup=function(isNew){if(S.created)return;if(isNew&&!window.__oldSetup){buildStart();return}return _o(isNew)}}
 // adım takibi: masa konunca ilerle; menü/ekran açılınca balonu kapat, dönünce yeniden göster
-{let t=0;const _e=envTick;envTick=function(dt){_e(dt);if(!started||!buildOn())return;t+=dt;if(t<0.4)return;t=0;
+{let t=0,v0=false;const _e=envTick;envTick=function(dt){_e(dt);if(!v0&&buildOn()){v0=true;try{buildVis()}catch(e){}}if(!started||!buildOn())return;t+=dt;if(t<0.4)return;t=0;
   if(S.tut==='b_table'&&S.furniture.some(f=>!f.stored&&CAT[f.id]&&CAT[f.id].kind==='table')&&!PL){buildNext();return}
   if(UI.modal||UI.mode!=='cafe'||PL||LAY.on){if(BSHOWN&&!LAY.on&&!PL&&UI.mode!=='ce'){coachOff();BSHOWN=''}return}buildVis();buildStep()}}
 // eski kayıtlarda yarım kalmış kurulum: açılışta görünürlükleri uygula
