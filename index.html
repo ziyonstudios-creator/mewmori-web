@@ -845,7 +845,12 @@ const RECIPES=[
  {id:'tost',name:'Kaşarlı Tost',cat:'main',sub:'toast',lvl:5,disc:'c_tost',prep:5,price:12,station:'main'},
  {id:'omlet',name:'Omlet',cat:'main',sub:'simple',lvl:6,disc:'yum3',prep:5,price:11,station:'main'},
  {id:'sandvic',name:'Omletli Sandviç',cat:'main',sub:'sandwich',lvl:7,disc:'c_sandvic',prep:5,price:14,station:'main'},
- {id:'kahvalti',name:'Kahvaltı Tabağı',cat:'main',sub:'advanced',lvl:10,disc:'c_kahvalti',prep:6,price:18,station:'main'}];
+ {id:'kahvalti',name:'Kahvaltı Tabağı',cat:'main',sub:'advanced',lvl:10,disc:'c_kahvalti',prep:6,price:18,station:'main'},
+ // İtalya şubesinden ana kafeye getirilen tarifler (birleştirmeyle keşfedilmez; br: şube, needs: stok)
+ {id:'cappuccino',name:'Cappuccino',cat:'drink',sub:'coffee',lvl:99,br:'it',disc:'it_cappuccino',prep:4,price:9,station:'coffee',needs:['kahve','sut']},
+ {id:'gelato',name:'Gelato',cat:'dessert',sub:'gelato',lvl:99,br:'it',disc:'it_gelato',prep:3,price:10,station:'dessert',needs:['sut','seker','cilek']},
+ {id:'tiramisu',name:'Tiramisu',cat:'dessert',sub:'tiramisu',lvl:99,br:'it',disc:'it_tiramisu',prep:4,price:13,station:'dessert',needs:['kahve','un','yum','seker']},
+ {id:'pizza',name:'Pizza Margherita',cat:'main',sub:'pizza',lvl:99,br:'it',disc:'it_pizza',prep:6,price:17,station:'main',needs:['un','peynir']}];
 const RECIPE=Object.fromEntries(RECIPES.map(r=>[r.id,r]));
 const RCAT=[{id:'drink',name:'İçecekler',icon:'cup'},{id:'dessert',name:'Tatlılar',icon:'cake'},{id:'main',name:'Ana Yemekler',icon:'plate'}];
 const STATION_OF={coffee:'coffee',tea:'kettle',dessert:'vitrine',main:'oven'};
@@ -1119,7 +1124,7 @@ const MAT={cup:toon(0xfff8ec),coffee:toon(0x5a3a22),latte:toon(0xc89a6a),milk:to
   tray:toon(0x9a6a3a),crust:toon(0xe2a35a),bread:toon(0xe8b06a),cheese:toon(0xf6cf52),egg:toon(0xf6d24a),white:toon(0xffffff),green:toon(0x7fae4a),red:toon(0xe0483f),
   pink:toon(0xf2a6a0),mug:toon(0xd9534f),choco:toon(0x5a2e14),berry2:toon(0xb27ad6),lemonPeel:toon(0xf7dc4a),olive:toon(0x3a2a1e)};
 function mk(geo,mat,x,y,z,g){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;g.add(m);return m}
-const HOT=new Set(['espresso','latte','cay','sicak_sut','sicak_cik','meyveli_cay','moka']);
+const HOT=new Set(['cappuccino','espresso','latte','cay','sicak_sut','sicak_cik','meyveli_cay','moka']);
 function makeProduct(item){const g=new THREE.Group();g.userData.kind=item.id;g.userData.hot=HOT.has(item.id);
   const saucer=r=>mk(new THREE.CylinderGeometry(r,r*0.85,0.008,18),MAT.cup,0,0.004,0,g);
   const plate=r=>mk(new THREE.CylinderGeometry(r,r*0.8,0.008,20),MAT.cup,0,0.004,0,g);
@@ -1152,6 +1157,16 @@ function makeProduct(item){const g=new THREE.Group();g.userData.kind=item.id;g.u
    case 'omlet':{plate(0.052);const b=body();const o=mk(new THREE.CylinderGeometry(0.035,0.035,0.016,20,1,false,0,Math.PI),MAT.egg,0,0.016,0,b);o.rotation.z=0;mk(new THREE.SphereGeometry(0.006,6,5),MAT.green,0.01,0.026,0.012,b);break}
    case 'kahvalti':{plate(0.058);const b=body();const w=mk(new THREE.CylinderGeometry(0.018,0.018,0.004,14),MAT.white,-0.02,0.01,0.008,b);mk(new THREE.SphereGeometry(0.008,8,6),toon(0xf2b134),-0.02,0.013,0.008,b);
      mk(new THREE.BoxGeometry(0.018,0.014,0.018),MAT.cheese,0.02,0.016,-0.01,b);mk(new THREE.SphereGeometry(0.007,8,6),MAT.olive,0.022,0.012,0.02,b);const tm=mk(new THREE.CylinderGeometry(0.01,0.01,0.006,10),MAT.red,0.0,0.011,-0.024,b);break}
+   case 'cappuccino':{saucer(0.05);const f=cup(0.04,0.064,MAT.latte);const foam=new THREE.Mesh(new THREE.CylinderGeometry(0.037,0.037,0.008,16),MAT.cream);foam.position.y=f.userData.h/2;f.add(foam);
+     const ht=new THREE.Mesh(new THREE.SphereGeometry(0.011,10,6),MAT.coffee);ht.scale.set(1,0.25,0.8);ht.position.y=f.userData.h/2+0.005;f.add(ht);break}
+   case 'gelato':{plate(0.042);const b=body();mk(new THREE.CylinderGeometry(0.008,0.016,0.03,10),MAT.glass,0,0.023,0,b);const bw=mk(new THREE.SphereGeometry(0.036,16,8,0,Math.PI*2,Math.PI/2,Math.PI/2),MAT.glass,0,0.075,0,b);bw.material=MAT.glass.clone();bw.material.side=THREE.DoubleSide;
+     [[0x9fd06a,-0.016,0],[0xf2a6a0,0.016,0.004],[0xfff3d0,0,-0.012]].forEach(([c,x,z],i)=>{const s=mk(new THREE.SphereGeometry(0.022,12,10),toon(c),x,0.08+(i===2?0.02:0),z,b);s.scale.y=0.9});
+     const w=mk(new THREE.BoxGeometry(0.012,0.05,0.022),MAT.cookie,0.022,0.11,0.01,b);w.rotation.z=-0.4;break}
+   case 'tiramisu':{plate(0.05);const b=body();[[MAT.coffee,0.014],[MAT.cream,0.012],[MAT.moka,0.012],[MAT.cream,0.012]].reduce((y,[m,h])=>{mk(new THREE.BoxGeometry(0.062,h,0.05),m,0,y+h/2,0,b);return y+h},0.009);
+     mk(new THREE.BoxGeometry(0.063,0.004,0.051),MAT.choco,0,0.061,0,b);mk(new THREE.SphereGeometry(0.007,8,6),MAT.white,0.015,0.066,0.01,b);break}
+   case 'pizza':{plate(0.062);const b=body();mk(new THREE.CylinderGeometry(0.055,0.055,0.01,24),MAT.crust,0,0.013,0,b);mk(new THREE.CylinderGeometry(0.047,0.047,0.004,24),toon(0xd2452f),0,0.019,0,b);
+     for(let i=0;i<6;i++){const a=i/6*Math.PI*2+0.3,r=i%2?0.028:0.017;const c=mk(new THREE.CylinderGeometry(0.01,0.01,0.004,10),MAT.cream,Math.cos(a)*r,0.022,Math.sin(a)*r,b)}
+     for(let i=0;i<3;i++){const a=i/3*Math.PI*2;const l=mk(new THREE.SphereGeometry(0.007,8,6),MAT.green,Math.cos(a)*0.024,0.025,Math.sin(a)*0.024,b);l.scale.set(1.3,0.3,0.7);l.rotation.y=a}break}
    default:saucer(0.046)}
   return g}
 // pişirme sırasında "oluşma" animasyonu: içecek dolar, yiyecek büyür
@@ -1448,7 +1463,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
-    staff:{waiter:1,barista:1,cashier:1},seen:{},tr:null,navMin:false,
+    staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},tr:null,navMin:false,
     objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
 let S=defaultState();
 // kayıt bozulursa (yarım yazılmış/elle değişmiş) otomatik yedekten açılır
@@ -1503,7 +1518,7 @@ function discoverItem(id){if(S.items[id])return;S.items[id]=true;addXP(CONFIG.xp
     toast(`<b>Yeni tarif keşfedildi!</b><br>${r.name}${S.lvl<r.lvl?` · Seviye ${r.lvl}’de açılabilir`:' · Tarifler’den ürünü açabilirsin'}`,`<img src="${productThumb(r.id)}" alt="">`,3600);checkObj()}markDirty()}
 // ürün aç: keşif + seviye + (ilk ürün hariç) altın
 const unlockCost=r=>r.def||r.free?0:Math.round(r.price*12/5)*5;
-function unlockState(r){if(S.unlocked[r.id])return {ok:false,done:true};if(!S.recipes[r.id])return {ok:false,why:'Önce birleştirme tahtasında keşfet'};
+function unlockState(r){if(S.unlocked[r.id])return {ok:false,done:true};if(r.br)return {ok:false,why:'İtalya şubesinden getirilir'};if(!S.recipes[r.id])return {ok:false,why:'Önce birleştirme tahtasında keşfet'};
   if(S.lvl<r.lvl)return {ok:false,why:`Seviye ${r.lvl} gerekli`};const c=unlockCost(r);if(S.coins<c)return {ok:false,why:`${c} altın gerekli`,cost:c};return {ok:true,cost:c}}
 function unlockRecipe(id){const r=RECIPE[id];const u=unlockState(r);if(!u.ok)return false;if(u.cost)addCoins(-u.cost,'recipe');S.unlocked[id]=true;sfx('goal');markDirty();
   toast(`<b>${r.name} açıldı!</b><br>Menü’den menüne ekleyebilirsin`,`<img src="${productThumb(id)}" alt="">`,3000);return true}
@@ -2609,13 +2624,13 @@ function comboHTML(r){const d=r.disc;const mi=id=>`<span class="mi" title="${ITE
   return `${mi(c.a)}<span>+</span>${mi(c.b)}<span>→</span>${mi(c.r)}`}
 function renderBook(){$('rbTabs').innerHTML=RCAT.map(t=>`<button class="tab" role="tab" type="button" data-t="${t.id}" aria-selected="${UI.rbTab===t.id}">${ic(t.icon)}${t.name}</button>`).join('');
   $('rbTabs').onclick=e=>{const b=e.target.closest('[data-t]');if(b){UI.rbTab=b.dataset.t;renderBook()}};
-  $('rbList').innerHTML=RECIPES.filter(r=>r.cat===UI.rbTab).map(r=>{const disc=!!S.recipes[r.id],open=!!S.unlocked[r.id],onM=!!S.menu[r.id],u=unlockState(r);
-    const st=open?(onM?'<span class="status">Menüde</span>':'<span class="status lv">Açık · menüde değil</span>'):disc?`<span class="status lv">Keşfedildi · ${u.ok?'açmaya hazır':u.why}</span>`:`<span class="status un">${S.lvl>=r.lvl?'Keşfedilmedi':'Keşfedilmedi · Sv '+r.lvl}</span>`;
+  $('rbList').innerHTML=RECIPES.filter(r=>r.cat===UI.rbTab).map(r=>{const disc=!!S.recipes[r.id]||!!r.br,open=!!S.unlocked[r.id],onM=!!S.menu[r.id],u=unlockState(r);
+    const st=open?(onM?'<span class="status">Menüde</span>':'<span class="status lv">Açık · menüde değil</span>'):r.br?'<span class="status lv brtag">İtalya şubesinden getirilir</span>':disc?`<span class="status lv">Keşfedildi · ${u.ok?'açmaya hazır':u.why}</span>`:`<span class="status un">${S.lvl>=r.lvl?'Keşfedilmedi':'Keşfedilmedi · Sv '+r.lvl}</span>`;
     const cost=unlockCost(r);
-    const act=open?'':`<div class="rbact"><button class="btn ${u.ok?'green':''}" type="button" data-un="${r.id}" ${u.ok?'':'disabled'}>${ic(u.ok?'check':'lock')}Ürünü aç${cost?` · ${ic('coin')}${cost}`:' · ücretsiz'}</button>${u.ok?'':`<small>${u.why}</small>`}</div>`;
+    const act=open?'':r.br?`<div class="rbact"><button class="btn light" type="button" data-brmap="1">${ic('globe')}Dünya haritasını aç</button></div>`:`<div class="rbact"><button class="btn ${u.ok?'green':''}" type="button" data-un="${r.id}" ${u.ok?'':'disabled'}>${ic(u.ok?'check':'lock')}Ürünü aç${cost?` · ${ic('coin')}${cost}`:' · ücretsiz'}</button>${u.ok?'':`<small>${u.why}</small>`}</div>`;
     return `<div class="rc${disc?'':' unk'}" data-rc="${r.id}"><div class="th"><img src="${productThumb(r.id)}" alt="">${disc?'':'<span class="q">?</span>'}</div><div class="tx"><b>${r.name}</b>${st}
-      <div class="meta"><span>${ic('star')}Sv ${r.lvl}</span><span>${ic('clock')}${r.prep} sn</span><span>${ic('coin')}${priceOf(r)}</span></div><div class="combo">${comboHTML(r)}</div>${act}${disc?'':`<div class="rbact"><button class="btn ${S.target===r.id?'green':'light'}" type="button" data-tgt="${r.id}" aria-pressed="${S.target===r.id}">${ic('target')}${S.target===r.id?'Hedefte ✓':'Hedefle'}</button>${S.target===r.id?'<small>Torbalar malzemelerini daha sık verir</small>':''}</div>`}</div></div>`}).join('');
-  $('rbList').onclick=e=>{const tg=e.target.closest('[data-tgt]');if(tg){setTarget(tg.dataset.tgt);renderBook();return}const b=e.target.closest('[data-un]');if(!b||b.disabled)return;if(unlockRecipe(b.dataset.un)){renderBook();if(typeof tut2Event==='function')tut2Event('unlock',b.dataset.un)}}}
+      <div class="meta"><span>${r.br?ic('globe')+'İtalya':ic('star')+'Sv '+r.lvl}</span><span>${ic('clock')}${r.prep} sn</span><span>${ic('coin')}${priceOf(r)}</span></div><div class="combo">${comboHTML(r)}</div>${act}${disc?'':`<div class="rbact"><button class="btn ${S.target===r.id?'green':'light'}" type="button" data-tgt="${r.id}" aria-pressed="${S.target===r.id}">${ic('target')}${S.target===r.id?'Hedefte ✓':'Hedefle'}</button>${S.target===r.id?'<small>Torbalar malzemelerini daha sık verir</small>':''}</div>`}</div></div>`}).join('');
+  $('rbList').onclick=e=>{if(e.target.closest('[data-brmap]')){setMode('cafe');openMap();return}const tg=e.target.closest('[data-tgt]');if(tg){setTarget(tg.dataset.tgt);renderBook();return}const b=e.target.closest('[data-un]');if(!b||b.disabled)return;if(unlockRecipe(b.dataset.un)){renderBook();if(typeof tut2Event==='function')tut2Event('unlock',b.dataset.un)}}}
 // ================= MENÜ: açılan ürünlerden hangileri satılsın =================
 {const st=document.createElement('style');st.textContent=`
 .rbact{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}.rbact .btn{font-size:13px;padding:6px 11px}.rbact .btn .ic{width:16px;height:16px}.rbact small{font-size:11px;font-weight:800;opacity:.7}
@@ -4189,7 +4204,7 @@ function stockS(){let T=S.stock;if(!T||!T.b){T=S.stock={b:{},pend:[],arr:[],seq:
 const stockN=k=>stockS().b[k].reduce((a,l)=>a+l.n,0);
 const pendN=k=>{const T=stockS();let n=0;for(const p of T.pend.concat(T.arr))n+=p.items[k]||0;return n};
 const NEEDS={};
-function needsOf(r){return NEEDS[r.id]||(NEEDS[r.id]=[...baseNeeds(r.disc)].map(id=>ITEMS[id].chain).filter(k=>STOCK_BASES.includes(k)))}
+function needsOf(r){return NEEDS[r.id]||(NEEDS[r.id]=r.needs?r.needs.slice():[...baseNeeds(r.disc)].map(id=>ITEMS[id].chain).filter(k=>STOCK_BASES.includes(k)))}
 const headLot=k=>stockS().b[k].find(l=>l.n>0);
 // öğretici bitene kadar stok satışları engellemez (yeni oyuncu takılmasın)
 function stockOk(r){if(S.tut!=='done')return true;return needsOf(r).every(k=>stockN(k)>=1)}
@@ -5126,6 +5141,245 @@ async function likeCafe(k){const c=VISIT.cafe;if(!c||VISIT.liked)return;
 #visitBar .vt{display:flex;flex-direction:column}#visitBar .vt small{display:inline-flex;gap:3px;align-items:center;font-weight:800;font-size:12px}#visitBar .vt svg{width:14px;height:14px}
 #visitBar .vbot{pointer-events:auto;position:absolute;bottom:calc(env(safe-area-inset-bottom) + 12px);left:12px;right:12px;padding:10px 12px;border:3px solid var(--ink);border-radius:18px;background:var(--paper)}
 #visitBar .vbot p{margin:0 0 8px;font-weight:800;font-size:13px}.vreacts{display:flex;flex-wrap:wrap;gap:6px}.vreacts .btn{padding:7px 10px;font-size:12px}.vreacts svg{width:16px;height:16px}.vdone{display:flex;gap:6px;align-items:center;margin:0!important}`;document.head.appendChild(st)}
+
+// ================= DÜNYA HARİTASI + ÜLKE ŞUBELERİ (Aşama 4: İtalya) =================
+// Şube: oyuncu oyunda olmasa da saatlik altın biriktirir (kasa sınırına kadar). Yerel geliştirmeler hem geliri hem
+// şubenin 3B görünümünü değiştirir; bazıları ana kafeye getirilebilen bir tarif açar.
+UI_IC.globe=SV(`<circle cx="32" cy="32" r="24" fill="#9fd3e6"/><path d="M18 18 Q26 22 24 30 Q22 36 28 40 Q32 44 28 52 M40 12 Q36 20 42 24 Q50 28 46 36 Q44 42 52 44" fill="none" stroke-width="3"/><path d="M14 30 Q20 26 22 32 Q20 38 16 40 Z M40 24 Q48 22 52 30 Q50 38 44 36 Z" fill="#9fd06a" stroke-width="2.5"/><circle cx="32" cy="32" r="24"/>`);
+UI_IC.pin=SV(`<path d="M32 58 Q14 36 14 26 A18 18 0 0 1 50 26 Q50 36 32 58 Z" fill="#e0483f"/><circle cx="32" cy="26" r="7" fill="#fff8ec"/>`);
+FIN_IN.branch='Şube gelirleri';FIN_OUT.branch='Şube yatırımları';
+const BRANCHES=[
+ {id:'it',name:'İtalya',city:'Roma',cafe:'Caffè Gattino',lvl:5,price:2500,base:120,capH:4,x:37,y:57,flag:['#3a8f4b','#fffaf0','#d9453b'],
+  desc:'Roma’da küçük bir köşe kafe: espresso, gelato ve odun fırınında pizza.'},
+ {id:'tr',name:'Türkiye',city:'İstanbul',soon:true,x:81,y:53}];
+const BR=id=>BRANCHES.find(b=>b.id===id);
+// yerel geliştirmeler: inc = seviye başına saatlik gelir artışı, cap = kasa süresi (saat), rec = Sv1'de açılan tarif
+const BR_UP={it:[
+ {id:'bar',name:'Espresso barı',icon:'cup',inc:50,cost:[400,1100,2400],lvl:[5,7,9],rec:'cappuccino',desc:['Mermer tezgâha krom espresso makinesi','Değirmen ve fincan rafı','Bakır ikinci makine ve bar tabureleri']},
+ {id:'gelato',name:'Gelato dolabı',icon:'cake',inc:45,cost:[500,1200,2600],lvl:[5,7,10],rec:'gelato',desc:['Üç çeşit gelato','Beş çeşit gelato','Çizgili tenteli gelato arabası']},
+ {id:'pastic',name:'Pastane tezgâhı',icon:'cake',inc:45,cost:[600,1400,2800],lvl:[6,8,10],rec:'tiramisu',desc:['Tiramisu ve kek standı','Cam fanuslu tatlı vitrini','Kat kat pasta kulesi']},
+ {id:'forno',name:'Odun fırını',icon:'plate',inc:60,cost:[900,1800,3500],lvl:[7,9,11],rec:'pizza',desc:['Tuğla kubbe fırın ve pizzacı','Odun yığını','Fırın kürekleri ve fesleğen saksısı']},
+ {id:'teras',name:'Sokak terası',icon:'table',inc:40,cost:[700,1600,3200],lvl:[6,8,11],desc:['Şube büyür, iki masa daha','Ön teras, iki masa daha','En büyük salon, iki masa daha']},
+ {id:'kasa',name:'Kasa defteri',icon:'coin',cap:4,cost:[300,800,1800],lvl:[5,7,9],desc:['Kasa 8 saat biriktirir','Kasa 12 saat biriktirir','Kasa 16 saat biriktirir']}]};
+const BR_REC={cappuccino:{up:'bar',cost:250},gelato:{up:'gelato',cost:300},tiramisu:{up:'pastic',cost:450},pizza:{up:'forno',cost:600}};
+const brS=id=>{const B=S.br||(S.br={});return B[id]||null};
+const brLv=(id,u)=>{const b=brS(id);return b&&b.up?b.up[u]|0:0};
+function brRate(id){const B=BR(id),b=brS(id);if(!b)return 0;let r=B.base;for(const u of BR_UP[id])if(u.inc)r+=u.inc*brLv(id,u.id);return r}   // altın / saat
+function brCapH(id){const B=BR(id);let h=B.capH;for(const u of BR_UP[id])if(u.cap)h+=u.cap*brLv(id,u.id);return h}
+function brPend(id){const b=brS(id);if(!b)return 0;const hrs=Math.max(0,(nowT()-b.t)/3600000);return Math.floor(Math.min(brCapH(id),hrs)*brRate(id))}
+const brFull=id=>{const b=brS(id);return !!b&&(nowT()-b.t)/3600000>=brCapH(id)};
+function brOpenState(id){const B=BR(id);if(B.soon)return {ok:false,why:'Yakında'};if(brS(id))return {done:true};
+  if(S.lvl<B.lvl)return {ok:false,why:`Seviye ${B.lvl} gerekli`};if(S.coins<B.price)return {ok:false,why:`${B.price} altın gerekli`};return {ok:true}}
+function brOpen(id){const B=BR(id),st=brOpenState(id);if(!st.ok)return false;addCoins(-B.price,'branch');S.br[id]={t:nowT(),up:{},earned:0,since:nowT()};sfx('goal');markDirty();saveNow();
+  toast(`<b>${B.cafe} açıldı!</b><br>${B.city} şuben artık senin için altın biriktiriyor`,ic('globe'),3200);return true}
+function brCollect(id){const b=brS(id),n=brPend(id);if(!b||n<1)return 0;const rate=brRate(id);
+  if(brFull(id))b.t=nowT();else b.t+=n/rate*3600000;b.earned=(b.earned||0)+n;addCoins(n,'branch');sfx('coin');markDirty();saveNow();
+  toast(`<b>${BR(id).cafe}</b><br>Kasadan ${ic('coin')}${n} topladın`,ic('coin'),2200);brBadge();return n}
+function brUpState(id,u){const lv=brLv(id,u.id);if(lv>=u.cost.length)return {max:true};const need=u.lvl[lv],c=u.cost[lv];
+  if(S.lvl<need)return {ok:false,why:`Seviye ${need} gerekli`,cost:c};if(S.coins<c)return {ok:false,why:`${c} altın gerekli`,cost:c};return {ok:true,cost:c}}
+function brUpgrade(id,uid){const u=BR_UP[id].find(x=>x.id===uid),st=brUpState(id,u);if(!st.ok)return false;
+  brCollect(id);const b=brS(id);addCoins(-st.cost,'branch');b.up[uid]=(b.up[uid]|0)+1;if(!brPend(id))b.t=nowT();sfx('goal');markDirty();saveNow();
+  toast(`<b>${u.name} · Sv ${b.up[uid]}</b><br>${u.desc[b.up[uid]-1]}`,ic(u.icon),2600);if(BRV.on)brScene();return true}
+function brRecState(rid){const R=BR_REC[rid],r=RECIPE[rid];if(S.unlocked[rid])return {done:true};const u=BR_UP[r.br].find(x=>x.id===R.up);
+  if(brLv(r.br,R.up)<1)return {ok:false,why:`Önce ${u.name}`};if(S.coins<R.cost)return {ok:false,why:`${R.cost} altın gerekli`};return {ok:true,cost:R.cost}}
+function brImport(rid){const st=brRecState(rid),r=RECIPE[rid];if(!st.ok)return false;addCoins(-st.cost,'recipe');S.recipes[rid]=true;S.unlocked[rid]=true;S.menu[rid]=true;sfx('goal');markDirty();saveNow();
+  toast(`<b>${r.name} ana kafende!</b><br>Menüne eklendi · müşteriler artık sipariş edebilir`,`<img src="${productThumb(rid)}" alt="">`,3200);return true}
+
+// ---------------- DÜNYA HARİTASI ----------------
+const MAP_SVG=`<svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+ <defs><pattern id="mwave" width="24" height="12" patternUnits="userSpaceOnUse"><path d="M2 8 Q8 3 14 8" fill="none" stroke="#c6e7f1" stroke-width="1.6" stroke-linecap="round"/></pattern></defs>
+ <rect width="360" height="240" fill="#9fd3e6"/><rect width="360" height="240" fill="url(#mwave)"/>
+ <g fill="#f3e3bf" stroke="#4a2e1c" stroke-width="2.4" stroke-linejoin="round">
+  <path d="M-5 -5 H365 V96 L338 100 L312 104 L296 112 L286 118 L276 112 L262 114 L250 120 L238 116 L226 108 L212 100 L196 92 L182 86 L166 80 L150 84 L136 90 L124 88 L112 92 L100 98 L86 96 L70 92 L56 98 L40 108 L26 112 L10 110 L-5 116 Z"/>
+  <path d="M100 98 L112 101 L122 112 L132 126 L142 138 L152 148 L160 160 L168 172 L170 184 L164 194 L172 194 L180 182 L178 170 L186 162 L198 166 L204 160 L194 150 L180 144 L168 132 L156 118 L144 104 L136 92 L124 88 L112 92 Z"/>
+  <path d="M148 200 Q160 194 178 196 Q174 206 166 212 Q156 210 148 200 Z"/>
+  <path d="M100 140 Q110 136 112 146 L112 166 Q106 172 100 166 Z"/>
+  <path d="M212 100 L226 108 L238 116 L240 128 L248 140 L246 156 L236 166 L230 152 L222 146 L218 132 L210 118 Z"/>
+  <path d="M276 122 L292 120 L310 114 L330 112 L352 114 L365 118 V178 L344 176 L326 180 L306 184 L290 178 L280 166 L272 152 L270 136 Z"/>
+  <path d="M-5 214 L40 208 L90 214 L140 222 L190 226 L240 214 L290 220 L340 210 L365 212 V245 H-5 Z"/></g>
+ <g fill="#cfe2a8" stroke="none"><circle cx="60" cy="40" r="16"/><circle cx="210" cy="50" r="20"/><circle cx="300" cy="60" r="14"/><circle cx="320" cy="150" r="12"/><circle cx="140" cy="60" r="10"/></g>
+ <g fill="none" stroke="#4a2e1c" stroke-width="1.6" stroke-dasharray="4 5" opacity=".45"><path d="M134 138 Q210 110 292 126"/></g>
+ <text x="62" y="76" font-size="11" font-weight="800" fill="#4a2e1c" opacity=".55" text-anchor="middle">Fransa</text>
+ <text x="196" y="68" font-size="11" font-weight="800" fill="#4a2e1c" opacity=".55" text-anchor="middle">Avrupa</text>
+ <text x="232" y="232" font-size="11" font-weight="800" fill="#4a2e1c" opacity=".55" text-anchor="middle">Akdeniz</text>
+</svg>`;
+function openMap(){let p=$('mapP');if(!p){p=document.createElement('section');p.id='mapP';p.className='screen';p.setAttribute('role','dialog');p.setAttribute('aria-label','Dünya haritası');$('game').appendChild(p)}
+  p.hidden=false;UI.modal=true;renderMap();clearInterval(MAPT);MAPT=setInterval(()=>{if(!p.hidden)renderMapCards();else clearInterval(MAPT)},5000)}
+let MAPT=0;
+function closeMap(){const p=$('mapP');if(p)p.hidden=true;UI.modal=false;clearInterval(MAPT)}
+function renderMap(){const p=$('mapP');if(!p||p.hidden)return;
+  p.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${ic('globe')}</span><h2>Dünya haritası</h2><button class="iconbtn" id="mpClose" type="button" aria-label="Kapat">${ic('close')}</button></div>
+   <div class="scroll"><div class="mapbox">${MAP_SVG}${BRANCHES.map(B=>`<button type="button" class="mpin${B.soon?' soon':brS(B.id)?' own':''}" data-pin="${B.id}" style="left:${B.x}%;top:${B.y}%" aria-label="${B.name}">${ic('pin')}<span>${B.city}</span></button>`).join('')}</div>
+   <div id="mpCards" class="mpcards"></div></div>`;
+  $('mpClose').onclick=closeMap;p.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{sfx('tap');const B=BR(b.dataset.pin);if(B.soon){toast(`<b>${B.name}</b><br>Bu ülkenin şubesi çok yakında açılacak`,ic('globe'),2200);return}
+    const c=document.querySelector(`[data-card="${B.id}"]`);if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'})});
+  renderMapCards()}
+function flagHTML(B){return `<span class="mflag">${B.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`}
+function renderMapCards(){const el=$('mpCards');if(!el)return;
+  el.innerHTML=BRANCHES.map(B=>{if(B.soon)return `<div class="mcard soon" data-card="${B.id}"><div class="mct"><b>${B.name} · ${B.city}</b><small>Yakında açılacak</small></div>${ic('lock')}</div>`;
+    const b=brS(B.id);if(!b){const st=brOpenState(B.id);
+      return `<div class="mcard" data-card="${B.id}"><div class="mct">${flagHTML(B)}<b>${B.cafe} · ${B.city}</b><small>${B.desc}</small><small>Açılınca saatte ${ic('coin')}${B.base} biriktirir · geliştirdikçe artar</small></div>
+       <button class="btn ${st.ok?'green':''}" type="button" data-bopen="${B.id}" ${st.ok?'':'disabled'}>${ic(st.ok?'check':'lock')}Şubeyi aç · ${ic('coin')}${B.price}</button>${st.ok?'':`<small class="mwhy">${st.why}</small>`}</div>`}
+    const n=brPend(B.id),cap=Math.floor(brCapH(B.id)*brRate(B.id)),pc=Math.min(100,Math.round(n/Math.max(1,cap)*100));
+    return `<div class="mcard own" data-card="${B.id}"><div class="mct">${flagHTML(B)}<b>${B.cafe} · ${B.city}</b><small>Saatte ${ic('coin')}${brRate(B.id)} · kasa ${brCapH(B.id)} saat biriktirir</small></div>
+     <div class="mbar" role="progressbar" aria-valuenow="${pc}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pc}%"></i><span>${ic('coin')}${n} / ${cap}${brFull(B.id)?' · kasa dolu!':''}</span></div>
+     <div class="mbtns"><button class="btn green" type="button" data-bcol="${B.id}" ${n<1?'disabled':''}>${ic('coin')}Topla</button><button class="btn" type="button" data-bgo="${B.id}">${ic('cafe')}Şubeye git</button></div></div>`}).join('')+
+   `<p class="wmsg">Şubeler sen oyunda değilken de çalışır. Kasa dolunca birikim durur; ara ara uğrayıp topla.</p>`;
+  el.querySelectorAll('[data-bopen]').forEach(b=>b.onclick=()=>{if(brOpen(b.dataset.bopen))renderMap()});
+  el.querySelectorAll('[data-bcol]').forEach(b=>b.onclick=()=>{brCollect(b.dataset.bcol);renderMapCards()});
+  el.querySelectorAll('[data-bgo]').forEach(b=>b.onclick=()=>{sfx('tap');closeMap();brEnter(b.dataset.bgo)})}
+
+// ---------------- ŞUBE 3B GÖRÜNÜMÜ ----------------
+const BRV={on:false,id:null,groups:[],chars:[],hid:[],room:null,tab:'up'};
+const BR_ROOM=[[4.75,4],[6.75,4],[6.75,6],[8.75,6]];   // teras seviyesine göre şube salonu
+function brHideHome(){const box=new THREE.Box3(),c=new THREE.Vector3(),sz=new THREE.Vector3();const keep=new Set([SHELL.g,ENV.shell].concat((SHELL.plants||[]).map(p=>p.G)));
+  for(const o of scene.children){if(!o.visible||o.isLight||o.isCamera||keep.has(o))continue;
+    if(o.userData&&o.userData.isChar){o.visible=false;BRV.hid.push(o);continue}
+    box.setFromObject(o);if(box.isEmpty())continue;box.getCenter(c);box.getSize(sz);if(sz.x>12||sz.z>12)continue;
+    if(c.x>RM.x0-0.6&&c.x<RM.x1+0.2&&c.z>RM.z0-0.4&&c.z<RM.z1+0.2&&box.min.y<WALL_H+0.5){o.visible=false;BRV.hid.push(o)}}}
+function brEnter(id){if(BRV.on||VISIT.on||!brS(id))return;BRV.on=true;BRV.id=id;BRV.room={x1:RM.x1,z1:RM.z1};BRV.hid=[];
+  BRV.cam={p:camera.position.clone(),t:controls.target.clone(),max:controls.maxDistance};setMode('visit');$('game').classList.add('visiting');brHideHome();brScene();brBar()}
+function brLeave(){if(!BRV.on)return;brClear();BRV.hid.forEach(o=>o.visible=true);BRV.hid=[];setRoom(BRV.room.x1,BRV.room.z1,true);applyWall(S.wall);applyFloor(S.floor);
+  try{camera.clearViewOffset();const C=BRV.cam;controls.maxDistance=C.max;controls.target.copy(C.t);camera.position.copy(C.p);controls.update()}catch(e){}
+  BRV.on=false;const b=$('visitBar');if(b)b.remove();$('game').classList.remove('visiting');refreshWorld();setMode('cafe');openMap()}
+function brClear(){for(const G of BRV.groups){scene.remove(G);disposeTree(G)}BRV.groups=[];for(const ch of BRV.chars)scene.remove(ch.o);BRV.chars=[]}
+function brAdd(G,x=0,z=0,ry=0){G.position.set(x,G.position.y,z);G.rotation.y=ry;G.traverse(m=>{if(m.isMesh){m.castShadow=m.castShadow!==false;m.receiveShadow=true}});scene.add(G);BRV.groups.push(G);return G}
+const bm=(geo,col,x,y,z,G)=>{const m=new THREE.Mesh(geo,typeof col==='number'?toon(col):col);m.position.set(x,y,z);m.castShadow=true;G.add(m);return m};
+const BX=(w,h,d)=>new THREE.BoxGeometry(w,h,d),CY=(a,b,h,n=16)=>new THREE.CylinderGeometry(a,b,h,n);
+function brSign(text,w=2.4,h=0.5){const cv=document.createElement('canvas');cv.width=1024;cv.height=Math.round(1024*h/w);const g=cv.getContext('2d');
+  g.fillStyle='#2f5d3a';g.fillRect(0,0,cv.width,cv.height);g.strokeStyle='#e9c46a';g.lineWidth=18;g.strokeRect(14,14,cv.width-28,cv.height-28);
+  const ff=(getComputedStyle(document.body).getPropertyValue('--font-display')||'serif').trim()||'serif';g.fillStyle='#fff8ec';g.textAlign='center';g.textBaseline='middle';g.font=`800 ${Math.round(cv.height*0.5)}px ${ff}`;g.fillText(text,cv.width/2,cv.height/2+4);
+  const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const G=new THREE.Group();bm(BX(w+0.08,h+0.08,0.06),0x4a2e1c,0,0,0,G);const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tx}));p.position.z=0.035;G.add(p);return G}
+function brBunting(x0,x1,y,z,axis='x'){const G=new THREE.Group();const n=Math.max(4,Math.round(Math.abs(x1-x0)/0.32)),cols=[0x3a8f4b,0xfffaf0,0xd9453b];
+  const pts=[];for(let i=0;i<=n;i++){const t=i/n;pts.push(new THREE.Vector3(axis==='x'?x0+(x1-x0)*t:z,y-Math.sin(t*Math.PI)*0.22,axis==='x'?z:x0+(x1-x0)*t))}
+  const line=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),n*2,0.008,4),toon(0x6b4a2c));G.add(line);
+  for(let i=0;i<n;i++){const t=(i+0.5)/n,s=new THREE.Shape();s.moveTo(-0.11,0);s.lineTo(0.11,0);s.lineTo(0,-0.2);s.lineTo(-0.11,0);
+    const f=new THREE.Mesh(new THREE.ShapeGeometry(s),new THREE.MeshToonMaterial({color:cols[i%3],gradientMap:grad,side:THREE.DoubleSide}));
+    f.position.set(axis==='x'?x0+(x1-x0)*t:z+0.01,y-Math.sin(t*Math.PI)*0.22,axis==='x'?z+0.01:x0+(x1-x0)*t);if(axis!=='x')f.rotation.y=Math.PI/2;f.castShadow=false;G.add(f)}return G}
+function brPlant(s=1,col=0x5f8a3a,fruit=null){const G=new THREE.Group();bm(CY(0.17*s,0.13*s,0.3*s,12),0xc8693e,0,0.15*s,0,G);bm(CY(0.17*s,0.17*s,0.04*s,12),0x4a2e1c,0,0.3*s,0,G);
+  bm(CY(0.025*s,0.03*s,0.5*s,6),0x6b4a2c,0,0.55*s,0,G);for(const [x,y,z,r] of [[0,0.95,0,0.3],[0.15,0.85,0.08,0.22],[-0.14,0.86,-0.06,0.22],[0.04,1.1,-0.1,0.2]])bm(new THREE.IcosahedronGeometry(r*s,1),col,x*s,y*s,z*s,G);
+  if(fruit)for(let i=0;i<7;i++){const a=i*2.1;bm(new THREE.SphereGeometry(0.045*s,8,6),fruit,Math.cos(a)*0.24*s,(0.8+(i%3)*0.12)*s,Math.sin(a)*0.24*s,G)}return G}
+function brCounter(x0,x1,z,d=0.62){const G=new THREE.Group(),w=x1-x0,cx=(x0+x1)/2;bm(BX(w,0.94,d),0x7a4a2a,cx,0.47,z,G);
+  for(let i=0;i<Math.floor(w/0.6);i++)bm(BX(0.5,0.6,0.02),0x93603a,x0+0.3+i*0.6+(w-Math.floor(w/0.6)*0.6)/2,0.5,z+d/2+0.01,G);
+  bm(BX(w+0.08,0.06,d+0.08),0xf1ece4,cx,0.97,z,G);bm(BX(w+0.08,0.06,0.02),0xd8d0c4,cx,0.97,z+d/2+0.05,G);return G}
+function brMachine(col=0xd5dbe1,acc=0xd9453b){const G=new THREE.Group();bm(BX(0.62,0.34,0.4),col,0,0.17,0,G);bm(BX(0.66,0.04,0.44),0x9aa2aa,0,0.36,0,G);bm(BX(0.3,0.05,0.42),acc,0,0.4,0,G);
+  for(const x of [-0.16,0.16]){bm(CY(0.035,0.04,0.06,10),0x6c737a,x,0.08,0.24,G);bm(BX(0.07,0.025,0.05),0x2a2a2a,x,0.04,0.25,G)}
+  for(let i=0;i<4;i++)bm(CY(0.03,0.025,0.05,10),0xfff8ec,-0.2+i*0.13,0.445,0,G);bm(CY(0.012,0.012,0.12,6),0x9aa2aa,0.28,0.4,0.12,G);return G}
+function brGrinder(){const G=new THREE.Group();bm(BX(0.16,0.22,0.18),0x2a2a2a,0,0.11,0,G);const h=bm(CY(0.09,0.04,0.18,12),new THREE.MeshPhysicalMaterial({color:0x8b5a32,transparent:true,opacity:0.6}),0,0.31,0,G);return G}
+function brStool(){const G=new THREE.Group();bm(CY(0.17,0.17,0.06,14),0xd9453b,0,0.74,0,G);bm(CY(0.025,0.03,0.72,8),0x4a4a4a,0,0.37,0,G);bm(new THREE.TorusGeometry(0.13,0.012,6,16),0x4a4a4a,0,0.3,0,G).rotation.x=Math.PI/2;bm(CY(0.17,0.2,0.03,14),0x4a4a4a,0,0.015,0,G);return G}
+function brGelato(lv){const G=new THREE.Group();bm(BX(1.3,0.78,0.6),0xfff8ec,0,0.47,0,G);bm(BX(1.32,0.08,0.62),0x8fcbb7,0,0.12,0,G);bm(BX(1.32,0.05,0.62),0x8fcbb7,0,0.86,0,G);
+  for(const x of [-0.5,0.5])bm(CY(0.09,0.09,0.05,14),0x4a4a4a,x,0.09,0.3,G).rotation.x=Math.PI/2;
+  const cols=[0xf2a6a0,0xfff3d0,0x9fd06a,0x6b3c1e,0xf7e36a,0xb27ad6],n=lv>=2?6:3;for(let i=0;i<n;i++){const x=-0.45+(i%3)*0.45,z=i<3?0.05:-0.17;bm(BX(0.36,0.06,0.2),0xd8dde2,x,0.9,z,G);const s=bm(new THREE.SphereGeometry(0.14,12,8,0,Math.PI*2,0,Math.PI/2),cols[i],x,0.92,z,G);s.scale.set(1.15,0.55,0.62)}
+  const gl=bm(BX(1.24,0.02,0.5),new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:0.3,roughness:0.05}),0,1.1,0.02,G);gl.rotation.x=-0.5;gl.castShadow=false;
+  if(lv>=3){bm(CY(0.02,0.02,1.2,6),0xb0b0b0,0.55,1.4,-0.2,G);const u=new THREE.Group();G.add(u);u.position.set(0.1,2.05,-0.05);for(let i=0;i<8;i++){const sg=bm(new THREE.ConeGeometry(0.85,0.36,8,1,true,i/8*Math.PI*2,Math.PI/4),i%2?0xfff8ec:0x8fcbb7,0,0,0,u);sg.material.side=THREE.DoubleSide}}return G}
+function brPastry(lv){const G=new THREE.Group();bm(BX(1.1,0.82,0.56),0x93603a,0,0.41,0,G);bm(BX(1.14,0.05,0.6),0xf1ece4,0,0.845,0,G);
+  const stand=(x,z,cake)=>{bm(CY(0.015,0.03,0.14,8),0xfff8ec,x,0.94,z,G);bm(CY(0.16,0.16,0.015,16),0xfff8ec,x,1.02,z,G);cake(x,z)};
+  stand(-0.28,0,(x,z)=>{bm(BX(0.24,0.05,0.18),0xfff3d0,x,1.055,z,G);bm(BX(0.24,0.03,0.18),0x6b3c1e,x,1.095,z,G);bm(BX(0.245,0.006,0.185),0x5a2e14,x,1.112,z,G)});
+  stand(0.28,0,(x,z)=>{bm(CY(0.12,0.12,0.1,16),0xfde3d9,x,1.08,z,G);bm(CY(0.122,0.122,0.02,16),0xfffaf0,x,1.14,z,G);for(let i=0;i<5;i++){const a=i/5*Math.PI*2;bm(new THREE.SphereGeometry(0.018,8,6),0xe03b3b,x+Math.cos(a)*0.08,1.16,z+Math.sin(a)*0.08,G)}});
+  if(lv>=2){const dome=bm(new THREE.SphereGeometry(0.17,16,10,0,Math.PI*2,0,Math.PI/2),new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:0.28,roughness:0.05}),0.28,1.03,0,G);dome.castShadow=false}
+  if(lv>=3){for(let i=0;i<3;i++){const r=0.2-i*0.055;bm(CY(r,r,0.1,18),i%2?0xfffaf0:0xf2a6a0,0,1.2+i*0.1+0.3,-0.12,G)}bm(CY(0.012,0.012,0.3,6),0xfff8ec,0,1.15,-0.12,G);bm(new THREE.SphereGeometry(0.03,8,6),0xe03b3b,0,1.82,-0.12,G)}return G}
+function brOven(lv){const G=new THREE.Group();bm(BX(1.25,0.8,1.15),0xd8c7a8,0,0.4,0,G);bm(BX(1.3,0.06,1.2),0xb8a888,0,0.82,0,G);
+  const d=bm(new THREE.SphereGeometry(0.58,18,12,0,Math.PI*2,0,Math.PI/2),0xb5562f,0,0.85,0,G);
+  for(let i=0;i<14;i++){const a=i/14*Math.PI*2;bm(BX(0.12,0.06,0.04),0x9a4426,Math.cos(a)*0.58,0.9,Math.sin(a)*0.58,G).rotation.y=-a}
+  const m=bm(new THREE.CircleGeometry(0.2,16,0,Math.PI),0x1d120c,0,0.86,0.585,G);const gl=new THREE.Mesh(new THREE.CircleGeometry(0.15,14,0,Math.PI),new THREE.MeshBasicMaterial({color:0xffa040}));gl.position.set(0,0.865,0.588);G.add(gl);BRV.glow=gl;
+  bm(BX(0.2,0.7,0.2),0x9a4426,0.22,1.55,-0.2,G);bm(BX(0.26,0.05,0.26),0x6b3a22,0.22,1.92,-0.2,G);
+  const L=new THREE.PointLight(0xff9a40,2.2,2.6);L.position.set(0,0.9,0.9);G.add(L);BRV.ovenL=L;
+  if(lv>=2)for(let i=0;i<6;i++){const l=bm(CY(0.05,0.05,0.42,8),0x8b5a32,-0.78+(i%3)*0.11,0.07+Math.floor(i/3)*0.1,0.25,G);l.rotation.x=Math.PI/2}
+  if(lv>=3){const p=bm(CY(0.012,0.012,1.4,6),0x9a6a3a,0.7,0.85,0.35,G);p.rotation.z=0.25;bm(CY(0.15,0.15,0.01,14),0xd8b07a,0.88,0.17,0.35,G).rotation.x=Math.PI/2;const b=brPlant(0.55);b.position.set(-0.45,0.85,0.35);G.add(b)}return G}
+function brRegister(lv){const G=new THREE.Group();const c=lv>=1?0xc9a24a:0x7a7a7a;bm(BX(0.32,0.14,0.26),c,0,0.07,0,G);const t=bm(BX(0.3,0.12,0.04),c,0,0.2,-0.1,G);t.rotation.x=-0.3;
+  for(let i=0;i<6;i++)bm(BX(0.04,0.02,0.04),0xfff8ec,-0.1+(i%3)*0.1,0.15,0.02+Math.floor(i/3)*0.06,G);return G}
+function brChalk(lines){const cv=document.createElement('canvas');cv.width=320;cv.height=420;const g=cv.getContext('2d');g.fillStyle='#2b2f2c';g.fillRect(0,0,320,420);g.fillStyle='#fff8ec';g.textAlign='center';
+  const ff=(getComputedStyle(document.body).getPropertyValue('--font-display')||'serif').trim()||'serif';g.font=`800 40px ${ff}`;g.fillText('Menù',160,60);g.font=`700 28px ${ff}`;lines.forEach((l,i)=>g.fillText(l,160,120+i*58));
+  const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const G=new THREE.Group();bm(BX(0.72,0.92,0.04),0x8b5a32,0,0,0,G);const p=new THREE.Mesh(new THREE.PlaneGeometry(0.62,0.82),new THREE.MeshBasicMaterial({map:tx}));p.position.z=0.025;G.add(p);return G}
+const BR_TABLES=[[-2.2,0.7,'t_bistro',0],[0.9,1.0,'t_bistro',1],[3.2,-0.6,'t_terra',0],[5.4,1.4,'t_bistro',1],[-2.0,3.7,'t_four_cafe',0],[1.6,3.9,'t_terra',1],[7.4,2.6,'t_four',0],[5.0,4.6,'t_bistro',0]];
+function brScene(){brClear();const id=BRV.id,L=k=>brLv(id,k);const tl=L('teras');const [x1,z1]=BR_ROOM[tl];setRoom(x1,z1,true);
+  M.wall.color.setHex(0xf2d39a);applyFloor('f_terra');
+  // tezgâh, tabela, bayrak süsü
+  brAdd(brCounter(-3.9,-0.3,-3.15));brAdd(brSign(BR(id).cafe,2.3,0.46),-2.1,0).position.set(-2.1,2.35,RM.z0+0.06);
+  brAdd(brBunting(RM.x0+0.2,RM.x1-0.2,2.85,RM.z0+0.04));brAdd(brBunting(RM.z0+0.2,1.0,2.85,RM.x0+0.04,'z'));
+  {const sh=new THREE.Group();bm(BX(2.6,0.05,0.26),0x8b5a32,0,0,0,sh);const cc=[0xfff8ec,0xd9453b,0x3a8f4b];for(let i=0;i<9;i++)bm(CY(0.035,0.03,0.07,10),cc[i%3],-1.1+i*0.27,0.06,0,sh);brAdd(sh).position.set(-2.1,1.75,RM.z0+0.15)}
+  brAdd(brRegister(L('kasa'))).position.set(-0.75,1.0,-3.15);
+  if(L('kasa')>=2)brAdd(brChalk(['Espresso','Cappuccino','Gelato','Pizza'])).position.set(0.2,1.75,RM.z0+0.04);
+  if(L('bar')>=1)brAdd(brMachine()).position.set(-2.6,1.0,-3.2);
+  if(L('bar')>=2){brAdd(brGrinder()).position.set(-1.85,1.0,-3.25);for(let i=0;i<5;i++)brAdd((()=>{const G=new THREE.Group();bm(CY(0.035,0.03,0.06,10),0xfff8ec,0,0.03,0,G);return G})()).position.set(-1.45+i*0.12,1.0,-2.98)}
+  if(L('bar')>=3){brAdd(brMachine(0xc8794a,0x3a8f4b)).position.set(-3.4,1.0,-3.2);for(const x of [-3.2,-2.4,-1.6])brAdd(brStool(),x,-2.35)}
+  if(L('gelato')>=1)brAdd(brGelato(L('gelato')),1.5,-3.4);
+  if(L('pastic')>=1)brAdd(brPastry(L('pastic')),3.25,-3.45);
+  if(L('forno')>=1)brAdd(brOven(L('forno')),-4.05,-1.25,Math.PI/2);
+  for(const [x,z] of [[RM.x1-0.45,RM.z0+0.45],[RM.x0+0.45,RM.z1-0.45]])brAdd(brPlant(1,0x5f8a3a,0xf7dc4a),x,z);
+  if(tl>=2)brAdd(brPlant(1.1),RM.x1-0.45,RM.z1-0.45);
+  // masalar: 2 + teras seviyesi başına 2
+  const nT=2+tl*2,tabs=[];for(const [x,z,t,r] of BR_TABLES.slice(0,nT)){if(x>RM.x1-0.9||z>RM.z1-0.9)continue;const rec={id:t,x,z,rot:r,chair:CAT[t].chair||'c_bistro',col:0};
+    try{const G=buildFurnGroup(rec);placeGroup(G,rec);brAdd(G,rec.x,rec.z,G.rotation.y);const W=(CAT[t].seats===4?set4World:setWorld)(x,z,yawOf(r));tabs.push({rec,W})}catch(e){console.warn(e)}}
+  LAMP_POOL.forEach((pl,i)=>{const t=tabs[i];if(t){pl.position.set(t.rec.x,WALL_H-0.7,t.rec.z);pl.intensity=4}else{pl.intensity=0;pl.position.set(0,-5,0)}});
+  camFit();brCam();brPeople(tabs)}
+// alt panel ekranın altını kapladığı için şube biraz uzaktan ve yukarı kaydırılmış gösterilir
+function brCam(){const k=Math.pow(Math.max((RM.x1-RM.x0)/9.5,(RM.z1-RM.z0)/8),0.7),d=24*k;const v=camera.position.clone().sub(controls.target);v.setLength(d);camera.position.copy(controls.target).add(v);controls.maxDistance=Math.max(controls.maxDistance,d*1.25);controls.update();brOffset()}
+function brOffset(){const c=renderer.domElement,w=c.clientWidth||innerWidth,h=c.clientHeight||innerHeight;const v=camera.view;const oy=Math.round(h*0.15);
+  if(!v||!v.enabled||v.fullWidth!==w||v.fullHeight!==h||v.offsetY!==oy)camera.setViewOffset(w,h,0,oy,w,h)}
+// şubede çalışanlar ve oturan müşteriler (sadece görüntü; yürümezler)
+function brPeople(tabs){const id=BRV.id;
+  const staff=(cfg,x,z,yaw)=>{try{const r=SkeletonUtils.clone(TEMPLATE);const ch=new Char(r,{xs:1});applyLook(r,cfg,512);ch.pos.set(x,0,z);ch.o.rotation.y=yaw;BRV.chars.push(ch);return ch}catch(e){console.warn(e)}};
+  staff({name:'Luca',look:{...LOOK_DEF,fur1:2,fur2:4},wear:{apron:'ap_black',top:'top_none',neck:'nk_none',hat:'hat_none',bottom:'bt_black'}},-2.2,-3.62,0);
+  if(brLv(id,'forno')>=1)staff({name:'Marco',look:{...LOOK_DEF,fur1:6,fur2:0},wear:{apron:'ap_cream',top:'top_none',neck:'nk_none',hat:'hat_chef',bottom:'bt_cream'}},-3.35,-0.15,-Math.PI/2+0.5);
+  let up=0;for(const u of BR_UP[id])up+=brLv(id,u.id);let n=Math.min(2+up,10);const prods=['cappuccino','espresso','gelato','tiramisu','pizza','latte','pasta'].filter(k=>RECIPE[k]&&(!RECIPE[k].br||brLv(id,BR_REC[k].up)>=1));
+  const looks=LOOKS.slice().sort(()=>Math.random()-0.5);let li=0;
+  for(const t of tabs){if(n<=0)break;const seats=t.W.seats.slice(0,Math.min(t.W.seats.length,n));
+    seats.forEach((st,i)=>{try{const lk=looks[li++%looks.length];const ch=new Char(cloneLook(lk.tex,lk),{xs:lk.xs});attachAcc(ch.o,(h,nn)=>lk.hat(h,nn));ch.sitAt(st,true);
+      const m=['SIT_CHAT','SIT_PHONE','SIT_BASE'].filter(k=>CLIPS[k]);if(m.length&&seats.length>1&&CLIPS.SIT_CHAT)ch.crossTo('SIT_CHAT',0);else if(CLIPS.SIT_PHONE&&Math.random()<0.5)ch.crossTo('SIT_PHONE',0);
+      BRV.chars.push(ch);n--;
+      const p=makeProduct(RECIPE[prods[(li+i)%prods.length]]);const c=t.W.center,dx=st.O.x-c.x,dz=st.O.z-c.z,d=Math.hypot(dx,dz)||1;p.position.set(c.x+dx/d*0.18,t.W.topY+0.005,c.z+dz/d*0.18);p.scale.setScalar(1.25);brAdd(p,p.position.x,p.position.z)}catch(e){console.warn(e)}})}}
+{const _e=envTick;envTick=function(dt){_e(dt);if(BRV.on){brOffset();for(const ch of BRV.chars)try{ch.update(dt)}catch(e){}if(BRV.glow)BRV.glow.material.color.setHSL(0.08,1,0.5+Math.sin(performance.now()/180)*0.06);
+  if(BRV.ovenL)BRV.ovenL.intensity=2+Math.sin(performance.now()/130)*0.35}}}
+// alt panel: gelir + geliştirmeler + tarifler
+function brBar(){let b=$('visitBar');if(!b){b=document.createElement('div');b.id='visitBar';$('game').appendChild(b)}const id=BRV.id,B=BR(id);
+  const n=brPend(id),cap=Math.floor(brCapH(id)*brRate(id));
+  const ups=BR_UP[id].map(u=>{const lv=brLv(id,u.id),st=brUpState(id,u);return `<li class="bu"><span class="bui">${ic(u.icon)}</span><span class="but"><b>${u.name} <em>Sv ${lv}/3</em></b><small>${st.max?'Tamamlandı':u.desc[lv]}${!st.max&&u.inc?` · +${u.inc}/saat`:''}</small></span>
+     ${st.max?`<span class="bumax">${ic('check')}</span>`:`<button class="btn sm ${st.ok?'green':''}" type="button" data-bup="${u.id}" ${st.ok?'':'disabled'}>${ic('coin')}${st.cost}</button>`}${!st.max&&!st.ok?`<small class="buwhy">${st.why}</small>`:''}</li>`}).join('');
+  const recs=Object.keys(BR_REC).filter(k=>RECIPE[k].br===id).map(k=>{const st=brRecState(k),r=RECIPE[k];return `<li class="bu"><img src="${productThumb(k)}" alt=""><span class="but"><b>${r.name}</b><small>${ic('coin')}${r.price} satış · ${r.prep} sn${st.done?' · ana kafende':''}</small></span>
+     ${st.done?`<span class="bumax">${ic('check')}</span>`:`<button class="btn sm ${st.ok?'green':''}" type="button" data-brec="${k}" ${st.ok?'':'disabled'}>Getir · ${ic('coin')}${BR_REC[k].cost}</button>`}${!st.done&&!st.ok?`<small class="buwhy">${st.why}</small>`:''}</li>`}).join('');
+  b.innerHTML=`<div class="vtop"><button class="iconbtn" type="button" id="vBack" aria-label="Haritaya dön">${ic('left')}</button><div class="vt"><b>${B.cafe}</b><small>${B.city} · saatte ${ic('coin')}${brRate(id)}</small></div><span class="mflag">${B.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span></div>
+   <div class="vbot brsheet"><div class="brcash"><div class="mbar"><i style="width:${Math.min(100,Math.round(n/Math.max(1,cap)*100))}%"></i><span>${ic('coin')}${n} / ${cap}</span></div><button class="btn green sm" type="button" id="brCol" ${n<1?'disabled':''}>Topla</button></div>
+    <div class="brtabs" role="tablist"><button type="button" role="tab" data-bt="up" aria-selected="${BRV.tab==='up'}">Geliştirmeler</button><button type="button" role="tab" data-bt="rec" aria-selected="${BRV.tab==='rec'}">Tarifler</button></div>
+    <ul class="bul">${BRV.tab==='up'?ups:recs+'<p class="wmsg">Getirdiğin tarif ana kafenin menüsüne eklenir. Malzemeleri toptancıdan gelir.</p>'}</ul></div>`;
+  $('vBack').onclick=brLeave;$('brCol').onclick=()=>{brCollect(id);brBar()};
+  b.querySelectorAll('[data-bt]').forEach(x=>x.onclick=()=>{BRV.tab=x.dataset.bt;sfx('tap');brBar()});
+  b.querySelectorAll('[data-bup]').forEach(x=>x.onclick=()=>{if(brUpgrade(id,x.dataset.bup))brBar()});
+  b.querySelectorAll('[data-brec]').forEach(x=>x.onclick=()=>{if(brImport(x.dataset.brec))brBar()})}
+setInterval(()=>{if(BRV.on&&!document.hidden){const s=document.querySelector('#visitBar .brcash');if(s){const id=BRV.id,n=brPend(id),cap=Math.floor(brCapH(id)*brRate(id));
+  s.querySelector('i').style.width=Math.min(100,Math.round(n/Math.max(1,cap)*100))+'%';s.querySelector('span').innerHTML=`${ic('coin')}${n} / ${cap}`;$('brCol').disabled=n<1}}},4000);
+// HUD: harita düğmesi + kasa dolunca nokta
+function brBadge(){const b=$('mapBtn');if(!b)return;let any=false;for(const B of BRANCHES)if(!B.soon&&brS(B.id)&&brPend(B.id)>=Math.max(1,brCapH(B.id)*brRate(B.id)*0.5))any=true;b.classList.toggle('dot',any)}
+{const w=$('worldBtn'),row=(w&&w.parentElement)||document.querySelector('button[aria-label="Müzik"]').parentElement;const b=document.createElement('button');b.type='button';b.className='iconbtn';b.id='mapBtn';b.style.cssText='width:36px;height:36px;padding:4px';
+  b.setAttribute('aria-label','Dünya haritası');b.innerHTML=UI_IC.globe;b.onclick=()=>{sfx('tap');openMap()};row.prepend(b);setInterval(brBadge,30000);setTimeout(brBadge,3000)}
+// oyuna dönünce bir kez hatırlat
+let brToldT=0;function brRemind(){if(!S||!S.created||!S.br)return;for(const B of BRANCHES){if(B.soon||!brS(B.id))continue;const n=brPend(B.id);if(n>=50&&Date.now()-brToldT>20*60000){brToldT=Date.now();
+  toast(`<b>${B.cafe}</b><br>Kasada ${ic('coin')}${n} birikti · haritadan topla`,ic('globe'),3000)}}}
+setTimeout(brRemind,9000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(brRemind,2500)});
+{const st=document.createElement('style');st.textContent=`
+#mapP{z-index:40}#mapP .ic{display:inline-grid;place-items:center;width:16px;height:16px;flex:none;vertical-align:-3px}#mapP .ic svg{width:100%;height:100%}#mapP .panel-head .ic{width:auto;height:auto}
+#mapP .scroll{overflow:auto;padding:0 12px 16px}
+.mapbox{position:relative;border:3px solid var(--ink);border-radius:18px;overflow:hidden;aspect-ratio:3/2;background:#9fd3e6;box-shadow:0 4px 0 var(--ink)}.mapbox svg{display:block;width:100%;height:100%}
+.mpin{position:absolute;transform:translate(-50%,-92%);display:flex;flex-direction:column;align-items:center;gap:0;background:none;border:0;padding:0;cursor:pointer;font:900 12px var(--font-display,inherit);color:var(--ink)}
+.mpin .ic{width:34px!important;height:34px!important;filter:drop-shadow(0 2px 0 rgba(74,46,28,.35))}.mpin span{background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:1px 8px;margin-top:-2px}
+.mpin.own .ic{animation:mpb 1.6s ease-in-out infinite}.mpin.soon{opacity:.6}.mpin.soon .ic svg path{fill:#b9a993}@keyframes mpb{50%{transform:translateY(-4px)}}
+.mpcards{display:flex;flex-direction:column;gap:8px;margin-top:12px}.mcard{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:3px solid var(--ink);border-radius:16px;background:var(--paper);box-shadow:0 3px 0 var(--ink)}
+.mcard.soon{flex-direction:row;align-items:center;justify-content:space-between;opacity:.7}.mcard.soon .ic{width:22px;height:22px}
+.mct{display:flex;flex-direction:column;gap:3px}.mct b{font:800 16px var(--font-display,inherit)}.mct small{font-size:12px;font-weight:700;line-height:1.35;display:block}.mct small .ic{width:14px;height:14px}
+.mflag{display:inline-flex;width:30px;height:20px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;flex:none}.mflag i{flex:1}
+.mcard .btn .ic,.mbtns .ic{width:18px;height:18px}.mwhy{font-size:11.5px;font-weight:800;opacity:.75}.mbtns{display:flex;gap:8px}.mbtns .btn{flex:1;justify-content:center}
+.mbar{position:relative;height:26px;border:2.5px solid var(--ink);border-radius:999px;background:#f3e3bf;overflow:hidden}.mbar i{position:absolute;inset:0 auto 0 0;background:#f2c14e}
+.mbar span{position:relative;display:flex;align-items:center;justify-content:center;gap:4px;height:100%;font:800 12.5px var(--font-display,inherit)}.mbar .ic{width:15px;height:15px}
+#mapBtn{position:relative}#mapBtn.dot::after{content:'';position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:50%;background:#e0483f;border:2px solid var(--paper)}
+#visitBar .vtop .mflag{margin-left:auto}#visitBar .brsheet{max-height:38%;display:flex;flex-direction:column;gap:8px}
+.brcash{display:flex;gap:8px;align-items:center}.brcash .mbar{flex:1}
+.brtabs{display:flex;gap:6px}.brtabs button{flex:1;font:800 13px var(--font,inherit);padding:7px;border:2.5px solid var(--ink);border-radius:12px;background:var(--paper);cursor:pointer}.brtabs button[aria-selected=true]{background:#ffe7a8}
+.bul{list-style:none;margin:0;padding:0;overflow:auto;display:flex;flex-direction:column;gap:6px;min-height:0}
+.bu{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 8px;padding:6px 8px;border:2px solid var(--ink);border-radius:12px;background:#fffaf0}
+.bu img{width:40px;height:40px;border-radius:8px;background:#f6e6cc}.bui{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#f3e3bf}.bui .ic{width:22px;height:22px}
+.but{display:flex;flex-direction:column;min-width:0}.but b{font:800 14px var(--font-display,inherit)}.but em{font-style:normal;font-size:11px;opacity:.7}.but small{font-size:11.5px;font-weight:700;line-height:1.3}.but small .ic{width:13px;height:13px}
+.bu .btn .ic{width:15px;height:15px}.bumax .ic{width:22px;height:22px}.buwhy{grid-column:2/4;font-size:11px;font-weight:800;opacity:.7;text-align:right}
+.brtag{background:#e6f2d9!important}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){if(S.room&&(S.room.x1>RM.x1||S.room.z1>RM.z1))setRoom(S.room.x1,S.room.z1);   // genişletilmiş kafe: eşyalardan önce oda kurulur
