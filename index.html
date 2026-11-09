@@ -7207,6 +7207,85 @@ function renderCSFoot(){const need=csNeed(),f=$('csFoot');let h='';
 .csfoot .btn{height:36px;font-size:13px;padding:0 12px;white-space:nowrap}
 `;document.head.appendChild(st)}
 
+// ================= GENİŞLETME MODU (kafe üzerinde) =================
+// Yapı Pazarı › Genişlet: menü yerine kafe hafif buğulu görünür; açılabilecek alanlar keskin ve yeşil kalır,
+// her alanın ortasında + düğmesi. + → küçük onay balonu → Genişlet.
+// Kural: duvarlı kenarlar (sol, arka) sınıra kadar 2 kademe; açık kenarlar (sağ, ön) iç mekân olarak yalnız 1 kademe.
+const EXP_MAXS={l:2,b:2,r:1,f:1};
+expandState=function(id){const k=expLvOf(id),n=expandN();if(k>=(EXP_MAXS[id]??EXP_MAX))return {done:true};const lv=EXP_LV[n],c=EXP_COST[n];
+  if(S.lvl<lv)return {ok:false,why:`Seviye ${lv} gerekli`,lv,c};if(S.coins<c)return {ok:false,why:'Altın yetmiyor',lv,c};return {ok:true,lv,c}};
+const XM={on:false,g:null,raf:0,sel:null,cam:null,last:''};
+function expArea(e){const r=expRect(e);if(e.key==='x1')return [RM.x1,r.x1,RM.z0,RM.z1];if(e.key==='x0')return [r.x0,RM.x0,RM.z0,RM.z1];if(e.key==='z1')return [RM.x0,RM.x1,RM.z1,r.z1];return [RM.x0,RM.x1,r.z0,RM.z0]}
+function xmSides(){return EXP_SIDES.map(e=>({e,s:expandState(e.id)})).filter(o=>!o.s.done)}
+function openExpandMode(){if(XM.on)return;const list=xmSides();
+  if(!list.length){toast('Kafen olabileceği en büyük boyutta!',ic('check'),2600);return}
+  XM.on=true;XM.sel=null;document.documentElement.classList.add('xmode');
+  // kamera biraz geri: yeni alanlar görünsün
+  XM.cam={p:camera.position.clone(),t:controls.target.clone()};const v=camera.position.clone().sub(controls.target).multiplyScalar(1.28);camera.position.copy(controls.target).add(v);controls.update();
+  // yeşil alanlar
+  const G=new THREE.Group();scene.add(G);XM.g=G;
+  for(const {e,s} of list){const [x0,x1,z0,z1]=expArea(e);const m=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0),new THREE.MeshBasicMaterial({color:s.ok?0x6fd36a:0xd8c9a8,transparent:true,opacity:s.ok?0.45:0.35,depthWrite:false}));
+    m.rotation.x=-Math.PI/2;m.position.set((x0+x1)/2,0.07,(z0+z1)/2);m.renderOrder=5;G.add(m)}
+  let ov=$('expOv');if(!ov){ov=document.createElement('div');ov.id='expOv';$('game').appendChild(ov)}
+  ov.innerHTML=`<div class="xmBlur"></div><svg class="xmLines"></svg><div class="xmHead">${ic('plus')}Genişletmek istediğin alana dokun</div><button class="xmX" type="button" aria-label="Kapat"></button><div class="xmBtns"></div><div class="xmTip" hidden></div>`;
+  ov.hidden=false;ov.querySelector('.xmX').onclick=()=>{sfx('tap');closeExpandMode()};
+  const B=ov.querySelector('.xmBtns');B.innerHTML=list.map(({e,s})=>`<button type="button" class="xmPlus${s.ok?'':' lock'}" data-x="${e.id}" aria-label="${e.name}"><i class="${s.ok?'pl':''}">${s.ok?'':ic('lock')}</i><span>${s.ok||S.lvl>=(s.lv||0)?ic('coin')+s.c:'Sv '+s.lv}</span></button>`).join('');
+  B.onclick=ev=>{const b=ev.target.closest('[data-x]');if(!b)return;sfx('tap');XM.sel=b.dataset.x;xmTip()};
+  XM.last='';const loop=()=>{if(!XM.on)return;XM.raf=requestAnimationFrame(loop);xmFrame()};loop()}
+function closeExpandMode(){if(!XM.on)return;XM.on=false;cancelAnimationFrame(XM.raf);document.documentElement.classList.remove('xmode');
+  if(XM.g){scene.remove(XM.g);disposeTree(XM.g);XM.g=null}const ov=$('expOv');if(ov){ov.hidden=true;ov.innerHTML=''}
+  if(XM.cam){camera.position.copy(XM.cam.p);controls.target.copy(XM.cam.t);controls.update();XM.cam=null}}
+const _xv=new THREE.Vector3();
+function xmProj(x,z,r){_xv.set(x,0.07,z).project(camera);return [(_xv.x+1)/2*r.width,(1-_xv.y)/2*r.height]}
+function xmFrame(){const ov=$('expOv');if(!ov)return;const r=renderer.domElement.getBoundingClientRect();const W=r.width,H=r.height;
+  const list=xmSides();let holes='',lines='';
+  for(const {e,s} of list){const [x0,x1,z0,z1]=expArea(e);const P=[[x0,z0],[x1,z0],[x1,z1],[x0,z1]].map(([x,z])=>xmProj(x,z,r));
+    const d='M'+P.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L')+'Z';holes+=d;lines+=`<path d="${d}" class="${s.ok?'ok':'no'}"/>`;
+    const c=xmProj((x0+x1)/2,(z0+z1)/2,r);const b=ov.querySelector(`[data-x="${e.id}"]`);if(b)b.style.transform=`translate(${c[0].toFixed(1)}px,${c[1].toFixed(1)}px) translate(-50%,-50%)`;
+    if(b)b.classList.toggle('sel',XM.sel===e.id)}
+  const key=W+'|'+H+'|'+holes;if(key===XM.last)return;XM.last=key;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><path fill="#000" fill-rule="evenodd" d="M0 0H${W}V${H}H0Z${holes}"/></svg>`;
+  const url=`url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;const bl=ov.querySelector('.xmBlur');bl.style.webkitMaskImage=url;bl.style.maskImage=url;
+  const ln=ov.querySelector('.xmLines');ln.setAttribute('viewBox',`0 0 ${W} ${H}`);ln.innerHTML=lines}
+function xmTip(){const ov=$('expOv'),t=ov.querySelector('.xmTip');const e=expSide(XM.sel);if(!e){t.hidden=true;return}const s=expandState(e.id),k=expLvOf(e.id),mx=EXP_MAXS[e.id];
+  const r=expRect(e),Wm=(r.x1-r.x0).toFixed(1),Dm=(r.z1-r.z0).toFixed(1);
+  t.innerHTML=`<b>${e.name} · ${k+1}/${mx}. kademe</b><p>+2 m · masa sınırı +${EXP_CAP} · kafe ${Wm} × ${Dm} m</p>${s.ok?`<button class="btn green" type="button" id="xmBuy">${ic('coin')}${s.c} · Genişlet</button>`:`<p class="why">${ic('lock')}${s.why}</p>`}`;
+  t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{const ee=expSide(XM.sel);closeExpandMode();buyExpand(ee)}}
+// Pazardaki "Genişlet" seçimi ve dükkândaki + düğmeleri bu modu açar
+{const _rm=renderMarket;renderMarket=function(){if(UI.mkSec==='expand'){UI.mkSec=null;setTimeout(()=>{$('mkClose').click();setTimeout(openExpandMode,60)},0);return}return _rm.apply(this,arguments)}}
+expandUI=function(){if(UI.mode!=='cafe'||!S.created||S.tut!=='done'||XM.on)return;
+  for(const e of EXP_SIDES){const s=expandState(e.id);if(s.done||S.lvl<(s.lv||99))continue;const cx=(RM.x0+RM.x1)/2,cz=(RM.z0+RM.z1)/2;
+    const p=new THREE.Vector3(e.key==='x0'?RM.x0-1:e.key==='x1'?RM.x1+1:cx,1.0,e.key==='z0'?RM.z0-1:e.key==='z1'?RM.z1+1:cz);
+    place(el('expbtn_'+e.id,'act expbtn',`${ic('plus')}${e.name.split(' ')[0]}`,()=>openExpandMode()),p)}};
+{const _sm=setMode;setMode=function(m){if(XM.on&&m!=='cafe')closeExpandMode();return _sm.apply(this,arguments)}}
+{const st=document.createElement('style');st.textContent=`
+#expOv{position:absolute;inset:0;z-index:40;pointer-events:none}
+#expOv[hidden]{display:none}
+.xmBlur{position:absolute;inset:0;backdrop-filter:blur(3.5px) saturate(.75) brightness(.82);-webkit-backdrop-filter:blur(3.5px) saturate(.75) brightness(.82);mask-size:100% 100%;-webkit-mask-size:100% 100%}
+.xmLines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.xmLines path{fill:none;stroke-width:3;stroke-dasharray:9 6;stroke-linejoin:round}
+.xmLines path.ok{stroke:#fff}.xmLines path.no{stroke:#f3e3c4;opacity:.8}
+.xmHead{position:absolute;left:50%;top:calc(max(10px,var(--sat,0px)) + 2px);transform:translateX(-50%);display:flex;align-items:center;gap:6px;height:36px;padding:0 18px;white-space:nowrap;border:3px solid #5a2f12;border-radius:999px;background:linear-gradient(#fff8ea,#f5dcb4);box-shadow:inset 0 0 0 2.5px #e9964a,0 3px 0 #5a2f12;font-family:var(--font-display);font-weight:900;font-size:15px;color:#4a2a14}
+.xmHead .ic{width:20px;height:20px}
+.xmX{position:absolute;right:calc(var(--er,16px));top:calc(max(10px,var(--sat,0px)));width:42px;height:42px;border:0;padding:0;background:url(${UIIMG('btn_close')}) center/contain no-repeat;pointer-events:auto;cursor:pointer}
+.xmBtns{position:absolute;inset:0}
+.xmPlus{position:absolute;left:0;top:0;pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;padding:0;cursor:pointer;animation:xmBob 1.6s ease-in-out infinite}
+.xmPlus i{position:relative;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 40% 35%,#9be07a,#4fae3c);border:3.5px solid #2f6b22;box-shadow:0 3px 0 #2f6b22,0 0 0 4px rgba(255,255,255,.75),0 6px 14px rgba(0,0,0,.3)}
+.xmPlus i.pl::before,.xmPlus i.pl::after{content:'';position:absolute;left:50%;top:50%;width:20px;height:6px;border-radius:3px;background:#fff;transform:translate(-50%,-50%);box-shadow:0 1px 0 rgba(0,0,0,.2)}.xmPlus i.pl::after{width:6px;height:20px}.xmPlus i .ic{width:22px;height:22px}.xmPlus.sel i{box-shadow:0 3px 0 #2f6b22,0 0 0 5px #ffd24a,0 6px 14px rgba(0,0,0,.3)}
+.xmPlus span{display:flex;align-items:center;gap:3px;padding:1px 8px;font-size:12px!important;border:2.5px solid #5a2f12;border-radius:999px;background:#fff8ea;font-family:var(--font-display);font-weight:900;font-size:13px;color:#4a2a14;box-shadow:0 2px 0 #5a2f12}
+.xmPlus span .ic{width:15px;height:15px}
+.xmPlus.lock i{background:radial-gradient(circle at 40% 35%,#efe2c8,#c9b28a);border-color:#7a5a36;box-shadow:0 3px 0 #7a5a36,0 0 0 4px rgba(255,255,255,.6)}
+.xmPlus.lock i .ic{filter:none;opacity:.8}
+.xmPlus:active i{transform:scale(.92)}
+@keyframes xmBob{0%,100%{margin-top:0}50%{margin-top:-4px}}
+.xmTip{position:absolute;right:calc(var(--er,16px));bottom:calc(10px + var(--sab,0px));pointer-events:auto;width:250px;padding:10px 12px;border:3px solid #5a2f12;border-radius:16px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 4px 0 #5a2f12,0 8px 16px rgba(40,20,5,.3);font-family:var(--font-display);color:#4a2a14;text-align:center}
+.xmTip[hidden]{display:none}
+.xmTip b{font-size:14px;font-weight:900}.xmTip p{margin:4px 0 8px;font-size:11.5px;font-weight:800;color:#7a4e2c}
+.xmTip p.why{display:flex;align-items:center;justify-content:center;gap:4px;margin:6px 0 2px;color:#b23b33}.xmTip p.why .ic{width:16px;height:16px}
+.xmTip .btn{width:100%;height:36px;font-size:14px}
+html.xmode .y2prof,html.xmode .y2money,html.xmode .y2left,html.xmode .y2signs,html.xmode .y2sun,html.xmode .y2day,html.xmode .y2open,html.xmode .y2kes,html.xmode #autoBtn,html.xmode .nav,html.xmode #ui{visibility:hidden!important}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
