@@ -7081,10 +7081,10 @@ function mkPickHTML(){const cards=[
   {id:'clothes',name:'Kıyafet',sub:'Önlük, şapka, takım',cls:'pink',art:mkClArt()},
   {id:'expand',name:'Genişlet',sub:'Kafeni büyüt',cls:'mint',art:MK_EXP_SVG}];
   return `<div class="mkAwn" aria-hidden="true"></div><img class="mkCat" src="${UIIMG('cat_peek')}" alt=""><div class="mkSecT">${uiIc('i_paw','mkPaw')}Ne almak istersin?${uiIc('i_paw','mkPaw')}</div>
-  <div class="mkSecRow">${cards.map(c=>`<button class="mkSecB ${c.cls}" type="button" data-sec="${c.id}" aria-label="${c.name}"><span class="mkArt">${c.art}</span><b>${c.name}</b><small>${c.sub}</small></button>`).join('')}</div><button class="mkSecX" type="button" aria-label="Kapat"></button>`}
+  <div class="mkSecRow">${cards.map(c=>`<button class="mkSecB ${c.cls}" type="button" data-sec="${c.id}" aria-label="${c.name}"><b>${c.name}</b></button>`).join('')}</div><button class="mkSecX" type="button" aria-label="Kapat"></button>`}
 {const st=document.createElement('style');st.textContent=`
 .mkSecX{display:none}
-html.land #market.choose{left:calc(50*var(--vw) - min(300px,50*var(--vw) - 16px))!important;right:auto!important;width:min(600px,calc(100*var(--vw) - 32px))!important;height:218px!important;bottom:8px!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:none!important;overflow:visible!important;display:block!important}
+html.land #market.choose{left:calc(50*var(--vw) - min(300px,50*var(--vw) - 16px))!important;right:auto!important;width:min(600px,calc(100*var(--vw) - 32px))!important;height:150px!important;bottom:8px!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:none!important;overflow:visible!important;display:block!important}
 html.land #market.choose>:not(.mkSec){display:none!important}
 html.land #market.choose .mkSec{display:block;position:absolute;inset:0;background:none!important;border-radius:0}
 /* tente */
@@ -7093,7 +7093,7 @@ html.land .mkAwn{position:absolute;left:-8px;right:-8px;top:18px;height:40px;z-i
 html.land .mkAwn::after{content:'';position:absolute;left:0;right:0;top:100%;height:15px;background:radial-gradient(circle at 17px 0,#f39a9a 15.5px,#5a2f12 16px,#5a2f12 18px,transparent 18.5px) 0 0/68px 19px repeat-x,radial-gradient(circle at 51px 0,#fff3de 15.5px,#5a2f12 16px,#5a2f12 18px,transparent 18.5px) 0 0/68px 19px repeat-x;height:19px}
 html.land .mkAwn::before{content:'';position:absolute;left:-6px;right:-6px;top:-9px;height:12px;border-radius:8px;background:linear-gradient(#c98447,#9a5f2c);border:3px solid #5a2f12}
 /* tezgâh gövdesi */
-html.land #market.choose .mkSecRow{position:absolute;left:0;right:0;top:56px;bottom:0;z-index:1;display:flex;justify-content:center;align-items:center;gap:12px;padding:18px 14px 12px;box-sizing:border-box;flex-wrap:nowrap;
+html.land #market.choose .mkSecRow{position:absolute;left:0;right:0;top:56px;bottom:0;z-index:1;display:flex;justify-content:center;align-items:center;gap:12px;padding:20px 14px 12px;box-sizing:border-box;flex-wrap:nowrap;
   border:3px solid #5a2f12;border-top:0;border-radius:0 0 24px 24px;background:linear-gradient(#d9924f,#b8763a);box-shadow:inset 0 -5px 0 rgba(0,0,0,.12),0 4px 0 #5a2f12,0 10px 18px rgba(40,20,5,.35)}
 html.land .mkSecT{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:8px;height:34px;padding:0 16px;white-space:nowrap;border:3px solid #5a2f12;border-radius:999px;
   background:linear-gradient(#fff8ea,#f5dcb4);box-shadow:inset 0 0 0 2.5px #e9964a,0 3px 0 #5a2f12;font-family:var(--font-display);font-weight:900;font-size:15px;color:#4a2a14}
@@ -7101,8 +7101,8 @@ html.land .mkSecT .mkPaw{width:16px;height:16px;opacity:.8}
 html.land .mkCat{position:absolute;left:50%;top:-50px;width:70px;transform:translateX(-50%);z-index:3;pointer-events:none}
 html.land #market.choose .mkSecX{display:block;position:absolute;right:-18px;top:2px;z-index:5;width:38px;height:38px;border:0;padding:0;background:url(${UIIMG('btn_close')}) center/contain no-repeat;cursor:pointer}
 /* kartlar */
-html.land #market.choose .mkSecB{position:relative;flex:1 1 0;max-width:176px;height:124px;padding:6px 6px 8px;border:3px solid #5a2f12;border-image:none;border-radius:18px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 3px 0 #5a2f12;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:1px;font-family:var(--font-display);color:#4a2a14;cursor:pointer;overflow:visible}
+html.land #market.choose .mkSecB{position:relative;flex:1 1 0;max-width:176px;height:58px;padding:0 8px;border:3px solid #5a2f12;border-image:none;border-radius:18px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 3px 0 #5a2f12;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:var(--font-display);color:#4a2a14;cursor:pointer;overflow:visible}
 html.land #market.choose .mkSecB .mkArt{position:absolute;left:50%;top:-20px;transform:translateX(-50%);width:96px;height:82px;display:grid;place-items:center;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible}
 html.land #market.choose .mkSecB .mkArt>img{width:92px;height:82px;object-fit:contain;filter:drop-shadow(0 3px 2px rgba(60,30,10,.25))}
 html.land #market.choose .mkSecB .mkArt>svg{width:84px;height:64px;filter:drop-shadow(0 3px 2px rgba(60,30,10,.2))}
@@ -7118,6 +7118,7 @@ html.land:has(#market.open) .y2kes,html.land:has(#market.open) #autoBtn,html.lan
 html.land #market.choose .mkSecB::after{content:'';position:absolute;inset:5px 5px auto;height:44px;border-radius:13px;background:radial-gradient(ellipse at 50% 100%,rgba(233,150,74,.22),transparent 70%);pointer-events:none}
 html.land #market.choose .mkSecB:active{transform:translateY(2px);box-shadow:0 1px 0 #5a2f12}
 `;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`html.land #market.choose .mkSecB::after{display:none}html.land #market.choose .mkSecB b{font-size:15px;padding:8px 0}`;document.head.appendChild(st)}
 
 // ================= KIYAFET DOLABI =================
 // Yapı Pazarı → Kıyafet: solda seçili çalışanın 3B modeli (döndürülebilir), sağda kıyafetler.
