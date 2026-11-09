@@ -1782,7 +1782,7 @@ function enqueue(name,run){jobs.push({name,run})}
 // ================= BARİSTALAR: kategoriye göre hazırlık =================
 // Tezgah arkası iki bölgeye ayrılır: S (sol: kahve+çay) ve G (sağ: tatlı+yemek). Bir bölgede aynı anda tek barista çalışır,
 // teslim noktası da kilitlidir. Böylece iki barista asla aynı yerde durmaz.
-const equipFactor=r=>S.equip[EQUIP_OF[r.station]]>1?CONFIG.equipFactor:1;
+const equipFactor=r=>{const l=S.equip[EQUIP_OF[r.station]]|0;return l>=4?0.6:l===3?0.72:l===2?0.85:1};   // ekipman kademesi: 2→%15, 3→%28, 4→%40 daha hızlı
 const _w3=new THREE.Vector3();
 const cupTop=m=>m.visible?_w3.set(m.position.x,m.position.y+0.1,m.position.z).clone():null;
 const zoneOf=r=>r.station==='coffee'||r.station==='tea'?'L':'R';
@@ -5439,7 +5439,7 @@ let EV_NOTE=[];
     if(S.ev!==EVMODE){S.ev=EVMODE;S.created=false;S.setupOffered=true;S.tut='done';S.tr='done';S.guideSeen=true;S.cafeName=E.cafe;S.wall=E.wall;S.floor=E.floor;S.owned[E.wall]=true;S.owned[E.floor]=true;
       S.lastSeen=Date.now();S.dayStart=0;S.evNew=true;
       // yeni etkinlik kafesi ilk kareden boş dükkân olarak açılır (varsayılan kafe bir an bile görünmez)
-      S.furniture=[];S.giftTable=false;S.tut='b_counter';S.build={hired:{}};S.closed=true;S.equip={espresso:1,kettle:1,vitrine:1,oven:0}}
+      S.furniture=[];S.giftTable=false;S.tut='b_counter';S.build={hired:{}};S.closed=true;S.equip={espresso:1,kettle:1,vitrine:1,oven:1}}
     for(const r of RECIPES)if(r.def)S.recipes[r.id]=true;S.evs={};S.br={};
     // seviye, XP ve elmas ana kafeyle ortak: her açılışta ana kayıttan alınır
     if(S.evl==null){S.evl=S.created?Math.max(1,S.lvl|0):1;S.evx=S.created?(S.xp|0):0}
@@ -5966,7 +5966,7 @@ const BUILD_ORDER=['b_counter','b_cash','b_table','b_barista','b_cashier','b_wai
 const BUILD_ROLE={b_barista:'barista',b_cashier:'cashier',b_waiter:'waiter'};
 const buildOn=()=>typeof S.tut==='string'&&S.tut.startsWith('b_');
 let BSHOWN='';
-function buildStart(){delete S.evNew;delete S.evHi;S.tut='b_counter';S.build={hired:{}};S.closed=true;S.equip={espresso:1,kettle:1,vitrine:1,oven:0};
+function buildStart(){delete S.evNew;delete S.evHi;S.tut='b_counter';S.build={hired:{}};S.closed=true;S.equip={espresso:1,kettle:1,vitrine:1,oven:1};
   for(const f of S.furniture.slice())if(!f.stored){try{despawnFurn(f.uid)}catch(e){}}S.furniture=[];S.giftTable=false;
   for(const k in EQUIP_GRP)setEquip(k,S.equip[k]|0);try{refreshWorld()}catch(e){}markDirty();saveNow();buildVis();buildStep()}
 // tezgâh / kasa / çalışanlar adım gelene kadar görünmez
@@ -7441,6 +7441,63 @@ const KF_COL=['#f2a6a0','#9fd06a','#86b8d8','#f2c46b','#c9a6e0','#f5b98a'];
 .kfL{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:800;opacity:.8}.kfL .ic{width:14px;height:14px}
 .kfCard .btn{width:100%;height:36px;font-size:14px}
 .kfMore{display:flex;justify-content:center}
+`;document.head.appendChild(st)}
+
+// ================= EKİPMAN YÜKSELTME =================
+// Ekipmanlar marketten kalktı: dördü de (espresso, semaver, vitrin, fırın) oyunun başından tezgâhta, 1. kademede.
+// Tezgâha dokununca üstünde "Yükselt" düğmesi çıkar; düğme ekipman penceresini açar. Her ekipman 3 kez yükseltilir (kademe 2–4),
+// her kademe o istasyonun hazırlık süresini kısaltır (p10 equipFactor: %15 / %28 / %40).
+const EQ_SLOTS=[
+  {id:'espresso',st:'Kahveler',names:['Espresso makinesi','Bakır espresso makinesi','Usta espresso makinesi','Altın espresso makinesi']},
+  {id:'kettle',st:'Çay ve sıcak içecekler',names:['Çay ocağı','Bakır semaver','Usta semaver','Altın semaver']},
+  {id:'vitrine',st:'Tatlılar',names:['Tatlı vitrini','Pembe pasta vitrini','Işıklı pasta vitrini','Altın pasta vitrini']},
+  {id:'oven',st:'Ana yemekler ve kruvasan',names:['Fırın','Taş fırın','Usta taş fırın','Altın fırın']}];
+const EQ_COST=[0,0,150,450,1100],EQ_LV=[0,0,3,6,10],EQ_FAST=[0,0,15,28,40],EQ_MAX=4;
+const eqLv=k=>Math.max(1,Math.min(EQ_MAX,S.equip[k]|0));
+function eqNext(k){const l=eqLv(k);if(l>=EQ_MAX)return {done:true};const n=l+1,c=EQ_COST[n],lv=EQ_LV[n];
+  if(S.lvl<lv)return {ok:false,why:`Seviye ${lv} gerekli`,c,lv,n};if(S.coins<c)return {ok:false,why:'Altın yetmiyor',c,lv,n};return {ok:true,c,lv,n}}
+function eqUpgrade(k){const s=eqNext(k);if(!s.ok){sfx('nope');return}addCoins(-s.c,'equip');S.equip[k]=s.n;setEquip(k,s.n);try{bump('equip')}catch(e){}markDirty();saveNow();sfx('levelup');
+  const E=EQ_SLOTS.find(e=>e.id===k);toast(`<b>${E.names[s.n-1]}</b><br>${E.st} %${EQ_FAST[s.n]} daha hızlı hazırlanıyor`,ic('up'),3000);renderEquipWin()}
+function openEquipWin(){const w=skWin('eqWin','Ekipmanlar','cat_hammer');UI.eqW=w;renderEquipWin()}
+function renderEquipWin(){const w=UI.eqW;if(!w||w.m.hidden)return;
+  w.body.innerHTML=`<div class="eqWrap"><p class="eqNote">Her yükseltme o makinenin ürünlerini daha hızlı hazırlatır. Her ekipman 3 kez yükseltilebilir.</p><div class="eqList">${EQ_SLOTS.map(E=>{const l=eqLv(E.id),s=eqNext(E.id);
+    return `<div class="eqRow"><div class="eqTx"><b>${E.names[l-1]}</b><small>${E.st}${l>1?` · <em>%${EQ_FAST[l]} daha hızlı</em>`:''}</small>
+      <span class="eqPips">${[2,3,4].map(i=>`<i class="${l>=i?'on':''}"></i>`).join('')}<span>${l-1}/3 yükseltme</span></span></div>
+      ${s.done?`<span class="eqMax">${ic('check')}En üst kademe</span>`:`<div class="eqBuy"><button class="btn ${s.ok?'green':''}" type="button" data-eq="${E.id}" ${s.ok?'':'disabled'}>${ic('up')}${ic('coin')}${s.c}</button><small>${s.ok?`→ ${E.names[s.n-1]} · %${EQ_FAST[s.n]}`:s.why}</small></div>`}</div>`}).join('')}</div></div>`;
+  w.body.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>eqUpgrade(b.dataset.eq))}
+// tüm kayıtlarda dört makine en az 1. kademe
+{const _as=applyState;applyState=function(){try{S.equip=S.equip||{};for(const E of EQ_SLOTS)S.equip[E.id]=Math.max(1,S.equip[E.id]|0)}catch(e){}return _as.apply(this,arguments)}}
+// marketten Ekipman sekmesi kalkar
+MK_SECS.decor=MK_SECS.decor.filter(t=>t!=='equip');
+// tezgâha dokununca "Yükselt" düğmesi
+const EQB={t:0,until:0};
+{const cv=renderer.domElement;let st=null;
+  cv.addEventListener('pointerdown',e=>{if(UI.mode==='cafe'&&!UI.modal)st={x:e.clientX,y:e.clientY,t:performance.now()}});
+  cv.addEventListener('pointerup',e=>{const s=st;st=null;if(!s||UI.mode!=='cafe'||UI.modal||!KG||!S.created||S.tut!=='done')return;if(Math.hypot(e.clientX-s.x,e.clientY-s.y)>10||performance.now()-s.t>600)return;
+    const r=cv.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1),camera);
+    const h=raycaster.intersectObject(KG,true).filter(x=>{let o=x.object;while(o){if(o.visible===false)return false;o=o.parent}return true});
+    if(h.length){EQB.until=performance.now()+6000;sfx('tap')}else EQB.until=0})}
+function equipUI(){const on=EQB.until>performance.now()&&UI.mode==='cafe'&&!UI.modal;const key='eqUp';
+  if(!on){const e=els.get(key);if(e){e.remove();els.delete(key)}return}
+  const p=new THREE.Vector3();if(KG){const b=new THREE.Box3().setFromObject(KG);b.getCenter(p);p.y=b.max.y+0.35}
+  place(el(key,'act eqUp',`${ic('up')}Yükselt`,()=>{EQB.until=0;openEquipWin()}),p)}
+{const _f=fxUI;fxUI=function(){const r=_f.apply(this,arguments);try{equipUI()}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent=`
+.eqNote{margin:0 0 8px;font-size:12px;font-weight:800;color:#7a4e2c;text-align:center}
+.eqWrap{grid-column:1/-1;width:100%}.eqList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.eqRow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2.5px solid var(--ink);border-radius:14px;background:var(--paper);box-shadow:0 2px 0 var(--ink)}
+.eqTx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.eqTx b{font-family:var(--font-display);font-weight:900;font-size:15px;line-height:1.1}
+.eqTx small{font-size:11.5px;font-weight:800;color:#7a4e2c}.eqTx em{font-style:normal;color:#2f7a2a}
+.eqPips{display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;color:#8a6a4a}
+.eqPips i{width:16px;height:8px;border-radius:4px;background:#efe2c8;border:2px solid var(--ink)}.eqPips i.on{background:#f6c043}
+.eqPips span{margin-left:4px}
+.eqBuy{display:flex;flex-direction:column;align-items:center;gap:3px;width:118px;flex:none}
+.eqBuy .btn{width:100%;height:36px;display:flex;align-items:center;justify-content:center;gap:4px;font-size:14px}
+.eqBuy .btn .ic{width:17px;height:17px}
+.eqBuy small{font-size:10.5px;font-weight:800;text-align:center;line-height:1.15;color:#7a4e2c}
+.eqMax{display:flex;align-items:center;gap:4px;font-weight:900;font-size:12.5px;color:#2f7a2a;width:118px;justify-content:center;flex:none}.eqMax .ic{width:18px;height:18px}
+.act.eqUp{background:#fff3c4;font-weight:900;display:flex;align-items:center;gap:4px}
 `;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
