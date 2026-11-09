@@ -6722,6 +6722,55 @@ html.land .nav button.navbig>span:not(.ic){font-size:8.5px!important;max-width:4
 html.land .nav button>.ic{margin-top:-5px!important}
 `;document.head.appendChild(st)}
 
+// ================= YATAY ANA EKRAN: tutarlı ölçü sistemi (V85) =================
+// Kenar boşluğu 10px; yazılar en az 10px; sol ve sağ köşeler ekrana göre simetrik; profil içeriği kutunun krem alanında ortalı.
+{const st=document.createElement('style');st.textContent=`
+html.land{--ed:10px;--side:148px}
+/* profil kutusu: 210x65; portre deliği ve krem alan ölçüleri görselden */
+html.land .y2prof{left:var(--ed)!important;top:calc(max(var(--ed),var(--sat)))!important;width:210px!important;height:65px!important}
+html.land .y2prof .por{left:6.4%!important;top:22.5%!important;width:19.8%!important;height:auto!important}
+html.land .y2prof .tx{left:30%!important;right:8%!important;top:27%!important;bottom:15%!important;height:auto!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:4px!important}
+html.land .y2prof .nm{font-size:14px!important;line-height:1.05!important;text-align:center!important;max-width:100%;padding:0!important}
+html.land .y2prof .lv{width:88%;display:flex;align-items:center;justify-content:center}
+html.land .y2prof .star{width:22px!important;height:22px!important}
+html.land .y2prof .star #lvlBadge{font-size:11px!important}
+html.land .y2prof .xpbar{height:11px!important}
+/* AÇIK: profilin sağında, profilin dikey ortasında */
+html.land .y2open{left:calc(var(--ed) + 218px)!important;top:calc(max(var(--ed),var(--sat)) + 17px)!important}
+html.land .y2open .shoptop{height:32px;font-size:13px}
+/* Duyurular (yuvarlak) + Görevler: profilin altında, profille aynı sol kenarda */
+html.land .y2left{left:var(--ed)!important;top:calc(max(var(--ed),var(--sat)) + 73px)!important;gap:8px!important}
+html.land #mailBtn.y2pb{width:38px!important;height:38px!important}
+html.land #mailBtn.y2pb>img.ic2{width:25px!important;height:25px!important}
+html.land #dailyBtn.y2pb{width:124px!important;height:38px!important;font-size:14px!important;padding-left:38px!important}
+html.land #dailyBtn.y2pb>img.ic2{width:30px!important;height:30px!important;left:5px!important}
+/* sağ üst: altın ve elmas */
+html.land .y2money{right:var(--ed)!important;left:auto!important;top:calc(max(var(--ed),var(--sat)))!important;width:var(--side)!important;gap:6px!important}
+html.land .y2money .pill{height:32px!important;padding:0 4px 0 6px!important}
+html.land .y2money .pill .ic{width:22px!important;height:22px!important}
+html.land .y2money .pill #coins,html.land .y2money .pill #gems{font-size:15px!important}
+html.land .y2money .plus{width:23px!important;height:23px!important}
+/* sağ sütun tabelalar: para kutularının altında, kutuların ortasına hizalı */
+html.land .y2signs{right:calc(var(--ed) + (var(--side) - 52px)/2)!important;top:calc(max(var(--ed),var(--sat)) + 76px)!important;gap:4px!important}
+html.land .y2s{width:52px!important;height:52px!important;padding:12px 0 5px!important;font-size:10px!important}
+html.land .y2s>img.ic2{width:23px!important;height:23px!important}
+/* alt sıra: gün kutusu sol kenarda, Otomatik sağ kenarda (ekrana göre simetrik), menü tam ortada */
+html.land .y2day{left:var(--ed)!important;right:auto!important;bottom:calc(var(--ed) + 6px + var(--sab))!important;width:var(--side)!important}
+html.land .y2day #dayPill{width:var(--side)!important;height:38px!important;font-size:14px!important;padding:0 10px 0 34px!important;justify-content:center!important}
+html.land .y2day .dic{width:28px!important;height:28px!important;left:6px!important}
+html.land #autoBtn{left:auto!important;right:var(--ed)!important;bottom:calc(var(--ed) + 6px + var(--sab))!important;width:var(--side)!important;height:38px!important;font-size:12.5px!important;padding:0 8px 0 5px!important;justify-content:center!important;gap:4px!important;white-space:nowrap}
+html.land #autoBtn .ic{width:26px!important;height:26px!important;flex:none}
+html.land .nav{width:min(470px,calc(100*var(--vw) - 2*(var(--ed) + var(--side) + 10px)))!important;height:62px!important;bottom:calc(var(--ed) + var(--sab))!important;border-width:0 30px!important;padding:0 2px!important;justify-content:space-evenly!important}
+html.land .nav button{width:58px!important;height:58px!important}
+html.land .nav button>.ic{width:26px!important;height:26px!important;margin-top:-3px!important}
+html.land .nav button>span:not(.ic){font-size:10px!important;max-width:46px;line-height:1.05}
+html.land .nav button.navbig{width:70px!important;height:70px!important;margin:-14px 0 0!important}
+html.land .nav button.navbig>.ic{width:32px!important;height:32px!important}
+html.land .nav button.navbig>span:not(.ic){font-size:10.5px!important;max-width:56px}
+html.land .nav button.navbig::before{top:-26px!important;width:50px!important;height:34px!important}
+html.land #game .bottom{bottom:calc(var(--ed) + 84px + var(--sab))!important}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
