@@ -432,7 +432,7 @@ function obst(minX,maxX,minZ,maxZ){OBST.push({minX,maxX,minZ,maxZ})}
 
 // ---------- KAFE: ZEMİN ----------
 const floorStrips=[];let floor=null;
-const rug=box(4.3,0.024,3.3,M.pink,1.35,0.012,1.35,{shadow:false,round:0.01});rug.castShadow=false;const rugIn=box(3.8,0.028,2.8,M.cream,1.35,0.014,1.35,{shadow:false,round:0.01});rugIn.castShadow=false;   // dikdörtgen halı: dört masanın altında
+const rug=box(4.3,0.024,3.3,M.pink,1.35,0.012,1.35,{shadow:false,round:0.01});rug.castShadow=false;rug.visible=false;/* başlangıç halısı kaldırıldı: oyuncu Dekor'dan kilim ekleyebilir */const rugIn=box(3.8,0.028,2.8,M.cream,1.35,0.014,1.35,{shadow:false,round:0.01});rugIn.castShadow=false;rugIn.visible=false;   // dikdörtgen halı: dört masanın altında
 // ---------- DUVARLAR (arka: -z, sol: -x) — gerçek pencere ve kapı boşluklu, zemine kadar iner ----------
 const WIN={x:1.6,y:1.5,w:2.0,h:1.2}, DOOR={z:1.8,w:1.2,h:2.3}, SIDEL={z:0.55,y:1.2,w:0.44,h:1.2};
 function archHole(path,cx,cy,w,h){path.moveTo(cx-w/2,cy-h/2);path.lineTo(cx+w/2,cy-h/2);path.lineTo(cx+w/2,cy+h/2);path.absarc(cx,cy+h/2,w/2,0,Math.PI,false);path.lineTo(cx-w/2,cy-h/2);return path}
@@ -1093,7 +1093,7 @@ const CATALOG=[
  {id:'d_plant',kind:'decor',name:'Küçük bitki',price:15,lvl:1,half:[0.22,0.22],desc:'Toprak saksıda minik yeşillik.'},
  {id:'p_posa',kind:'walldecor',name:'Poşa tablosu',price:20,lvl:1,desc:'Siyah-beyaz Poşa’nın portresi.'},
  {id:'d_flower',kind:'decor',name:'Çiçek saksısı',price:20,lvl:2,half:[0.2,0.2],desc:'Pembe ve sarı çiçekler.'},
- {id:'d_rug',kind:'decor',name:'Desenli kilim',price:25,lvl:2,half:[0.8,0.55],flat:true,rot:true,desc:'Üzerinden yürünebilir; masa altına da serilir.'},
+ {id:'d_rug',kind:'decor',name:'Desenli kilim',price:25,lvl:1,half:[0.8,0.55],flat:true,rot:true,desc:'Üzerinden yürünebilir; masa altına da serilir.'},
  {id:'p_yosun',kind:'walldecor',name:'Yosun tablosu',price:25,lvl:2,desc:'Tekir başlı Yosun’un portresi.'},
  {id:'d_shelf',kind:'walldecor',name:'Duvar rafı',price:30,lvl:3,desc:'Fincanlar ve minik bir bitki.'},
  {id:'p_cup',kind:'walldecor',name:'Kahve fincanı tablosu',price:25,lvl:3,desc:'Buharı tüten fincan resmi.'},
