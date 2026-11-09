@@ -6834,6 +6834,22 @@ html.land .nav button.navbig>span:not(.ic){font-size:11px!important;max-width:58
   if(EVMODE)k.style.display='none';
   // Ziyaret tabelası kaldırıldı: arkadaş kafeleri Keşfet'in içinde
   const wb=$('worldBtn');if(wb)wb.remove()})();
+// ---- V88: telefon dikey tutulup döndürüldüğünde sanal ekranın sağ kenarı telefonun alt kenarıdır (yuvarlak köşe + ana ekran çizgisi):
+// sağdaki öğeler o kenardan daha içeride durur. Menü daireleri büyüdü, yazılar daireye sığar.
+{const st=document.createElement('style');st.textContent=`
+html.land{--er:var(--ed)}
+html.rot{--er:calc(var(--ed) + 22px)}
+html.land .y2money{right:var(--er)!important}
+html.land .y2sun{right:calc(var(--er) + var(--mw) + 8px)!important}
+html.land .y2signs{right:var(--er)!important}
+html.land #autoBtn{right:var(--er)!important}
+html.land .y2open{right:calc(var(--er) + (var(--side) - 66px)/2)!important}
+html.land .nav{left:calc(50% + (var(--ed) - var(--er))/2)!important;width:min(500px,calc(100*var(--vw) - var(--ed) - var(--er) - 2*(var(--side) + 12px)))!important}
+html.land .nav button{width:60px!important;height:60px!important}
+html.land .nav button>span:not(.ic){font-size:10px!important;max-width:46px;letter-spacing:-.2px}
+html.land .nav button.navbig{width:74px!important;height:74px!important}
+html.land .nav button.navbig>span:not(.ic){font-size:10.5px!important;max-width:54px;letter-spacing:-.2px}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
