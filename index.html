@@ -4078,6 +4078,8 @@ function acceptCall(c){if(!c||DLV.call!==c||DLV.active)return false;const miss=s
   for(const r of c.items){const u=stockUse(r);const o={id:'D'+(++orderSeq),customer:null,delivery:d,table:null,seat:null,item:r,price:priceOf(r),qual:u.q,cost:u.c,state:'WAITING_FOR_PREPARATION',paid:false,mesh:null,slot:-1,pickupQueued:true,submitQueued:true};orders.push(o);d.orders.push(o);baristaQ.push(o)}
   sfx('order');courierSay('Siparişi hazırlayın!');toast(`<b>Paket sipariş alındı</b><br>${c.items.length} ürün · ${c.who}`,ic('box'),2400);bump('dlvAccepted')}
 // ---------- paketleme + teslimat ----------
+// kapının hemen dışı (motor kapının yanında park eder; kaldırımın uzak ucuna gidip geri dönmesin)
+function doorOutPt(){try{return wallPt(OP.door.wall,OP.door.t,-0.85)}catch(e){return OUTSIDE}}
 async function courierRun(d){const ch=COURIER.ch;COURIER.busy=true;d.state='PACK';
   const k=await claimSpot('pick',COURIER);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);
   // ürünler kraft kutuya girer
@@ -4088,12 +4090,16 @@ async function courierRun(d){const ch=COURIER.ch;COURIER.busy=true;d.state='PACK
   for(const o of d.orders){if(o.slot>=0){slotUsed[o.slot]=null;o.slot=-1}if(o.mesh){const m=o.mesh,f=m.position.clone(),s0=m.scale.clone();await tween(0.3,u=>{m.position.lerpVectors(f,at,u);m.position.y+=Math.sin(u*Math.PI)*0.08;m.scale.copy(s0).multiplyScalar(1-0.9*u)});scene.remove(m);o.mesh=null}o.state='PACKED'}
   sfx('clink');await ch.doFor('Idle_12',0.35);const tray=ch.tray;tray.visible=false;ch.carry=tray;await sleep(0.4);tray.visible=true;tray.add(bx);bx.position.set(0,tray.userData.top,0);bx.rotation.set(0,0,0);
   freeSpot('pick',COURIER);d.state='TRIP';courierSay('Yola çıkıyorum!',1.8);
-  await ch.walkTo(DOOR_IN.x,DOOR_IN.z);sfx('door');await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});
+  await ch.walkTo(DOOR_IN.x,DOOR_IN.z);sfx('door');{const q=doorOutPt();await ch.walkTo(q.x,q.z,{direct:true})}
   // paket motorun arka kutusuna konur, kurye motora biner ve sokaktan uzaklaşır
-  tray.remove(bx);ch.carry=null;tray.visible=false;
+  // kapının önünden doğrudan motorun yanına yürür (oda içi yol bulma kullanılmaz: geri dönüp kapıdan geçmesin), paketi arka kutuya koyar
+  {const sd=scootSide();await ch.walkTo(sd.x,sd.z,{direct:true});const g=SCOOT.g;await ch.faceTo(g.position.x,g.position.z);
+   const wp=new THREE.Vector3();bx.getWorldPosition(wp);tray.remove(bx);scene.add(bx);bx.position.copy(wp);ch.carry=null;tray.visible=false;
+   const to=new THREE.Vector3();SCOOT.box.getWorldPosition(to);to.y+=0.1;const f=wp.clone();sfx('place');
+   await tween(0.45,u=>{bx.position.lerpVectors(f,to,u);bx.position.y+=Math.sin(u*Math.PI)*0.25;bx.scale.setScalar(1-0.6*u)});scene.remove(bx)}
   d.tripT=dRnd(CONFIG.dlv.trip)+d.items.length*3+16;d.tripTotal=d.tripT;let riding=true;(async()=>{while(riding){await sleep(0.25);d.tripT=Math.max(0,d.tripT-0.25)}})();
   await rideOut(ch);while(d.tripT>8)await sleep(0.25);d.state='BACK';await rideBack(ch);riding=false;d.tripT=0;
-  await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});dlvPay(d,new THREE.Vector3(DOOR_IN.x+0.4,1.3,DOOR_IN.z));
+  {const q=doorOutPt();await ch.walkTo(q.x,q.z,{direct:true})}await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});dlvPay(d,new THREE.Vector3(DOOR_IN.x+0.4,1.3,DOOR_IN.z));
   await ch.walkTo(COURIER_IDLE.x,COURIER_IDLE.z);await ch.face(COURIER_YAW);DLV.active=null;DLV.cd=dRnd(CONFIG.dlv.gap)/dlvRate();COURIER.busy=false}
 function dlvPay(d,p){if(d.paid)return;d.paid=true;for(const o of d.orders){o.paid=true;o.state='COMPLETED'}addCoins(d.total,'dlv');for(const o of d.orders)finEv('sold:'+o.item.id,1);finEv('dlv',1);finEv('cogs',d.orders.reduce((a,o)=>a+(o.cost||0),0));floatCoin(d.total,p);sfx('register');
   const tip=Math.random()<0.35?2+Math.floor(d.total*0.1):0;if(tip)setTimeout(()=>{addCoins(tip,'tip');sfx('tip');floatCoin(tip,p.clone().add(new THREE.Vector3(0,0.25,0)),true)},450);
@@ -4393,7 +4399,7 @@ async function drive(pts){const g=SCOOT.g;sfx('door');for(const p of pts){while(
       const st=Math.min(d,SCOOT.speed*0.05);g.position.x+=dx/d*st;g.position.z+=dz/d*st;g.position.y=(Math.abs(g.position.x)>RING.s1.x+0.1||Math.abs(g.position.z)>RING.s1.z+0.1)?-0.3:-0.15;
       g.position.y+=Math.sin(gameT*30)*0.004;scootRider();await sleep(0.05)}}}
 function scootSide(){const g=SCOOT.g,y=g.rotation.y,c=Math.cos(y),s=Math.sin(y);return {x:g.position.x+0.45*c-0.1*s,z:g.position.z-0.45*s-0.1*c}}
-async function rideOut(ch){const g=SCOOT.g;const sd=scootSide();await ch.walkTo(sd.x,sd.z);await ch.faceTo(g.position.x+Math.sin(g.rotation.y),g.position.z+Math.cos(g.rotation.y));mount(ch);await sleep(0.4);await drive(SCOOT.route);g.visible=false;ch.o.visible=false}
+async function rideOut(ch){const g=SCOOT.g;const sd=scootSide();if(Math.hypot(ch.pos.x-sd.x,ch.pos.z-sd.z)>0.08)await ch.walkTo(sd.x,sd.z,{direct:true});await ch.faceTo(g.position.x+Math.sin(g.rotation.y),g.position.z+Math.cos(g.rotation.y));mount(ch);await sleep(0.4);await drive(SCOOT.route);g.visible=false;ch.o.visible=false}
 async function rideBack(ch){const g=SCOOT.g;g.visible=true;ch.o.visible=true;{const R=SCOOT.route,L=R[R.length-1],P=R[R.length-2];g.position.set(L.x,-0.3,L.z);g.rotation.y=Math.atan2(P.x-L.x,P.z-L.z)}scootRider();
   await drive([...SCOOT.route.slice(0,-1).reverse(),SCOOT.parkIn||{x:SCOOT.park.x,z:SCOOT.park.z-0.6},{x:SCOOT.park.x,z:SCOOT.park.z}]);
   // park: yüzü yine sokağa dönük
@@ -4665,7 +4671,8 @@ function buildDoor(x0,dz,dw,dh){const W=dw/2-0.005;DOORA.x0=x0;DOORA.dz=dz;
 {const _oc=capStart();buildDoor(-ROOM_W/2,DOOR.z,DOOR.w,DOOR.h);capEnd('door',_oc)}
 function doorTick(dt){if(!DOORA.leaves.length)return;const P=[];for(const c of customers)if(c.char)P.push(c.char.pos);for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)P.push(k.ch.pos);
   if(COURIER&&COURIER.ch.o.visible)P.push(COURIER.ch.pos);if(typeof SUPC!=='undefined'&&SUPC)P.push(SUPC.ch.pos);
-  let near=false;for(const p of P){if(Math.abs(p.z-DOORA.dz)<1.0&&p.x>DOORA.x0-1.5&&p.x<DOORA.x0+1.25){near=true;break}}
+  let near=false;const dw=(typeof OP!=='undefined'&&OP.door)?OP.door.wall:'left',dt0=(typeof OP!=='undefined'&&OP.door)?OP.door.t:DOORA.dz;   // kapı taşınmış / duvar genişlemiş olabilir: gerçek konuma göre
+  for(const p of P){const along=dw==='left'?p.z-dt0:p.x-dt0,perp=dw==='left'?p.x-RM.x0:p.z-RM.z0;if(Math.abs(along)<1.0&&perp>-1.5&&perp<1.25){near=true;break}}
   const was=DOORA.want;DOORA.want=near?1:0;if(DOORA.want&&!was&&DOORA.a<0.05)try{sfx('door')}catch(e){}
   const sp=DOORA.want?3.2:1.6;DOORA.a+=Math.sign(DOORA.want-DOORA.a)*Math.min(Math.abs(DOORA.want-DOORA.a),sp*dt);
   const e=DOORA.a<0.5?2*DOORA.a*DOORA.a:1-Math.pow(-2*DOORA.a+2,2)/2;const ang=e*1.45;
