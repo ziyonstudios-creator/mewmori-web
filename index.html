@@ -7540,6 +7540,54 @@ html.land #merge.skin .info .box .btn{margin-top:4px}
 html.land #merge.skin .info .skhow{display:none!important}
 `;document.head.appendChild(st)}
 
+// ================= MAĞAZA: altın ve elmas (+ düğmeleri) =================
+// Altın sekmesi: elmasla altın alınır (oyun içi, çalışır). Elmas sekmesi: gerçek para paketleri (tasarım; ödeme sistemi bağlanınca açılır).
+const SHOP_GOLD=[{n:500,g:10,tag:''},{n:1500,g:28,tag:'%7 avantaj'},{n:5000,g:85,tag:'%15 avantaj'},{n:15000,g:240,tag:'En iyi değer'}];
+const SHOP_GEM=[{n:80,p:'₺29,99',b:0},{n:500,p:'₺149,99',b:10},{n:1200,p:'₺299,99',b:20,tag:'En popüler'},{n:2600,p:'₺599,99',b:30},{n:6500,p:'₺1.299,99',b:40,tag:'En iyi değer'}];
+function openShop(tab){const w=skWin('shopWin','Mağaza','cat_bowl');UI.shopW=w;UI.shopTab=tab||UI.shopTab||'gold';renderShop()}
+function shopCoins(n){const k=n>=15000?4:n>=5000?3:n>=1500?2:1;return `<span class="shCoins k${k}">${Array.from({length:k},(_,i)=>`<i style="--i:${i}"></i>`).join('')}</span>`}
+function shopGems(n){const k=n>=6500?5:n>=2600?4:n>=1200?3:n>=500?2:1;return `<span class="shGems k${k}">${Array.from({length:k},(_,i)=>`<i style="--i:${i}"></i>`).join('')}</span>`}
+function renderShop(){const w=UI.shopW;if(!w||w.m.hidden)return;const t=UI.shopTab;
+  w.body.innerHTML=`<div class="shWrap"><div class="shTabs"><button type="button" data-st="gold" aria-pressed="${t==='gold'}"><i class="shI coin"></i>Altın</button><button type="button" data-st="gem" aria-pressed="${t==='gem'}"><i class="shI gem"></i>Elmas</button>
+    <span class="shBal"><i class="shI coin"></i>${S.coins}<i class="shI gem"></i>${S.gems}</span></div>
+    ${t==='gold'?`<div class="shRow">${SHOP_GOLD.map((o,i)=>`<div class="shCard${o.tag==='En iyi değer'?' best':''}">${o.tag?`<span class="shTag">${o.tag}</span>`:''}<div class="shArt gold">${shopCoins(o.n)}</div><b>${o.n.toLocaleString('tr-TR')}</b><small>altın</small>
+        <button class="btn green" type="button" data-bg="${i}" ${S.gems>=o.g?'':'disabled'}><i class="shI gem"></i>${o.g}</button></div>`).join('')}</div><p class="shNote">Altını elmasla alırsın. Elmas seviye atlayınca, görevlerde ve hediyelerde kazanılır.</p>`
+    :`<div class="shRow">${SHOP_GEM.map((o,i)=>`<div class="shCard gemc${o.tag?' best':''}">${o.tag?`<span class="shTag">${o.tag}</span>`:''}<div class="shArt gem">${shopGems(o.n)}</div><b>${o.n.toLocaleString('tr-TR')}</b><small>${o.b?`elmas · <em>+%${o.b} bonus</em>`:'elmas'}</small>
+        <button class="btn" type="button" data-bm="${i}">${o.p}</button></div>`).join('')}</div><p class="shNote">Gerçek parayla satın alma yakında açılacak.</p>`}</div>`;
+  w.body.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{UI.shopTab=b.dataset.st;sfx('tap');renderShop()});
+  w.body.querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>{const o=SHOP_GOLD[+b.dataset.bg];if(S.gems<o.g){sfx('nope');return}S.gems-=o.g;hudGems();addCoins(o.n,'shop');sfx('coin');markDirty();saveNow();
+    toast(`<b>+${o.n.toLocaleString('tr-TR')} altın</b><br>${o.g} elmas harcandı`,ic('coin'),2200);renderShop()});
+  w.body.querySelectorAll('[data-bm]').forEach(b=>b.onclick=()=>{sfx('tap');toast('<b>Yakında!</b><br>Elmas satın alma ödeme sistemi bağlanınca açılacak.',ic('gem'),2600)})}
+// HUD + düğmeleri mağazayı açar
+{const bind=(pid,tab)=>{const p=$(pid);const b=p&&p.querySelector('.plus');if(b)b.onclick=e=>{e.stopPropagation();sfx('tap');openShop(tab)}};bind('coinPill','gold');bind('gemPill','gem')}
+{const st=document.createElement('style');st.textContent=`
+.shWrap{grid-column:1/-1;width:100%;display:flex;flex-direction:column;gap:10px}
+.shTabs{display:flex;align-items:center;gap:8px}
+.shTabs button{height:36px;padding:0 16px;display:flex;align-items:center;gap:6px;border:2.5px solid #5a2f12;border-radius:12px;background:linear-gradient(#fffaf0,#f5e2c2);box-shadow:0 2px 0 #5a2f12;font-family:var(--font-display);font-weight:900;font-size:14px;color:#4a2a14;cursor:pointer}
+.shTabs button[aria-pressed=true]{background:linear-gradient(#ffe590,#f6c043);box-shadow:0 2px 0 #5a2f12,0 0 0 3px #fff3b0}
+.shBal{margin-left:auto;display:flex;align-items:center;gap:5px;font-family:var(--font-display);font-weight:900;font-size:14px;color:#4a2a14;padding:4px 12px;border-radius:999px;background:#fff6e0;border:2.5px solid #5a2f12}
+.shBal .shI.gem{margin-left:8px}
+.shI{display:inline-block;width:18px;height:18px;flex:none;background:center/contain no-repeat}.shI.coin{background-image:url(${UIIMG('i_coin')})}.shI.gem{background-image:url(${UIIMG('i_gem')})}
+.shRow{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px}
+.shCard{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 8px 10px;border:3px solid #5a2f12;border-radius:16px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 3px 0 #5a2f12;font-family:var(--font-display);color:#4a2a14}
+.shCard.best{background:linear-gradient(#fff6d6,#f9dfa0);border-color:#c98a1a}
+.shCard.gemc.best{background:linear-gradient(#fdeef6,#f6cfe2);border-color:#b8547e}
+.shTag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:2px 9px;border-radius:999px;background:#e2574c;color:#fff;font-size:10px;font-weight:900;border:2px solid #5a2f12}
+.shArt{height:62px;width:100%;display:grid;place-items:center}
+.shCoins,.shGems{position:relative;width:70px;height:56px}
+.shCoins i,.shGems i{position:absolute;width:30px;height:30px;background:center/contain no-repeat;filter:drop-shadow(0 2px 1px rgba(60,30,10,.3))}
+.shCoins i{background-image:url(${UIIMG('i_coin')})}.shGems i{background-image:url(${UIIMG('i_gem')})}
+.k1 i{left:20px;top:13px;width:34px;height:34px}
+.k2 i:nth-child(1){left:8px;top:16px}.k2 i:nth-child(2){left:30px;top:8px}
+.k3 i:nth-child(1){left:2px;top:20px}.k3 i:nth-child(2){left:20px;top:6px}.k3 i:nth-child(3){left:38px;top:20px}
+.k4 i:nth-child(1){left:0;top:22px}.k4 i:nth-child(2){left:14px;top:4px}.k4 i:nth-child(3){left:30px;top:22px}.k4 i:nth-child(4){left:42px;top:6px}
+.k5 i:nth-child(1){left:0;top:24px}.k5 i:nth-child(2){left:12px;top:4px}.k5 i:nth-child(3){left:24px;top:22px}.k5 i:nth-child(4){left:38px;top:6px}.k5 i:nth-child(5){left:42px;top:26px}
+.shCard b{font-size:19px;font-weight:900;line-height:1}
+.shCard small{font-size:11px;font-weight:800;color:#7a4e2c}.shCard small em{font-style:normal;color:#2f7a2a}
+.shCard .btn{margin-top:6px;width:100%;height:34px;display:flex;align-items:center;justify-content:center;gap:4px;font-size:14px}
+.shNote{margin:0;text-align:center;font-size:11.5px;font-weight:800;color:#7a4e2c}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
