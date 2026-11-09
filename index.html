@@ -2847,7 +2847,7 @@ function renderEnergy(){const E=energyNow(),MX=energyMax();$('enTxt').textConten
   $('enNext').textContent=E.v>=MX?'Enerji dolu':`+1 enerji: ${fmtT(E.next)} · ${CONFIG.energy.regenSec>=60?CONFIG.energy.regenSec/60+' dakikada':CONFIG.energy.regenSec+' saniyede'} 1`;renderTarget()}
 function refreshCell(i,anim){const c=board.querySelector(`[data-c="${i}"]`);if(!c)return;c.innerHTML=cellHTML(i);c.classList.toggle('sel',UI.mgSel===i);if(anim){const it=c.querySelector('.it');it&&it.classList.add(anim)}}
 function renderInfo(){const box=$('mgInfo');const i=UI.mgSel;const id=i!=null?S.board[i]:null;
-  if(!id){box.innerHTML=`<span class="mi">${UI_IC.merge}</span><div class="tx"><b>Nasıl oynanır?</b>Torbaya dokun, malzeme çıksın. Aynı iki malzemeyi sürükleyip üst üste bırak. Farklı malzemeler de birleşip tarif keşfettirebilir — Tarif Defteri’ne bak.</div>`;return}
+  if(!id){box.innerHTML=`<span class="mi">${UI_IC.merge}</span><div class="tx"><b>Nasıl oynanır?</b>Torbaya dokun, malzeme çıksın. Aynı iki malzemeyi üst üste bırak; farklılar da tarif keşfettirebilir.</div>`;return}
   const it=ITEMS[id];let t='';
   if(it.fam==='bag'){const b=bagState(it.bag);t=`<b>${it.name}</b>${it.bag==='food'?'Un, yumurta, şeker, çilek, peynir, süt':'Kahve, çay yaprağı, süt, kakao, limon'} üretir. Her dokunuş ${CONFIG.energy.cost} enerji. ${b.cool?`Dinleniyor: ${fmtT(b.cool)}.`:`${b.left} üretim kaldı; ${CONFIG.bag.limit}. üretimden sonra ${CONFIG.bag.cooldownSec/60} dk dinlenir.`}${S.target?` Hedef tarifin malzemeleri daha sık çıkar.`:''}`;box.innerHTML=`<span class="mi">${itemArt(id)}</span><div class="tx">${t}</div>${b.cool?`<button class="btn light" type="button" id="mgRec">${ic('clock')}Hızlandır</button>`:''}`;if($('mgRec'))$('mgRec').onclick=()=>openRecover('bag',it.bag);return}
   if(it.chain)t=`<b>${it.name}</b>Seviye ${it.lv}/${it.max}. ${it.next?`İki tane birleştir → ${S.items[it.next]?ITEMS[it.next].name:'?'}`:'Zincirin en üst seviyesi.'}`;else t=`<b>${it.name}</b>Özel birleşim.`;
@@ -6195,25 +6195,25 @@ openHire=function(only){let m=$('skHire');if(!m){m=document.createElement('div')
 #merge.skin .energy .ebar small{font-size:10.5px;color:#6b4426;text-align:center;opacity:1;width:auto!important;margin:0!important;padding:0!important;text-indent:0}
 #merge.skin .energy .ebar{min-width:0;padding:0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important;border-image:none!important}
 #merge.skin .enplus{border:0;box-shadow:none;background:url(${UIIMG('i_plus')}) center/contain no-repeat;width:38px;height:38px}#merge.skin .enplus>*{display:none}
-#merge.skin .energy .xpbar{height:18px!important;min-height:18px;flex:none;border:0;border-radius:0;background:none;border-image:url(${UIIMG('bar_track')}) 0 40 fill/0 8px stretch;overflow:visible;padding:4px 5px!important;box-sizing:border-box!important;display:block}
-#merge.skin .energy .xpbar i{display:block;height:10px!important;background:none;border-image:url(${UIIMG('bar_fill')}) 0 30 fill/0 5px stretch;min-width:10px;transition:width .3s}
+#merge.skin .energy .xpbar{height:18px!important;min-height:18px;flex:none;border:2.5px solid #5a2f12!important;border-radius:999px!important;background:#fff6e6!important;border-image:none!important;overflow:hidden!important;padding:2px!important;box-sizing:border-box!important;display:block;box-shadow:inset 0 2px 0 rgba(90,47,18,.12)}
+#merge.skin .energy .xpbar i{display:block;height:100%!important;border-radius:999px;border-image:none!important;background:linear-gradient(#a9df5c,#7cc243 55%,#62a62e)!important;box-shadow:inset 0 2px 0 rgba(255,255,255,.45);min-width:8px;transition:width .3s}
 #merge.skin .mgtarget{width:100%;border:0;box-shadow:none;background:none;border-image:url(${UIIMG('card')}) 56 fill/14px stretch;padding:6px 8px}
 #merge.skin .mgtarget>.ic{background:url(${UIIMG('i_target')}) center/contain no-repeat}#merge.skin .mgtarget>.ic>*{display:none}
 #merge.skin .mgtarget .btn{border:0;box-shadow:none;background:none;border-image:url(${UIIMG('pill_gold')}) 0 100 fill/0 16px stretch;font-family:var(--font-display);font-weight:900;color:#5a2f12;padding:6px 16px}
 #merge.skin .board-wrap{padding:4px 0}
-#merge.skin .board{--cell:min(calc((100vw - 104px)/6),64px);border-width:24px;border-image:url(${UIIMG('tray')}) 92 fill/24px stretch;filter:drop-shadow(0 4px 6px rgba(60,30,10,.35));gap:4px;padding:2px}
+#merge.skin .board{--cell:max(34px,min(calc((100vw - 104px)/6),64px,calc((100dvh - var(--sat,0px) - var(--sab,0px) - var(--navh,60px) - 470px)/6)));border-width:24px;border-image:url(${UIIMG('tray')}) 92 fill/24px stretch;filter:drop-shadow(0 4px 6px rgba(60,30,10,.35));gap:4px;padding:2px}
 #merge.skin .cell{background-image:url(${UIIMG('c_empty')});border-radius:10px}
 #merge.skin .cell.hl{background-image:url(${UIIMG('c_match')})}
 #merge.skin .cell.sel{background-image:url(${UIIMG('c_sel')})}
 #merge.skin .cell.lock{background-image:url(${UIIMG('c_lock')})}
-#merge.skin .info{padding:0;margin:6px 0 6px}
+#merge.skin .info{padding:0;margin:4px 0 4px}
 #merge.skin .info .box{border:0;box-shadow:none;background:none;border-image:url(${UIIMG('card')}) 56 fill/14px stretch;padding:8px 10px;position:relative}
 #merge.skin .info .box .mi{width:46px;height:46px}
 #merge.skin .info .box .mi>svg{display:none}#merge.skin .info .box>span.mi:first-child:not(:has(img)){background:url(${UIIMG('i_spoon')}) center/contain no-repeat}
 #merge.skin .info .box .btn{border:0;box-shadow:none;background:none;border-image:url(${UIIMG('pill_green')}) 0 64 fill/0 16px stretch;color:#fff;text-shadow:0 1px 0 #3d6b14;font-family:var(--font-display);font-weight:900}
 #merge.skin .info .box .btn.light{border-image-source:url(${UIIMG('pill_cream')});color:#4a2a14;text-shadow:none}
 #merge.skin .skhow{position:absolute;right:-6px;bottom:-8px;width:56px;height:auto;pointer-events:none;transform:rotate(6deg)}
-#merge.skin .info .box.how .tx{padding-right:44px}
+#merge.skin .info .box.how .tx{padding-right:40px;font-size:11px;line-height:1.25}#merge.skin .info .box{min-height:0!important;padding:6px 8px!important}#merge.skin .info .box .tx b{font-size:14px}#merge.skin .info .box .mi{width:38px!important;height:38px!important}#merge.skin .skhow{width:46px}
 `;document.head.appendChild(st)}
 (function skMergeShell(){const mg=$('merge');if(!mg)return;mg.classList.add('skin');const sc=mg.querySelector('.scroll');
   const w=document.createElement('div');w.className='skwin';w.innerHTML=`<div class="skhead">${uiIc('cat_hammer','skcat')}<div class="skplaque"><h2>Birleştir</h2></div><button class="skclose" type="button" aria-label="Kapat"></button></div>`;
