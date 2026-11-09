@@ -6668,6 +6668,21 @@ function y2Tick(){const n=$('y2Name');if(n)n.textContent=typeof cafeName==='func
   const ic=$('y2DayIc'),dp=$('dayPill');if(ic&&dp){const t=dp.textContent||'';const k=/Gece/.test(t)?'y_moon':/Akşam|İkindi/.test(t)?'y_dusk':'y_sun';const u=UIIMG(k);if(!ic.src.endsWith(u))ic.src=u}}
 setInterval(()=>{try{y2Tick()}catch(e){}},2000);
 setTimeout(()=>{for(const n of ['y_prof','y_pill','y_sign','y_beam','y_bar','y_btn','y_heart','y_badge','y_tasks','y_mega','y_gear','y_sun','y_dusk','y_moon'])new Image().src=UIIMG(n)},300);
+// ---- düzeltmeler (V82): isim ortada, para sağ üstte, tabelalar sağda alt alta, Duyurular yalnız simge, gün/otomatik menüyle hizalı ----
+{const st=document.createElement('style');st.textContent=`
+.y2prof .tx{left:31%!important;right:9%!important;top:22%!important;bottom:auto!important;height:auto!important;justify-content:flex-start!important;gap:4px!important;align-items:stretch}.y2prof .nm{flex:none;line-height:1.15!important;font-size:13px!important}.y2prof .lv{flex:none}.y2prof .nm{text-align:center;padding:0}
+.y2money{left:auto!important;right:10px;top:calc(max(6px,var(--sat)))!important;width:112px}
+.y2signs{right:10px!important;top:calc(max(6px,var(--sat)) + 66px)!important;flex-direction:column;gap:4px;padding:0!important}
+.y2signs::before{display:none}
+.y2s{width:54px;height:54px;font-size:9px}
+.y2s>img.ic2{width:24px;height:24px}
+.y2left{flex-direction:row!important;align-items:center;gap:8px!important}
+#mailBtn.y2pb{width:36px;height:36px;padding:0;background:url(${UIIMG('btn_round')}) center/100% 100% no-repeat;font-size:0;justify-content:center}
+#mailBtn.y2pb>img.ic2{position:static;transform:none;width:24px;height:24px}
+.y2day{bottom:calc(20px + var(--sab))!important;left:calc(50% - min(450px,calc(100*var(--vw) - 330px))/2 - 142px)!important;align-items:flex-end;width:134px}
+html.land #autoBtn{bottom:calc(22px + var(--sab))!important;right:auto!important;left:calc(50% + min(450px,calc(100*var(--vw) - 330px))/2 + 8px)!important}
+.y2day .shoptop{position:absolute!important;left:0;bottom:40px}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
