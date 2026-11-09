@@ -310,7 +310,7 @@ function wallPt(wall,t,off=0){return wall==='left'?{x:RM.x0+off,z:t}:{x:t,z:RM.z
 const wallIn=wall=>wall==='left'?{x:1,z:0}:{x:0,z:1};
 const wallSpan=wall=>wall==='left'?[RM.z0,RM.z1]:[RM.x0,RM.x1];
 // bahçe: açık kenarlarda (sağ x1, ön z1) iç mekânın dışında kalan, masa konabilen alan. Yürüme/yerleştirme sınırı RM + GD.
-function gdSync(){let g={};try{g=(S&&S.garden)||{}}catch(e){}GDN.r=g.r?Math.max(0,Math.min(2,ROOM_MAX.x1-RM.x1)):0;GDN.f=g.f?Math.max(0,Math.min(2,ROOM_MAX.z1-RM.z1)):0}
+function gdSync(){let g={};try{g=(S&&S.garden)||{}}catch(e){}GDN.r=g.r?Math.max(0,ROOM_MAX.x1-RM.x1):0;GDN.f=g.f?Math.max(0,ROOM_MAX.z1-RM.z1):0}
 function roomDims(){gdSync();ROOM_W=RM.x1-RM.x0;ROOM_D=RM.z1-RM.z0;ROOM.minX=RM.x0+0.35;ROOM.maxX=RM.x1+GDN.r-0.35;ROOM.minZ=RM.z0+0.35;ROOM.maxZ=RM.z1+GDN.f-0.35}
 function disposeTree(o){o.traverse(m=>{if(m.isMesh){m.geometry&&m.geometry.dispose()}})}
 // sahnede kurulmuş parçaları bir açıklığa bağlamak için yakalama (sahne çocukları + engeller)
@@ -7214,7 +7214,7 @@ function renderCSFoot(){const need=csNeed(),f=$('csFoot');let h='';
 // Yapı Pazarı › Genişlet: menü yerine kafe hafif buğulu görünür; açılabilecek alanlar keskin ve yeşil kalır,
 // her alanın ortasında + düğmesi. + → küçük onay balonu → Genişlet.
 // Kural: duvarlı kenarlar (sol, arka) sınıra kadar 2 kademe; açık kenarlar (sağ, ön) iç mekân olarak yalnız 1 kademe.
-const EXP_MAXS={l:2,b:2,r:1,f:1};
+const EXP_MAXS={l:2,b:2,r:0,f:0};   // sağ ve ön iç mekân olarak büyümez: oralar bahçe
 expandState=function(id){const k=expLvOf(id),n=expandN();if(k>=(EXP_MAXS[id]??EXP_MAX))return {done:true};const lv=EXP_LV[n],c=EXP_COST[n];
   if(S.lvl<lv)return {ok:false,why:`Seviye ${lv} gerekli`,lv,c};if(S.coins<c)return {ok:false,why:'Altın yetmiyor',lv,c};return {ok:true,lv,c}};
 const XM={on:false,g:null,raf:0,sel:null,cam:null,last:''};
@@ -7296,9 +7296,8 @@ html.xmode .y2prof,html.xmode .y2money,html.xmode .y2left,html.xmode .y2signs,ht
 const GARDEN={r:{name:'Sağ bahçe',lv:7,c:2500},f:{name:'Ön bahçe',lv:7,c:2500}};
 function gardenState(side){const g=S.garden||{};if(g[side])return {done:true};
   const room=side==='r'?ROOM_MAX.x1-RM.x1:ROOM_MAX.z1-RM.z1;if(room<1.9)return {done:true};
-  if(expLvOf(side)<(EXP_MAXS[side]||1))return {done:true,wait:true};
   const G=GARDEN[side];if(S.lvl<G.lv)return {ok:false,why:`Seviye ${G.lv} gerekli`,lv:G.lv,c:G.c};if(S.coins<G.c)return {ok:false,why:'Altın yetmiyor',lv:G.lv,c:G.c};return {ok:true,lv:G.lv,c:G.c}}
-function gardenArea(side){if(side==='r')return [RM.x1,RM.x1+2,RM.z0,RM.z1+GDN.f];return [RM.x0,RM.x1+GDN.r,RM.z1,RM.z1+2]}
+function gardenArea(side){if(side==='r')return [RM.x1,ROOM_MAX.x1,RM.z0,RM.z1+GDN.f];return [RM.x0,RM.x1+GDN.r,RM.z1,ROOM_MAX.z1]}
 function buyGarden(side){const s=gardenState(side);if(!s.ok){sfx('nope');return false}
   addCoins(-s.c,'decor');S.garden={...(S.garden||{}),[side]:1};setRoom({x0:RM.x0,x1:RM.x1,z0:RM.z0,z1:RM.z1});try{refreshWorld()}catch(e){}markDirty();saveNow();sfx('levelup');
   toast(`<b>${GARDEN[side].name} açıldı!</b><br>Buraya masa ve dekor koyabilirsin.`,ic('plus'),3600);return true}
@@ -7336,7 +7335,7 @@ const _expAreaBase=expArea;
 expArea=function(e){return e.garden?gardenArea(e.garden):_expAreaBase(e)};
 const _xmTipBase=xmTip;
 xmTip=function(){const id=XM.sel||'';if(id[0]!=='g')return _xmTipBase();const side=id[1],G=GARDEN[side],s=gardenState(side),ov=$('expOv'),t=ov.querySelector('.xmTip');
-  t.innerHTML=`<b>${G.name}</b><p>2 m açık hava bahçesi · masa ve dekor koyabilirsin · masalar masa sınırına sayılır</p>${s.ok?`<button class="btn green" type="button" id="xmBuy">${ic('coin')}${s.c} · Bahçeyi aç</button>`:`<p class="why">${ic('lock')}${s.why||'Şu an açılamaz'}</p>`}`;
+  t.innerHTML=`<b>${G.name}</b><p>${(side==='r'?ROOM_MAX.x1-RM.x1:ROOM_MAX.z1-RM.z1).toFixed(0)} m açık hava bahçesi · masa ve dekor koyabilirsin · masalar masa sınırına sayılır</p>${s.ok?`<button class="btn green" type="button" id="xmBuy">${ic('coin')}${s.c} · Bahçeyi aç</button>`:`<p class="why">${ic('lock')}${s.why||'Şu an açılamaz'}</p>`}`;
   t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{closeExpandMode();buyGarden(side)}};
 
 // ================= BAŞLAT =================
