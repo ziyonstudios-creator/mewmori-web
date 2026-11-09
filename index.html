@@ -6865,6 +6865,31 @@ html.land .y2rate{left:calc(var(--ed) + var(--bw)*0.765)!important;top:calc(var(
 html.land .y2rate #repPill{font-size:12.5px}
 html.land .y2rate::before{content:'';position:absolute;left:-3px;top:8%;bottom:8%;border-left:2px dashed #d9b48a}
 `;document.head.appendChild(st)}
+// ---- V90: alt sıra biraz aşağıda; profil kodla yeniden (ahşap çerçeve, büyük portre, ad + seviye, büyük puan bölmesi) ----
+{const st=document.createElement('style');st.textContent=`
+html.land .nav{bottom:calc(4px + var(--sab))!important}
+html.land .y2kes,html.land #autoBtn{bottom:calc(16px + var(--sab))!important}
+html.land .y2open{bottom:calc(60px + var(--sab))!important}
+html.land{--pw:262px;--ph:60px}
+html.land .y2prof{width:var(--pw)!important;height:var(--ph)!important;left:calc(var(--ed) + 8px)!important;top:calc(var(--top) + 2px)!important;background:none!important}
+html.land .y2prof::before{content:'';position:absolute;inset:0;border-radius:999px;background:linear-gradient(#fff9ee,#fbe6c8);border:3px solid #5a2f12;box-shadow:inset 0 0 0 3px #e9964a,inset 0 0 0 5px #fff3de,0 3px 0 #5a2f12,0 5px 8px rgba(40,20,5,.3)}
+html.land .y2prof .por{left:-8px!important;top:50%!important;transform:translateY(-50%);width:70px!important;height:70px!important;border-radius:50%;border:3px solid #5a2f12;box-shadow:inset 0 0 0 4px #e9964a,0 2px 0 #5a2f12;background:radial-gradient(circle at 50% 40%,#fff4e0,#f3d2a4)!important;box-sizing:border-box;z-index:2}
+html.land .y2prof .por img{transform:scale(1.35)!important;transform-origin:50% 12%!important}
+html.land .y2prof .tx{left:70px!important;right:78px!important;top:9px!important;bottom:9px!important;justify-content:space-between!important;gap:0!important;align-items:stretch!important}
+html.land .y2prof .nm{font-size:15px!important;text-align:left!important;color:#4a2a14!important}
+html.land .y2prof .lv{width:100%!important;justify-content:flex-start!important}
+html.land .y2prof .star{width:24px!important;height:24px!important;margin-right:-6px!important}
+html.land .y2prof .star #lvlBadge{font-size:11.5px!important}
+html.land .y2prof .xpbar{height:12px!important}
+html.land .y2rate{left:calc(var(--ed) + 8px + var(--pw) - 74px)!important;top:calc(var(--top) + 8px)!important;width:66px!important;height:calc(var(--ph) - 12px)!important;border-radius:0 999px 999px 0;
+  background:linear-gradient(#ffe08a,#f6bf3e)!important;border-left:2.5px solid #5a2f12;box-shadow:inset 0 2px 0 rgba(255,255,255,.55)}
+html.land .y2rate::before{display:none}
+html.land .y2rate #repPill{flex-direction:row!important;gap:3px!important;font-size:19px!important;color:#5a2f12!important;text-shadow:0 1px 0 #fff3c4}
+html.land .y2rate #repPill svg{width:22px!important;height:22px!important}
+html.land .y2prof>.ed,.y2prof>img.ed{display:none}
+html.land .y2left{left:calc(var(--ed) + 4px)!important;top:calc(var(--top) + 72px)!important}
+`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`html.land .y2rate #repPill svg{display:none!important}html.land .y2rate #repPill::before{content:'';width:24px;height:24px;background:url(${UIIMG('i_star')}) center/contain no-repeat;display:block}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
