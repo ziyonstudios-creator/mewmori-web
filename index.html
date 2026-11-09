@@ -6996,6 +6996,83 @@ openDaily=function(tab){const W=skWin('skDaily','Görevler','cat_bowl');let T=ta
 {const st=document.createElement('style');st.textContent=`html.land .skwin{bottom:16px!important}html.land .skwin>.napkin{bottom:-14px!important;width:76px!important;height:auto!important}`;document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent=`.skwin>.napkin{display:none!important}html.land .skwin{bottom:8px!important}`;document.head.appendChild(st)}
 
+// ================= YAPI PAZARI (yatay, referans tasarım) =================
+// Açılınca 3 bölüm seçilir: Mobilya & Dekor · Kıyafet · Genişlet. Geliştir sekmesi kaldırıldı.
+// Yatayda pazar alt şerit olur: solda tabela (kedi + "Yapı Pazarı"), ortada kategori düğmeleri, sağda kaydırılan ürün kartları.
+const MK_ALL=MK_TABS.slice();
+const MK_SECS={decor:['table','chair','wall','floor','decor','equip','store'],clothes:['clothes'],expand:['expand']};
+const MK_SEC_INFO=[{id:'decor',name:'Mobilya & Dekor',img:()=>itemThumb('t_round')},{id:'clothes',name:'Kıyafet',img:()=>UIIMG('i_chef')},{id:'expand',name:'Genişlet',img:()=>UIIMG('i_plus')}];
+function mkSecOf(tab){for(const k in MK_SECS)if(MK_SECS[k].includes(tab))return k;return null}
+{const _sm=setMode;setMode=function(m){const was=UI.mode;if(m==='market'&&was!=='market'){UI.mkSec=null;UI.mkTab0=UI.tab}return _sm.apply(this,arguments)}}
+{const _rm=renderMarket;renderMarket=function(){const mk=$('market');let ch=mk.querySelector('.mkSec');
+  if(!ch){ch=document.createElement('div');ch.className='mkSec';mk.appendChild(ch)}
+  if(!UI.mkSec&&UI.tab!==UI.mkTab0&&mkSecOf(UI.tab)){UI.mkSec=mkSecOf(UI.tab)}
+  if(!UI.mkSec){mk.classList.add('choose');ch.innerHTML=`<div class="mkSecT">Ne almak istersin?</div><div class="mkSecRow">${MK_SEC_INFO.map(s=>`<button class="mkSecB" type="button" data-sec="${s.id}"><span><img src="${s.img()}" alt=""></span><b>${s.name}</b></button>`).join('')}</div>`;
+    ch.querySelectorAll('[data-sec]').forEach(b=>b.onclick=()=>{UI.mkSec=b.dataset.sec;UI.tab=MK_SECS[UI.mkSec][0];UI.mkTab0=null;UI.sel=null;sfx('tap');renderMarket()});$('mkDetail').hidden=true;return}
+  mk.classList.remove('choose');ch.innerHTML='';
+  const ids=MK_SECS[UI.mkSec];MK_TABS.length=0;MK_TABS.push(...MK_ALL.filter(t=>ids.includes(t.id)));if(!ids.includes(UI.tab)){UI.tab=ids[0];UI.sel=null}
+  _rm();
+  // geri düğmesi (bölüm seçimine dön)
+  const tabs=$('mkTabs');if(tabs&&!tabs.querySelector('.mkBack')){const b=document.createElement('button');b.type='button';b.className='tab mkBack';b.innerHTML=`${ic('left')}Geri`;b.onclick=e=>{e.stopPropagation();revertPreview();UI.mkSec=null;UI.mkTab0=UI.tab;UI.sel=null;sfx('tap');renderMarket()};tabs.prepend(b)}
+  mkArrows()}}
+function mkArrows(){const mk=$('market'),g=$('mkGrid');if(!mk.querySelector('.mkArr')){for(const d of [-1,1]){const a=document.createElement('button');a.type='button';a.className='mkArr '+(d<0?'l':'r');a.setAttribute('aria-label',d<0?'Önceki':'Sonraki');
+    a.innerHTML=`<img src="${UIIMG('d_arrow')}" alt="">`;a.onclick=()=>{g.scrollBy({left:d*g.clientWidth*0.8,behavior:'smooth'})};mk.appendChild(a)}}
+  requestAnimationFrame(()=>{const l=mk.querySelector('.mkArr.l');if(l&&g)l.style.left=(g.offsetLeft-14)+'px'})}
+{const st=document.createElement('style');st.textContent=`
+.mkSec{display:none}
+#market.choose .mkSec{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:absolute;inset:0;z-index:3;background:var(--cream)}
+.mkSecT{font-family:var(--font-display);font-weight:900;font-size:17px;color:#4a2a14}
+.mkSecRow{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.mkSecB{width:128px;height:120px;border:0;padding:8px 6px;background:none;border-image:url(${UIIMG('card')}) 56 fill/14px stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:var(--font-display);font-weight:900;font-size:14px;color:#4a2a14}
+.mkSecB span{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#fff4e0,#f3d2a4);border:3px solid #5a2f12;box-shadow:inset 0 0 0 3px #e9964a;display:grid;place-items:center;overflow:hidden}
+.mkSecB span img{width:46px;height:46px;object-fit:contain}
+.mkSecB:active{transform:scale(.96)}
+.mkArr{display:none}
+/* ---------- yatay: alt şerit ---------- */
+html.land #market{left:16px!important;right:16px!important;top:auto!important;bottom:6px!important;width:auto!important;height:152px!important;transform:translateY(130%);border:3px solid #5a2f12!important;border-radius:26px!important;overflow:visible!important;
+  background:linear-gradient(#d9924f,#b8763a)!important;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 4px 0 #5a2f12,0 8px 16px rgba(40,20,5,.35);display:grid!important;grid-template-columns:154px minmax(0,auto) minmax(0,1fr);grid-template-rows:100%;gap:0 10px;padding:12px 44px 12px 12px;box-sizing:border-box;visibility:hidden}
+html.land #market.open{transform:none;visibility:visible}
+html.land #market .panel-head{grid-column:1;grid-row:1;position:relative;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;padding:0 0 4px;background:none;border:0}
+html.land #market .panel-head::before{content:'';position:absolute;left:4px;right:4px;bottom:0;height:62px;border-radius:999px 999px 18px 18px;background:linear-gradient(#fff3de,#f5dcb4);border:3px solid #5a2f12;box-shadow:inset 0 0 0 3px #e9964a;z-index:0}
+html.land #market .panel-head>*{position:relative;z-index:1}
+html.land #market .panel-head h2{flex:none;color:#4a2a14;text-shadow:none;font-size:17px;font-weight:900;order:2;margin-bottom:6px}
+html.land #market .panel-head #mkIc{order:1;width:36px!important;height:36px!important;background:url(${UIIMG('n_shop')}) center/contain no-repeat!important;border:0!important;box-shadow:none!important;margin-bottom:-6px}
+html.land #market .panel-head #mkIc>*{display:none}
+html.land #market .panel-head::after{content:'';position:absolute;left:-14px;top:-44px;width:84px;height:80px;background:url(${UIIMG('cat_hammer')}) center/contain no-repeat;z-index:2;pointer-events:none}
+html.land #market #mkEdit{position:absolute;right:-6px;top:-4px;order:3;font-size:11.5px;padding:4px 9px;height:auto}
+html.land #market>#mkClose{position:absolute;right:-12px;top:-16px;z-index:6;width:40px;height:40px;padding:0;border:0;box-shadow:none;background:url(${UIIMG('btn_close')}) center/contain no-repeat}
+html.land #market #mkClose>*{display:none}
+html.land #market .tabs{grid-column:2;grid-row:1;align-self:center;display:flex;flex-wrap:wrap;gap:6px;max-width:min(330px,calc(34*var(--vw)));padding:8px;margin:0;border-radius:18px;background:#9a5f2c;box-shadow:inset 0 3px 6px rgba(0,0,0,.25);overflow:visible;align-content:center}
+html.land #market .tab{width:64px;height:54px;padding:4px 2px;flex-direction:column;justify-content:center;gap:2px;border:2.5px solid #5a2f12;border-radius:14px;background:linear-gradient(#fffaf0,#f5e2c2);box-shadow:0 2px 0 #5a2f12;font-size:10.5px;font-weight:900;line-height:1;color:#4a2a14;white-space:nowrap}
+html.land #market .tab .ic{width:22px;height:22px}
+html.land #market .tab[aria-selected=true]{background:linear-gradient(#ffe590,#f6c043);box-shadow:0 2px 0 #5a2f12,0 0 0 3px #fff3b0}
+html.land #market .tab.mkBack{background:linear-gradient(#fff,#efe0c8)}
+html.land #market .grid{grid-column:3;grid-row:1;display:flex!important;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:9px;padding:2px 4px;align-items:stretch;scroll-snap-type:x mandatory;scrollbar-width:none;touch-action:pan-x}
+html.land #market .grid::-webkit-scrollbar{display:none}
+html.land #market .grid .card{flex:0 0 104px;scroll-snap-align:start;border:3px solid #5a2f12;border-radius:16px;background:linear-gradient(#fffaf0,#f7e7cd);padding:5px 6px 6px;gap:2px;box-shadow:0 3px 0 #5a2f12}
+html.land #market .grid .card .th{aspect-ratio:auto;height:66px;background:none}
+html.land #market .grid .card b{font-size:11px;min-height:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.land #market .grid .card .price{justify-content:center;font-size:14px}
+html.land #market .grid .card[aria-current=true]{border-color:#e0a10f;box-shadow:0 3px 0 #5a2f12,0 0 0 3px #ffd24a}
+html.land #market .grid .card .tag{top:4px;left:4px;font-size:10px}
+html.land #market .grid .card .own{top:4px;right:4px}
+html.land #market .grid .empty{align-self:center;font-weight:800;color:#fff3de;padding:0 10px}
+html.land .mkArr{display:block;position:absolute;top:50%;width:34px;height:34px;transform:translateY(-50%);border:0;padding:0;background:none;z-index:4;cursor:pointer}
+html.land .mkArr img{width:100%;height:100%;object-fit:contain}
+html.land .mkArr.l{transform:translateY(-50%) scaleX(-1)}
+html.land .mkArr.r{right:6px}
+html.land #market #mkDetail{position:absolute;right:150px;bottom:calc(100% + 8px);width:min(320px,calc(40*var(--vw)));max-height:calc(100*var(--vh) - 180px);overflow:auto;border:3px solid #5a2f12;border-radius:18px;background:var(--cream);box-shadow:0 4px 0 #5a2f12,0 8px 16px rgba(40,20,5,.3);z-index:5;padding:10px}
+html.land #market.choose{grid-template-columns:1fr}
+html.land #market.choose .mkSec{border-radius:22px;background:linear-gradient(#fff3de,#f5dcb4)}
+html.land #market.choose .mkSecB{width:150px;height:100px;flex-direction:row;gap:10px}
+html.land #market.choose .mkSecRow{flex-wrap:nowrap}
+html.land #market.choose .mkSecT{font-size:15px}
+html.land #market.choose .mkArr{display:none}
+`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`html.land #market .grid .card.upg{flex-basis:118px}html.land #market .grid .card.upg .th{height:44px}html.land #market .grid .card .exarea{font-size:10px;text-align:center;line-height:1.2}
+html.land #market .tab{font-size:10px}`;document.head.appendChild(st)}
+{const c=$('mkClose');if(c)$('market').appendChild(c)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
