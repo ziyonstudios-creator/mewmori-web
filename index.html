@@ -3679,7 +3679,7 @@ function tut2Tick(){const m=UI.mode;
   if(S.tr==='st1'){if(menuTab==='stock'){S.tr='st2';markDirty();t2Shown='';return}
     t2Show('st1',{title:'Malzeme stoğu',text:'Her ürün, tarifindeki malzemelerden <b>1’er birim</b> harcar: Ballı Süt satıldıkça depodaki süt azalır. Depona bakmak için <b>Stok</b> sekmesine dokun.',target:()=>document.querySelector('[data-mt="stock"]'),place:'bottom'});return}
   if(S.tr==='st2'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
-    t2Show('st2',{title:'Depon',text:'Burada her malzemenin <b>adedi</b>, <b>kalitesi</b> ve birim maliyeti var. Çubuk azalınca sarıya, bitince kırmızıya döner. <b>Bir malzeme biterse onu kullanan ürünler satılamaz</b>, müşteri başka bir şey ister ya da gider.',target:()=>document.querySelector('#menuList .sk'),place:'top',
+    t2Show('st2',{title:'Depon',text:'Burada her malzemenin <b>adedi</b>, <b>kalitesi</b> ve birim maliyeti var. Çubuk azalınca sarıya, bitince kırmızıya döner. <b>Bir malzeme biterse onu kullanan ürünler satılamaz</b>, müşteri başka bir şey ister ya da gider.',target:()=>document.querySelector('#menuList .sk,#menuList .sk2'),place:'top',
       buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st3';markDirty();t2Shown=''}}]});return}
   if(S.tr==='st3'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
     t2Show('st3',{title:'Toptancıdan sipariş',text:'<b>Sipariş ver</b> ile toptancı seçip malzeme alırsın. Ucuz toptancının kalitesi düşük, pahalı olanınki yüksek; kalite müşteri puanını etkiler. Sipariş <b>gerçek zamanlı</b> yola çıkar; toptancı kolileri kapının önüne bırakır, kurye ya da bir garson içeri taşır.',target:()=>document.querySelector('[data-sup]'),place:'bottom',
@@ -7360,6 +7360,52 @@ xmTip=function(){const id=XM.sel||'';if(id[0]!=='g')return _xmTipBase();const si
 #rbList .rcAct .rbact{margin:0;flex-direction:column;align-items:stretch;gap:3px}
 #rbList .rcAct .rbact .btn{width:100%;justify-content:center;white-space:nowrap}
 #rbList .rcAct .rbact small{text-align:center;line-height:1.15}
+`;document.head.appendChild(st)}
+
+// ================= STOK: düzenli, görselsiz =================
+// Malzemeler iki sütunlu kartlar: ad + adet (büyük sayı), doluluk çubuğu, kalite yıldızı · birim maliyet, menüde kullanım.
+// Renk durumu: yeşil yeterli, sarı azaldı, kırmızı bitti, gri menüde kullanılmıyor. Toptancı penceresinde de görseller kaldırıldı.
+renderStock=function(L){const T=stockS(),mb=menuBases(),now=nowT(),cap=CONFIG.stock.cap;
+  const rows=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a))||(stockN(a)-stockN(b))).map(k=>{const n=stockN(k),l=headLot(k),used=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]&&needsOf(r).includes(k)).length,pn=pendN(k);
+    const cls=!mb.has(k)?'off':n<1?'out':n<=CONFIG.stock.low?'low':'ok';const w=Math.min(100,n/cap*100);const au=(autoS()[k]||{}).on;
+    const tag=cls==='out'?'Bitti':cls==='low'?'Azaldı':cls==='off'?'Menüde yok':'Yeterli';
+    return `<div class="sk2 ${cls}"><div class="r1"><b>${STOCK_NAME[k]}</b>${au?'<i class="oto">OTO</i>':''}<span class="tg">${tag}</span><em>${n}<small>/${cap}</small></em></div>
+      <i class="bar"><i style="width:${w}%"></i></i>
+      <div class="r2"><span>${l?`${stars(l.q)}<span class="c">birim ${l.c}</span>`:'<span class="c">Depoda yok</span>'}</span>${pn?`<b class="pn">+${pn} yolda</b>`:''}<span class="u">${used?`${used} üründe`:'kullanılmıyor'}</span></div></div>`}).join('');
+  const pend=T.pend.map(p=>`<div class="spend2"><b>${SUP(p.sup).name}</b><span>${Object.keys(p.items).length} çeşit</span><em data-eta="${p.eta}">${p.eta<=now?'Geliyor…':fmtT(Math.ceil((p.eta-now)/1000))}</em></div>`).join('');
+  const outN=[...mb].filter(k=>stockN(k)<1).length,lowN=[...mb].filter(k=>stockN(k)>=1&&stockN(k)<=CONFIG.stock.low).length;
+  L.innerHTML=`${mtabsHTML()}<div class="skTop"><div class="skSum"><span class="d ok"></span>${[...mb].length-outN-lowN} yeterli<span class="d low"></span>${lowN} azaldı<span class="d out"></span>${outN} bitti</div>
+      <button class="btn sgo2" type="button" data-sup>${ic('market')}Sipariş ver</button><button class="btn alt sgo2" type="button" data-auto>${ic('box')}Otomatik tedarik</button></div>
+    ${T.arr.length?`<div class="spend2 hi"><b>Koliler geldi</b><span>${FETCH.on?FETCH.who+' tezgaha taşıyor':'birazdan alınacak'}</span></div>`:''}${pend?`<div class="spends2">${pend}</div>`:''}
+    <div class="sks2">${rows}</div><p class="mfoot">Her ürün tarifindeki malzemelerden 1’er birim harcar · malzeme başına depo sınırı ${cap} · önce eski stok kullanılır.</p>`;
+  L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return}
+    if(e.target.closest('[data-sup]')){openSup();return}if(e.target.closest('[data-auto]')){openAuto();return}}};
+{const st=document.createElement('style');st.textContent=`
+.skTop{display:flex;align-items:center;gap:6px;margin:0 0 8px;flex-wrap:nowrap}
+.skSum{flex:1;min-width:0;white-space:nowrap;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:900;font-family:var(--font-display);color:#4a2a14;background:#fff6e0;border:2.5px solid var(--ink);border-radius:12px;padding:7px 10px}
+.skSum .d{flex:none;width:11px;height:11px;border-radius:50%;border:2px solid var(--ink);margin-left:6px}.skSum .d:first-child{margin-left:0}
+.d.ok,.sk2.ok .bar>i{background:#7cc35a}.d.low,.sk2.low .bar>i{background:#f2b33d}.d.out{background:#e2574c}
+.sgo2{flex:none;width:auto!important;margin:0!important;height:38px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:13px;white-space:nowrap}.sgo2 svg,.sgo2 .ic{width:20px;height:20px}
+.spends2{display:flex;flex-direction:column;gap:5px;margin:0 0 8px}
+.spend2{display:flex;align-items:center;gap:8px;background:#fff6e0;border:2.5px solid var(--ink);border-radius:12px;padding:6px 10px;font-size:13px;font-weight:800}
+.spend2.hi{background:#e7f6d8;margin:0 0 8px}.spend2 span{flex:1;opacity:.8}.spend2 em{font-style:normal;font-family:var(--font-display);font-weight:900}
+.sks2{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.sk2{background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:8px 11px 7px;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 0 var(--ink)}
+.sk2 .r1{display:flex;align-items:center;gap:6px}
+.sk2 .r1 b{font-family:var(--font-display);font-weight:900;font-size:15px}
+.sk2 .r1 .oto{font-style:normal;font-size:9.5px;font-weight:900;padding:1px 6px;border-radius:999px;background:#d8ecff;border:1.5px solid #4a7ab0;color:#2c5585}
+.sk2 .r1 .tg{font-size:10px;font-weight:900;padding:2px 7px;border-radius:999px;border:1.5px solid var(--ink);background:#e7f6d8}
+.sk2.low .tg{background:#fde9b8}.sk2.out .tg{background:#f8d2cc;color:#9e2f26}.sk2.off .tg{background:#eee4d4;color:#7a6650}
+.sk2 .r1 em{margin-left:auto;font-style:normal;font-family:var(--font-display);font-weight:900;font-size:20px;line-height:1}
+.sk2 .r1 em small{font-size:11px;opacity:.55;margin-left:1px}
+.sk2.out .r1 em{color:#c8443a}
+.sk2 .bar{display:block;height:9px;border-radius:999px;background:#efe2c8;border:2px solid var(--ink);overflow:hidden}
+.sk2 .bar>i{display:block;height:100%;border-radius:999px;background:#c9b9a0}
+.sk2 .r2{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;color:#6e4a2c}
+.sk2 .r2>span:first-child{display:flex;align-items:center;gap:5px}.sk2 .r2 .stars{transform:scale(.85);transform-origin:left center}
+.sk2 .r2 .u{margin-left:auto;opacity:.75}.sk2 .r2 .pn{color:#2f7a2a}
+.sk2.off{opacity:.62}
+#supModal .ii{display:none!important}
 `;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
