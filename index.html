@@ -6960,6 +6960,39 @@ html.land .pfS{padding:5px 4px}html.land .pfS b{font-size:16px}
 html.land .pfVip{margin-top:4px;padding:7px 12px}html.land .pfVip img{width:34px;height:34px}
 html.land .avGrid{grid-template-columns:repeat(4,96px);justify-content:center;gap:12px 22px}
 #skProf .skfoot{justify-content:center}`;document.head.appendChild(st)}
+// ================= GÖREVLER: Ana / Yan / Günlük sekmeleri =================
+{const st=document.createElement('style');st.textContent=`
+#skDaily .skwin{width:min(640px,calc(100*var(--vw) - 24px))!important}
+#skDaily .sktabs{margin:6px -4px 6px}
+.skq .qrw{display:flex;align-items:center;gap:3px;font-size:11.5px;font-weight:900;color:#5a2f12;white-space:nowrap}
+.skq .qrw .uic{width:16px;height:16px}
+.skqhead{display:flex;align-items:center;justify-content:space-between;margin:2px 4px 6px;font-family:var(--font-display);font-weight:900;font-size:13px;color:#6b4426}
+.skqhead .qbar{flex:0 0 46%;height:12px;border:2px solid #5a2f12;border-radius:999px;background:#fff6e6;overflow:hidden}.skqhead .qbar i{display:block;height:100%;background:linear-gradient(#ffe08a,#f2b134)}
+`;document.head.appendChild(st)}
+openDaily=function(tab){const W=skWin('skDaily','Görevler','cat_bowl');let T=tab||UI.qTab||'main';
+  const tabs=document.createElement('div');tabs.className='sktabs';tabs.setAttribute('role','tablist');W.body.before(tabs);
+  const TB=[['main','Ana Görevler','i_target'],['side','Yan Görevler','i_sparkle'],['daily','Günlük','h_cal']];
+  const draw=()=>{UI.qTab=T;tabs.innerHTML=TB.map(([id,n,i])=>`<button class="sktab" type="button" role="tab" data-qt="${id}" aria-selected="${T===id}">${uiIc(i)}${n}${id==='daily'&&dqReady()?'<small>!</small>':''}</button>`).join('');
+    tabs.querySelectorAll('[data-qt]').forEach(b=>b.onclick=()=>{T=b.dataset.qt;sfx('tap');draw()});W.foot.innerHTML='';
+    if(T==='main'){const done=S.objDone.length,tot=OBJECTIVES.length,A=activeObjs();
+      W.body.innerHTML=`<div class="skqhead"><span>Hikâye ilerlemesi ${done}/${tot}</span><div class="qbar"><i style="width:${done/tot*100}%"></i></div></div>`+
+        (A.length?A.map(i=>{const O=OBJECTIVES[i],c=Math.min(O.n,S.stats[O.k]||0);return `<div class="skq">${uiIc('i_target')}<div class="qt"><b></b><div class="qbar"><i style="width:${c/O.n*100}%"></i></div><small>${c}/${O.n}</small></div>
+          <span class="qrw">${uiIc('i_star')}${O.xp} XP · ${uiIc('i_coin')}${O.c}</span></div>`}).join(''):`<div class="skempty">Bütün ana görevleri bitirdin!</div>`);
+      W.body.querySelectorAll('.skq .qt b').forEach((b,k)=>b.textContent=OBJECTIVES[A[k]].t);
+      W.foot.innerHTML=`<p>Ana görevler tamamlanınca ödül kendiliğinden verilir; sıradaki görev açılır.</p>`}
+    else if(T==='side'){const q=S.req;
+      W.body.innerHTML=q?`<div class="skq"><img class="uic" src="${productThumb(q.rid)}" alt=""><div class="qt"><b></b><div class="qbar"><i style="width:${Math.max(0,q.left/q.total*100)}%"></i></div><small>Kalan süre: ${Math.ceil(q.left)} sn</small></div><span class="qrw">${uiIc('i_coin')}${q.coins}</span></div>`
+        :`<div class="skempty">Şu an özel istek yok. Müşteriler ara sıra menüde olmayan bir ürün ister; buradan takip edeceksin.</div>`;
+      if(q){const b=W.body.querySelector('.qt b');b.textContent=`${q.who}: ${RECIPE[q.rid]?RECIPE[q.rid].name:''} istiyor`}
+      W.foot.innerHTML=`<p>Yan görevler süreli isteklerdir; zamanında servis edersen büyük ödül.</p>`}
+    else{const D=dqEnsure();W.body.innerHTML=D.q.map((q,i)=>{const c=Math.min(q.n,dqCount(q.id)),ok=c>=q.n,K=DQ_KIND[q.id];return `<div class="skq${q.got?' done':''}">${uiIc(K.i)}<div class="qt"><b>${K.t(q.n)}</b><div class="qbar"><i style="width:${c/q.n*100}%"></i></div><small>${c}/${q.n} · ödül ${uiIc('i_coin')}${q.r}</small></div>
+        ${q.got?uiIc('d_check'):`<button class="skbtn ${ok?'green':'cream'}" type="button" data-dq="${i}" ${ok?'':'disabled'}>${ok?'Al':'Devam'}</button>`}</div>`}).join('');
+      const all=D.q.every(q=>q.got);W.foot.innerHTML=`<p>Gün bitince yenilenir · hepsi bitince ${uiIc('i_gem')} 3 elmas</p><button class="skbtn ${all&&!D.bonus?'green':'cream'} big" type="button" id="dqBonus" ${all&&!D.bonus?'':'disabled'}>${uiIc('i_gift')}${D.bonus?'Alındı':'Günün hediyesi'}</button>`;
+      W.body.querySelectorAll('[data-dq]').forEach(b=>b.onclick=()=>{const q=D.q[+b.dataset.dq];if(q.got||dqCount(q.id)<q.n)return;q.got=true;addCoins(q.r,'daily');sfx('coin');markDirty();saveNow();draw()});
+      const bb=$('dqBonus');if(bb)bb.onclick=()=>{if(D.bonus||!D.q.every(q=>q.got))return;D.bonus=true;S.gems+=3;try{hudGems()}catch(e){}sfx('levelup');markDirty();saveNow();draw()}}};
+  draw()};
+{const b=$('dailyBtn');if(b)b.onclick=()=>{sfx('tap');openDaily()}}
+{const st=document.createElement('style');st.textContent=`#skDaily .skfoot p{padding:0 28px;font-size:12px}#skDaily .skq{padding:6px 10px;margin-bottom:6px}#skDaily .skq>.uic{width:30px;height:30px}#skDaily .skq .qt b{font-size:13.5px}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
