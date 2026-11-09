@@ -6683,6 +6683,19 @@ setTimeout(()=>{for(const n of ['y_prof','y_pill','y_sign','y_beam','y_bar','y_b
 html.land #autoBtn{bottom:calc(22px + var(--sab))!important;right:auto!important;left:calc(50% + min(450px,calc(100*var(--vw) - 330px))/2 + 8px)!important}
 .y2day .shoptop{position:absolute!important;left:0;bottom:40px}
 `;document.head.appendChild(st)}
+// ---- V83: AÇIK profilin sağında, Duyurular solda, isim biraz aşağıda, Birleştir yuvarlak + şef şapkası ----
+{const st=document.createElement('style');st.textContent=`
+.y2prof .tx{top:27%!important}
+
+.y2open{position:absolute;left:208px;top:calc(max(6px,var(--sat)) + 14px)}
+.y2open .shoptop{position:static!important;margin:0!important}
+#mailBtn.y2pb{order:-1}
+html.land .nav button.navbig{width:66px!important;height:66px!important;margin:-14px 4px 0!important;background-image:url(${UIIMG('y_btn')})!important;border-radius:50%!important;padding:9px 0 0!important;position:relative!important;overflow:visible!important}
+html.land .nav button.navbig::before{content:'';position:absolute;left:50%;top:-24px;width:46px;height:32px;transform:translateX(-50%) rotate(-6deg);background:url(${UIIMG('y_hat')}) center/contain no-repeat;pointer-events:none}
+html.land .nav button.navbig .ic{width:32px!important;height:32px!important}
+html.land .nav button.navbig span:last-child{font-size:10.5px!important;color:#b8342d!important;text-shadow:none!important}
+`;document.head.appendChild(st)}
+{const o=document.createElement('div');o.className='y2open';const y=$('y2');if(y&&$('shopBtn')){y.appendChild(o);o.appendChild($('shopBtn'))}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
