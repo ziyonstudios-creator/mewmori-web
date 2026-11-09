@@ -6993,6 +6993,7 @@ openDaily=function(tab){const W=skWin('skDaily','Görevler','cat_bowl');let T=ta
   draw()};
 {const b=$('dailyBtn');if(b)b.onclick=()=>{sfx('tap');openDaily()}}
 {const st=document.createElement('style');st.textContent=`#skDaily .skfoot p{padding:0 28px;font-size:12px}#skDaily .skq{padding:6px 10px;margin-bottom:6px}#skDaily .skq>.uic{width:30px;height:30px}#skDaily .skq .qt b{font-size:13.5px}`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`html.land .skwin{bottom:16px!important}html.land .skwin>.napkin{bottom:-14px!important;width:76px!important;height:auto!important}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
