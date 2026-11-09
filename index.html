@@ -297,6 +297,7 @@ var EVMODE=(()=>{try{const f=JSON.parse(localStorage.getItem(EV_FLAG)||'null');i
 // ================= ODA (kafe kabuğu) — değişken ölçülü, dört yöne büyür =================
 // Arka duvar (RM.z0) ve sol duvar (RM.x0) duvarlıdır; sağ (RM.x1) ve ön (RM.z1) açık kesittir. Kafe her kenardan 2 m'lik iki kademeyle büyür.
 // Kapı, kapı yanındaki cam ve büyük pencere iki duvardan istenene, istenen yere taşınabilir (OP). Zemin, duvarlar ve süpürgelikler buildShell() ile kurulur.
+var GDN={r:0,f:0};
 var SHELL={g:null,strips:true,plants:[],outer:[],base:{x0:-4.75,z0:-4,x1:4.75,z1:4}};
 const ROOM_MAX={x0:-8.75,x1:8.75,z0:-8,z1:8};                              // en büyük oda (her kenar +4 m)
 const LOT={x0:ROOM_MAX.x0-0.3,x1:ROOM_MAX.x1+0.3,z0:ROOM_MAX.z0-0.3,z1:ROOM_MAX.z1+0.3};   // genişleme arsası: içinde hiçbir şey yok
@@ -308,7 +309,9 @@ const OP_NAME={door:'Kapı',side:'Kapı yanı cam',win:'Pencere'};
 function wallPt(wall,t,off=0){return wall==='left'?{x:RM.x0+off,z:t}:{x:t,z:RM.z0+off}}
 const wallIn=wall=>wall==='left'?{x:1,z:0}:{x:0,z:1};
 const wallSpan=wall=>wall==='left'?[RM.z0,RM.z1]:[RM.x0,RM.x1];
-function roomDims(){ROOM_W=RM.x1-RM.x0;ROOM_D=RM.z1-RM.z0;ROOM.minX=RM.x0+0.35;ROOM.maxX=RM.x1-0.35;ROOM.minZ=RM.z0+0.35;ROOM.maxZ=RM.z1-0.35}
+// bahçe: açık kenarlarda (sağ x1, ön z1) iç mekânın dışında kalan, masa konabilen alan. Yürüme/yerleştirme sınırı RM + GD.
+function gdSync(){let g={};try{g=(S&&S.garden)||{}}catch(e){}GDN.r=g.r?Math.max(0,Math.min(2,ROOM_MAX.x1-RM.x1)):0;GDN.f=g.f?Math.max(0,Math.min(2,ROOM_MAX.z1-RM.z1)):0}
+function roomDims(){gdSync();ROOM_W=RM.x1-RM.x0;ROOM_D=RM.z1-RM.z0;ROOM.minX=RM.x0+0.35;ROOM.maxX=RM.x1+GDN.r-0.35;ROOM.minZ=RM.z0+0.35;ROOM.maxZ=RM.z1+GDN.f-0.35}
 function disposeTree(o){o.traverse(m=>{if(m.isMesh){m.geometry&&m.geometry.dispose()}})}
 // sahnede kurulmuş parçaları bir açıklığa bağlamak için yakalama (sahne çocukları + engeller)
 const OPCAP={door:{objs:[],obst:[]},side:{objs:[],obst:[]},corner:{objs:[],obst:[]}};
@@ -909,7 +912,7 @@ const LAMP_POOL=[];for(let i=0;i<6;i++){const pl=new THREE.PointLight(0xffd9a0,0
 // ---------- YOL BULMA (ızgara A*) — engeller: sabit + yerleştirilmiş mobilya ----------
 const CELL=0.2;let GX=Math.round(ROOM_W/CELL),GZ=Math.round(ROOM_D/CELL);const PAD=0.28;
 let grid=new Uint8Array(GX*GZ);
-function navResize(){GX=Math.round(ROOM_W/CELL);GZ=Math.round(ROOM_D/CELL);grid=new Uint8Array(GX*GZ)}
+function navResize(){GX=Math.round((ROOM_W+GDN.r)/CELL);GZ=Math.round((ROOM_D+GDN.f)/CELL);grid=new Uint8Array(GX*GZ)}
 function cellOf(x,z){return [Math.min(GX-1,Math.max(0,Math.floor((x-RM.x0)/CELL))),Math.min(GZ-1,Math.max(0,Math.floor((z-RM.z0)/CELL)))]}
 function posOf(i,k){return [(i+0.5)*CELL+RM.x0,(k+0.5)*CELL+RM.z0]}
 function makeGrid(boxes){const g=new Uint8Array(GX*GZ);for(let k=0;k<GZ;k++)for(let i=0;i<GX;i++){const [x,z]=posOf(i,k);if(x<ROOM.minX||x>ROOM.maxX||z<ROOM.minZ||z>ROOM.maxZ){g[k*GX+i]=1;continue}
@@ -1637,10 +1640,10 @@ function candidateInfo(rec){const c=CAT[rec.id];if(c.kind==='table'){const W=(c.
 function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
   if(c.kind==='walldecor'){if(rec.slot==null||rec.slot<0||rec.slot>=WALL_SLOTS.length)return 'Duvarda boş yer yok';for(const [u,R] of FURN)if(u!==exUid&&CAT[R.rec.id].kind==='walldecor'&&R.rec.slot===rec.slot)return 'Bu duvar yeri dolu';return null}
   const {boxes,points}=candidateInfo(rec);
-  const lim={minX:RM.x0+0.12,maxX:RM.x1-0.12,minZ:RM.z0+0.12,maxZ:RM.z1-0.12};
+  const lim={minX:RM.x0+0.12,maxX:RM.x1+GDN.r-0.12,minZ:RM.z0+0.12,maxZ:RM.z1+GDN.f-0.12};
   const area=boxes.length?boxes:[{minX:rec.x-c.half[0],maxX:rec.x+c.half[0],minZ:rec.z-c.half[1],maxZ:rec.z+c.half[1]}];
   if(c.flat){let [hx,hz]=c.half;if((rec.rot||0)%2)[hx,hz]=[hz,hx];const b={minX:rec.x-hx,maxX:rec.x+hx,minZ:rec.z-hz,maxZ:rec.z+hz};
-    if(b.minX<RM.x0+0.05||b.maxX>RM.x1-0.05||b.minZ<RM.z0+0.05||b.maxZ>RM.z1-0.05)return 'Kafenin içine yerleştir';
+    if(b.minX<RM.x0+0.05||b.maxX>RM.x1+GDN.r-0.05||b.minZ<RM.z0+0.05||b.maxZ>RM.z1+GDN.f-0.05)return 'Kafenin içine yerleştir';
     for(const o of OBST)if(ovl(b,o,-0.02))return 'Tezgaha ya da sabit eşyaya denk geliyor';if(ovl(b,NO_BUILD[0]))return 'Kapı girişini kapatmasın';return null}
   for(const b of area)if(b.minX<lim.minX||b.maxX>lim.maxX||b.minZ<lim.minZ||b.maxZ>lim.maxZ)return 'Kafenin içine yerleştir';
   for(const b of boxes){for(const o of OBST)if(ovl(b,o,0.04))return 'Başka bir eşyaya çarpıyor';
@@ -1676,7 +1679,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
-    staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},ev:null,evs:{},evGot:{},evClaim:{},layout:null,avatar:null,exp:null,evl:null,evx:0,evShared:false,tr:null,navMin:false,
+    staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},ev:null,evs:{},evGot:{},evClaim:{},layout:null,avatar:null,exp:null,garden:null,evl:null,evx:0,evShared:false,tr:null,navMin:false,
     objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
 let S=defaultState();
 // kayıt bozulursa (yarım yazılmış/elle değişmiş) otomatik yedekten açılır
@@ -2801,7 +2804,7 @@ function confirmPlacement(){if(!PL)return;const why=validatePlacement(PL.rec,PL.
 {let drag=null;const cv=renderer.domElement;
  cv.addEventListener('pointerdown',e=>{if(UI.mode==='place'&&PL&&CAT[PL.rec.id].kind!=='walldecor'){const p=screenToFloor(e.clientX,e.clientY);if(!p)return;drag={id:e.pointerId,ox:PL.rec.x-p.x,oz:PL.rec.z-p.z};cv.setPointerCapture(e.pointerId)}
    if(UI.mode==='edit')tapStart={x:e.clientX,y:e.clientY,t:performance.now()}});
- cv.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId||!PL)return;const p=screenToFloor(e.clientX,e.clientY);if(!p)return;PL.rec.x=snap(THREE.MathUtils.clamp(p.x+drag.ox,RM.x0,RM.x1));PL.rec.z=snap(THREE.MathUtils.clamp(p.z+drag.oz,RM.z0,RM.z1));moveGhost()});
+ cv.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId||!PL)return;const p=screenToFloor(e.clientX,e.clientY);if(!p)return;PL.rec.x=snap(THREE.MathUtils.clamp(p.x+drag.ox,RM.x0,RM.x1+GDN.r));PL.rec.z=snap(THREE.MathUtils.clamp(p.z+drag.oz,RM.z0,RM.z1+GDN.f));moveGhost()});
  const up=e=>{if(drag&&drag.id===e.pointerId)drag=null;if(UI.mode==='edit'&&tapStart&&Math.hypot(e.clientX-tapStart.x,e.clientY-tapStart.y)<10&&performance.now()-tapStart.t<600)editTap(e.clientX,e.clientY);tapStart=null};
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up)}
 let tapStart=null;
@@ -5193,7 +5196,7 @@ const gsnap=v=>Math.round(v/GRID_STEP)*GRID_STEP;
 const GRID={g:null,lines:null,foot:null,res:null,on:false,key:''};
 function gridBuild(){if(GRID.g)return;const G=new THREE.Group();G.renderOrder=5;scene.add(G);GRID.g=G;
   // çizgiler: her 25 cm ince, her metre kalın
-  const nx=Math.round(ROOM_W/GRID_STEP),nz=Math.round(ROOM_D/GRID_STEP),S=24,cv=document.createElement('canvas');cv.width=nx*S;cv.height=nz*S;const c=cv.getContext('2d');
+  const nx=Math.round((ROOM_W+GDN.r)/GRID_STEP),nz=Math.round((ROOM_D+GDN.f)/GRID_STEP),S=24,cv=document.createElement('canvas');cv.width=nx*S;cv.height=nz*S;const c=cv.getContext('2d');
   for(let i=0;i<=nx;i++){c.fillStyle=i%4===0?'rgba(255,255,255,.55)':'rgba(255,255,255,.28)';c.fillRect(i*S-(i%4===0?1.5:0.75),0,i%4===0?3:1.5,cv.height)}
   for(let k=0;k<=nz;k++){c.fillStyle=k%4===0?'rgba(255,255,255,.55)':'rgba(255,255,255,.28)';c.fillRect(0,k*S-(k%4===0?1.5:0.75),cv.width,k%4===0?3:1.5)}
   const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=4;
@@ -7261,7 +7264,7 @@ expandUI=function(){if(UI.mode!=='cafe'||!S.created||S.tut!=='done'||XM.on)retur
 {const st=document.createElement('style');st.textContent=`
 #expOv{position:absolute;inset:0;z-index:40;pointer-events:none}
 #expOv[hidden]{display:none}
-.xmBlur{position:absolute;inset:0;backdrop-filter:blur(3.5px) saturate(.75) brightness(.82);-webkit-backdrop-filter:blur(3.5px) saturate(.75) brightness(.82);mask-size:100% 100%;-webkit-mask-size:100% 100%}
+.xmBlur{display:none!important;position:absolute;inset:0;backdrop-filter:blur(3.5px) saturate(.75) brightness(.82);-webkit-backdrop-filter:blur(3.5px) saturate(.75) brightness(.82);mask-size:100% 100%;-webkit-mask-size:100% 100%}
 .xmLines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .xmLines path{fill:none;stroke-width:3;stroke-dasharray:9 6;stroke-linejoin:round}
 .xmLines path.ok{stroke:#fff}.xmLines path.no{stroke:#f3e3c4;opacity:.8}
@@ -7283,8 +7286,58 @@ expandUI=function(){if(UI.mode!=='cafe'||!S.created||S.tut!=='done'||XM.on)retur
 .xmTip b{font-size:14px;font-weight:900}.xmTip p{margin:4px 0 8px;font-size:11.5px;font-weight:800;color:#7a4e2c}
 .xmTip p.why{display:flex;align-items:center;justify-content:center;gap:4px;margin:6px 0 2px;color:#b23b33}.xmTip p.why .ic{width:16px;height:16px}
 .xmTip .btn{width:100%;height:36px;font-size:14px}
-html.xmode .y2prof,html.xmode .y2money,html.xmode .y2left,html.xmode .y2signs,html.xmode .y2sun,html.xmode .y2day,html.xmode .y2open,html.xmode .y2kes,html.xmode #autoBtn,html.xmode .nav,html.xmode #ui{visibility:hidden!important}
+html.xmode .y2prof,html.xmode .y2money,html.xmode .y2left,html.xmode .y2signs,html.xmode .y2sun,html.xmode .y2day,html.xmode .y2open,html.xmode .y2kes,html.xmode #autoBtn,html.xmode .nav,html.xmode #ui,html.xmode .y2rate,html.xmode #game .bottom,html.xmode .toast,html.xmode #toasts{visibility:hidden!important}
 `;document.head.appendChild(st)}
+
+// ================= BAHÇE =================
+// Açık kenarlarda (sağ, ön) iç mekân 1 kademe büyüdükten sonra geri kalan 2 m bahçe olarak parayla açılır.
+// Bahçe kafeyle birlikte büyümez: zemini çim + taş döşeme, dış kenarında alçak çit. Oyuncu buraya masa ve dekor koyabilir;
+// masalar genel masa sınırına sayılır. Yürüme/yerleştirme sınırı RM + GD (p0_room).
+const GARDEN={r:{name:'Sağ bahçe',lv:7,c:2500},f:{name:'Ön bahçe',lv:7,c:2500}};
+function gardenState(side){const g=S.garden||{};if(g[side])return {done:true};
+  const room=side==='r'?ROOM_MAX.x1-RM.x1:ROOM_MAX.z1-RM.z1;if(room<1.9)return {done:true};
+  if(expLvOf(side)<(EXP_MAXS[side]||1))return {done:true,wait:true};
+  const G=GARDEN[side];if(S.lvl<G.lv)return {ok:false,why:`Seviye ${G.lv} gerekli`,lv:G.lv,c:G.c};if(S.coins<G.c)return {ok:false,why:'Altın yetmiyor',lv:G.lv,c:G.c};return {ok:true,lv:G.lv,c:G.c}}
+function gardenArea(side){if(side==='r')return [RM.x1,RM.x1+2,RM.z0,RM.z1+GDN.f];return [RM.x0,RM.x1+GDN.r,RM.z1,RM.z1+2]}
+function buyGarden(side){const s=gardenState(side);if(!s.ok){sfx('nope');return false}
+  addCoins(-s.c,'decor');S.garden={...(S.garden||{}),[side]:1};setRoom({x0:RM.x0,x1:RM.x1,z0:RM.z0,z1:RM.z1});try{refreshWorld()}catch(e){}markDirty();saveNow();sfx('levelup');
+  toast(`<b>${GARDEN[side].name} açıldı!</b><br>Buraya masa ve dekor koyabilirsin.`,ic('plus'),3600);return true}
+// ---- görünüm: taş döşemeli çim zemin + beyaz çit + köşede çalı ----
+let GARDEN_TEX=null;
+function gardenTex(){if(GARDEN_TEX)return GARDEN_TEX;const S2=256,cv=document.createElement('canvas');cv.width=cv.height=S2;const c=cv.getContext('2d');
+  c.fillStyle='#8cbf5c';c.fillRect(0,0,S2,S2);for(let i=0;i<500;i++){c.fillStyle=Math.random()<.5?'rgba(70,130,50,.35)':'rgba(180,220,120,.35)';c.fillRect(Math.random()*S2,Math.random()*S2,2,5)}
+  const tile=(x,y,w,h)=>{c.fillStyle='#d9cbb0';c.beginPath();c.roundRect(x,y,w,h,10);c.fill();c.fillStyle='#e9dcc2';c.beginPath();c.roundRect(x+3,y+3,w-8,h-8,8);c.fill()};
+  for(let r=0;r<4;r++)for(let k=0;k<4;k++){const off=(r%2)*32;tile(((k*64+off)%S2)+5,r*64+5,54,54);if(off&&k===3)tile(-27,r*64+5,54,54)}
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;GARDEN_TEX=t;return t}
+let GARDEN_G=null;
+function buildGarden(){if(GARDEN_G){scene.remove(GARDEN_G);disposeTree(GARDEN_G);GARDEN_G=null}if(!GDN.r&&!GDN.f)return;
+  const G=new THREE.Group();G.name='garden';scene.add(G);GARDEN_G=G;const P0=PARENT;PARENT=G;
+  try{const X1=RM.x1+GDN.r,Z1=RM.z1+GDN.f;const rects=[];if(GDN.r)rects.push([RM.x1,X1,RM.z0,Z1]);if(GDN.f)rects.push([RM.x0,RM.x1,RM.z1,Z1]);
+    for(const [x0,x1,z0,z1] of rects){const tex=gardenTex().clone();tex.needsUpdate=true;tex.repeat.set((x1-x0)/1.0,(z1-z0)/1.0);
+      const m=new THREE.Mesh(new THREE.BoxGeometry(x1-x0,0.2,z1-z0),new THREE.MeshToonMaterial({color:0xffffff,map:tex,gradientMap:grad}));m.position.set((x0+x1)/2,-0.1,(z0+z1)/2);m.receiveShadow=true;G.add(m)}
+    const wood=toon(0xfbf3e2),rail=toon(0xeadcc0);
+    const fence=(ax,az,bx,bz)=>{const L=Math.hypot(bx-ax,bz-az);if(L<0.1)return;const n=Math.max(1,Math.round(L/0.42));const along=Math.abs(bx-ax)>Math.abs(bz-az);
+      for(let i=0;i<=n;i++){const x=ax+(bx-ax)*i/n,z=az+(bz-az)*i/n;box(0.07,0.55,0.07,wood,x,0.275,z);box(0.05,0.05,0.05,wood,x,0.57,z)}
+      for(const y of [0.2,0.42])box(along?L:0.04,0.06,along?0.04:L,rail,(ax+bx)/2,y,(az+bz)/2)};
+    const e=0.06;
+    if(GDN.r){fence(X1-e,RM.z0+e,X1-e,Z1-e);fence(RM.x1,RM.z0+e,X1-e,RM.z0+e)}
+    if(GDN.f){fence(RM.x0+e,Z1-e,X1-e,Z1-e);fence(RM.x0+e,RM.z1,RM.x0+e,Z1-e)}
+    if(GDN.r&&!GDN.f)fence(RM.x1,RM.z1-e,X1-e,RM.z1-e);
+    if(GDN.f&&!GDN.r)fence(RM.x1-e,RM.z1,RM.x1-e,Z1-e);
+    const bush=(x,z,s)=>{const b=new THREE.Mesh(new THREE.SphereGeometry(0.28*s,12,10),toon(0x5f9e45));b.position.set(x,0.22*s,z);b.castShadow=true;G.add(b);
+      const f=new THREE.Mesh(new THREE.SphereGeometry(0.06,8,6),toon(0xf4a6b8));f.position.set(x+0.12*s,0.4*s,z+0.1*s);G.add(f)};
+    bush(X1-0.32,Z1-0.32,1.1);if(GDN.r)bush(X1-0.32,RM.z0+0.32,0.9);if(GDN.f)bush(RM.x0+0.32,Z1-0.32,0.9);
+    G.traverse(o=>{if(o.isMesh){o.castShadow=o.castShadow||false;o.receiveShadow=true}})}finally{PARENT=P0}}
+{const _bs=buildShell;buildShell=function(){const r=_bs.apply(this,arguments);try{gdSync();buildGarden()}catch(e){console.warn('bahçe',e)}return r}}
+// ---- genişletme modunda bahçe adayları ----
+const _xmSidesBase=xmSides;
+xmSides=function(){const out=_xmSidesBase();for(const side of ['r','f']){const s=gardenState(side);if(!s.done)out.push({e:{id:'g'+side,name:GARDEN[side].name,garden:side},s})}return out};
+const _expAreaBase=expArea;
+expArea=function(e){return e.garden?gardenArea(e.garden):_expAreaBase(e)};
+const _xmTipBase=xmTip;
+xmTip=function(){const id=XM.sel||'';if(id[0]!=='g')return _xmTipBase();const side=id[1],G=GARDEN[side],s=gardenState(side),ov=$('expOv'),t=ov.querySelector('.xmTip');
+  t.innerHTML=`<b>${G.name}</b><p>2 m açık hava bahçesi · masa ve dekor koyabilirsin · masalar masa sınırına sayılır</p>${s.ok?`<button class="btn green" type="button" id="xmBuy">${ic('coin')}${s.c} · Bahçeyi aç</button>`:`<p class="why">${ic('lock')}${s.why||'Şu an açılamaz'}</p>`}`;
+  t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{closeExpandMode();buyGarden(side)}};
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
