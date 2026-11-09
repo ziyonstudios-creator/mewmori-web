@@ -3810,7 +3810,7 @@ const upgLv=id=>(S.upg&&S.upg[id])|0;
 const priceOf=r=>{const p=S.prices&&S.prices[r.id];return p!=null?p:r.price};   // oyuncunun belirlediği fiyat (Menü → Fiyatlar)
 const prepMul=()=>1-0.12*upgLv('speed');
 const tipBonus=()=>0.08*upgLv('tip');
-const energyMax=()=>CONFIG.energy.max+10*upgLv('energy');
+const energyMax=()=>CONFIG.energy.max+10*upgLv('energy')+(typeof vipEnergy==='function'?vipEnergy():0);
 function upgState(u){const l=upgLv(u.id);if(l>=u.max)return {done:true,l};const c=u.cost[l],need=u.lv[l];
   if(S.lvl<need)return {ok:false,l,c,why:`Seviye ${need} gerekli`};if(S.coins<c)return {ok:false,l,c,why:`${c} altın gerekli`};return {ok:true,l,c}}
 function buyUpg(id){const u=UPG.find(x=>x.id===id);if(!u)return false;const s=upgState(u);if(!s.ok)return false;
@@ -4476,7 +4476,7 @@ function ledger(k,v){if(!v)return;const L=S.led||(S.led={});const h=Math.floor(n
   const ks=Object.keys(L);if(ks.length>48)for(const x of ks.sort((a,b)=>a-b).slice(0,ks.length-48))delete L[x];markDirty()}
 
 // ---------- toptancı siparişi ----------
-const packPrice=(sp,k,pi)=>{const P=PACKS[pi];return Math.max(1,Math.round(STOCK_COST[k]*sp.mul*P.n*(1-P.d)))};
+let packPrice=(sp,k,pi)=>{const P=PACKS[pi];return Math.max(1,Math.round(STOCK_COST[k]*sp.mul*P.n*(1-P.d)))};
 function cartTotal(sp,cart){let t=0;for(const k in cart)t+=packPrice(sp,k,cart[k]);return t}
 function placeSupOrder(sp,cart,auto=false){const ks=Object.keys(cart);if(!ks.length)return false;const tot=cartTotal(sp,cart);
   if(S.coins<tot){sfx('nope');toast('Yeterli altının yok',ic('coin'),2000);return false}
@@ -6949,13 +6949,13 @@ function openProfile(){const W=skWin('skProf','Profil','cat_peek');let edit=fals
       <div><div class="pfName">${edit?`<input id="pfIn" maxlength="24" value="${cafeName().replace(/"/g,'&quot;')}"><button class="skbtn green" style="width:auto;padding:0 12px;height:34px;background-image:none" type="button" id="pfOk">Kaydet</button>`:`<b id="pfNm"></b><button type="button" id="pfEd" aria-label="Kafe adını değiştir"></button>`}</div>
         <div class="pfStats">${stat('i_coins',today,'Bugünkü gelir')}${stat('h_cal',S.dayN|0,'Oynanan gün')}${stat('i_team',served,'Ağırlanan müşteri')}
           ${stat('i_star',rate,'Kafe puanı')}${stat('h_star',S.lvl|0,'Seviye')}${stat('i_book',rec,'Açılan tarif')}</div></div>
-      <div class="pfVip">${uiIc('i_crown')}<div><b>VIP Kulübü</b><small>Özel kıyafetler, ekstra enerji ve günlük elmas hediyesi</small></div><button class="skbtn green" type="button" id="pfVip">Yakında</button></div></div>`;
+      <div class="pfVip">${uiIc('i_crown')}<div><b>VIP Kulübü · VIP ${typeof vipLv==='function'?vipLv():0}</b><small>Satış kârı bonusu, ekstra enerji ve günlük elmas hediyesi</small></div><button class="skbtn green" type="button" id="pfVip">Aç</button></div></div>`;
     const nm=$('pfNm');if(nm)nm.textContent=cafeName();
     $('pfAvBtn').onclick=()=>{sfx('tap');pickAvatar()};
     const ed=$('pfEd');if(ed)ed.onclick=()=>{edit=true;draw();const i=$('pfIn');if(i){i.focus();i.select()}};
     const ok=$('pfOk');if(ok)ok.onclick=()=>{const v=($('pfIn').value||'').replace(/\s+/g,' ').trim();if(v.length<2||v.length>24||/[<>]/.test(v)||(typeof badWord==='function'&&badWord(v))){toast('Ad 2–24 harf olmalı ve uygun olmalı',ic('close'),2200);return}
       S.cafeName=v;markDirty();saveNow();try{cafePublish(true)}catch(e){}edit=false;y2Tick();draw();toast(`Kafenin adı: <b>${v.replace(/[&<>]/g,'')}</b>`,ic('check'),2000)};
-    $('pfVip').onclick=()=>{sfx('tap');toast('<b>VIP Kulübü</b><br>Yakında geliyor',uiIc('i_crown'),2000)};
+    $('pfVip').onclick=()=>{sfx('tap');openVip()};
     W.foot.innerHTML=''};
   function pickAvatar(){let sel=S.avatar??-1;const d2=()=>{W.body.innerHTML=`<div class="avGrid">${[...Array(AV_N)].map((_,i)=>`<button class="avC" type="button" data-av="${i}" aria-pressed="${sel===i}"><img src="${avThumb(i)}" alt="">${sel===i?uiIc('d_check','ok'):''}</button>`).join('')}</div>`;
       W.body.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{sel=+b.dataset.av;sfx('tap');d2()});
@@ -7586,6 +7586,56 @@ function renderShop(){const w=UI.shopW;if(!w||w.m.hidden)return;const t=UI.shopT
 .shCard small{font-size:11px;font-weight:800;color:#7a4e2c}.shCard small em{font-style:normal;color:#2f7a2a}
 .shCard .btn{margin-top:6px;width:100%;height:34px;display:flex;align-items:center;justify-content:center;gap:4px;font-size:14px}
 .shNote{margin:0;text-align:center;font-size:11.5px;font-weight:800;color:#7a4e2c}
+`;document.head.appendChild(st)}
+
+// ================= VIP KULÜBÜ =================
+// VIP puanı (VP): harcanan her elmas 1 VP (ileride gerçek para ile alınan elmas da). 8 VIP seviyesi.
+// Ayrıcalıklar: satışlardan (masa, paket, bahşiş, sen yokken) ek kâr %, en fazla enerji +, her gün ücretsiz elmas hediyesi, toptancı indirimi.
+const VIP_VP=[0,30,100,250,500,1000,2000,3500,6000];
+const VIP_PROFIT=[0,2,3,4,5,6,8,10,12],VIP_EN=[0,0,5,5,10,10,15,20,25],VIP_GIFT=[0,1,1,2,3,4,5,7,10],VIP_SUP=[0,0,0,2,3,4,5,6,8];
+const VIP_SALE=['sale','dlv','tip','afk'];
+function vipS(){if(!S.vip)S.vip={vp:0,lastG:S.gems|0,day:''};return S.vip}
+function vipLv(){const v=vipS().vp;let l=0;for(let i=1;i<VIP_VP.length;i++)if(v>=VIP_VP[i])l=i;return l}
+function vipEnergy(){try{return VIP_EN[vipLv()]}catch(e){return 0}}
+// elmas azaldıkça VP eklenir (her harcama yeri hudGems çağırır)
+{const _hg=hudGems;hudGems=function(){try{const V=vipS(),g=S.gems|0;if(g<V.lastG){const was=vipLv();V.vp+=V.lastG-g;const now=vipLv();if(now>was){setTimeout(()=>{sfx('levelup');toast(`<b>VIP ${now} oldun!</b><br>Satış kârı +%${VIP_PROFIT[now]} · enerji +${VIP_EN[now]}`,uiIc('i_crown'),3400)},300)}markDirty()}V.lastG=g}catch(e){}vipBadge();return _hg.apply(this,arguments)}}
+// satış gelirine VIP kâr bonusu
+{const _ac=addCoins;addCoins=function(n,cat){if(n>0&&VIP_SALE.includes(cat)){const p=VIP_PROFIT[vipLv()];if(p){const b=Math.round(n*p/100*100)/100;S.vipFrac=(S.vipFrac||0)+b;const whole=Math.floor(S.vipFrac);S.vipFrac-=whole;if(whole)n+=whole}}return _ac.call(this,n,cat)}}
+// toptancı indirimi: paket fiyatı
+{const _pp=packPrice;packPrice=function(sp,k,i){const v=_pp.apply(this,arguments);const d=VIP_SUP[vipLv()];return d?Math.max(1,Math.round(v*(100-d)/100)):v}}
+const vipToday=()=>todayKey();
+function vipClaim(){const V=vipS(),l=vipLv(),g=VIP_GIFT[l];if(!g||V.day===vipToday())return;V.day=vipToday();S.gems+=g;V.lastG=S.gems;hudGems();markDirty();saveNow();sfx('coin');toast(`<b>VIP hediyesi</b><br>+${g} elmas`,uiIc('i_gem'),2400);renderVip()}
+function openVip(){const w=skWin('vipWin','VIP Kulübü','cat_peek');UI.vipW=w;renderVip()}
+function renderVip(){const w=UI.vipW;if(!w||w.m.hidden)return;const V=vipS(),l=vipLv(),nx=l<8?VIP_VP[l+1]:null,pc=nx?Math.min(100,(V.vp-VIP_VP[l])/(nx-VIP_VP[l])*100):100,g=VIP_GIFT[l],got=V.day===vipToday();
+  w.body.innerHTML=`<div class="vpWrap"><div class="vpL"><div class="vpCrown">${uiIc('i_crown')}<b>VIP ${l}</b></div>
+      <div class="vpBar"><i style="width:${pc}%"></i><span>${nx?`${V.vp} / ${nx} VP`:`${V.vp} VP · en üst seviye`}</span></div>
+      <p class="vpHow">Harcadığın her ${uiIc('i_gem')} elmas <b>1 VIP puanı</b> kazandırır.${nx?` VIP ${l+1} için ${nx-V.vp} puan kaldı.`:''}</p>
+      <button class="btn ${g&&!got?'green':''}" type="button" id="vpGift" ${g&&!got?'':'disabled'}>${uiIc('i_gift')}${!g?'VIP 1’de günlük hediye':got?'Bugünkü hediye alındı':`Günlük hediye · ${g} elmas`}</button></div>
+    <div class="vpR"><table class="vpT"><thead><tr><th>VIP</th><th>Satış kârı</th><th>Enerji</th><th>Günlük elmas</th><th>Toptancı</th><th>Puan</th></tr></thead><tbody>
+      ${VIP_VP.map((vp,i)=>i?`<tr class="${i===l?'cur':i<l?'past':''}"><td><b>${i}</b></td><td>+%${VIP_PROFIT[i]}</td><td>${VIP_EN[i]?'+'+VIP_EN[i]:'—'}</td><td>${VIP_GIFT[i]}</td><td>${VIP_SUP[i]?'−%'+VIP_SUP[i]:'—'}</td><td>${vp}</td></tr>`:'').join('')}</tbody></table></div></div>`;
+  $('vpGift').onclick=vipClaim}
+// profil portresinin köşesinde VIP rozeti (dokununca VIP penceresi)
+function vipBadge(){let b=document.querySelector('.y2vip');const host=document.querySelector('.y2prof');if(!host)return;
+  if(!b){b=document.createElement('button');b.type='button';b.className='y2vip';b.onclick=e=>{e.stopPropagation();sfx('tap');openVip()};host.appendChild(b)}const t=`VIP ${vipLv()}`;if(b.textContent!==t)b.textContent=t;
+  const V=vipS();b.classList.toggle('gift',!!VIP_GIFT[vipLv()]&&V.day!==vipToday())}
+setTimeout(()=>{try{vipS();vipBadge()}catch(e){}},500);
+// hudGems çağrılmadan artan elmas da izlensin (artış VP saymaz, sonraki harcama doğru ölçülür)
+setInterval(()=>{try{const V=vipS();if((S.gems|0)>V.lastG)V.lastG=S.gems|0;vipBadge()}catch(e){}},700);
+{const st=document.createElement('style');st.textContent=`
+.y2vip{position:absolute;left:4px;bottom:-6px;z-index:3;height:18px;padding:0 7px;border:2px solid #7a4a0a;border-radius:999px;background:linear-gradient(#ffe590,#f0b52e);font-family:var(--font-display);font-weight:900;font-size:10px;color:#5a2f12;box-shadow:0 2px 0 #7a4a0a;cursor:pointer;line-height:1}
+.y2vip.gift::after{content:'';position:absolute;right:-4px;top:-4px;width:9px;height:9px;border-radius:50%;background:#e2574c;border:1.5px solid #fff}
+.vpWrap{grid-column:1/-1;width:100%;display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:start}
+.vpL{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:16px;background:linear-gradient(#fff3c8,#f9dc8c);border:3px solid #7a4a0a;box-shadow:0 3px 0 #7a4a0a}
+.vpCrown{display:flex;align-items:center;gap:8px}.vpCrown img{width:44px;height:44px;object-fit:contain}.vpCrown b{font-family:var(--font-display);font-size:28px;font-weight:900;color:#5a2f12}
+.vpBar{position:relative;width:100%;height:20px;border-radius:999px;background:#fff6e6;border:2.5px solid #5a2f12;overflow:hidden}
+.vpBar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#ffd86b,#f0a52e)}
+.vpBar span{position:relative;display:flex;justify-content:center;align-items:center;height:100%;font-size:11px;font-weight:900;color:#4a2a14}
+.vpHow{margin:0;text-align:center;font-size:11.5px;font-weight:800;color:#6b4012;line-height:1.35}.vpHow img{width:14px;height:14px;vertical-align:-2px}
+.vpL .btn{width:100%;height:36px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px}.vpL .btn img{width:20px;height:20px}
+.vpT{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-display);font-size:12px;color:#4a2a14;border:2.5px solid #5a2f12;border-radius:14px;overflow:hidden;background:var(--paper)}
+.vpT th{background:#9a5f2c;color:#fff3de;font-size:11px;padding:5px 4px;font-weight:900}
+.vpT td{text-align:center;padding:4px;font-weight:800;border-top:1.5px solid #ead7b8}
+.vpT tr.cur td{background:#ffe590;font-weight:900}.vpT tr.past td{opacity:.6}
 `;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
