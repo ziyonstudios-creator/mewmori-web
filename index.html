@@ -7007,7 +7007,8 @@ function mkSecOf(tab){for(const k in MK_SECS)if(MK_SECS[k].includes(tab))return 
 {const _rm=renderMarket;renderMarket=function(){const mk=$('market');let ch=mk.querySelector('.mkSec');
   if(!ch){ch=document.createElement('div');ch.className='mkSec';mk.appendChild(ch)}
   if(!UI.mkSec&&UI.tab!==UI.mkTab0&&mkSecOf(UI.tab)){UI.mkSec=mkSecOf(UI.tab)}
-  if(!UI.mkSec){mk.classList.add('choose');ch.innerHTML=`<div class="mkSecT">Ne almak istersin?</div><div class="mkSecRow">${MK_SEC_INFO.map(s=>`<button class="mkSecB" type="button" data-sec="${s.id}"><span><img src="${s.img()}" alt=""></span><b>${s.name}</b></button>`).join('')}</div>`;
+  if(!UI.mkSec){mk.classList.add('choose');ch.innerHTML=`<div class="mkSecT">Ne almak istersin?</div><div class="mkSecRow">${MK_SEC_INFO.map(s=>`<button class="mkSecB" type="button" data-sec="${s.id}" aria-label="${s.name}"><span><img src="${s.img()}" alt=""></span><b>${s.name}</b></button>`).join('')}</div><button class="mkSecX" type="button" aria-label="Kapat"></button>`;
+    ch.querySelector('.mkSecX').onclick=()=>{sfx('tap');$('mkClose').click()};
     ch.querySelectorAll('[data-sec]').forEach(b=>b.onclick=()=>{UI.mkSec=b.dataset.sec;UI.tab=MK_SECS[UI.mkSec][0];UI.mkTab0=null;UI.sel=null;sfx('tap');renderMarket()});$('mkDetail').hidden=true;return}
   mk.classList.remove('choose');ch.innerHTML='';
   const ids=MK_SECS[UI.mkSec];MK_TABS.length=0;MK_TABS.push(...MK_ALL.filter(t=>ids.includes(t.id)));if(!ids.includes(UI.tab)){UI.tab=ids[0];UI.sel=null}
@@ -7072,6 +7073,109 @@ html.land #market.choose .mkArr{display:none}
 {const st=document.createElement('style');st.textContent=`html.land #market .grid .card.upg{flex-basis:118px}html.land #market .grid .card.upg .th{height:44px}html.land #market .grid .card .exarea{font-size:10px;text-align:center;line-height:1.2}
 html.land #market .tab{font-size:10px}`;document.head.appendChild(st)}
 {const c=$('mkClose');if(c)$('market').appendChild(c)}
+// ---- 3'lü seçim: çizilmiş dükkân tezgâhı (yatay) ----
+{const st=document.createElement('style');st.textContent=`
+.mkSecX{display:none}
+html.land #market.choose{--sw:min(calc(100*var(--vw) - 32px),calc((100*var(--vh) - 56px)*2.522));left:calc(50*var(--vw) - var(--sw)/2)!important;right:auto!important;width:var(--sw)!important;height:calc(var(--sw)/2.522)!important;bottom:4px!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:url(${UIIMG('shop_pick')}) center/100% 100% no-repeat!important;overflow:visible!important;filter:drop-shadow(0 6px 10px rgba(40,20,5,.35))}
+html.land #market.choose>:not(.mkSec){display:none!important}
+html.land #market.choose .mkSec{display:block;background:none!important;border-radius:0}
+html.land #market.choose .mkSecT{display:none}html.land #market.choose .mkSecRow{display:contents}
+html.land #market.choose .mkSecB{position:absolute;top:47.1%;height:40.6%;width:21%;border:0;border-image:none;background:none;padding:0;border-radius:18px;font-size:0}
+html.land #market.choose .mkSecB>*{display:none}
+html.land #market.choose .mkSecB[data-sec=decor]{left:16.1%}
+html.land #market.choose .mkSecB[data-sec=clothes]{left:39.9%;width:20.4%}
+html.land #market.choose .mkSecB[data-sec=expand]{left:63.2%}
+html.land #market.choose .mkSecB:active{background:rgba(255,255,255,.22);transform:none}
+html.land #market.choose .mkSecX{display:block;position:absolute;left:87.9%;top:27.5%;width:5.2%;height:13%;border:0;padding:0;background:none;border-radius:50%;cursor:pointer}
+html.land #market.choose .mkSecX:active{background:rgba(255,255,255,.25)}
+`;document.head.appendChild(st)}
+
+// ================= KIYAFET DOLABI =================
+// Yapı Pazarı → Kıyafet: solda seçili çalışanın 3B modeli (döndürülebilir), sağda kıyafetler.
+// Kıyafete dokununca model üzerinde ücretsiz denenir; sahip olunmayan satın alınır; "Giydir" kalıcı yapar.
+const CS={key:null,cfg:null,orig:null,slot:'apron',sel:null};
+const CS_SLOTS=[['apron','Önlük'],['hat','Şapka'],['neck','Boyun'],['outfit','Takımlar']];
+function csWin(){let m=$('clShop');if(!m){m=document.createElement('div');m.id='clShop';m.className='modal skmodal';m.hidden=true;$('game').appendChild(m)}return m}
+function openClothShop(key){const keys=allStaffKeys();if(!keys.length)return;CS.key=key&&keys.includes(key)?key:CS.key&&keys.includes(CS.key)?CS.key:keys[0];
+  CS.orig=JSON.parse(JSON.stringify(S.chars[CS.key]));CS.cfg=JSON.parse(JSON.stringify(S.chars[CS.key]));CS.sel=null;CS.setSel=null;
+  const m=csWin();UI.modal=true;m.hidden=false;
+  m.innerHTML=`<div class="cswin" role="dialog" aria-label="Kıyafet Dolabı">
+    <div class="cshead"><button class="csback" type="button" aria-label="Geri">${ic('left')}</button><div class="cstitle">${uiIc('i_chef','csic')}Kıyafet Dolabı</div><button class="csx" type="button" aria-label="Kapat"></button></div>
+    <div class="csbody"><div class="csleft"><div class="cswho" id="csWho"></div><div class="csstage" id="csStage"><div class="csrot"><button type="button" data-r="-1" aria-label="Sola çevir">${ic('left')}</button><button type="button" data-r="1" aria-label="Sağa çevir">${ic('right')}</button></div></div><div class="csname" id="csName"></div></div>
+    <div class="csright"><div class="cstabs" id="csTabs"></div><div class="csgrid" id="csGrid"></div><div class="csfoot" id="csFoot"></div></div></div></div>`;
+  m.querySelector('.csx').onclick=()=>closeClothShop(false);
+  m.querySelector('.csback').onclick=()=>closeClothShop(true);
+  m.querySelectorAll('.csrot [data-r]').forEach(b=>b.onclick=()=>{PV.yaw+=+b.dataset.r*0.8});
+  PV.yaw=0.35;pvInit($('csStage'));setTimeout(pvResize,30);pvShow(CS.cfg);renderClothShop()}
+function closeClothShop(back){pvStop();if(PV.model){PV.sc.remove(PV.model);PV.model=null}const m=$('clShop');if(m)m.hidden=true;UI.modal=false;
+  if(back){setMode('market');UI.mkSec=null;renderMarket()}hudDots&&hudDots()}
+function csRole(){return roleOfKey(CS.key)}
+function csItems(){return CLOTHES.filter(c=>c.slot===CS.slot&&c.roles.includes(csRole()))}
+function csIsOn(c){const W=CS.cfg.wear;return c.set?Object.entries(c.set).every(([k,v])=>W[k]===v):W[c.slot]===c.id}
+function csNeed(){const W=CS.cfg.wear,out=[];if(CS.setSel&&!ownsCloth(CS.setSel))out.push(CS.setSel);else for(const k of ['apron','neck','hat'])if(W[k]&&CLO[W[k]]&&!ownsCloth(W[k]))out.push(W[k]);return [...new Set(out)]}
+function csChanged(){return JSON.stringify(CS.cfg.wear)!==JSON.stringify(CS.orig.wear)}
+function renderClothShop(){const keys=allStaffKeys();
+  $('csWho').innerHTML=keys.map(k=>`<button type="button" class="cschip" data-k="${k}" aria-pressed="${k===CS.key}">${S.chars[k].name}</button>`).join('');
+  $('csWho').onclick=e=>{const b=e.target.closest('[data-k]');if(!b||b.dataset.k===CS.key)return;sfx('tap');CS.key=b.dataset.k;CS.orig=JSON.parse(JSON.stringify(S.chars[CS.key]));CS.cfg=JSON.parse(JSON.stringify(S.chars[CS.key]));CS.sel=null;CS.setSel=null;pvShow(CS.cfg);renderClothShop()};
+  $('csName').innerHTML=`<b>${S.chars[CS.key].name}</b><small>${ROLE_NAME[csRole()]}</small>`;
+  $('csTabs').innerHTML=CS_SLOTS.map(([id,n])=>`<button type="button" class="cstab" data-s="${id}" aria-selected="${CS.slot===id}">${n}</button>`).join('');
+  $('csTabs').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;sfx('tap');CS.slot=b.dataset.s;renderClothShop();$('csGrid').scrollTop=0};
+  const items=csItems();
+  $('csGrid').innerHTML=items.length?items.map(c=>{const own=ownsCloth(c.id),on=csIsOn(c);return `<button type="button" class="cscard" data-c="${c.id}" aria-pressed="${on}"><span class="csth">${clothIcon(c.id)}</span>${on?'<span class="cson">Üstünde</span>':''}<b>${c.name}</b><span class="cspr">${own?'<i class="csown">Sende</i>':c.gems?ic('gem')+c.gems:ic('coin')+c.price}</span></button>`}).join(''):`<div class="csempty">Bu çalışan için burada kıyafet yok.</div>`;
+  $('csGrid').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;const c=CLO[b.dataset.c];if(c.set){Object.assign(CS.cfg.wear,c.set);CS.setSel=c.id}else{CS.cfg.wear[c.slot]=c.id;CS.setSel=null}CS.sel=c.id;sfx('tap');pvShow(CS.cfg);renderClothShop()};
+  renderCSFoot()}
+function renderCSFoot(){const need=csNeed(),f=$('csFoot');let h='';
+  if(need.length){const c=CLO[need[0]];const can=c.gems?S.gems>=c.gems:S.coins>=c.price;
+    h+=`<span class="csinfo">${c.name} deneniyor${can?'':' · yeterli '+(c.gems?'elmas':'altın')+' yok'}</span><button class="btn" type="button" id="csBuy" ${can?'':'disabled'}>${c.gems?ic('gem')+c.gems:ic('coin')+c.price} · Satın al</button>`}
+  else h+=`<span class="csinfo">${csChanged()?'Hazır! Giydirmek ücretsiz.':'Bir kıyafete dokun, üstünde dene.'}</span>`;
+  h+=`<button class="btn light" type="button" id="csRst" ${csChanged()?'':'disabled'}>${ic('undo')}Sıfırla</button><button class="btn green" type="button" id="csOk" ${csChanged()&&!need.length?'':'disabled'}>${ic('check')}Giydir</button>`;
+  f.innerHTML=h;
+  const bb=$('csBuy');if(bb)bb.onclick=()=>{const c=CLO[need[0]];if(c.gems){if(S.gems<c.gems)return;S.gems-=c.gems;hudGems()}else{if(S.coins<c.price)return;addCoins(-c.price,'style')}grantCloth(c.id);sfx('buy');markDirty();toast(`${c.name} artık senin!`,`<span class="ic">${clothIcon(c.id)}</span>`);renderClothShop()};
+  $('csRst').onclick=()=>{CS.cfg.wear=JSON.parse(JSON.stringify(CS.orig.wear));CS.setSel=null;CS.sel=null;pvShow(CS.cfg);renderClothShop()};
+  $('csOk').onclick=()=>{if(csNeed().length||!csChanged())return;const ch=S.chars[CS.key];ch.wear=JSON.parse(JSON.stringify(CS.cfg.wear));applyCharToGame(CS.key);markDirty();saveNow();sfx('place');
+    toast(`${ch.name} yeni kıyafetini giydi!`,ic('check'));CS.orig=JSON.parse(JSON.stringify(ch));renderClothShop()}}
+// Kıyafet bölümü artık şerit yerine dolabı açar
+{const _rm=renderMarket;renderMarket=function(){if(UI.mkSec==='clothes'){UI.mkSec=null;setTimeout(()=>{$('mkClose').click();openClothShop()},0);return}return _rm.apply(this,arguments)}}
+{const st=document.createElement('style');st.textContent=`
+#clShop{display:flex;align-items:center;justify-content:center;padding:18px calc(var(--er,16px) + 8px) 8px 16px;background:rgba(40,22,8,.45);z-index:60}
+.cswin{position:relative;width:min(860px,100%);height:min(100%,420px);display:flex;flex-direction:column;border:4px solid #5a2f12;border-radius:26px;background:linear-gradient(#d9924f,#b8763a);box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 5px 0 #5a2f12,0 10px 22px rgba(40,20,5,.45);padding:10px 12px 12px;box-sizing:border-box;gap:8px}
+.cshead{position:relative;height:40px;flex:none;display:flex;align-items:center;justify-content:center}
+.cstitle{display:flex;align-items:center;gap:6px;height:38px;padding:0 22px;border:3px solid #5a2f12;border-radius:999px;background:linear-gradient(#fff3de,#f5dcb4);box-shadow:inset 0 0 0 3px #e9964a,0 3px 0 #5a2f12;font-family:var(--font-display);font-weight:900;font-size:18px;color:#4a2a14}
+.cstitle .csic{width:26px;height:26px}
+.csx{position:absolute;right:-16px;top:-18px;width:44px;height:44px;border:0;padding:0;background:url(${UIIMG('btn_close')}) center/contain no-repeat;cursor:pointer}
+.csback{position:absolute;left:0;top:2px;height:34px;padding:0 12px;border:2.5px solid #5a2f12;border-radius:12px;background:linear-gradient(#fffaf0,#f5e2c2);box-shadow:0 2px 0 #5a2f12;display:flex;align-items:center;cursor:pointer}
+.csback .ic{width:18px;height:18px}
+.csbody{flex:1;min-height:0;display:grid;grid-template-columns:minmax(200px,36%) 1fr;gap:10px}
+.csleft{min-height:0;display:flex;flex-direction:column;gap:6px;border-radius:20px;background:#9a5f2c;box-shadow:inset 0 3px 6px rgba(0,0,0,.25);padding:8px}
+.cswho{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex:none}
+.cswho::-webkit-scrollbar{display:none}
+.cschip{flex:none;height:28px;padding:0 10px;border:2.5px solid #5a2f12;border-radius:999px;background:linear-gradient(#fffaf0,#f5e2c2);font-family:var(--font-display);font-weight:900;font-size:12px;color:#4a2a14;cursor:pointer}
+.cschip[aria-pressed=true]{background:linear-gradient(#ffe590,#f6c043);box-shadow:0 0 0 2px #fff3b0}
+.csstage{position:relative;flex:1;min-height:0;border:3px solid #5a2f12;border-radius:16px;background:radial-gradient(circle at 50% 38%,#fff8ea,#f5dcb4 70%,#e9c48e);overflow:hidden}
+.csstage canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+.csrot{position:absolute;left:6px;right:6px;bottom:6px;display:flex;justify-content:space-between;pointer-events:none;z-index:1}
+.csrot button{pointer-events:auto;width:32px;height:32px;border:2.5px solid #5a2f12;border-radius:50%;background:#fffaf0;display:grid;place-items:center;box-shadow:0 2px 0 #5a2f12;cursor:pointer}
+.csrot .ic{width:16px;height:16px}
+.csname{flex:none;display:flex;align-items:baseline;justify-content:center;gap:6px;color:#fff3de;font-family:var(--font-display)}
+.csname b{font-size:15px;font-weight:900}.csname small{font-size:11px;opacity:.85;font-weight:800}
+.csright{min-height:0;display:flex;flex-direction:column;gap:8px}
+.cstabs{display:flex;gap:6px;flex:none}
+.cstab{flex:1;height:34px;border:2.5px solid #5a2f12;border-radius:12px;background:linear-gradient(#fffaf0,#f5e2c2);box-shadow:0 2px 0 #5a2f12;font-family:var(--font-display);font-weight:900;font-size:13px;color:#4a2a14;cursor:pointer}
+.cstab[aria-selected=true]{background:linear-gradient(#ffe590,#f6c043);box-shadow:0 2px 0 #5a2f12,0 0 0 3px #fff3b0}
+.csgrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;align-content:start;padding:8px;border-radius:16px;background:#9a5f2c;box-shadow:inset 0 3px 6px rgba(0,0,0,.25);scrollbar-width:none}
+.csgrid::-webkit-scrollbar{display:none}
+.cscard{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 5px;border:3px solid #5a2f12;border-radius:14px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 3px 0 #5a2f12;font-family:var(--font-display);color:#4a2a14;cursor:pointer}
+.cscard[aria-pressed=true]{border-color:#e0a10f;box-shadow:0 3px 0 #5a2f12,0 0 0 3px #ffd24a}
+.csth{width:48px;height:48px;display:grid;place-items:center}.csth svg{width:100%;height:100%}
+.cscard b{font-size:10.5px;font-weight:900;line-height:1.1;text-align:center;min-height:23px;display:flex;align-items:center}
+.cspr{display:flex;align-items:center;gap:3px;font-size:13px;font-weight:900}.cspr .ic{width:16px;height:16px}
+.csown{font-style:normal;font-size:11px;color:#3f7a2a}
+.cson{position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:1px 7px;border-radius:999px;background:#6aa84f;color:#fff;font-size:9.5px;font-weight:900;border:2px solid #3d6b2a}
+.csempty{grid-column:1/-1;color:#fff3de;font-weight:800;text-align:center;padding:20px}
+.csfoot{flex:none;display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.csinfo{flex:1;color:#fff3de;font-weight:800;font-size:12px;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.csfoot .btn{height:36px;font-size:13px;padding:0 12px;white-space:nowrap}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
