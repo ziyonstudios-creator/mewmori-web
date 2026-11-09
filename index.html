@@ -1676,7 +1676,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
-    staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},ev:null,evs:{},evGot:{},evClaim:{},layout:null,exp:null,evl:null,evx:0,evShared:false,tr:null,navMin:false,
+    staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},ev:null,evs:{},evGot:{},evClaim:{},layout:null,avatar:null,exp:null,evl:null,evx:0,evShared:false,tr:null,navMin:false,
     objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
 let S=defaultState();
 // kayıt bozulursa (yarım yazılmış/elle değişmiş) otomatik yedekten açılır
@@ -6890,6 +6890,76 @@ html.land .y2prof>.ed,.y2prof>img.ed{display:none}
 html.land .y2left{left:calc(var(--ed) + 4px)!important;top:calc(var(--top) + 72px)!important}
 `;document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent=`html.land .y2rate #repPill svg{display:none!important}html.land .y2rate #repPill::before{content:'';width:24px;height:24px;background:url(${UIIMG('i_star')}) center/contain no-repeat;display:block}`;document.head.appendChild(st)}
+
+// ================= PROFİL PANOSU (tasarım; işlevler sonra) =================
+// Profil kutusuna dokununca açılır: solda büyük profil resmi + "Değiştir", kafe adı (kalemle düzenlenir); sağda özet kartları;
+// altta VIP bandı. "Değiştir" 8 kedilik seçim ızgarasını açar. Seçim S.avatar'da saklanır, ana ekran portresi onu gösterir.
+const AV_N=8;let AV_LOOKS=null,AV_THUMB=[];
+// sabit 8 profil kedisi (geçici: görseller gelince img/ui/av_1..8 ile değişecek)
+function avLooks(){if(AV_LOOKS)return AV_LOOKS;let sd=7;const R=Math.random;Math.random=()=>((sd=(sd*16807)%2147483647)/2147483647);
+  try{AV_LOOKS=[...Array(AV_N)].map((_,i)=>({id:'av'+i,name:'av'+i,look:randomLook(),wear:{apron:'apron_none',neck:'neck_none',hat:'hat_none'}}))}finally{Math.random=R}return AV_LOOKS}
+function avThumb(i){if(AV_THUMB[i])return AV_THUMB[i];try{AV_THUMB[i]=candThumb(avLooks()[i])}catch(e){AV_THUMB[i]=''}return AV_THUMB[i]}
+const avSrc=()=>{const i=S.avatar;return (i!=null&&i>=0&&i<AV_N)?avThumb(i):charThumb('waiter')};
+{const _t=y2Tick;y2Tick=function(){_t();const p=$('y2Por');try{const u=avSrc();if(p&&u&&p.src!==u)p.src=u}catch(e){}}}
+{const st=document.createElement('style');st.textContent=`
+#skProf .skwin{width:min(640px,calc(100*var(--vw) - 24px))!important}
+.pf{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:start}
+.pfL{display:flex;flex-direction:column;align-items:center;gap:7px}
+.pfAv{position:relative;width:118px;height:118px;border-radius:50%;border:3px solid #5a2f12;box-shadow:inset 0 0 0 5px #e9964a,0 3px 0 #5a2f12;background:radial-gradient(circle at 50% 40%,#fff4e0,#f3d2a4);overflow:hidden}
+.pfAv img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;transform:scale(1.35);transform-origin:50% 12%}
+.pfL .skbtn{width:118px;flex:none;height:34px;font-size:13px}
+.pfName{display:flex;align-items:center;gap:6px;border-image:url(${UIIMG('card')}) 56 fill/12px stretch;padding:6px 8px 6px 12px;margin-bottom:8px}
+.pfName b{flex:1;min-width:0;font-family:var(--font-display);font-size:18px;color:#4a2a14;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pfName button{width:34px;height:34px;border:0;padding:0;background:url(${UIIMG('h_edit')}) center/contain no-repeat;cursor:pointer;flex:none}
+.pfName input{flex:1;min-width:0;font:800 16px var(--font-display);border:2px solid #e2c9a6;border-radius:10px;padding:5px 8px;background:#fff;color:#4a2a14}
+.pfStats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.pfS{border-image:url(${UIIMG('card')}) 56 fill/12px stretch;padding:7px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center}
+.pfS img{width:26px;height:26px;object-fit:contain}
+.pfS b{font-family:var(--font-display);font-size:17px;color:#4a2a14;line-height:1.1}
+.pfS small{font-size:11px;font-weight:800;color:#8a6040;line-height:1.15}
+.pfVip{grid-column:1/-1;margin-top:10px;position:relative;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:18px;border:3px solid #7a4a0a;
+  background:linear-gradient(135deg,#fff2b8,#ffd25a 45%,#f2a91f);box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 3px 0 #7a4a0a}
+.pfVip img{width:42px;height:42px;object-fit:contain}
+.pfVip div{flex:1;min-width:0}
+.pfVip b{display:block;font-family:var(--font-display);font-size:17px;color:#5a2f12}
+.pfVip small{display:block;font-size:12px;font-weight:800;color:#6b4012;line-height:1.3}
+.pfVip .skbtn{flex:none;width:auto;padding:0 18px;height:36px;font-size:14px}
+.avGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:4px}
+.avC{position:relative;aspect-ratio:1;border-radius:50%;border:3px solid #5a2f12;box-shadow:inset 0 0 0 4px #e9964a,0 3px 0 #5a2f12;background:radial-gradient(circle at 50% 40%,#fff4e0,#f3d2a4);overflow:hidden;padding:0;cursor:pointer;max-width:96px;justify-self:center;width:100%}
+.avC img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;transform:scale(1.35);transform-origin:50% 12%}
+.avC[aria-pressed=true]{border-color:#3d6b14;box-shadow:inset 0 0 0 4px #7cc243,0 0 0 4px #ffe066,0 3px 0 #3d6b14}
+.avC .ok{position:absolute;right:2px;bottom:2px;width:26px;height:26px}
+html:not(.land) .pf{grid-template-columns:1fr}html:not(.land) .pfStats{grid-template-columns:repeat(2,1fr)}
+`;document.head.appendChild(st)}
+function openProfile(){const W=skWin('skProf','Profil','cat_peek');let edit=false;
+  const stat=(ic,v,l)=>`<div class="pfS"><img src="${UIIMG(ic)}" alt=""><b>${v}</b><small>${l}</small></div>`;
+  const draw=()=>{W.m.querySelector('.skplaque h2').textContent='Profil';let today=0;try{const w=finWindow(24*60);today=Math.round(w.rev||0)}catch(e){}
+    const served=(S.rep&&S.rep.served)|0,rec=RECIPES.filter(r=>S.unlocked[r.id]).length,rate=(()=>{try{return repAvg().toFixed(1)}catch(e){return '–'}})();
+    W.body.innerHTML=`<div class="pf"><div class="pfL"><div class="pfAv"><img src="${avSrc()}" alt=""></div><button class="skbtn cream" type="button" id="pfAvBtn">${uiIc('i_pencil')}Değiştir</button></div>
+      <div><div class="pfName">${edit?`<input id="pfIn" maxlength="24" value="${cafeName().replace(/"/g,'&quot;')}"><button class="skbtn green" style="width:auto;padding:0 12px;height:34px;background-image:none" type="button" id="pfOk">Kaydet</button>`:`<b id="pfNm"></b><button type="button" id="pfEd" aria-label="Kafe adını değiştir"></button>`}</div>
+        <div class="pfStats">${stat('i_coins',today,'Bugünkü gelir')}${stat('h_cal',S.dayN|0,'Oynanan gün')}${stat('i_team',served,'Ağırlanan müşteri')}
+          ${stat('i_star',rate,'Kafe puanı')}${stat('h_star',S.lvl|0,'Seviye')}${stat('i_book',rec,'Açılan tarif')}</div></div>
+      <div class="pfVip">${uiIc('i_crown')}<div><b>VIP Kulübü</b><small>Özel kıyafetler, ekstra enerji ve günlük elmas hediyesi</small></div><button class="skbtn green" type="button" id="pfVip">Yakında</button></div></div>`;
+    const nm=$('pfNm');if(nm)nm.textContent=cafeName();
+    $('pfAvBtn').onclick=()=>{sfx('tap');pickAvatar()};
+    const ed=$('pfEd');if(ed)ed.onclick=()=>{edit=true;draw();const i=$('pfIn');if(i){i.focus();i.select()}};
+    const ok=$('pfOk');if(ok)ok.onclick=()=>{const v=($('pfIn').value||'').replace(/\s+/g,' ').trim();if(v.length<2||v.length>24||/[<>]/.test(v)||(typeof badWord==='function'&&badWord(v))){toast('Ad 2–24 harf olmalı ve uygun olmalı',ic('close'),2200);return}
+      S.cafeName=v;markDirty();saveNow();try{cafePublish(true)}catch(e){}edit=false;y2Tick();draw();toast(`Kafenin adı: <b>${v.replace(/[&<>]/g,'')}</b>`,ic('check'),2000)};
+    $('pfVip').onclick=()=>{sfx('tap');toast('<b>VIP Kulübü</b><br>Yakında geliyor',uiIc('i_crown'),2000)};
+    W.foot.innerHTML=''};
+  function pickAvatar(){let sel=S.avatar??-1;const d2=()=>{W.body.innerHTML=`<div class="avGrid">${[...Array(AV_N)].map((_,i)=>`<button class="avC" type="button" data-av="${i}" aria-pressed="${sel===i}"><img src="${avThumb(i)}" alt="">${sel===i?uiIc('d_check','ok'):''}</button>`).join('')}</div>`;
+      W.body.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{sel=+b.dataset.av;sfx('tap');d2()});
+      W.foot.innerHTML=`<button class="skbtn cream big" type="button" id="avBack">Geri</button><button class="skbtn green big" type="button" id="avOk">${uiIc('i_paw')}Seç</button>`;
+      $('avBack').onclick=()=>draw();$('avOk').onclick=()=>{if(sel>=0){S.avatar=sel;markDirty();saveNow();y2Tick()}sfx('goal');draw()}};
+    W.m.querySelector('.skplaque h2').textContent='Profil Resmi';d2()}
+  draw()}
+{const st=document.createElement('style');st.textContent=`html.land #skProf .skscroll{display:block!important}
+html.land .pf{grid-template-columns:150px 1fr;gap:10px 14px}
+html.land .pfStats{grid-template-columns:repeat(3,1fr);gap:6px}
+html.land .pfS{padding:5px 4px}html.land .pfS b{font-size:16px}
+html.land .pfVip{margin-top:4px;padding:7px 12px}html.land .pfVip img{width:34px;height:34px}
+html.land .avGrid{grid-template-columns:repeat(4,96px);justify-content:center;gap:12px 22px}
+#skProf .skfoot{justify-content:center}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
