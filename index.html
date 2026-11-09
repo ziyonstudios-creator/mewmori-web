@@ -7638,6 +7638,83 @@ setInterval(()=>{try{const V=vipS();if((S.gems|0)>V.lastG)V.lastG=S.gems|0;vipBa
 .vpT tr.cur td{background:#ffe590;font-weight:900}.vpT tr.past td{opacity:.6}
 `;document.head.appendChild(st)}
 
+// ================= ROYAL PASS (aylık sezon) =================
+// Her ay yeni sezon (TR saati, ayın 1'i). 30 kademe, kademe başı 100 puan. Puan: servis edilen sipariş +10, paket teslimi +20,
+// özel istek +15, birleştirme +1, genişletme +100. İki yol: Ücretsiz (herkes) ve Royal (450 elmasla açılır, daha zengin ödüller).
+// Simge: sağ sütunda Etkinlik tabelasının solunda.
+const RP_TIERS=30,RP_PER=100,RP_PRICE=450;
+const RP_PTS={orders:10,deliveries:20,req:15,merges:1,expand:100};
+const RP_NAMES=['Kış Sıcaklığı','Sevgi Tatlıları','Bahar Çiçekleri','Nisan Yağmuru','Kiraz Zamanı','Limonata Yazı','Deniz Kenarı','Dondurma Günleri','Okul Dönüşü','Balkabağı Partisi','Hasat Bereketi','Kar Tanesi'];   // ay sırasıyla
+function rpSeason(){const d=new Date(Date.now()+3*36e5);return d.getUTCFullYear()*12+d.getUTCMonth()}
+function rpEnds(){const d=new Date(Date.now()+3*36e5);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1)-3*36e5}
+function rpS(){const s=rpSeason();if(!S.rp||S.rp.season!==s)S.rp={season:s,pts:0,royal:false,cf:{},cr:{}};return S.rp}
+const rpTier=()=>Math.min(RP_TIERS,Math.floor(rpS().pts/RP_PER));
+function rpReward(i,royal){if(!royal){if(i%10===0)return {k:'gems',n:10};if(i%5===0)return {k:'gems',n:5};return {k:'coins',n:60+i*12}}
+  if(i===30)return {k:'vp',n:200};if(i%10===0)return {k:'vp',n:i*5};if(i%5===0)return {k:'gems',n:25};if(i%2===0)return {k:'gems',n:8};return {k:'coins',n:180+i*25}}
+const RP_ICON={coins:'i_coins',gems:'i_gem',vp:'i_crown'};
+const rpLabel=r=>r.k==='coins'?`${r.n}`:r.k==='gems'?`${r.n}`:`${r.n} VP`;
+function rpGive(r){if(r.k==='coins')addCoins(r.n,'bonus');else if(r.k==='gems'){S.gems+=r.n;hudGems()}else if(r.k==='vp'){const V=vipS();V.vp+=r.n;vipBadge()}}
+function rpAdd(n){if(!n)return;const R=rpS(),was=rpTier();R.pts+=n;const now=rpTier();if(now>was){setTimeout(()=>toast(`<b>Royal Pass · kademe ${now}</b><br>Ödülünü topla!`,uiIc('i_crown'),2600),200)}rpDot()}
+{const _b=bump;bump=function(k,n=1){const r=_b.apply(this,arguments);try{if(RP_PTS[k]&&n>0)rpAdd(RP_PTS[k]*n)}catch(e){}return r}}
+function rpClaim(i,royal){const R=rpS();const m=royal?R.cr:R.cf;if(m[i]||rpTier()<i||(royal&&!R.royal))return false;m[i]=1;rpGive(rpReward(i,royal));return true}
+function rpClaimAll(){let n=0;for(let i=1;i<=rpTier();i++){if(rpClaim(i,false))n++;if(rpS().royal&&rpClaim(i,true))n++}if(n){sfx('coin');markDirty();saveNow();toast(`<b>${n} ödül toplandı</b>`,uiIc('i_gift'),2000)}renderPass();rpDot()}
+function rpBuy(){const R=rpS();if(R.royal)return;if(S.gems<RP_PRICE){sfx('nope');toast(`<b>${RP_PRICE} elmas gerekli</b><br>Mağazadan elmas alabilirsin`,uiIc('i_gem'),2400);return}
+  S.gems-=RP_PRICE;hudGems();R.royal=true;markDirty();saveNow();sfx('levelup');toast('<b>Royal Pass açıldı!</b><br>Royal ödüller artık senin',uiIc('i_crown'),2800);renderPass();rpDot()}
+function rpUnclaimed(){const R=rpS(),t=rpTier();let n=0;for(let i=1;i<=t;i++){if(!R.cf[i])n++;if(R.royal&&!R.cr[i])n++}return n}
+function openPass(){const w=skWin('passWin','Royal Pass','cat_peek');UI.rpW=w;renderPass();setTimeout(()=>{const el=w.body.querySelector('.rpTrack');const c=w.body.querySelector('.rpCol.next');if(el&&c)el.scrollLeft=Math.max(0,c.offsetLeft-el.clientWidth/2+40)},30)}
+function renderPass(){const w=UI.rpW;if(!w||w.m.hidden)return;const R=rpS(),t=rpTier(),inT=R.pts-t*RP_PER,left=Math.max(0,rpEnds()-Date.now()),days=Math.ceil(left/864e5);
+  const box=(i,royal)=>{const r=rpReward(i,royal),got=royal?R.cr[i]:R.cf[i],can=t>=i&&!got&&(!royal||R.royal),lock=royal&&!R.royal;
+    return `<button type="button" class="rpBox ${royal?'roy':'free'}${got?' got':''}${can?' can':''}${lock?' lock':''}" data-c="${i}" data-r="${royal?1:0}" ${can?'':'tabindex="-1"'}>${uiIc(RP_ICON[r.k])}<b>${rpLabel(r)}</b>${got?'<i class="ok"></i>':lock?'<i class="lk"></i>':''}</button>`};
+  w.body.innerHTML=`<div class="rpWrap"><div class="rpTop"><div class="rpSea"><small>Sezon ${Math.max(1,R.season-(2026*12+10)+1)}</small><b>${RP_NAMES[R.season%12]}</b><span>${days} gün kaldı</span></div>
+      <div class="rpLv"><span class="rpNum">${t}</span><div class="rpBar"><i style="width:${t>=RP_TIERS?100:inT/RP_PER*100}%"></i><span>${t>=RP_TIERS?'Tüm kademeler tamam!':`${inT} / ${RP_PER} puan · kademe ${t+1}`}</span></div></div>
+      <div class="rpBtns">${R.royal?`<span class="rpOwned">${uiIc('i_crown')}Royal aktif</span>`:`<button class="btn" type="button" id="rpBuy">${uiIc('i_crown')}Royal’i aç · ${RP_PRICE} ${uiIc('i_gem')}</button>`}<button class="btn green" type="button" id="rpAll" ${rpUnclaimed()?'':'disabled'}>${uiIc('i_gift')}Tümünü topla</button></div></div>
+    <div class="rpGrid"><div class="rpLbl"><span class="f">Ücretsiz</span><span class="r">${uiIc('i_crown')}Royal</span></div><div class="rpTrack">
+      ${Array.from({length:RP_TIERS},(_,k)=>{const i=k+1;return `<div class="rpCol${t>=i?' done':''}${i===t+1?' next':''}">${box(i,false)}<span class="rpT">${i}</span>${box(i,true)}</div>`}).join('')}</div></div>
+    <p class="rpHow">Puan kazan: sipariş +${RP_PTS.orders} · paket teslimi +${RP_PTS.deliveries} · özel istek +${RP_PTS.req} · birleştirme +${RP_PTS.merges} · genişletme +${RP_PTS.expand}</p></div>`;
+  w.body.querySelectorAll('.rpBox.can').forEach(b=>b.onclick=()=>{if(rpClaim(+b.dataset.c,b.dataset.r==='1')){sfx('coin');markDirty();saveNow();const tr=w.body.querySelector('.rpTrack'),sl=tr.scrollLeft;renderPass();w.body.querySelector('.rpTrack').scrollLeft=sl;rpDot()}});
+  const bb=$('rpBuy');if(bb)bb.onclick=rpBuy;$('rpAll').onclick=rpClaimAll}
+// HUD: Etkinlik tabelasının solunda Pass tabelası
+function rpDot(){const b=$('rpBtn');if(b)b.classList.toggle('has',rpUnclaimed()>0)}
+setTimeout(()=>{try{if(EVMODE)return;const ev=$('evBtn');if(!ev||$('rpBtn'))return;const b=document.createElement('button');b.id='rpBtn';b.type='button';b.className='y2s';b.setAttribute('aria-label','Royal Pass');
+  b.innerHTML=`<img class="ic2" src="${UIIMG('i_crown')}" alt="">Pass<span class="y2bd"></span>`;b.onclick=()=>{sfx('tap');openPass()};
+  const wrap=document.createElement('div');wrap.className='y2rp';wrap.appendChild(b);ev.parentNode.parentNode.appendChild(wrap);rpS();rpDot()}catch(e){console.warn('pass',e)}},600);
+setInterval(()=>{try{rpDot()}catch(e){}},2000);
+{const st=document.createElement('style');st.textContent=`
+.y2rp{position:absolute;z-index:3}
+html.land .y2rp{right:calc(var(--er) + 66px);top:calc(var(--top) + 72px)}
+html.land .y2rp .y2s{width:60px!important;height:56px!important;font-size:11px!important;padding:13px 0 6px!important}
+html.land .y2rp .y2s>img.ic2{width:22px!important;height:22px!important}
+html.xmode .y2rp{visibility:hidden!important}
+.rpWrap{grid-column:1/-1;width:100%;display:flex;flex-direction:column;gap:8px}
+.rpTop{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center}
+.rpSea{display:flex;flex-direction:column;line-height:1.1;padding:6px 12px;border-radius:14px;background:linear-gradient(#5b3a8c,#3c2766);color:#fff3de;border:2.5px solid #2a1a48;box-shadow:0 2px 0 #2a1a48}
+.rpSea small{font-size:10px;font-weight:900;opacity:.8;letter-spacing:.05em;text-transform:uppercase}.rpSea b{font-family:var(--font-display);font-size:15px;font-weight:900}.rpSea span{font-size:10.5px;font-weight:800;color:#ffd86b}
+.rpLv{display:flex;align-items:center;gap:8px}
+.rpNum{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 40% 35%,#ffe590,#f0a52e);border:3px solid #7a4a0a;font-family:var(--font-display);font-weight:900;font-size:17px;color:#5a2f12}
+.rpBar{position:relative;flex:1;height:20px;border-radius:999px;background:#fff6e6;border:2.5px solid #5a2f12;overflow:hidden}
+.rpBar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#b48ae6,#7b4fc0)}
+.rpBar span{position:relative;display:flex;justify-content:center;align-items:center;height:100%;font-size:11px;font-weight:900;color:#3a2350}
+.rpBtns{display:flex;gap:6px}.rpBtns .btn{height:36px;display:flex;align-items:center;gap:4px;font-size:13px;white-space:nowrap;padding:0 12px}.rpBtns .btn img{width:18px;height:18px}
+.rpOwned{display:flex;align-items:center;gap:4px;font-weight:900;font-size:13px;color:#5b3a8c;padding:0 8px}.rpOwned img{width:22px;height:22px}
+.rpGrid{display:grid;grid-template-columns:62px minmax(0,1fr);gap:6px;align-items:stretch}
+.rpLbl{display:grid;grid-template-rows:1fr 20px 1fr;gap:4px}.rpLbl span{display:flex;align-items:center;justify-content:center;gap:3px;border-radius:12px;font-family:var(--font-display);font-weight:900;font-size:11.5px;border:2.5px solid #5a2f12}
+.rpLbl .f{grid-row:1;background:#fff6e0;color:#4a2a14}.rpLbl .r{grid-row:3;background:linear-gradient(#7b4fc0,#5b3a8c);color:#ffe590}.rpLbl img{width:16px;height:16px}
+.rpTrack{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px}.rpTrack::-webkit-scrollbar{display:none}
+.rpCol{flex:0 0 66px;display:grid;grid-template-rows:72px 20px 72px;gap:4px;justify-items:stretch}
+.rpT{display:grid;place-items:center;font-family:var(--font-display);font-weight:900;font-size:11px;color:#8a6a4a;border-radius:999px;background:#efe2c8;border:2px solid #d6bf98}
+.rpCol.done .rpT{background:#ffd86b;border-color:#c98a1a;color:#5a2f12}.rpCol.next .rpT{background:#b48ae6;border-color:#5b3a8c;color:#fff}
+.rpBox{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:14px;border:2.5px solid #5a2f12;background:linear-gradient(#fffaf0,#f7e7cd);font-family:var(--font-display);color:#4a2a14;padding:4px;cursor:default}
+.rpBox img{width:30px;height:30px;object-fit:contain}.rpBox b{font-size:12px;font-weight:900;line-height:1}
+.rpBox.roy{background:linear-gradient(#efe3ff,#d9c4f5);border-color:#5b3a8c}
+.rpBox.can{cursor:pointer;box-shadow:0 0 0 3px #ffd24a;animation:rpPulse 1.4s ease-in-out infinite}
+.rpBox.got{opacity:.55}.rpBox.lock img{filter:grayscale(.6);opacity:.7}
+.rpBox .ok,.rpBox .lk{position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#6aa84f center/10px no-repeat;border:2px solid #fff}
+.rpBox .lk{background:#7b4fc0}.rpBox .lk::after{content:'';position:absolute;left:4px;top:3px;width:4px;height:5px;border:1.5px solid #fff;border-radius:2px}
+.rpBox .ok::after{content:'';position:absolute;left:4px;top:2px;width:3px;height:6px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+@keyframes rpPulse{50%{transform:translateY(-2px)}}
+.rpHow{margin:0;text-align:center;font-size:11px;font-weight:800;color:#7a4e2c}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
