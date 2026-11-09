@@ -6696,6 +6696,31 @@ html.land .nav button.navbig .ic{width:32px!important;height:32px!important}
 html.land .nav button.navbig span:last-child{font-size:10.5px!important;color:#b8342d!important;text-shadow:none!important}
 `;document.head.appendChild(st)}
 {const o=document.createElement('div');o.className='y2open';const y=$('y2');if(y&&$('shopBtn')){y.appendChild(o);o.appendChild($('shopBtn'))}}
+// ---- V84: isim biraz daha aşağıda; gün kutusu Otomatik ile simetrik; menü dairelerinde simge ve yazı ortada ----
+{const st=document.createElement('style');st.textContent=`
+.y2prof .tx{top:31%!important}
+.y2day{left:auto!important;right:calc(50% + min(450px,calc(100*var(--vw) - 330px))/2 + 8px)!important;bottom:calc(22px + var(--sab))!important;width:auto!important;align-items:stretch!important}
+.y2day>div{display:flex}
+.y2day #dayPill{height:36px!important;min-width:132px;justify-content:center;padding:0 12px 0 32px!important}
+html.land #autoBtn{min-width:132px!important;justify-content:center!important}
+html.land .nav button{padding:0!important;justify-content:center!important;gap:1px!important}
+html.land .nav button .ic{width:25px!important;height:25px!important;margin:0!important}
+html.land .nav button span:last-child{font-size:8.5px!important;max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.1px}
+html.land .nav button.navbig{padding:0!important;justify-content:center!important}
+html.land .nav button.navbig .ic{width:30px!important;height:30px!important}
+html.land .nav button.navbig span:last-child{font-size:9.5px!important;max-width:54px}
+`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`
+.y2day #dayPill{width:146px!important;min-width:0}html.land #autoBtn{width:146px!important;min-width:0!important;font-size:11.5px!important}
+html.land .nav button span:last-child{font-size:8px!important;max-width:40px}
+html.land .nav button.navbig span:last-child{font-size:9px!important;max-width:50px}
+html.land .nav button.navbig .ic{margin-top:2px!important}
+`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`
+html.land .nav button>span:not(.ic){font-size:8px!important;max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1;color:#4a2a14}
+html.land .nav button.navbig>span:not(.ic){font-size:8.5px!important;max-width:46px;color:#b8342d!important;text-shadow:none!important}
+html.land .nav button>.ic{margin-top:-5px!important}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
