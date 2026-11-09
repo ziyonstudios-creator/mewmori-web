@@ -6850,6 +6850,21 @@ html.land .nav button>span:not(.ic){font-size:10px!important;max-width:46px;lett
 html.land .nav button.navbig{width:74px!important;height:74px!important}
 html.land .nav button.navbig>span:not(.ic){font-size:10.5px!important;max-width:54px;letter-spacing:-.2px}
 `;document.head.appendChild(st)}
+// ---- V89: kenarlardan biraz içeride; Keşfet ve Otomatik/AÇIK menüye yakın ve menünün dikey ortasında; puan profilin içinde sağda ----
+{const st=document.createElement('style');st.textContent=`
+html.land{--ed:16px;--bw:228px;--nw:min(480px,calc(100*var(--vw) - 2*(var(--side) + 46px)))}
+html.rot{--er:calc(var(--ed) + 18px)}
+html.land .nav{left:50%!important;width:var(--nw)!important;bottom:calc(10px + var(--sab))!important}
+html.land .y2kes{left:calc(50% - var(--nw)/2 - 10px - var(--side))!important;bottom:calc(22px + var(--sab))!important}
+html.land #autoBtn{right:auto!important;left:calc(50% + var(--nw)/2 + 10px)!important;bottom:calc(22px + var(--sab))!important}
+html.land .y2open{right:auto!important;left:calc(50% + var(--nw)/2 + 10px + (var(--side) - 66px)/2)!important;bottom:calc(66px + var(--sab))!important}
+/* profil: ad ve seviye sol blokta, puan sağ blokta */
+html.land .y2prof .tx{left:30%!important;right:24%!important;top:30%!important;bottom:auto!important;gap:3px!important}
+html.land .y2prof .lv{width:100%!important}
+html.land .y2rate{left:calc(var(--ed) + var(--bw)*0.765)!important;top:calc(var(--top) + 64px*0.30)!important;width:calc(var(--bw)*0.17)!important;height:calc(64px*0.52)!important;background:none!important}
+html.land .y2rate #repPill{font-size:12.5px}
+html.land .y2rate::before{content:'';position:absolute;left:-3px;top:8%;bottom:8%;border-left:2px dashed #d9b48a}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
