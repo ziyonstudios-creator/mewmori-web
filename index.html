@@ -7408,6 +7408,41 @@ renderStock=function(L){const T=stockS(),mb=menuBases(),now=nowT(),cap=CONFIG.st
 #supModal .ii{display:none!important}
 `;document.head.appendChild(st)}
 
+// ================= KEŞFET (Kafeler Dünyası ilk sekmesi) =================
+// Panel açılınca "Keşfet" gelir: yayımlanmış kafelerden rastgele 3 tanesi kart olarak gösterilir (kendi kafen hariç).
+// "Başka kafeler" düğmesi yeni üçlü getirir. Haftanın kafeleri ve Kafem sekmeleri aynen durur.
+SOC.tab='kesfet';SOC.pick=null;
+{const _ow=openWorld;openWorld=function(){SOC.tab='kesfet';return _ow.apply(this,arguments)}}
+function socPick(force){const me=SB.user&&SB.user.id;const R=(SOC.rank||[]).filter(x=>x.user_id!==me);
+  if(!force&&SOC.pick&&SOC.pick.every(id=>R.some(x=>x.user_id===id)))return SOC.pick.map(id=>R.find(x=>x.user_id===id));
+  const a=R.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  const old=new Set(SOC.pick||[]);a.sort((p,q)=>old.has(p.user_id)-old.has(q.user_id));const out=a.slice(0,3);SOC.pick=out.map(x=>x.user_id);return out}
+const KF_COL=['#f2a6a0','#9fd06a','#86b8d8','#f2c46b','#c9a6e0','#f5b98a'];
+{const _rw=renderWorld;renderWorld=function(){const t=SOC.tab;if(t==='kesfet')SOC.tab='rank';_rw.apply(this,arguments);SOC.tab=t;
+  const p=$('worldP');if(!p||p.hidden)return;const tabs=p.querySelector('.tabs');if(!tabs)return;
+  const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.dataset.wt='kesfet';b.innerHTML=`${ic('globe')}Keşfet`;tabs.prepend(b);
+  tabs.querySelectorAll('[data-wt]').forEach(x=>{x.setAttribute('aria-selected',String(x.dataset.wt===t));x.onclick=()=>{SOC.tab=x.dataset.wt;sfx('tap');renderWorld()}});
+  if(t!=='kesfet'||SOC.loading||SOC.err)return;const sc=p.querySelector('.scroll');const L=socPick(false);
+  sc.innerHTML=`<p class="wmsg">Rastgele kafeler: içeri girip gez, beğendiysen bir tepki bırak (her beğeni ${ic('coin')}5).</p>
+    <div class="kfRow">${L.map((x,i)=>{const c=KF_COL[(x.name||'').length%KF_COL.length];return `<div class="kfCard" style="--kc:${c}"><div class="kfTop">${ic('cafe')}<span class="kfLv">Sv ${x.lvl}</span></div><b class="kfN"></b>
+      <span class="kfL">${ic('heart')}${x.week_likes} bu hafta · toplam ${x.likes_total}</span><button class="btn green" type="button" data-visit="${x.user_id}">${ic('paw')}Gez</button></div>`}).join('')}</div>
+    ${L.length?'':'<p class="wmsg">Henüz gezilecek başka kafe yok. Biraz sonra tekrar bak!</p>'}
+    <div class="kfMore"><button class="btn light" type="button" id="kfMore">${ic('rotate')}Başka kafeler</button></div>`;
+  sc.querySelectorAll('.kfCard').forEach((c,i)=>{c.querySelector('.kfN').textContent=L[i].name});
+  sc.querySelectorAll('[data-visit]').forEach(x=>x.onclick=()=>visitCafe(x.dataset.visit));
+  const m=$('kfMore');if(m){m.disabled=((SOC.rank||[]).length<=4);m.onclick=()=>{socPick(true);sfx('tap');renderWorld()}}}}
+{const st=document.createElement('style');st.textContent=`
+.kfRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:6px 0 10px}
+.kfCard{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 10px 10px;border:3px solid var(--ink);border-radius:18px;background:var(--paper);box-shadow:0 3px 0 var(--ink);overflow:hidden;text-align:center}
+.kfTop{position:relative;align-self:stretch;margin:0 -10px;height:62px;background:linear-gradient(var(--kc),color-mix(in srgb,var(--kc) 70%,#fff));border-bottom:3px solid var(--ink);display:grid;place-items:center}
+.kfTop .ic{width:42px!important;height:42px!important;display:grid}.kfTop .ic svg{width:100%;height:100%}
+.kfLv{position:absolute;right:6px;top:6px;font-size:11px;font-weight:900;padding:2px 7px;border-radius:999px;background:#fff8ea;border:2px solid var(--ink)}
+.kfN{font-family:var(--font-display);font-weight:900;font-size:15px;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kfL{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:800;opacity:.8}.kfL .ic{width:14px;height:14px}
+.kfCard .btn{width:100%;height:36px;font-size:14px}
+.kfMore{display:flex;justify-content:center}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
