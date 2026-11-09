@@ -7338,6 +7338,30 @@ xmTip=function(){const id=XM.sel||'';if(id[0]!=='g')return _xmTipBase();const si
   t.innerHTML=`<b>${G.name}</b><p>${(side==='r'?ROOM_MAX.x1-RM.x1:ROOM_MAX.z1-RM.z1).toFixed(0)} m açık hava bahçesi · masa ve dekor koyabilirsin · masalar masa sınırına sayılır</p>${s.ok?`<button class="btn green" type="button" id="xmBuy">${ic('coin')}${s.c} · Bahçeyi aç</button>`:`<p class="why">${ic('lock')}${s.why||'Şu an açılamaz'}</p>`}`;
   t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{closeExpandMode();buyGarden(side)}};
 
+// ================= TARİF DEFTERİ: düzenli satır =================
+// Her kart üç sütun: [görsel] [ad · durum · bilgi] [Tarif kutusu: malzeme zinciri] [düğmeler]. Tarif görselin karşısında, altında değil.
+{const _rb=renderBook;renderBook=function(){const r=_rb.apply(this,arguments);
+  document.querySelectorAll('#rbList .rc').forEach(rc=>{const tx=rc.querySelector('.tx');if(!tx||tx.dataset.lay)return;tx.dataset.lay='1';
+    const info=document.createElement('div');info.className='rcInfo';const rec=document.createElement('div');rec.className='rcRec';const act=document.createElement('div');act.className='rcAct';
+    const combo=tx.querySelector('.combo');[...tx.children].forEach(ch=>{if(ch===combo)return;if(ch.classList.contains('rbact'))act.appendChild(ch);else info.appendChild(ch)});
+    rec.innerHTML=`<small>Tarif</small>`;if(combo&&combo.innerHTML.trim())rec.appendChild(combo);else rec.innerHTML+=`<span class="rcNo">Birleştirme ile keşfedilir</span>`;
+    tx.innerHTML='';tx.append(info,rec,act)});return r}}
+{const st=document.createElement('style');st.textContent=`
+#rbList{max-width:860px!important;margin:0 auto}
+#rbList .rc{align-items:stretch;padding:8px 10px}
+#rbList .rc .th{align-self:center}
+#rbList .rc .tx{flex-direction:row!important;align-items:center;gap:10px}
+#rbList .rcInfo{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+#rbList .rcRec{flex:0 0 auto;width:min(270px,calc(34*var(--vw)));align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:6px 10px;border-radius:12px;background:#f6e6cc;border:2px dashed #d9b98a}
+#rbList .rcRec>small{font-family:var(--font-display);font-weight:900;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#a0704a}
+#rbList .rcRec .combo{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0}
+#rbList .rcRec .rcNo{font-size:11.5px;font-weight:800;color:#8a6a4a}
+#rbList .rcAct{flex:0 0 auto;width:150px;display:flex;flex-direction:column;gap:6px;justify-content:center}
+#rbList .rcAct .rbact{margin:0;flex-direction:column;align-items:stretch;gap:3px}
+#rbList .rcAct .rbact .btn{width:100%;justify-content:center;white-space:nowrap}
+#rbList .rcAct .rbact small{text-align:center;line-height:1.15}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
