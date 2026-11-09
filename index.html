@@ -7507,6 +7507,39 @@ function equipUI(){const on=EQB.until>performance.now()&&UI.mode==='cafe'&&!UI.m
 .act.eqUp{background:#fff3c4;font-weight:900;display:flex;align-items:center;gap:4px}
 `;document.head.appendChild(st)}
 
+// ================= BİRLEŞTİR: yatay tam ekran düzen =================
+// Ortada büyük tahta (ekran yüksekliğine göre), solda başlık + enerji + hedef tarif, sağda seçili malzemenin bilgisi.
+// Çerçeve ve tente kalkar; arka planda sokak görseli kalır, paneller krem kartlar.
+{const st=document.createElement('style');st.textContent=`
+html.land #merge.skin .skwin{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;margin:0!important;transform:none!important;
+  background:none!important;border:0!important;border-image:none!important;box-shadow:none!important;padding:calc(max(8px,var(--sat,0px))) calc(var(--er,16px)) 8px 16px!important;display:block!important}
+html.land #merge.skin .skwin::before,html.land #merge.skin .skwin::after{display:none!important}
+html.land #merge.skin .skhead{position:absolute!important;inset:0 0 auto auto!important;height:0!important;background:none!important;border:0!important;padding:0!important;margin:0!important}
+html.land #merge.skin .skhead>:not(.skclose){display:none!important}
+html.land #merge.skin .skclose{position:absolute!important;right:calc(var(--er,16px) - 4px)!important;top:calc(max(6px,var(--sat,0px)))!important;left:auto!important;z-index:5}
+html.land #merge.skin .skwin>.scroll{height:100%;margin:0!important;padding:0!important;overflow:visible!important;display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:14px;row-gap:8px;align-items:start}
+html.land #merge.skin .board-wrap{grid-column:2!important;grid-row:1/4!important;align-self:center;padding:0!important;margin:0!important}
+html.land #merge.skin .board{--cell:min(58px,calc((100*var(--vh) - 16px - 40px - 15px)/6));border-width:20px!important;gap:3px!important;filter:drop-shadow(0 6px 10px rgba(40,20,5,.35))}
+html.land #merge.skin .mtop{grid-column:1!important;grid-row:2!important;padding:0!important;margin:0!important}
+html.land #merge.skin .mgtarget{grid-column:1!important;grid-row:3!important;margin:0!important;display:grid!important;grid-template-columns:34px 1fr;column-gap:8px;row-gap:6px;align-items:center;padding:10px 12px!important}
+html.land #merge.skin .mgtarget>.ic{width:34px!important;height:34px!important}
+html.land #merge.skin .mgtarget .tx{min-width:0}
+html.land #merge.skin .mgtarget>.btn{grid-column:1/-1;width:100%;justify-content:center;height:34px}
+html.land #merge.skin .info{grid-column:3!important;grid-row:1/4!important;margin:42px 0 0!important;align-self:start}
+html.land #merge.skin .scroll::before{content:'Birleştir';grid-column:1;grid-row:1;justify-self:start;display:flex;align-items:center;height:38px;padding:0 18px 0 46px;border:3px solid #5a2f12;border-radius:999px;
+  background:url(${UIIMG('n_cloche')}) 8px center/30px no-repeat,linear-gradient(#fff8ea,#f5dcb4);box-shadow:inset 0 0 0 2.5px #e9964a,0 3px 0 #5a2f12;font-family:var(--font-display);font-weight:900;font-size:17px;color:#4a2a14}
+html.land #merge.skin .energy{flex-wrap:nowrap}
+html.land #merge.skin .mgtarget .tx small{font-size:11px;line-height:1.2}
+html.land #merge.skin .info .box{min-height:150px;flex-direction:column!important;align-items:center!important;text-align:center;gap:6px!important;padding:12px 12px 14px!important;border:0!important;box-shadow:none!important;background:none!important;border-image:url(${UIIMG('card')}) 56 fill/14px stretch!important}
+html.land #merge.skin .info .box .mi{width:54px!important;height:54px!important;flex:none}
+html.land #merge.skin .info .box .mi svg,html.land #merge.skin .info .box .mi img{width:100%;height:100%}
+html.land #merge.skin .info .box .tx{font-size:12px!important;line-height:1.3}
+html.land #merge.skin .info .box .tx b{display:block;font-size:15px;margin-bottom:3px}
+html.land #merge.skin .info .box .btn{margin-top:4px}
+html.land #merge.skin .info .skhow{display:none!important}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
