@@ -6776,7 +6776,7 @@ html.land #game .bottom{bottom:calc(var(--ed) + 84px + var(--sab))!important}
 // solda Ayarlar + Duyurular (32 yuvarlak) + Görevler; sağda Etkinlik/Mesaj alt alta; altta Keşfet | menü | Otomatik (+AÇIK üstünde).
 // Yazı kuralı: en az 11px, kremde koyu kahve, yeşil/sarıda koyu kenarlı beyaz.
 {const st=document.createElement('style');st.textContent=`
-html.land{--ed:10px;--top:max(10px,var(--sat));--bw:200px;--side:150px}
+html.land{--ed:10px;--top:max(10px,var(--sat));--bw:200px;--mw:150px;--side:150px}
 html.land .y2prof{left:var(--ed)!important;top:var(--top)!important;width:var(--bw)!important;height:64px!important}
 html.land .y2prof .nm{font-size:14px!important}
 /* yuvarlak rozetler */
@@ -6786,10 +6786,10 @@ html.land .y2rate{left:calc(var(--ed) + var(--bw) + 8px);top:calc(var(--top) + 9
 .y2rate #repPill{all:unset;display:flex;flex-direction:column;align-items:center;gap:0;font-family:var(--font-display);font-weight:900;font-size:12px;line-height:1;color:#4a2a14;cursor:pointer}
 .y2rate #repPill svg{width:17px;height:17px;display:block}
 .y2rate #repPill b{font:inherit}
-html.land .y2sun{right:calc(var(--ed) + var(--bw) + 8px);top:calc(var(--top) + 9px)}
+html.land .y2sun{right:calc(var(--ed) + var(--mw) + 8px);top:calc(var(--top) + 9px)}
 .y2sun img{width:30px;height:30px;object-fit:contain}
 /* para */
-html.land .y2money{right:var(--ed)!important;left:auto!important;top:var(--top)!important;width:var(--bw)!important;gap:4px!important}
+html.land .y2money{right:var(--ed)!important;left:auto!important;top:var(--top)!important;width:var(--mw)!important;gap:4px!important}
 html.land .y2money .pill{height:30px!important}
 html.land .y2money .pill #coins,html.land .y2money .pill #gems{font-size:15px!important}
 /* sol ikinci satır */
