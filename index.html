@@ -8099,8 +8099,8 @@ html.land #y2 .y2prof.pf2 .xpbar{height:11px!important}
 #nav,.bottom,#autoBtn,.y2prof,.y2rate,.y2signs,.y2rp,.y2open,#kesBtn,.y2sun,.skdaybox{transition:opacity .22s}
 #game.hudoff .y2left{top:calc(max(8px,var(--sat)) + 4px)!important}
 /* --- yeni oyuncu: ilk seviyelerde yalnız gerekli düğmeler görünür; diğerleri seviye atladıkça açılır --- */
-#game[data-nb="1"] .y2rp,#game[data-nb="1"] #evBtn,#game[data-nb="1"] #msgBtn,#game[data-nb="1"] #kesBtn,#game[data-nb="1"] .y2vip,#game[data-nb="1"] #mailBtn,#game[data-nb="1"] #worldBtn,
-#game[data-nb="2"] #msgBtn,#game[data-nb="2"] #kesBtn,#game[data-nb="2"] #worldBtn{display:none!important}
+html.land #game[data-nb="1"] .y2rp,html.land #game[data-nb="1"] #evBtn,html.land #game[data-nb="1"] #msgBtn,html.land #game[data-nb="1"] #kesBtn,html.land #game[data-nb="1"] .y2vip,html.land #game[data-nb="1"] #mailBtn,html.land #game[data-nb="1"] #worldBtn,
+html.land #game[data-nb="2"] #msgBtn,html.land #game[data-nb="2"] #kesBtn,html.land #game[data-nb="2"] #worldBtn{display:none!important}
 /* --- giriş ekranı: yatayda misafir düğmesi kaydırmadan görünür --- */
 html.land #auth .acard{width:min(100%,560px);gap:8px;padding:12px 14px}
 html.land #auth .alogo{width:min(46%,170px)}
@@ -8180,6 +8180,130 @@ html.land .mlist .tgl{min-width:104px;padding:8px 10px}
  // yatay ekranda kamera kafeye biraz daha yakın başlar (kafe planı öne gelsin)
  try{if(innerWidth>innerHeight*1.4){const t=controls.target;camera.position.sub(t).multiplyScalar(0.84).add(t);controls.update()}}catch(e){}
 }
+
+// ================= TASARIM DİLİ "PATİ TABELA" (kodla çizilir; görsel dosyası kullanmaz) — 1. aşama: ana ekran =================
+// Turuncu-krem kedi kafesi: krem gövde + kalın kahve çerçeve + içte turuncu şerit + altta gölge basamağı ("tabela").
+// Alt menü yuvarlak pati düğmeleri taşıyan turuncu bir tezgâh; ortadaki Birleştir düğmesi kedi kulaklı.
+// Simgeler satır içi SVG: altın dolgu, kalın kahve kontur. Pencerelerin içi (çerçeve, tente) 2. aşamada bu dile geçecek.
+{
+  const K='fill="#ffc93c" stroke="#5a2f12" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"';
+  const SVGI=b=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" ${K}>${b}</svg>`;
+  const KI={
+    book:`<path d="M7 15q13-7 25 2q12-9 25-2v35q-13-6-25 3q-12-9-25-3z" fill="#fff6e2"/><path d="M32 17v36"/><path d="M14 26h10M14 34h10M40 26h10M40 34h10" stroke="#d98a3a" stroke-width="3"/><path d="M44 10v14l4-3l4 3V11" fill="#f2665c"/>`,
+    cloche:`<path d="M11 44a21 21 0 0 1 42 0z"/><path d="M5 49h54" stroke-width="6"/><circle cx="32" cy="19" r="4.5"/><path d="M19 38a14 14 0 0 1 9-11" fill="none" stroke="#fff3b8" stroke-width="3"/>`,
+    bowl:`<path d="M41 6l-9 24" stroke-width="5"/><ellipse cx="30" cy="31" rx="6" ry="10" fill="#fff6e2" transform="rotate(22 30 31)"/><path d="M7 31h50a25 24 0 0 1-50 0z" fill="#f2665c"/><path d="M12 38a20 18 0 0 0 12 13" fill="none" stroke="#ffd0c8" stroke-width="3"/><path d="M52 10l2 5l5 2l-5 2l-2 5l-2-5l-5-2l5-2z" fill="#fff6e2" stroke-width="2.5"/>`,
+    cat:`<path d="M11 10l11 11q10-5 20 0l11-11v27a21 19 0 0 1-42 0z"/><circle cx="24" cy="36" r="3.2" fill="#5a2f12" stroke="none"/><circle cx="40" cy="36" r="3.2" fill="#5a2f12" stroke="none"/><path d="M29 43h6l-3 3.5z" fill="#f2665c" stroke-width="2"/><path d="M6 40l8 2M6 47l8-1M58 40l-8 2M58 47l-8-1" stroke-width="2.5"/>`,
+    shop:`<path d="M12 28v26h40V28" fill="#fff6e2"/><rect x="26" y="38" width="12" height="16" fill="#9bd06a"/><path d="M7 27l6-15h38l6 15z" fill="#f2665c"/><path d="M7 27a6.2 6 0 0 0 12.5 0a6.2 6 0 0 0 12.5 0a6.2 6 0 0 0 12.5 0a6.2 6 0 0 0 12.5 0" fill="#fff6e2"/>`,
+    gear:`<circle cx="32" cy="32" r="19" fill="none" stroke-width="15" stroke-dasharray="8 6.92" stroke-linecap="butt"/><circle cx="32" cy="32" r="19" fill="none" stroke="#ffc93c" stroke-width="8" stroke-dasharray="8 6.92" stroke-linecap="butt"/><circle cx="32" cy="32" r="16"/><circle cx="32" cy="32" r="6.5" fill="#fff6e2"/>`,
+    mega:`<path d="M21 40l4 15h9l-4-13" fill="#f2665c"/><path d="M8 26v13l10 2l26 12V11L18 24z"/><path d="M51 23q7 9 0 18" fill="none"/>`,
+    tasks:`<rect x="11" y="10" width="42" height="49" rx="6" fill="#fff6e2"/><rect x="23" y="4" width="18" height="12" rx="4"/><path d="M19 29l4 4l7-8M19 45l4 4l7-8" fill="none" stroke="#6aa63a"/><path d="M37 31h9M37 47h9" stroke="#d98a3a" stroke-width="3"/>`,
+    crown:`<path d="M7 21l13 11l12-19l12 19l13-11l-6 30H13z"/><path d="M15 43h34" stroke="#d98a3a" stroke-width="3"/><circle cx="32" cy="34" r="4" fill="#f2665c" stroke-width="2.5"/>`,
+    gift:`<rect x="10" y="27" width="44" height="30" rx="4" fill="#f2665c"/><rect x="6" y="18" width="52" height="12" rx="4" fill="#f2665c"/><path d="M32 19v37" stroke="#ffc93c" stroke-width="9" stroke-linecap="butt"/><path d="M32 18q-15-15-17-3q0 6 17 3q15-15 17-3q0 6-17 3z"/>`,
+    mail:`<rect x="6" y="13" width="52" height="40" rx="6" fill="#fff6e2"/><path d="M8 17l24 19l24-19" fill="none"/><circle cx="32" cy="40" r="7" fill="#f2665c"/>`,
+    paw:`<ellipse cx="32" cy="43" rx="15" ry="12"/><circle cx="13" cy="28" r="6.5"/><circle cx="25" cy="17" r="6.5"/><circle cx="39" cy="17" r="6.5"/><circle cx="51" cy="28" r="6.5"/>`,
+    sun:`<path d="M32 4v9M32 51v9M4 32h9M51 32h9M12 12l6 6M46 46l6 6M52 12l-6 6M18 46l-6 6" stroke-width="5"/><circle cx="32" cy="32" r="14"/>`,
+    dusk:`<path d="M32 12v8M10 40h8M46 40h8M15 21l6 6M49 21l-6 6" stroke-width="5"/><path d="M18 42a14 14 0 0 1 28 0z" fill="#f79a4a"/><path d="M6 44h52M14 53h36" stroke-width="5"/>`,
+    moon:`<path d="M41 7a25 25 0 1 0 16 38a21 21 0 0 1-16-38z" fill="#ffe9a8"/><path d="M12 14l1.5 4l4 1.5l-4 1.5l-1.5 4l-1.5-4l-4-1.5l4-1.5z" fill="#fff6e2" stroke-width="2"/>`};
+  const KSRC=n=>`data:image/svg+xml,${encodeURIComponent(SVGI(KI[n]))}`,KURL=n=>`url("${KSRC(n)}")`;
+  const P='html.land #game',TAB='background:linear-gradient(var(--k-c1),var(--k-c2))!important;border:3px solid var(--k-ink)!important;box-shadow:inset 0 0 0 2.5px var(--k-in),0 3px 0 var(--k-ink),0 5px 8px rgba(40,20,5,.25)!important;color:var(--k-ink)!important;border-image:none!important';
+  const st=document.createElement('style');st.textContent=`
+:root{--k-ink:#4a2a14;--k-in:#f3a45a;--k-c1:#fffaf0;--k-c2:#fbe2ba;--k-g1:#ffe08a;--k-g2:#f6b93a}
+/* alt menü: turuncu tezgâh + yuvarlak pati düğmeleri; ortadaki kedi kulaklı */
+${P} #nav{border-image:none!important;border:3px solid var(--k-ink)!important;border-radius:999px!important;background:radial-gradient(circle at 14px 12px,rgba(255,236,200,.4) 2.5px,transparent 3px) 0 0/28px 24px,linear-gradient(#f7a653,#e17d28)!important;box-shadow:inset 0 0 0 3px #ffc98a,inset 0 -7px 0 rgba(120,50,10,.22),0 4px 0 var(--k-ink),0 9px 14px rgba(40,20,5,.35)!important;padding:0 16px!important;align-items:center!important;overflow:visible!important}
+${P} #nav button{background:linear-gradient(var(--k-c1),var(--k-c2))!important;border:3px solid var(--k-ink)!important;border-radius:50%!important;box-shadow:inset 0 0 0 2.5px var(--k-in),0 3px 0 var(--k-ink)!important;color:var(--k-ink)!important;position:relative}
+${P} #nav button[aria-pressed="true"]{background:linear-gradient(var(--k-g1),var(--k-g2))!important}
+${P} #nav button .ic{background:none!important;width:27px!important;height:27px!important;display:block!important;margin:0 auto}
+${P} #nav button.navbig .ic{width:34px!important;height:34px!important}
+${P} #nav button .ic svg{display:block!important;width:100%!important;height:100%!important}
+${P} #nav .navcat{display:none!important}
+${P} #nav button.navbig{background:linear-gradient(var(--k-g1),var(--k-g2))!important}
+${P} #nav button.navbig::before,${P} #nav button.navbig::after{content:''!important;position:absolute!important;top:-9px!important;bottom:auto!important;width:20px!important;height:22px!important;background:linear-gradient(var(--k-g1),var(--k-g2))!important;border:3px solid var(--k-ink)!important;border-radius:4px 16px 2px 2px!important;z-index:-1!important;box-sizing:border-box!important;margin:0!important;opacity:1!important}
+${P} #nav button.navbig::before{left:5px!important;right:auto!important;transform:rotate(-24deg)!important}
+${P} #nav button.navbig::after{right:5px!important;left:auto!important;transform:scaleX(-1) rotate(-24deg)!important}
+/* hap tabelalar: Görevler, Keşfet, Otomatik */
+${P} .y2pb,${P} #kesBtn,${P} #autoBtn{${TAB};border-radius:999px!important;padding:0 13px 0 7px!important;display:flex!important;align-items:center!important;gap:6px!important}
+${P} #mailBtn{padding:0!important;justify-content:center!important;border-radius:50%!important}
+${P} #kesBtn{background:linear-gradient(var(--k-g1),var(--k-g2))!important;justify-content:center!important}
+${P} #autoBtn[aria-pressed="true"]{background:linear-gradient(#e2f5b4,#aadb6c)!important}
+${P} .y2pb .ic2,${P} #kesBtn img{width:22px!important;height:22px!important;flex:none;position:static!important;margin:0!important;transform:none!important}
+${P} .y2pb,${P} #kesBtn{text-indent:0!important;justify-content:flex-start!important;overflow:visible!important;white-space:nowrap}
+${P} #dailyBtn{width:auto!important;min-width:112px}
+${P} #autoBtn[hidden],${P} #kesBtn[hidden],${P} .y2pb[hidden],${P} .y2s[hidden]{display:none!important}
+/* asılı tabelalar: Pass, Etkinlik, Mesaj */
+${P} .y2s{${TAB};border-radius:14px!important;position:relative;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;padding:2px!important}
+${P} .y2s::before{content:'';position:absolute;left:24%;right:24%;top:-10px;height:10px;border:3px solid var(--k-ink);border-bottom:0;border-radius:9px 9px 0 0;background:none;box-sizing:border-box}
+${P} .y2s .ic2{width:28px!important;height:28px!important}
+/* yuvarlak düğmeler: ayar, fotoğraf modu, gün simgesi */
+${P} .y2r32,${P} .y2sun{background:var(--k-ic,none) center/64% no-repeat,linear-gradient(var(--k-c1),var(--k-c2))!important;border:2.5px solid var(--k-ink)!important;border-radius:50%!important;box-shadow:inset 0 0 0 2px var(--k-in),0 2px 0 var(--k-ink)!important;box-sizing:border-box!important}
+${P} .y2sun img{opacity:0!important}
+/* para tabelaları */
+${P} #coinPill,${P} #gemPill{border-image:none!important;background:linear-gradient(#fffdf6,#fdeccc)!important;border:3px solid var(--k-ink)!important;border-radius:999px!important;box-shadow:inset 0 0 0 2.5px var(--k-in),0 3px 0 var(--k-ink)!important;box-sizing:border-box!important}
+/* durum satırı: konuşma balonu gibi */
+${P} .bottom .hint{display:inline-block;background:rgba(255,250,240,.94);color:var(--k-ink);border:2.5px solid var(--k-ink);border-radius:999px;padding:2px 14px 3px;text-shadow:none;font-size:13px;box-shadow:0 2px 0 var(--k-ink)}
+${P} .bottom{text-align:center}
+`;document.head.appendChild(st);
+  const NAVI={book:'book',menu:'cloche',merge:'bowl',team:'cat',market:'shop'};
+  function kApply(){try{
+    document.querySelectorAll('#nav button').forEach(b=>{const ic=b.querySelector('.ic'),n=NAVI[b.dataset.nav];if(ic&&n&&ic.dataset.k!==n){ic.innerHTML=SVGI(KI[n]);ic.dataset.k=n}});
+    for(const [id,n] of [['dailyBtn','tasks'],['mailBtn','mega'],['rpBtn','crown'],['evBtn','gift'],['msgBtn','mail'],['kesBtn','paw'],['worldBtn','paw']]){const e=$(id),im=e&&e.querySelector('img');if(im&&im.dataset.k!==n){im.src=KSRC(n);im.dataset.k=n}}
+    const s=$('setBtn');if(s&&s.dataset.k!=='gear'){s.style.setProperty('--k-ic',KURL('gear'));s.dataset.k='gear'}
+    const d=$('y2DayIc'),box=d&&d.parentElement;if(box){const n=/moon/.test(d.src)?'moon':/dusk/.test(d.src)?'dusk':'sun';if(box.dataset.k!==n){box.style.setProperty('--k-ic',KURL(n));box.dataset.k=n}}
+  }catch(e){}}
+  kApply();setInterval(kApply,900);
+}
+
+// ================= AÇILIŞ SİNEMASI + İLK ADIMLAR =================
+// İlk kez oynayan oyuncuda: boş arsadan kafenin kuruluşu (zemin → duvarlar → mutfak ve kasa → masalar → ekip), kamera çevresinde döner,
+// altta kısa yazılar, "Geç" düğmesi. Ardından doğrudan ilk müşteri öğreticisi başlar (cafe1…cafe7); ekip tasarımı öğretici bitince önerilir.
+{const st=document.createElement('style');st.textContent=`
+#cine{position:absolute;inset:0;z-index:40;pointer-events:none}
+#cine .b{position:absolute;left:0;right:0;height:11%;background:#1d120a;transition:transform .7s ease}
+#cine .b.t{top:0;transform:translateY(-100%)}#cine .b.d{bottom:0;transform:translateY(100%)}
+#cine.on .b{transform:none}
+#cine .cap{position:absolute;left:50%;bottom:calc(11% + 14px);transform:translateX(-50%);width:max-content;max-width:84%;font-family:var(--font-display);font-weight:800;font-size:clamp(17px,calc(2.6*var(--vw,calc(1*var(--vw)))),24px);line-height:1.15;color:#fff8ec;text-shadow:0 2px 0 #4a2a14,0 0 14px #4a2a14,0 0 4px #4a2a14;text-align:center;transition:opacity .28s}
+#cine .logo{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.6);opacity:0;transition:transform .6s cubic-bezier(.2,1.5,.4,1),opacity .4s;font-family:var(--font-display);font-weight:800;font-size:clamp(40px,calc(8*var(--vw,calc(1*var(--vw)))),76px);line-height:1;color:#ffc93c;-webkit-text-stroke:3px #4a2a14;paint-order:stroke fill;text-shadow:0 5px 0 #4a2a14,0 10px 18px rgba(40,20,5,.5);white-space:nowrap}
+#cine .logo.in{transform:translate(-50%,-50%);opacity:1}
+#cineSkip{position:absolute;right:max(14px,env(safe-area-inset-right,0px));top:calc(11% + 10px);pointer-events:auto;appearance:none;border:3px solid #4a2a14;border-radius:999px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:inset 0 0 0 2.5px #f3a45a,0 3px 0 #4a2a14;font-family:var(--font-display);font-weight:800;font-size:15px;color:#4a2a14;padding:6px 16px;cursor:pointer}
+#game.cineOn #y2,#game.cineOn #nav,#game.cineOn .bottom,#game.cineOn #autoBtn,#game.cineOn #ui,#game.cineOn .hud,#game.cineOn #toasts,#game.cineOn .skdaybox{opacity:0!important;pointer-events:none!important}
+#y2,#nav,#ui{transition:opacity .5s}
+`;document.head.appendChild(st)}
+function playCine(done){const busy=()=>{const a=$('auth'),l=$('load'),i=$('intro');return (a&&!a.hidden)||(l&&!l.hidden)||(i&&!i.hidden&&i.offsetParent)};
+  if(busy()){const g0=$('game');g0.classList.add('cineOn');const w=setInterval(()=>{if(!busy()){clearInterval(w);setTimeout(()=>playCine(done),250)}},250);return}
+  const g=$('game');if($('cine')){done&&done();return}
+  const ov=document.createElement('div');ov.id='cine';ov.innerHTML=`<i class="b t"></i><i class="b d"></i><div class="logo">TabbyChef</div><div class="cap"></div><button type="button" id="cineSkip">Geç ›</button>`;g.appendChild(ov);g.classList.add('cineOn');
+  requestAnimationFrame(()=>ov.classList.add('on'));const cap=ov.querySelector('.cap'),logo=ov.querySelector('.logo');
+  const cl=(v)=>Math.max(0,Math.min(1,v)),back=a=>{const c=1.9;return 1+(c+1)*Math.pow(a-1,3)+c*Math.pow(a-1,2)},eo=a=>1-Math.pow(1-a,3),eio=a=>a<.5?4*a*a*a:1-Math.pow(-2*a+2,3)/2;
+  // sahne parçaları ve sıraları
+  const parts=[],add=(o,kind)=>{if(o&&!parts.some(p=>p.o===o))parts.push({o,kind,s:o.scale.clone(),v:o.visible,hit:false})};
+  try{add(SHELL.g,'shell');add(KG,'pop');add(CG,'pop');for(const k in OPG)add(OPG[k],'pop');try{if(GARDEN_G)add(GARDEN_G,'pop')}catch(e){}
+    for(const R of FURN.values())add(R.group,'furn');for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)if(k.ch&&k.ch.o)add(k.ch.o,'cat')}catch(e){console.warn('sinema',e)}
+  let pi=0,fi=0,ci=0;for(const p of parts){if(p.kind==='shell')p.t0=1.0;else if(p.kind==='pop')p.t0=3.3+0.3*(pi++);else if(p.kind==='furn')p.t0=4.7+Math.min(0.22*(fi++),2.2)}
+  const tCat=4.7+Math.min(0.22*fi,2.2)+0.55;for(const p of parts)if(p.kind==='cat')p.t0=tCat+0.28*(ci++);
+  const tLogo=tCat+0.28*ci+0.7,tEnd=tLogo+2.2;
+  const CAPS=[[0.1,'Burası bomboş bir arsaydı…'],[1.0,'Önce zemin döşendi, duvarlar yükseldi.'],[3.3,'Mutfak ve kasa yerini aldı.'],[4.7,'Masalar dizildi…'],[tCat,'Ve kediler işbaşı yaptı!'],[tLogo,'']];
+  // kamera: son konumdan geriye, kafenin çevresinde geniş bir yay
+  const tg=controls.target.clone(),v0=camera.position.clone().sub(tg),was=controls.enabled;controls.enabled=false;
+  const T0=performance.now();let ended=false,capI=-1;
+  const apply=t=>{for(const p of parts){const o=p.o,s=p.s;
+      if(p.kind==='shell'){const a=cl((t-p.t0)/1.1),b=cl((t-p.t0-1.1)/1.1),f=Math.max(0.001,back(a));o.visible=p.v&&a>0;o.scale.set(s.x*f,s.y*(0.02+0.98*eo(b)),s.z*f)}
+      else{const a=cl((t-p.t0)/0.5);o.visible=p.v&&a>0;const f=Math.max(0.001,back(a));o.scale.set(s.x*f,s.y*f,s.z*f);if(a>0&&!p.hit){p.hit=true;try{if(p.kind!=='shell')sfx(p.kind==='cat'?'buy':'tap')}catch(e){}}}}
+    const e=eio(cl(t/(tEnd-0.4))),th=(1-e)*1.25,f=1+0.6*(1-e),c=Math.cos(th),s2=Math.sin(th);
+    camera.position.set(tg.x+(v0.x*c+v0.z*s2)*f,tg.y+v0.y*(1+0.25*(1-e)),tg.z+(-v0.x*s2+v0.z*c)*f);camera.lookAt(tg);
+    let i=-1;for(let k=0;k<CAPS.length;k++)if(t>=CAPS[k][0])i=k;if(i!==capI){capI=i;cap.style.opacity=0;const tx=i>=0?CAPS[i][1]:'';setTimeout(()=>{cap.textContent=tx;cap.style.opacity=tx?1:0},160)}
+    if(t>=tLogo)logo.classList.add('in')};
+  const finish=()=>{if(ended)return;ended=true;for(const p of parts){p.o.scale.copy(p.s);p.o.visible=p.v}camera.position.copy(tg).add(v0);controls.enabled=was;controls.update();
+    ov.classList.remove('on');ov.style.transition='opacity .5s';ov.style.opacity=0;g.classList.remove('cineOn');setTimeout(()=>ov.remove(),520);try{renderer.shadowMap.needsUpdate=true}catch(e){}done&&done()};
+  $('cineSkip').onclick=e=>{e.stopPropagation();finish()};
+  apply(0);(function tick(){if(ended)return;const t=(performance.now()-T0)/1000;if(t>=tEnd)return finish();try{apply(t)}catch(e){console.warn('sinema',e);return finish()}requestAnimationFrame(tick)})()}
+// ilk açılış: sinema → ilk müşteri öğreticisi; ekip tasarımı öğretici bittikten sonra önerilir
+{const _o=offerSetup;let offered=false;
+ offerSetup=function(isNew){if(S.created)return;if(!S.cine){S.cine=1;try{markDirty()}catch(e){}offered=false;
+     playCine(()=>{try{if(S.tut==='create'||!S.tut){S.tut='cafe1';tutCafeStart()}}catch(e){console.warn('öğretici',e)}});return}
+   offered=true;return _o.apply(this,arguments)};
+ setInterval(()=>{try{if(started&&!S.created&&S.tut==='done'&&!offered&&UI.mode==='cafe'&&!UI.modal&&!$('cine')){offered=true;_o(false)}}catch(e){}},1500);
+ // "Daha sonra" diyen oyuncu da ilk müşteri öğreticisini görsün
+ document.addEventListener('click',e=>{if(e.target&&e.target.id==='ofLater')setTimeout(()=>{try{if(S.tut==='create'){S.tut='cafe1';tutCafeStart();markDirty()}}catch(_){}},60)},true)}
+window.__playCine=playCine;
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
