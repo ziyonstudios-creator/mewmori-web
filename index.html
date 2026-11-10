@@ -8099,7 +8099,7 @@ html.land #y2 .y2prof.pf2 .xpbar{height:11px!important}
 #nav,.bottom,#autoBtn,.y2prof,.y2rate,.y2signs,.y2rp,.y2open,#kesBtn,.y2sun,.skdaybox{transition:opacity .22s}
 #game.hudoff .y2left{top:calc(max(8px,var(--sat)) + 4px)!important}
 /* --- yeni oyuncu: ilk seviyelerde yalnız gerekli düğmeler görünür; diğerleri seviye atladıkça açılır --- */
-html.land #game[data-nb="1"] .y2rp,html.land #game[data-nb="1"] #evBtn,html.land #game[data-nb="1"] #msgBtn,html.land #game[data-nb="1"] #kesBtn,html.land #game[data-nb="1"] .y2vip,html.land #game[data-nb="1"] #mailBtn,html.land #game[data-nb="1"] #worldBtn,
+html.land #game[data-nb="1"] .y2rp,html.land #game[data-nb="1"] #rpBtn,html.land #game[data-nb="1"] #evBtn,html.land #game[data-nb="1"] #msgBtn,html.land #game[data-nb="1"] #kesBtn,html.land #game[data-nb="1"] .y2vip,html.land #game[data-nb="1"] #mailBtn,html.land #game[data-nb="1"] #worldBtn,
 html.land #game[data-nb="2"] #msgBtn,html.land #game[data-nb="2"] #kesBtn,html.land #game[data-nb="2"] #worldBtn{display:none!important}
 /* --- giriş ekranı: yatayda misafir düğmesi kaydırmadan görünür --- */
 html.land #auth .acard{width:min(100%,560px);gap:8px;padding:12px 14px}
@@ -8254,7 +8254,7 @@ ${P} .bottom{text-align:center}
 
 // ================= AÇILIŞ SİNEMASI + İLK ADIMLAR =================
 // İlk kez oynayan oyuncuda: boş arsadan kafenin kuruluşu (zemin → duvarlar → mutfak ve kasa → masalar → ekip), kamera çevresinde döner,
-// altta kısa yazılar, "Geç" düğmesi. Ardından doğrudan ilk müşteri öğreticisi başlar (cafe1…cafe7); ekip tasarımı öğretici bitince önerilir.
+// alt yazı yok, "Geç" düğmesi. Öğretici boyunca (cafe1…cafe7) arayüz gizlenir ve kamera kafeye yaklaşır; öğretici bitince geri gelir. Ardından doğrudan ilk müşteri öğreticisi başlar (cafe1…cafe7); ekip tasarımı öğretici bitince önerilir.
 {const st=document.createElement('style');st.textContent=`
 #cine{position:absolute;inset:0;z-index:40;pointer-events:none}
 #cine .b{position:absolute;left:0;right:0;height:11%;background:#1d120a;transition:transform .7s ease}
@@ -8280,7 +8280,7 @@ function playCine(done){const busy=()=>{const a=$('auth'),l=$('load'),i=$('intro
   let pi=0,fi=0,ci=0;for(const p of parts){if(p.kind==='shell')p.t0=1.0;else if(p.kind==='pop')p.t0=3.3+0.3*(pi++);else if(p.kind==='furn')p.t0=4.7+Math.min(0.22*(fi++),2.2)}
   const tCat=4.7+Math.min(0.22*fi,2.2)+0.55;for(const p of parts)if(p.kind==='cat')p.t0=tCat+0.28*(ci++);
   const tLogo=tCat+0.28*ci+0.7,tEnd=tLogo+2.2;
-  const CAPS=[[0.1,'Burası bomboş bir arsaydı…'],[1.0,'Önce zemin döşendi, duvarlar yükseldi.'],[3.3,'Mutfak ve kasa yerini aldı.'],[4.7,'Masalar dizildi…'],[tCat,'Ve kediler işbaşı yaptı!'],[tLogo,'']];
+  const CAPS=[];   // alt yazı yok: sahne kendini anlatır
   // kamera: son konumdan geriye, kafenin çevresinde geniş bir yay
   const tg=controls.target.clone(),v0=camera.position.clone().sub(tg),was=controls.enabled;controls.enabled=false;
   const T0=performance.now();let ended=false,capI=-1;
@@ -8303,7 +8303,49 @@ function playCine(done){const busy=()=>{const a=$('auth'),l=$('load'),i=$('intro
  setInterval(()=>{try{if(started&&!S.created&&S.tut==='done'&&!offered&&UI.mode==='cafe'&&!UI.modal&&!$('cine')){offered=true;_o(false)}}catch(e){}},1500);
  // "Daha sonra" diyen oyuncu da ilk müşteri öğreticisini görsün
  document.addEventListener('click',e=>{if(e.target&&e.target.id==='ofLater')setTimeout(()=>{try{if(S.tut==='create'){S.tut='cafe1';tutCafeStart();markDirty()}}catch(_){}},60)},true)}
+{const st=document.createElement('style');st.textContent=`
+#game.tutA #nav,#game.tutA .y2prof,#game.tutA .y2left,#game.tutA .y2signs,#game.tutA .y2rp,#game.tutA .y2sun,#game.tutA .y2rate,#game.tutA .y2open,#game.tutA .y2vip,#game.tutA #kesBtn,#game.tutA #dailyBtn,#game.tutA .skdaybox,#game.tutA .bottom,#game.tutA #autoBtn{opacity:0!important;pointer-events:none!important}
+#game.tutB #nav,#game.tutB .y2prof,#game.tutB .y2left,#game.tutB .y2signs,#game.tutB .y2rp,#game.tutB .y2sun,#game.tutB .y2rate,#game.tutB .y2open,#game.tutB .y2vip,#game.tutB #kesBtn,#game.tutB #dailyBtn,#game.tutB .skdaybox,#game.tutB .bottom{opacity:0!important;pointer-events:none!important}
+#game.tutA .y2left *,#game.tutA .y2signs *,#game.tutA .y2prof *,#game.tutB .y2left *,#game.tutB .y2signs *,#game.tutB .y2prof *{pointer-events:none!important}
+html.land #coach .cbub:not(.center){top:calc(max(8px,var(--sat,0px)))!important;bottom:auto!important}
+`;document.head.appendChild(st);
+ let mode='',v0=null,tw=null;
+ const zoom=(k,ms)=>{const tg=controls.target,from=camera.position.clone().sub(tg),to=from.clone().multiplyScalar(k),T=performance.now();tw=T;(function step(){if(tw!==T)return;const a=Math.min(1,(performance.now()-T)/ms),e=a<.5?4*a*a*a:1-Math.pow(-2*a+2,3)/2;camera.position.copy(tg).add(from.clone().lerp(to,e));controls.update();if(a<1)requestAnimationFrame(step)})()};
+ setInterval(()=>{try{if(!started||$('cine'))return;const t=S.tut||'',m=/^cafe[1-7]$/.test(t)?'A':t==='auto'?'B':'';if(m===mode)return;const g=$('game');g.classList.toggle('tutA',m==='A');g.classList.toggle('tutB',m==='B');
+     if(m==='A'&&!v0){v0=camera.position.distanceTo(controls.target);controls.minDistance=Math.min(controls.minDistance,5);zoom(0.7,1300)}
+     if(m!=='A'&&v0){const d=camera.position.distanceTo(controls.target);zoom(v0/d,1300);v0=null}mode=m}catch(e){}},500)}
 window.__playCine=playCine;
+
+// ================= ANA EKRAN YERLEŞİMİ (yatay; oyuncu gözüyle) =================
+// Amaç: ekranın ortası ve altı kafeye kalsın; sık kullanılanlar başparmakların durduğu alt köşelerde olsun.
+//  · Sağ kenar (sağ başparmak): ana menü dikey tezgâh — Tarifler, Menü, Birleştir, Ekip, Market.
+//  · Sol alt (sol başparmak): Görevler, Otomatik, Keşfet.
+//  · Üst kenar (yalnızca bakılan bilgiler): solda profil tabelası + ayar/fotoğraf/duyuru; ortada asılı tabelalar Pass · Etkinlik · Mesaj; sağda altın, elmas, gün, AÇIK tabelası.
+//  · Durum balonu altta ortada. Alt menü artık yer kaplamadığı için pencereler ve yerleştirme çubuğu ekranın altına iner (--navh: 0).
+{const P='html.land #game',st=document.createElement('style');st.textContent=`
+html.land{--navh:0px!important}
+${P} #nav{left:auto!important;right:calc(8px + env(safe-area-inset-right,0px))!important;top:calc(max(8px,var(--sat,0px)) + 82px)!important;bottom:calc(8px + var(--sab,0px))!important;width:62px!important;height:auto!important;flex-direction:column!important;justify-content:space-between!important;transform:none!important;padding:9px 0!important;gap:0!important;border-radius:31px!important;background-size:28px 24px,auto!important}
+${P} #nav button{width:48px!important;height:48px!important;flex:none!important;margin:0!important}
+${P} #nav button.navbig{width:56px!important;height:56px!important;transform:none!important;top:auto!important}
+${P} #nav button>span:not(.ic){font-size:8.5px!important;line-height:1!important}
+/* üst orta: asılı tabelalar */
+${P} .y2signs{left:50%!important;right:auto!important;top:calc(max(0px,var(--sat,0px)) + 9px)!important;transform:translateX(-50%)!important;display:flex!important;flex-direction:row!important;gap:8px!important;width:auto!important;height:auto!important}
+${P} .y2signs .y2s{position:relative!important;left:auto!important;top:auto!important;width:58px!important;height:50px!important;flex:none}
+${P} .y2rp{display:none!important}
+/* sağ üst: AÇIK tabelası gün simgesinin soluna */
+${P} .y2open{left:auto!important;right:calc(8px + env(safe-area-inset-right,0px) + 212px)!important;top:calc(max(8px,var(--sat,0px)) + 20px)!important;bottom:auto!important}
+/* sol alt: Görevler, Otomatik, Keşfet */
+${P} #dailyBtn,${P} #autoBtn,${P} #kesBtn{position:absolute!important;left:calc(10px + env(safe-area-inset-left,0px))!important;right:auto!important;top:auto!important;width:152px!important;min-width:0!important;height:38px!important;box-sizing:border-box!important;font-size:13px!important}
+${P} #kesBtn{bottom:calc(8px + var(--sab,0px))!important}
+${P} #autoBtn{bottom:calc(52px + var(--sab,0px))!important}
+${P} #dailyBtn{bottom:calc(96px + var(--sab,0px))!important;pointer-events:auto}
+${P}[data-nb="1"] #dailyBtn{bottom:calc(8px + var(--sab,0px))!important}
+/* durum balonu: altta ortada */
+${P} .bottom{left:176px!important;right:84px!important;bottom:calc(10px + var(--sab,0px))!important;width:auto!important;padding:0!important;display:flex!important;justify-content:center!important;transform:none!important}
+${P} .bottom .hint{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+`;document.head.appendChild(st);
+ const fix=()=>{try{const y=$('y2');if(!y)return;const d=$('dailyBtn');if(d&&d.parentElement!==y)y.appendChild(d);
+   const sg=y.querySelector('.y2signs'),rp=$('rpBtn');if(sg&&rp&&rp.parentElement!==sg)sg.insertBefore(rp,sg.firstChild)}catch(e){}};fix();setInterval(fix,1500)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
