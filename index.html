@@ -8438,6 +8438,31 @@ ${M} .enplus{margin:0!important;width:38px!important;height:38px!important;flex:
 ${M} .info{grid-column:3!important;grid-row:1!important;justify-self:start!important;align-self:center!important;margin:0!important;padding:0!important;height:var(--mb);width:min(196px,100%)}
 ${M} .info .box{height:100%;min-height:0!important;justify-content:center!important;box-sizing:border-box!important}
 ${M} .scroll::before{position:absolute!important;left:0;top:0;background:${KURL('bowl')} 9px center/26px no-repeat,linear-gradient(#fffaf0,#fbe2ba)!important;border-color:${INK}!important;box-shadow:inset 0 0 0 2.5px #f3a45a,0 3px 0 ${INK}!important;padding-left:42px!important}
+/* ---- Birleştir: simetrik düzen. Ortada tahta (üst kenarında ortalı isim tabelası); iki yanında AYNI genişlikte, aynı boyda iki kart: Enerji ve Bilgi.
+        Her kartın başlığı üstte ortada, içeriği kartın tam ortasında. ---- */
+${M}{--mc:min(54px,calc((100*var(--vh) - 100px)/6));--mb:calc(6*var(--mc) + 50px);--mw:min(170px,calc((100*var(--vw) - var(--mb) - 76px)/2))}
+${M} .scroll::before{display:none!important}
+${M} .board-wrap{position:relative!important;margin-top:18px!important;overflow:visible!important}
+${M} .board-wrap::before{content:'Birleştir';position:absolute;left:50%;top:-18px;transform:translateX(-50%);z-index:3;height:32px;padding:2px 24px 0;display:flex;align-items:center;font-family:var(--font-display);font-weight:800;font-size:17px;line-height:1;color:${INK};background:linear-gradient(#ffe08a,#f6b93a);border:3px solid ${INK};border-radius:999px;box-shadow:inset 0 0 0 2.5px #fff3b8,0 3px 0 ${INK};box-sizing:border-box;white-space:nowrap}
+${M} .mtop,${M} .info{width:var(--mw)!important;height:var(--mb)!important;margin-top:18px!important}
+${M} .energy,${M} .info .box{position:relative!important;height:100%!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:7px!important;padding:46px 12px 14px!important;box-sizing:border-box!important;margin:0!important}
+${M} .energy::before,${M} .info .box::before{position:absolute;top:10px;left:50%;transform:translateX(-50%);height:26px;padding:1px 16px 0;display:flex;align-items:center;font-family:var(--font-display);font-weight:800;font-size:13.5px;line-height:1;color:${INK};background:linear-gradient(#ffe08a,#f6b93a);border:2.5px solid ${INK};border-radius:999px;box-sizing:border-box;white-space:nowrap}
+${M} .energy::before{content:'Enerji'}
+${M} .info .box::before{content:'Bilgi'}
+${M} .energy .ic{display:none!important}
+${M} .energy .ebar{flex:1 1 0!important;width:100%!important;align-items:center!important}
+${M} .energy .xpbar{width:26px!important}
+${M} .energy .ebar b{font-size:15px!important}
+${M} .energy .ebar small{font-size:10.5px!important}
+${M} .info .box>span.mi:first-child:not(:has(img)){display:none!important}
+${M} .info .box>*{margin-left:auto!important;margin-right:auto!important;flex:none!important}
+${M} .info .box .tx{width:100%!important;text-align:center!important;padding:0!important;margin:0!important;flex:none!important}
+${M} .info .box .tx b{font-size:15.5px!important;margin:0 0 5px!important}
+${M} .info .box .btn{align-self:center!important;margin:2px auto 0!important;min-width:70%}
+/* ---- ortak: açıklama yazıları ve tek başına duran düğmeler ortalı ---- */
+${W} .skfoot{justify-content:center!important}
+${W} .skfoot p:only-child{text-align:center!important;padding-left:0!important}
+${W} .mlist .mhead,${W} .skempty,${W} .empty{text-align:center!important}
 `;document.head.appendChild(st);
  setInterval(()=>{try{const f=$('enFill');if(f&&f.style.width&&f.style.getPropertyValue('--p')!==f.style.width)f.style.setProperty('--p',f.style.width)}catch(e){}},350)}
 
