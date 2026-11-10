@@ -1100,6 +1100,7 @@ const CATALOG=[
  {id:'d_bigplant',kind:'decor',name:'Büyük salon bitkisi',price:35,lvl:4,half:[0.3,0.3],desc:'Geniş yapraklı, uzun bitki.'},
  {id:'d_lamp',kind:'decor',name:'Ayaklı lamba',price:40,lvl:5,half:[0.18,0.18],desc:'Sıcak ışıklı abajur.'},
  {id:'d_catbed',kind:'decor',name:'Kedi yatağı',price:30,lvl:5,half:[0.3,0.3],desc:'Yumuşacık minder ve yün yumağı.'},
+ {id:'d_vitrin',kind:'decor',name:'Pasta vitrini',price:140,lvl:6,half:[0.64,0.34],rot:true,desc:'Kavisli camın ardında pasta, donut ve makaronlar.'},
  {id:'w_it_ocra',kind:'wall',name:'Roma okrası',price:40,lvl:99,ev:'it',evLvl:1,color:0xf2d39a},
  {id:'d_it_bunting',kind:'walldecor',name:'İtalyan bayrak süsü',price:40,lvl:99,ev:'it',evLvl:2,desc:'Yeşil, beyaz, kırmızı üçgen bayraklar.'},
  {id:'d_it_lemon',kind:'decor',name:'Limon ağacı',price:60,lvl:99,ev:'it',evLvl:3,half:[0.3,0.3],desc:'Sarı limonlarıyla Amalfi’den bir saksı.'},
@@ -7711,6 +7712,103 @@ html.xmode .y2rp{visibility:hidden!important}
 @keyframes rpPulse{50%{transform:translateY(-2px)}}
 .rpHow{margin:0;text-align:center;font-size:11px;font-weight:800;color:#7a4e2c}
 `;document.head.appendChild(st)}
+
+// ================= PASTA VİTRİNİ (dekor: d_vitrin) =================
+// Kavisli camlı tezgâh: pirinç çerçeve, iki kat; dilimi alınmış pasta, donut, makaron, kap kek, kruvasan, "TATLILAR" tabelası.
+// Tamamı kodla kurulur (model/görsel dosyası yok). Parçalar malzemeye göre birleştirilir: ~145 parça → malzeme başına tek çizim.
+// Ön yüz +z'ye bakar (diğer döndürülebilir dekorlar gibi). Katalog kaydı p5_data.js'te.
+{
+  const VM={lilac:toon(0xb27ad6),sponge:toon(0xf0c987),choco:toon(0x6b3f24),bake:toon(0xd9953f),
+    cut:new THREE.MeshToonMaterial({color:0xf0c987,gradientMap:grad,side:THREE.DoubleSide}),band:new THREE.MeshToonMaterial({color:0xfff3df,gradientMap:grad,side:THREE.DoubleSide}),
+    glass:new THREE.MeshPhysicalMaterial({color:0xbfe3f5,transparent:true,opacity:.26,roughness:.1,depthWrite:false}),sign:null};
+  let signTex=null;
+  const drawSign=(x,w,h)=>{x.fillStyle='#fff3df';x.fillRect(0,0,w,h);x.strokeStyle='#f2a6a0';x.lineWidth=10;x.strokeRect(9,9,w-18,h-18);
+    x.fillStyle='#4a2e1c';x.textAlign='center';x.textBaseline='middle';x.font='800 78px "Baloo 2","Nunito",sans-serif';x.fillText('TATLILAR',w/2+34,h/2+6);
+    const px=62,py=h/2+8;x.fillStyle='#d9534f';x.beginPath();x.ellipse(px,py+8,19,15,0,0,7);x.fill();
+    for(const [dx,dy] of [[-22,-12],[-8,-24],[8,-24],[22,-12]]){x.beginPath();x.ellipse(px+dx,py+dy,7.5,9,0,0,7);x.fill()}};
+  const signMat=()=>{if(VM.sign)return VM.sign;const c=document.createElement('canvas');c.width=512;c.height=150;drawSign(c.getContext('2d'),512,150);
+    signTex=new THREE.CanvasTexture(c);signTex.colorSpace=THREE.SRGBColorSpace;VM.sign=new THREE.MeshToonMaterial({map:signTex,gradientMap:grad});
+    try{document.fonts.load('800 78px "Baloo 2"').then(()=>{drawSign(c.getContext('2d'),512,150);signTex.needsUpdate=true}).catch(()=>{})}catch(e){}
+    return VM.sign};
+
+  function vitrinParts(){const g=new THREE.Group();let P=g;
+    const mesh=(geo,mat,x=0,y=0,z=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);P.add(m);return m};
+    const box=(w,h,d,mat,x,y,z,o={})=>{const m=mesh(o.round?new RoundedBoxGeometry(w,h,d,2,o.round):new THREE.BoxGeometry(w,h,d),mat,x,y,z);if(o.rx)m.rotation.x=o.rx;return m};
+    const cyl=(rt,rb,h,mat,x,y,z,seg=14)=>mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat,x,y,z);
+    const sph=(r,mat,x,y,z)=>mesh(r<0.04?new THREE.SphereGeometry(r,9,6):new THREE.SphereGeometry(r,14,10),mat,x,y,z);
+    const lathe=(pts,mat,x,y,z,seg=22)=>mesh(new THREE.LatheGeometry(pts.map(p=>new THREE.Vector2(p[0],p[1])),seg),mat,x,y,z);
+    const sub=(x,y,z,ry,fn)=>{const s=new THREE.Group();s.position.set(x,y,z);s.rotation.y=ry;P.add(s);const p0=P;P=s;fn();P=p0};
+    // gövde
+    box(1.16,0.08,0.56,M.woodDark,0,0.04,0);box(1.2,0.5,0.6,M.cream,0,0.33,0,{round:0.03});
+    for(const x of [-0.38,0,0.38])box(0.33,0.3,0.02,M.pink,x,0.31,0.3,{round:0.008});
+    {const py=0.3,pz=0.312;const a=sph(0.045,M.cream,0,py-0.02,pz);a.scale.set(1.15,0.9,0.25);
+      for(const [dx,dy] of [[-0.052,0.03],[-0.02,0.058],[0.02,0.058],[0.052,0.03]]){const t=sph(0.019,M.cream,dx,py+dy,pz);t.scale.set(1,1.2,0.3)}}
+    for(let i=0;i<12;i++){const s=cyl(0.05,0.05,0.02,i%2?M.gold:M.red,-0.55+i*0.1,0.582,0.305,12);s.rotation.x=Math.PI/2}
+    box(1.26,0.05,0.66,M.wood,0,0.605,0,{round:0.015});
+    const Y=0.63;
+    // cam: yan profil çizilir, tezgâh boyunca uzatılır
+    const prof=new THREE.Shape();prof.moveTo(-0.28,0);prof.lineTo(-0.28,0.5);prof.lineTo(0.06,0.5);prof.quadraticCurveTo(0.3,0.5,0.3,0.24);prof.lineTo(0.3,0);prof.lineTo(-0.28,0);
+    {const m=mesh(new THREE.ExtrudeGeometry(prof,{depth:1.14,bevelEnabled:false,curveSegments:12}),VM.glass,0.57,Y,0);m.rotation.y=-Math.PI/2}
+    box(1.14,0.5,0.02,M.cream,0,Y+0.25,-0.272);
+    // pirinç çerçeve: iki uçta profil boyunca boru + boyuna çubuklar
+    const ring=prof.getPoints(14);
+    for(const s of [-1,1]){const c=new THREE.CatmullRomCurve3(ring.map(p=>new THREE.Vector3(s*0.57,Y+p.y,p.x)),true,'catmullrom',0.02);
+      mesh(new THREE.TubeGeometry(c,40,0.014,6,true),M.gold)}
+    for(const [z,y] of [[-0.28,0.5],[0.06,0.5],[0.3,0.012],[-0.28,0.012]]){const b=cyl(0.012,0.012,1.14,M.gold,0,Y+y,z,6);b.rotation.z=Math.PI/2}
+    // üst raf ve iç ışık
+    const Y2=Y+0.262;box(1.1,0.012,0.36,M.steel,0,Y2-0.006,-0.09);
+    box(1.0,0.014,0.04,M.warmLight,0,Y+0.482,-0.12);
+    // --- alt kat: dilimi alınmış pasta, ayaklı tabakta ---
+    {const x=-0.36,z=0.0;lathe([[0,0],[0.085,0],[0.085,0.012],[0.024,0.02],[0.018,0.062],[0.125,0.074],[0.13,0.086],[0,0.086]],M.steel,x,Y,z);
+      const cut=0.95,t0=0.35,len=Math.PI*2-cut,by=Y+0.086;
+      mesh(new THREE.CylinderGeometry(0.1,0.1,0.085,24,1,false,t0,len),VM.sponge,x,by+0.0425,z);
+      mesh(new THREE.CylinderGeometry(0.104,0.104,0.022,24,1,false,t0,len),M.pink,x,by+0.096,z);
+      mesh(new THREE.CylinderGeometry(0.1005,0.1005,0.014,24,1,true,t0,len),M.cream,x,by+0.044,z);
+      for(const a of [t0,t0+len]){const sx=Math.sin(a)*0.05,sz=Math.cos(a)*0.05,o=a===t0?-0.0012:0.0012;   // kesik yüz: pandispanya + krema şeridi
+        const f=mesh(new THREE.PlaneGeometry(0.1,0.085),VM.cut,x+sx,by+0.0425,z+sz);f.rotation.y=a-Math.PI/2;
+        const c=mesh(new THREE.PlaneGeometry(0.1,0.014),VM.band,x+sx+Math.cos(a)*o,by+0.044,z+sz-Math.sin(a)*o);c.rotation.y=a-Math.PI/2}
+      for(let i=0;i<6;i++){const a=t0+0.3+i*(len-0.6)/5,cx=x+Math.sin(a)*0.075,cz=z+Math.cos(a)*0.075;const w=sph(0.017,M.cream,cx,by+0.11,cz);w.scale.y=0.8;sph(0.0125,M.red,cx,by+0.126,cz)}
+      // alınan dilim, yanındaki küçük tabakta
+      cyl(0.062,0.05,0.008,M.cream,x+0.2,Y+0.004,z+0.12,14);
+      sub(x+0.17,Y+0.008,z+0.14,0.6,()=>{mesh(new THREE.CylinderGeometry(0.095,0.095,0.06,8,1,false,0,0.8),VM.sponge,0,0.03,-0.04);
+        mesh(new THREE.CylinderGeometry(0.098,0.098,0.018,8,1,false,0,0.8),M.pink,0,0.068,-0.04);sph(0.012,M.red,0.03,0.087,0.03)})}
+    // donut tepsisi
+    {const x=0.05,z=0.02;box(0.3,0.012,0.22,M.steel,x,Y+0.006,z,{round:0.005});
+      const glaze=[M.pink,VM.choco,M.gold],spr=[M.cream,M.red,M.leaf,VM.lilac];
+      [[-0.08,-0.045],[0.075,-0.05],[0,0.05]].forEach(([dx,dz],i)=>{const cx=x+dx,cz=z+dz,cy=Y+0.012+0.022;
+        const d=mesh(new THREE.TorusGeometry(0.043,0.022,8,16),VM.bake,cx,cy,cz);d.rotation.x=Math.PI/2;
+        const gl=mesh(new THREE.TorusGeometry(0.043,0.0215,6,16),glaze[i],cx,cy+0.007,cz);gl.rotation.x=Math.PI/2;gl.scale.z=0.75;
+        for(let k=0;k<9;k++){const a=k*0.7+i,s=box(0.011,0.004,0.004,spr[(k+i)%4],cx+Math.cos(a)*0.043,cy+0.024,cz+Math.sin(a)*0.043);s.rotation.y=a*2.3}})}
+    // makaron kulesi
+    {const x=0.4,z=0.0,cols=[M.pink,M.leaf,M.gold,VM.lilac];
+      const mac=(mx,my,mz,c)=>{for(const s of [0,1]){const h=sph(0.031,c,mx,my+0.008+s*0.018,mz);h.scale.y=0.42}cyl(0.027,0.027,0.009,M.cream,mx,my+0.017,mz,12)};
+      cyl(0.085,0.085,0.008,M.cream,x,Y+0.004,z,18);
+      for(let i=0;i<3;i++){const a=i*2.094+0.5;mac(x+Math.cos(a)*0.038,Y+0.008,z+Math.sin(a)*0.038,cols[i])}
+      mac(x,Y+0.042,z,cols[3])}
+    for(const x of [-0.36,0.05,0.4])box(0.05,0.03,0.004,M.cream,x,Y+0.017,0.2,{rx:-0.35});   // fiyat etiketleri
+    // --- üst kat: kap kekler ve kruvasanlar ---
+    for(let i=0;i<4;i++){const x=-0.42+i*0.115,z=-0.1;cyl(0.031,0.022,0.036,i%2?M.terracotta:VM.lilac,x,Y2+0.018,z,10);
+      [[0.033,0.046],[0.025,0.062],[0.016,0.076]].forEach(([r,y])=>{const f=sph(r,i%2?M.cream:M.pink,x,Y2+y,z);f.scale.y=0.6});
+      sph(0.009,i%2?M.red:M.gold,x,Y2+0.089,z)}
+    for(const [x,ry] of [[0.2,0.3],[0.38,-0.5]])sub(x,Y2,-0.09,ry,()=>{for(let k=0;k<7;k++){const t=(k-3)/3,a=t*1.15,r=0.026-Math.abs(t)*0.013;
+      const b=sph(r,VM.bake,Math.sin(a)*0.05,r*0.9,Math.cos(a)*0.05-0.045);b.scale.set(1.25,1,1);b.rotation.y=a}});
+    // tabela
+    box(0.54,0.17,0.03,M.woodDark,0,Y+0.615,-0.2,{round:0.008});
+    mesh(new THREE.PlaneGeometry(0.5,0.146),signMat(),0,Y+0.615,-0.184);
+    for(const s of [-1,1])cyl(0.012,0.012,0.04,M.gold,s*0.2,Y+0.52,-0.2,8);
+    return g}
+
+  // parçaları malzemeye göre tek ağda birleştirir
+  function vitrinBake(src){src.updateMatrixWorld(true);const out=new THREE.Group(),bk=new Map();
+    src.traverse(o=>{if(!o.isMesh)return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);
+      for(const k of Object.keys(g.attributes))if(k!=='position'&&k!=='normal'&&k!=='uv')g.deleteAttribute(k);
+      if(!bk.has(o.material))bk.set(o.material,[]);bk.get(o.material).push(g);o.geometry.dispose()});
+    for(const [mat,geos] of bk){const mg=BufferGeometryUtils.mergeGeometries(geos,false);geos.forEach(x=>x.dispose());if(!mg)continue;
+      const m=new THREE.Mesh(mg,mat),soft=mat===VM.glass||mat===M.warmLight;m.castShadow=!soft;m.receiveShadow=!soft;if(mat===VM.glass)m.renderOrder=2;out.add(m)}
+    return out}
+
+  DECOR_BUILD.d_vitrin=()=>{try{return vitrinBake(vitrinParts())}catch(e){console.warn('vitrin',e);return vitrinParts()}};
+}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
