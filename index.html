@@ -1100,7 +1100,7 @@ const CATALOG=[
  {id:'d_bigplant',kind:'decor',name:'Büyük salon bitkisi',price:35,lvl:4,half:[0.3,0.3],desc:'Geniş yapraklı, uzun bitki.'},
  {id:'d_lamp',kind:'decor',name:'Ayaklı lamba',price:40,lvl:5,half:[0.18,0.18],desc:'Sıcak ışıklı abajur.'},
  {id:'d_catbed',kind:'decor',name:'Kedi yatağı',price:30,lvl:5,half:[0.3,0.3],desc:'Yumuşacık minder ve yün yumağı.'},
- {id:'d_vitrin',kind:'decor',name:'Pasta vitrini',price:140,lvl:6,half:[0.64,0.34],rot:true,desc:'Kavisli camın ardında pasta, donut ve makaronlar.'},
+ {id:'d_vitrin',kind:'decor',cat:'counter',name:'Pasta vitrini',price:140,lvl:6,half:[0.64,0.34],rot:true,desc:'Kavisli camın ardında pasta, donut ve makaronlar.'},
  {id:'w_it_ocra',kind:'wall',name:'Roma okrası',price:40,lvl:99,ev:'it',evLvl:1,color:0xf2d39a},
  {id:'d_it_bunting',kind:'walldecor',name:'İtalyan bayrak süsü',price:40,lvl:99,ev:'it',evLvl:2,desc:'Yeşil, beyaz, kırmızı üçgen bayraklar.'},
  {id:'d_it_lemon',kind:'decor',name:'Limon ağacı',price:60,lvl:99,ev:'it',evLvl:3,half:[0.3,0.3],desc:'Sarı limonlarıyla Amalfi’den bir saksı.'},
@@ -1136,7 +1136,7 @@ const EV_COMBOS={it:[['sut3','cilek2','it_gelato','Gelato kâsesi'],['kahve3','s
     ['yum2','peynir2','tr_menemen','Menemen'],['sut3','un2','tr_sutlac','Sütlaç'],['un2','peynir3','tr_gozleme','Gözleme'],['peynir3','seker3','tr_kunefe','Künefe']]};
 if(EVMODE&&EV_COMBOS[EVMODE]){COMBOS.length=0;for(const [a,b,r,name] of EV_COMBOS[EVMODE]){const c={a,b,r,name};COMBOS.push(c);ITEMS[r]={id:r,name,chain:null,lv:0,max:0,fam:'combo',next:null,combo:c}}}
 const CAT=Object.fromEntries(CATALOG.map(c=>[c.id,c]));
-const MK_TABS=[{id:'upg',name:'Geliştir',icon:'up'},{id:'table',name:'Masalar',icon:'table'},{id:'chair',name:'Sandalyeler',icon:'chair'},{id:'wall',name:'Duvar',icon:'paint'},{id:'floor',name:'Zemin',icon:'floor'},{id:'decor',name:'Dekor',icon:'plant'},{id:'equip',name:'Ekipman',icon:'machine'},{id:'clothes',name:'Kıyafet',icon:'shirt'},{id:'store',name:'Depom',icon:'box'},{id:'expand',name:'Genişlet',icon:'plus'}];
+const MK_TABS=[{id:'upg',name:'Geliştir',icon:'up'},{id:'table',name:'Masalar',icon:'table'},{id:'chair',name:'Sandalyeler',icon:'chair'},{id:'counter',name:'Tezgâh',icon:'cake'},{id:'wall',name:'Duvar',icon:'paint'},{id:'floor',name:'Zemin',icon:'floor'},{id:'decor',name:'Dekor',icon:'plant'},{id:'equip',name:'Ekipman',icon:'machine'},{id:'clothes',name:'Kıyafet',icon:'shirt'},{id:'store',name:'Depom',icon:'box'},{id:'expand',name:'Genişlet',icon:'plus'}];
 
 // ================= HEDEFLER =================
 const OBJECTIVES=[
@@ -2729,7 +2729,7 @@ function renderMarket(){const tabs=$('mkTabs');tabs.innerHTML=MK_TABS.map(t=>`<b
   if(UI.tab==='upg'){renderUpg(g);return}
   if(UI.tab==='expand'){renderExpand(g);return}
   if(UI.tab==='store'){const st=S.furniture.filter(f=>f.stored);g.innerHTML=st.length?st.map(f=>`<button class="card" type="button" data-uid="${f.uid}" aria-current="${UI.sel==='u'+f.uid}"><div class="th"><img src="${itemThumb(f.id)}" alt=""></div><b>${CAT[f.id].name}</b><span class="price">Ücretsiz yerleştir</span></button>`).join(''):'<div class="empty">Depon boş. Düzenle modunda eşyaları depoya kaldırabilirsin.</div>'}
-  else{items=CATALOG.filter(c=>(c.kind===UI.tab||(UI.tab==='decor'&&c.kind==='walldecor'))&&(!c.ev||(EVMODE?c.ev===EVMODE:S.evGot&&S.evGot[c.id]))&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
+  else{items=CATALOG.filter(c=>(UI.tab==='counter'?c.cat==='counter':(c.kind===UI.tab&&c.cat!=='counter')||(UI.tab==='decor'&&c.kind==='walldecor'))&&(!c.ev||(EVMODE?c.ev===EVMODE:S.evGot&&S.evGot[c.id]))&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
     g.innerHTML=items.map(c=>{const lock=S.lvl<c.lvl;const owned=S.owned[c.id];const using=(c.kind==='wall'&&S.wall===c.id)||(c.kind==='floor'&&S.floor===c.id)||(c.kind==='equip'&&owned);
       return `<button class="card${lock?' locked':''}" type="button" data-id="${c.id}" aria-current="${UI.sel===c.id}"><div class="th"><img src="${itemThumb(c.id)}" alt=""></div>${lock?`<span class="tag">${ic('lock')}Sv ${c.lvl}</span>`:''}${using?'<span class="own">Kullanımda</span>':owned&&c.kind!=='table'&&c.kind!=='decor'&&c.kind!=='walldecor'?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${c.price?ic('coin')+c.price:'Ücretsiz'}</span></button>`}).join('')}
   g.onclick=e=>{const b=e.target.closest('.card');if(!b)return;if(b.dataset.uid){UI.sel='u'+b.dataset.uid}else{UI.sel=b.dataset.id;previewSurface(UI.sel)}renderMarket()};
@@ -7010,7 +7010,7 @@ openDaily=function(tab){const W=skWin('skDaily','Görevler','cat_bowl');let T=ta
 // Açılınca 3 bölüm seçilir: Mobilya & Dekor · Kıyafet · Genişlet. Geliştir sekmesi kaldırıldı.
 // Yatayda pazar alt şerit olur: solda tabela (kedi + "Yapı Pazarı"), ortada kategori düğmeleri, sağda kaydırılan ürün kartları.
 const MK_ALL=MK_TABS.slice();
-const MK_SECS={decor:['table','chair','wall','floor','decor','equip','store'],clothes:['clothes'],expand:['expand']};
+const MK_SECS={decor:['table','chair','counter','wall','floor','decor','equip','store'],clothes:['clothes'],expand:['expand']};
 const MK_SEC_INFO=[{id:'decor',name:'Mobilya & Dekor',img:()=>itemThumb('t_round')},{id:'clothes',name:'Kıyafet',img:()=>UIIMG('i_chef')},{id:'expand',name:'Genişlet',img:()=>UIIMG('i_plus')}];
 function mkSecOf(tab){for(const k in MK_SECS)if(MK_SECS[k].includes(tab))return k;return null}
 {const _sm=setMode;setMode=function(m){const was=UI.mode;if(m==='market'&&was!=='market'){UI.mkSec=null;UI.mkTab0=UI.tab}return _sm.apply(this,arguments)}}
