@@ -3592,7 +3592,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <li>${ic('clock')}<span>Her torba ${CONFIG.bag.limit} malzeme verdikten sonra ${CONFIG.bag.cooldownSec/60} dakika dinlenir; süre torbanın üstünde görünür. Beklemek istemezsen ${tagb('gem','elmas','l')} ile torbayı ya da enerjini hemen yenileyebilirsin.</span></li>
      <li><span class="ic" style="width:30px;height:30px">${itemArt('kahve1')}</span><span>Aynı iki malzemeyi sürükleyip üst üste bırak: bir üst seviye olur. Uyanlar yeşil yanar.</span></li>
      <li><span class="ic" style="width:30px;height:30px">${itemArt('c_latte')}</span><span>Bazı farklı malzemeler de birleşir ve yeni tarif keşfettirir (ör. espresso shot + süt köpüğü = latte).</span></li>
-     <li>${ic('target')}<span>Tarifler’de bir tarife ${tagb('target','Hedefle','l')} dersen torbalar o tarifin malzemelerini çok daha sık verir.</span></li></ul><p>Uymayan iki malzeme sadece yer değiştirir; hiçbir şey kaybolmaz.</p>`},
+     </ul><p>Uymayan iki malzeme sadece yer değiştirir; hiçbir şey kaybolmaz.</p>`},
    {t:'Puan, fiyat ve sabır',art:`${UI_IC.starF}${ic('coin')}${UI_IC.wait}`,body:`<ul class="gsteps"><li>${UI_IC.starF}<span><b>Kafe puanı</b> (sağ üstteki yıldız): son ziyaretlerin ortalaması. Puan yükseldikçe daha sık müşteri ve paket sipariş gelir; düşerse kafe sessizleşir. Yıldıza dokununca yorumları görürsün.</span></li>
      <li>${ic('coin')}<span><b>Fiyatlar:</b> Menü → Fiyatlar’da her ürünün fiyatını ±1 altınla ayarla. Ucuz fiyat müşteriyi mutlu eder ama kârı azaltır; pahalı fiyat kârı artırır, kalite yetmezse puanı düşürür.</span></li>
      <li>${ic('clock')}<span><b>Sabır:</b> masadaki halka müşterinin sabrını gösterir: önce siparişin alınmasını, sonra yemeğini bekler. Halka kırmızıya dönmeden yetiş; yetişemezsen müşteri kızıp gider ve puanın düşer. Hızlı servis puanı yükseltir.</span></li>
@@ -3958,9 +3958,10 @@ function upgDetail(d,id){const u=UPG.find(x=>x.id===id);if(!u){d.hidden=true;ret
 
 // ---------- hedef tarif: torbalar o tarifin temel malzemelerini daha sık verir ----------
 function baseNeeds(id,acc=new Set()){const it=ITEMS[id];if(!it)return acc;if(it.chain){acc.add(it.chain+'1');return acc}if(it.combo){baseNeeds(it.combo.a,acc);baseNeeds(it.combo.b,acc)}return acc}
-function targetBases(){if(!S.target)return null;const r=RECIPE[S.target];if(!r||S.recipes[r.id]){S.target=null;return null}return baseNeeds(r.disc)}
+function targetBases(){return null}   // hedef tarif özelliği kaldırıldı (V129)
+function _targetBasesOld(){if(!S.target)return null;const r=RECIPE[S.target];if(!r||S.recipes[r.id]){S.target=null;return null}return baseNeeds(r.disc)}
 const needNames=id=>[...baseNeeds(RECIPE[id].disc)].map(x=>ITEMS[x].name).join(', ');
-function setTarget(id){const r=RECIPE[id];if(!r||S.recipes[id])return;S.target=S.target===id?null:id;markDirty();sfx('tap');
+function setTarget(id){return;const r=RECIPE[id];if(!r||S.recipes[id])return;S.target=S.target===id?null:id;markDirty();sfx('tap');
   if(S.target)toast(`<b>Hedef: ${r.name}</b><br>Torbalar ${needNames(id)} malzemelerini daha sık verecek`,`<img src="${productThumb(id)}" alt="">`,2800)}
 {const t=document.createElement('div');t.id='mgTarget';t.className='mgtarget';document.querySelector('#merge .mtop').after(t);
  t.addEventListener('click',e=>{if(e.target.closest('[data-tx]')){S.target=null;markDirty();renderTarget();renderInfo()}else if(e.target.closest('[data-tgo]')){const r=RECIPES.find(x=>!S.recipes[x.id]&&S.lvl>=x.lvl)||RECIPES.find(x=>!S.recipes[x.id]);if(r)UI.rbTab=r.cat;setMode('book')}})}
@@ -3977,7 +3978,7 @@ function newReq(){let C=reqCands();if(!C.length)return;
   // ilk seviyelerde yalnız açık (menüde/menüye eklenebilir) ürünler istenir ve süre daha uzundur; kaçırmanın cezası yok
   const early=S.lvl<4;if(early){const o=C.filter(x=>x.kind==='menu'||x.kind==='open');if(o.length)C=o;C=C.map(x=>({...x,time:Math.round(x.time*1.6)}))}const nm=C.filter(x=>x.kind!=='menu');const pool=nm.length&&Math.random()<0.8?nm:C;const x=pool[Math.floor(Math.random()*pool.length)];
   const who=LOOKS[Math.floor(Math.random()*LOOKS.length)].name;const coins=Math.round(20+priceOf(x.r)*4+(x.kind==='new'?25:x.kind==='disc'?12:0));
-  S.req={rid:x.r.id,who,left:x.time,total:x.time,coins,kind:x.kind};if(x.kind==='new'&&!S.target)S.target=x.r.id;markDirty();sfx('chime');
+  S.req={rid:x.r.id,who,left:x.time,total:x.time,coins,kind:x.kind};markDirty();sfx('chime');
   const how={menu:'Menünde var; sipariş edilmesini bekle',open:'Menü’den menüne ekle',disc:'Tarifler’den ürünü aç ve menüye ekle',new:'Birleştirme tahtasında keşfet (hedefe alındı)'}[x.kind];
   toast(`<b>Özel istek: ${who} ${x.r.name} istiyor!</b><br>${how} · ödül ${coins} altın`,`<img src="${productThumb(x.r.id)}" alt="">`,4200);hudReq()}
 function reqServed(item){if(!S.req||item.id!==S.req.rid)return;const q=S.req;S.req=null;S.reqCd=140+Math.random()*100;
@@ -8351,7 +8352,7 @@ ${P} .bottom .hint{max-width:100%;white-space:nowrap;overflow:hidden;text-overfl
 // Pencere: krem gövde, kahve çerçeve, içte turuncu şerit; üstte turuncu-krem çizgili tente (dalgalı etek), ortasında kedi kulaklı altın isim tabelası,
 // köşede kırmızı kapatma düğmesi. Sekmeler ve düğmeler hap; kartlar krem tabela. Birleştirme tahtası turuncu tepsi + pati izli krem gözler.
 // Çerçeve, tente, tabela, kart, sekme, düğme ve tahta artık görsel dosyası kullanmaz. (Ürün/malzeme resimleri ve bazı küçük simgeler içerik olarak durur.)
-{const {KURL}=window.__K,W='html.land #game',INK='#4a2a14';
+{const {KURL}=window.__K,W='html.land #game',M='html.land #game #merge.skin',INK='#4a2a14';
  const sv=b=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${b}</svg>`)}")`;
  const PAW=sv(`<g fill="#e9c592" opacity=".55"><ellipse cx="32" cy="41" rx="11" ry="9"/><circle cx="17" cy="29" r="5"/><circle cx="27" cy="20" r="5"/><circle cx="38" cy="20" r="5"/><circle cx="48" cy="29" r="5"/></g>`);
  const LOCK=sv(`<g stroke="#7a5a3a" stroke-width="4" stroke-linejoin="round" opacity=".7"><path d="M22 30v-8a10 10 0 0 1 20 0v8" fill="none"/><rect x="16" y="29" width="32" height="24" rx="5" fill="#c9a77a"/></g>`);
@@ -8411,7 +8412,34 @@ ${W} #merge.skin .cell.lock{background:${LOCK} center/52% no-repeat,linear-gradi
 ${W} #merge.skin .energy,${W} #merge.skin .mgtarget,${W} #merge.skin .info .box{${CARD};padding:7px 9px!important;box-sizing:border-box!important}
 ${W} #merge.skin .mgtarget .btn,${W} #merge.skin .info .box .btn.light{${PILL('#ffe08a','#f6b93a')}}
 ${W} #merge.skin .info .box .btn:not(.light){${PILL('#c9ec8a','#8fcf4f')}}
-`;document.head.appendChild(st)}
+/* ---- pencere açıkken ana ekran düğmeleri gizlenir (pencerenin yanında görünüp karışmasın) ---- */
+html.land #game:has(.modal:not([hidden])) :is(#nav,#dailyBtn,#autoBtn,#kesBtn,.bottom),html.land #game:has(.screen:not([hidden])) :is(#nav,#dailyBtn,#autoBtn,#kesBtn,.bottom){opacity:0!important;pointer-events:none!important}
+${W} .mtabs{gap:6px!important}
+${W} .mtabs>*{${PILL('#fffaf0','#f5e2c2')};height:34px!important}
+${W} .mtabs>*[aria-selected=true],${W} .mtabs>*[aria-pressed=true],${W} .mtabs>*.on{background:linear-gradient(#ffe08a,#f6b93a)!important}
+${M} .energy,${M} .energy .ebar{overflow:visible!important}
+${M} .energy .ebar small{min-width:max-content!important}
+/* ---- hedef tarif kaldırıldı ---- */
+#mgTarget,[data-tgt],[data-tgt]+small,html.land #game #merge.skin #mgTarget{display:none!important}
+/* ---- Birleştir yerleşimi: tahta tam ortada; solunda dikey enerji tüpü, sağında bilgi kartı; ikisi de tahtayla aynı boyda ve ona bitişik ---- */
+${M}{--mc:min(56px,calc((100*var(--vh) - 80px)/6));--mb:calc(6*var(--mc) + 50px)}
+${M} .board{--cell:var(--mc)!important}
+${M} .skwin>.scroll{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;grid-template-rows:1fr!important;column-gap:12px!important;align-items:center!important;position:relative}
+${M} .board-wrap{grid-column:2!important;grid-row:1!important}
+${M} .mtop{grid-column:1!important;grid-row:1!important;justify-self:end!important;align-self:center!important;height:var(--mb);width:76px;display:block!important;max-width:none!important}
+${M} .energy{height:100%;width:100%;flex-direction:column!important;align-items:center!important;gap:5px!important;padding:8px 5px!important;margin:0!important}
+${M} .energy .ic{background:${sv(`<path d="M36 4L12 36h14l-4 24l26-34H33z" fill="#ffc93c" stroke="#5a2f12" stroke-width="4" stroke-linejoin="round"/>`)} center/contain no-repeat!important;width:30px!important;height:30px!important;flex:none}
+${M} .energy .ebar{flex:1 1 0!important;width:100%;display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important;min-height:0}
+${M} .energy .ebar b{position:static!important;order:2;color:${INK}!important;text-shadow:none!important;font-size:12.5px!important;height:auto!important;white-space:nowrap}
+${M} .energy .xpbar{order:1;flex:1 1 0!important;width:22px!important;height:auto!important;min-height:0!important;position:relative!important;padding:0!important}
+${M} .energy .xpbar i{position:absolute!important;left:2px;right:2px;bottom:2px;width:auto!important;min-width:0!important;height:calc(var(--p,100%) - 4px)!important;transition:height .3s!important}
+${M} .energy .ebar small{order:3;font-size:9px!important;line-height:1.1!important;white-space:normal!important;text-align:center;width:100%!important;overflow:visible!important;display:block}
+${M} .enplus{margin:0!important;width:38px!important;height:38px!important;flex:none;background:${sv(`<path d="M32 16v32M16 32h32" stroke="#fff8ec" stroke-width="9" stroke-linecap="round"/>`)} center/62% no-repeat,linear-gradient(#a9df5c,#6fb53a)!important;border:3px solid ${INK}!important;border-radius:50%!important;box-shadow:inset 0 0 0 2px #d6f5a8,0 3px 0 ${INK}!important;box-sizing:border-box!important}
+${M} .info{grid-column:3!important;grid-row:1!important;justify-self:start!important;align-self:center!important;margin:0!important;padding:0!important;height:var(--mb);width:min(196px,100%)}
+${M} .info .box{height:100%;min-height:0!important;justify-content:center!important;box-sizing:border-box!important}
+${M} .scroll::before{position:absolute!important;left:0;top:0;background:${KURL('bowl')} 9px center/26px no-repeat,linear-gradient(#fffaf0,#fbe2ba)!important;border-color:${INK}!important;box-shadow:inset 0 0 0 2.5px #f3a45a,0 3px 0 ${INK}!important;padding-left:42px!important}
+`;document.head.appendChild(st);
+ setInterval(()=>{try{const f=$('enFill');if(f&&f.style.width&&f.style.getPropertyValue('--p')!==f.style.width)f.style.setProperty('--p',f.style.width)}catch(e){}},350)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
