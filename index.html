@@ -8959,6 +8959,379 @@ ${G} #ce .ce-foot{position:relative!important;bottom:auto!important;flex:none!im
  try{const _r=renderCE;renderCE=function(){const r=_r.apply(this,arguments);try{$('ce').dataset.m=CE.mode||'edit';$('ceOpts').scrollLeft=0;hxScan()}catch(e){}return r}}catch(e){console.warn('yatay: karakter düzenle',e)}
 }
 
+// ================= TARİF DEFTERİ · MENÜ · EKİBİM (V135) =================
+// Tarif Defteri: kartlar tek sıra, sağa kayar. Menü: üç sekmenin (Menü / Fiyatlar / Stok) içeriği yeniden yazıldı —
+// Menü ve Fiyatlar'da kategori alt menüleri (İçecekler / Tatlılar / Ana Yemekler; UI.mnCat), ürünler onların içinde tek sıra kart;
+// Stok iki sıralı ızgara, sütun sütun sağa akar. Ekibim: büyük boy karakterli yatay kartlar (charBig), sağa kayar;
+// "İşçi bul" ve günlük maaş sekme satırına taşındı (alt çubuk yok → karakterlere yer kaldı).
+HX_SEL.push('#rbList','#mnCards','#team #teamList');
+UI.mnCat=UI.mnCat||'drink';
+function catBig(cfg,ck,tex,fallback){if(TH.cache.has(ck))return TH.cache.get(ck);
+  const {r,sc,cam}=TH;let url='';
+  try{const m=buildCat(cfg,tex||512);const mx=new THREE.AnimationMixer(m);mx.clipAction(CLIPS.Idle_12).play();mx.update(0.6);poseFix(poseRig(m),0);
+    const W=288,H=640;r.setSize(W,H,false);cam.aspect=W/H;sc.add(m);m.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(m),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3());
+    const t=Math.tan(THREE.MathUtils.degToRad(cam.fov/2)),dist=Math.max(s.y/2/t,Math.max(s.x,s.z)/2/(t*cam.aspect))*1.05+Math.max(s.x,s.z)/2;
+    cam.position.copy(c).add(new THREE.Vector3(0.35,0.1,1).normalize().multiplyScalar(dist));cam.lookAt(c);cam.near=dist/50;cam.far=dist*4;cam.updateProjectionMatrix();r.render(sc,cam);url=r.domElement.toDataURL('image/png');sc.remove(m)}
+  catch(e){console.warn('büyük portre',e);try{url=fallback?fallback():''}catch(e2){}}
+  finally{r.setSize(192,192,false);cam.aspect=1;cam.updateProjectionMatrix()}
+  TH.cache.set(ck,url);return url}
+function charBig(key){const cfg=S.chars[key];return catBig(cfg,'C:'+key+':'+JSON.stringify(cfg.look)+JSON.stringify(cfg.wear),512,()=>charThumb(key))}
+function candBig(c){return catBig({name:c.name,look:{...LOOK_DEF,...c.look},wear:c.wear},'CB:'+c.id,384,()=>candThumb(c))}
+{
+ const G='html.land #game#game',INK='#4a2a14';
+ const CARD=`background:#fffdf6;border:3px solid ${INK};border-radius:16px;box-shadow:0 3px 0 ${INK};box-sizing:border-box`;
+ const st=document.createElement('style');st.textContent=`
+/* çerçeveli ekranlarda (Tarif Defteri, Menü, Etkinlik) tente alçak: içerik için 21 birim daha */
+${G} :is(#recipes,#menuScr,#evP) .panel-head{height:46px!important;min-height:46px!important;padding:0 6px!important;box-sizing:border-box!important;align-items:center!important}
+${G} :is(#recipes,#menuScr,#evP) .panel-head>.iconbtn:first-child{width:44px!important;height:44px!important}
+
+/* ---- TARİF DEFTERİ: tek sıra kart, sağa kayar ---- */
+${G} #recipes #rbTabs{padding:16px 12px 6px!important}
+${G} #recipes .scroll{overflow:hidden!important;display:flex!important;flex-direction:column!important;touch-action:auto!important}
+${G} #recipes #rbList{flex:1 1 0!important;min-height:0!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:10px!important;padding:2px 12px 10px!important;max-width:none!important;margin:0!important;align-items:stretch!important}
+${G} #rbList>.rc{flex:none!important;width:196px!important;height:auto!important;box-sizing:border-box!important;justify-content:flex-start!important;gap:4px!important;padding:8px 8px 9px!important;margin:0!important}
+${G} #rbList>.rc:first-child{margin-left:auto!important}
+${G} #rbList>.rc:last-child{margin-right:auto!important}
+${G} #rbList>*:not(.rc){flex:none!important;width:300px;align-self:center;margin:0 auto!important}
+${G} #rbList .rc .th{width:48px!important;height:48px!important;flex:none!important}
+${G} #rbList .rc .tx{flex:1 1 auto!important;min-height:0!important;gap:4px!important}
+${G} #rbList .rcRec{padding:4px 8px!important}
+${G} #rbList .rcAct{margin-top:auto!important}
+${G} #rbList .rcAct .rbact small{font-size:10.5px!important;line-height:1.15!important}
+
+/* ---- MENÜ ---- */
+${G} #menuScr .scroll{overflow:hidden!important;display:flex!important;flex-direction:column!important;padding:14px 12px 8px!important;box-sizing:border-box!important;touch-action:auto!important}
+${G} #menuList.mlist{flex:1 1 0!important;min-height:0!important;display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;justify-content:flex-start!important;gap:8px!important;padding:0!important;margin:0!important;max-width:none!important}
+${G} #menuList.mlist>*{flex:none!important;margin:0!important}
+${G} #menuList .mrow2{display:flex;align-items:center;gap:8px;min-height:40px}
+${G} #menuList .mcats{display:flex;gap:6px;flex:none}
+${G} #menuList .mcatb{all:unset;box-sizing:border-box;height:40px;display:flex;align-items:center;gap:5px;padding:2px 12px 0 9px;border:2.5px solid ${INK};border-radius:999px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 2px 0 ${INK};font-family:var(--font-display);font-weight:800;font-size:13.5px;color:${INK};cursor:pointer;white-space:nowrap;position:relative;-webkit-tap-highlight-color:transparent}
+${G} #menuList .mcatb::after{content:'';position:absolute;inset:-3px -2px}
+${G} #menuList .mcatb[aria-selected=true]{background:linear-gradient(#ffe08a,#f6b93a)}
+${G} #menuList .mcatb .ic{width:18px;height:18px;display:inline-grid;flex:none}
+${G} #menuList .mcatb .ic svg{width:100%;height:100%}
+${G} #menuList .mcatb i{font-style:normal;font-family:var(--font-body,inherit);font-size:10.5px;font-weight:900;line-height:1;background:#fffdf6;border:1.5px solid ${INK};border-radius:999px;padding:2px 6px 1px;margin-left:1px}
+${G} #menuList .mcount{margin-left:auto;font-size:12.5px;font-weight:800;color:${INK};background:#fff6e0;border:2.5px solid ${INK};border-radius:12px;padding:7px 12px 6px;white-space:nowrap}
+${G} #menuList .pstrat2{margin-left:auto;display:flex;gap:6px;min-width:0}
+${G} #menuList .pstrat2 span{font-size:11.5px;font-weight:800;color:#6e4a2c;background:#fff6e0;border:2.5px solid ${INK};border-radius:12px;padding:5px 9px 4px;white-space:nowrap;display:flex;align-items:baseline;gap:5px}
+${G} #menuList .pstrat2 b{font-family:var(--font-display);font-size:14.5px;color:${INK}}
+${G} #menuList #mnCards{flex:1 1 0!important;min-height:0!important;display:flex;gap:10px;padding:2px 2px 6px;align-items:stretch}
+${G} #menuList #mnCards>*{flex:none}
+${G} #menuList #mnCards>*:first-child{margin-left:auto}
+${G} #menuList #mnCards>*:last-child{margin-right:auto}
+${G} #menuList .mcard{${CARD};width:150px;display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center;gap:3px!important;padding:8px 8px 9px!important}
+${G} #menuList .mcard>img{width:50px!important;height:50px!important;border-radius:12px;background:#f6e6cc;flex:none}
+${G} #menuList .mcard>b{font-family:var(--font-display);font-weight:800;font-size:15px;line-height:1.1;color:${INK}}
+${G} #menuList .mcard .mmeta{font-size:12px;font-weight:800;color:#6e4a2c;display:flex;align-items:center;gap:3px}
+${G} #menuList .mcard .mmeta .ic{width:14px;height:14px;display:inline-grid}
+${G} #menuList .mcard .mmeta .ic svg{width:100%;height:100%}
+${G} #menuList .mcard .mtags{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:800;line-height:1.15;min-height:0}
+${G} #menuList .mcard .mtags b{border-radius:999px;padding:1px 7px;border:1.5px solid ${INK};background:#fde9b8}
+${G} #menuList .mcard .mtags .stkout{background:#f8d2cc;color:#9e2f26}
+${G} #menuList .mcard .tgl{all:unset;box-sizing:border-box;margin-top:auto;width:100%;height:42px;display:flex;align-items:center;justify-content:center;border:3px solid ${INK};border-radius:999px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 3px 0 ${INK};font-family:var(--font-display);font-weight:800;font-size:14px;color:${INK};cursor:pointer;padding-top:2px;-webkit-tap-highlight-color:transparent}
+${G} #menuList .mcard .tgl[aria-pressed=true]{background:linear-gradient(#cdeb8b,#93cf52);color:#2f4a12}
+${G} #menuList .mcard .tgl:active{transform:translateY(2px);box-shadow:0 1px 0 ${INK}}
+${G} #menuList .mempty2{align-self:center;margin:0 auto!important;font-size:13px;font-weight:800;color:#6e4a2c;text-align:center;max-width:420px;line-height:1.4}
+${G} #menuList .mfoot{font-size:11.5px!important;font-weight:800!important;color:#7a5a3c!important;text-align:center!important;line-height:1.3!important;margin:0!important;padding:0 8px!important}
+/* Fiyatlar kartı */
+${G} #menuList .pcard{${CARD};width:196px;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;padding:8px 9px 9px!important}
+${G} #menuList .pcard .ph{display:flex;align-items:center;gap:8px;min-width:0}
+${G} #menuList .pcard .ph img{width:40px!important;height:40px!important;border-radius:10px;background:#f6e6cc;flex:none}
+${G} #menuList .pcard .ph div{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+${G} #menuList .pcard .ph b{font-family:var(--font-display);font-weight:800;font-size:14.5px;line-height:1.1;color:${INK};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+${G} #menuList .pcard .plb{font-size:10px!important;font-weight:900;line-height:1;padding:2px 7px 1px!important;border-radius:999px;border:1.5px solid ${INK};background:var(--c,#e7f6d8);color:#fff;align-self:flex-start}
+${G} #menuList .pcard .plbs{display:flex;gap:3px;flex-wrap:nowrap}
+${G} #menuList .pcard .plb{white-space:nowrap}
+${G} #menuList .pcard .plb.off{background:#eee4d4!important;color:#7a6650!important}
+${G} #menuList .pcard .prng{white-space:nowrap}
+${G} #menuList .pcard .pd{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+${G} #menuList .pcard .pd span{display:flex;flex-direction:column;align-items:center;font-size:9.5px;font-weight:800;color:#8a6040;line-height:1.1;background:#fff6e0;border-radius:8px;padding:3px 2px 2px}
+${G} #menuList .pcard .pd b{font-family:var(--font-display);font-size:13px;color:${INK}}
+${G} #menuList .pcard .prng{font-size:10.5px;font-weight:800;color:#8a6040;text-align:center;line-height:1.15}
+${G} #menuList .pcard .pst{margin-top:auto;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:6px}
+${G} #menuList .pcard .pst>b{font-family:var(--font-display);font-size:18px;color:${INK};display:flex;align-items:center;gap:4px}
+${G} #menuList .pcard .pst>b .ic{width:18px;height:18px;display:inline-grid}
+${G} #menuList .pcard .pst>b .ic svg{width:100%;height:100%}
+${G} #menuList .pcard .pst .iconbtn{all:unset;box-sizing:border-box;width:44px;height:44px;border-radius:50%;border:3px solid ${INK};background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 3px 0 ${INK};display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:24px;line-height:1;color:${INK};cursor:pointer;-webkit-tap-highlight-color:transparent}
+${G} #menuList .pcard .pst .iconbtn:disabled{opacity:.4;box-shadow:0 1px 0 ${INK}}
+${G} #menuList .pcard .pst .iconbtn:active{transform:translateY(2px);box-shadow:0 1px 0 ${INK}}
+/* Stok */
+${G} #menuList .skTop{margin:0!important;min-height:44px}
+${G} #menuList .skTop .sgo2{height:44px!important}
+${G} #menuList #mnCards.skgrid{display:grid!important;grid-auto-flow:column!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;grid-auto-columns:204px!important;grid-template-columns:none!important;gap:8px!important;justify-content:start!important}
+${G} #menuList #mnCards.skgrid>*{margin:0!important;min-width:0;box-sizing:border-box}
+${G} #menuList #mnCards.skgrid .sk2{justify-content:center;gap:5px!important;padding:6px 10px!important}
+${G} #menuList #mnCards.skgrid .sk2 .r2{flex-wrap:wrap;gap:2px 8px!important}
+${G} #menuList #mnCards.skgrid .spend2{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px!important;margin:0!important}
+${G} #menuList #mnCards.skgrid .spend2 span{flex:none}
+
+/* ---- EKİBİM: büyük karakterli kartlar ---- */
+${G} #team .skwin{width:min(820px,calc(100*var(--vw) - 24px))!important}
+${G} #team #tmTabs{display:flex!important;align-items:center!important;gap:6px!important;margin:0 0 8px!important}
+${G} #team #tmTabs .sktab{flex:1 1 0!important;min-width:0!important}
+${G} #team #tmTabs .tmwage{flex:none;font-size:11.5px;font-weight:800;color:#6e4a2c;background:#fff6e0;border:2.5px solid ${INK};border-radius:12px;padding:0 10px;height:40px;box-sizing:border-box;display:flex;align-items:center;gap:4px;white-space:nowrap}
+${G} #team #tmTabs .tmwage b{font-family:var(--font-display);font-size:14px;color:${INK};display:flex;align-items:center;gap:3px}
+${G} #team #tmTabs .tmwage .uic{width:14px;height:14px}
+${G} #team #tmTabs #tmHire{flex:none!important;width:auto!important;height:44px!important;padding:2px 14px 0!important;font-size:14px!important;white-space:nowrap}
+${G} #team #tmTabs #tmHire small{font-size:11px;opacity:.8}
+${G} #team #tmScroll{overflow:hidden!important;display:flex!important;flex-direction:column!important;padding:0!important;margin:0!important;touch-action:auto!important}
+${G} #team #tmFoot{display:none!important}
+${G} #team #tmFoot.on{display:flex!important;align-items:center!important}
+${G} #team #teamList{flex:1 1 0!important;min-height:0!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:8px!important;padding:0 2px 5px!important;margin:0!important;align-items:stretch!important}
+${G} #team #teamList>.skempty{margin:auto!important}
+${G} #team .tmc{${CARD};flex:none;width:255px;display:grid;grid-template-columns:86px minmax(0,1fr);gap:0 8px;padding:8px 9px 8px 8px}
+${G} #team .tmc:first-child{margin-left:auto}
+${G} #team .tmc:last-child{margin-right:auto}
+${G} :is(#team,#skHire) .tmp{position:relative;border-radius:13px;border:2.5px solid #5a2f12;box-shadow:inset 0 0 0 2px #f3a45a;background:radial-gradient(circle at 50% 32%,#fff7e6,#f1cf9f);overflow:hidden;min-height:0}
+${G} :is(#team,#skHire) .tmp::after{content:'';position:absolute;left:12%;right:12%;bottom:7px;height:15px;border-radius:50%;background:rgba(150,100,50,.26)}
+${G} :is(#team,#skHire) .tmi{position:absolute;left:50%;bottom:9px;height:calc(100% - 20px);width:118%;max-width:none!important;object-fit:contain;object-position:50% 100%;transform:translateX(-50%);z-index:1;pointer-events:none;-webkit-user-drag:none}
+${G} :is(#team,#skHire) .tmp .crown{position:absolute;left:3px;top:3px;width:26px;height:auto;z-index:2;transform:rotate(-12deg)}
+${G} :is(#team,#skHire) .tmp .rest{position:absolute;right:4px;top:4px;z-index:2;font-size:10px;font-weight:900;color:${INK};background:#fde9b8;border:2px solid ${INK};border-radius:999px;padding:1px 7px;white-space:nowrap}
+${G} :is(#team,#skHire) .tmp .tmw{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:3px;font-family:var(--font-display);font-weight:800;font-size:12px;line-height:1;color:${INK};background:linear-gradient(#ffe08a,#f6b93a);border:2px solid ${INK};border-radius:999px;padding:3px 8px 2px;white-space:nowrap}
+${G} :is(#team,#skHire) .tmp .tmw .uic{width:13px;height:13px}
+${G} #team .tmb{display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:4px;min-width:0;padding:2px 0 0}
+${G} :is(#team,#skHire) .tmn{font-family:var(--font-display);font-weight:800;font-size:18px;line-height:1.1;color:${INK};display:flex;align-items:center;justify-content:center;gap:4px;max-width:100%;white-space:nowrap}
+${G} :is(#team,#skHire) .tmn .uic{width:17px;height:17px;flex:none}
+${G} #team .tmmeta{display:flex;flex-direction:column;gap:3px;align-items:center}
+${G} :is(#team,#skHire) .tmrows{display:flex;flex-direction:column;gap:5px;width:100%}
+${G} :is(#team,#skHire) .tmrow{display:flex;align-items:center;gap:4px;color:#5a2f12;line-height:1.1;text-align:left}
+${G} :is(#team,#skHire) .tmrow>.uic{width:14px;height:14px;flex:none;object-fit:contain}
+${G} :is(#team,#skHire) .tmrow>b{flex:1 1 auto;min-width:0;font-size:10.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+${G} :is(#team,#skHire) .tmrow>.skstars{flex:none}
+/* ---- EKİP ALIMI: üç aday büyük portreli kart; alt çubukta ilan düğmeleri (solda) ve seçili adayın işlemleri (sağda) ---- */
+${G} #skHire .skwin{width:min(820px,calc(100*var(--vw) - 24px))!important}
+${G} #skHire .sktabs{margin:0 0 8px!important}
+${G} #skHire .skscroll{overflow:hidden!important;display:flex!important;flex-direction:column!important;padding:0!important;margin:0!important;touch-action:auto!important}
+${G} #skHire .hrlist{flex:1 1 0;min-height:0;display:flex;gap:8px;padding:3px 3px 6px;align-items:stretch}
+${G} #skHire .hrlist>.skempty{margin:auto}
+${G} #skHire .hrc{all:unset;${CARD};flex:none;width:255px;display:grid;grid-template-columns:86px minmax(0,1fr);gap:0 8px;padding:8px 9px 8px 8px;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+${G} #skHire .hrc:first-child{margin-left:auto}
+${G} #skHire .hrc:last-child{margin-right:auto}
+${G} #skHire .hrc[aria-current=true]{border-color:#c98400;box-shadow:0 3px 0 ${INK},0 0 0 3px #ffd24a;background:#fffbea}
+${G} #skHire .hrc .ok{position:absolute;right:-7px;top:-7px;width:26px;height:26px;z-index:3}
+${G} #skHire .hrb{display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:4px;min-width:0;padding:2px 0 0}
+${G} #skHire .hrb>.skstars{align-self:center}
+${G} #skHire .hrm{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;font-size:10.5px;font-weight:800;color:#6e4a2c;line-height:1.2}
+${G} #skHire .hrm span{background:#fff6e0;border:2px solid ${INK};border-radius:999px;padding:2px 8px 1px;white-space:nowrap;display:flex;align-items:center;gap:3px}
+${G} #skHire .hrm b{font-family:var(--font-display);font-size:13px;color:${INK}}
+${G} #skHire .hrm .uic{width:12px;height:12px}
+${G} #skHire .tmrow small{display:none}
+${G} #skHire .hrbar{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding-top:6px!important}
+${G} #skHire .hrads,${G} #skHire .hract{display:flex;align-items:center;gap:6px;min-width:0}
+${G} #skHire .hrads>span{font-family:var(--font-display);font-weight:800;font-size:12px;color:#6b4426;white-space:nowrap}
+${G} #skHire .hrbar .skbtn{height:44px!important;min-height:44px!important;width:auto!important;flex:none!important;padding:2px 12px 0!important;font-size:13px!important;white-space:nowrap}
+${G} #skHire .hrbar .skbtn .uic{width:15px!important;height:15px!important}
+${G} #skHire .hrnote{flex:1 1 0;min-width:0;max-width:150px;max-height:44px;overflow:hidden;font-size:10px;font-weight:800;color:#a0522d;line-height:1.12;text-align:right}
+${G} #skHire .hrads{flex:none!important}
+${G} #skHire .hract{flex:1 1 0;justify-content:flex-end}
+${G} #team .tmbtn{display:flex;flex-direction:column;gap:5px;width:100%}
+${G} #team .tmbtn .skbtn{height:40px!important;min-height:40px!important;font-size:13.5px!important;padding:2px 6px 0!important;white-space:nowrap;flex:none!important;width:100%!important;min-width:0!important}
+${G} #team .tmbtn .skbtn .uic{width:16px!important;height:16px!important}
+`;document.head.appendChild(st);
+
+ // ---- Tarif Defteri: sekme değişince başa dön ----
+ try{const _rb=renderBook;let last='';renderBook=function(){const r=_rb.apply(this,arguments);try{const l=$('rbList');if(l){if(last!==UI.rbTab)l.scrollLeft=0;last=UI.rbTab;hxAttach(l);hxUpd(l)}}catch(e){}return r}}catch(e){console.warn('yatay: tarif',e)}
+ // öğretici "şuraya kaydır" derken yatay kabı da kaydırsın
+ try{const _s=scrollToEl;scrollToEl=function(el,where){_s.apply(this,arguments);try{const hx=el&&el.closest('.hx');if(!hx)return;const k=(window.__U&&window.__U.k)||1,r=el.getBoundingClientRect(),q=hx.getBoundingClientRect();hx.scrollLeft+=(r.left-q.left-(q.width-r.width)*0.5)/k;hxUpd(hx)}catch(e){}}}catch(e){}
+
+ // ---- MENÜ ----
+ const cats=cnt=>`<div class="mcats" role="tablist">${RCAT.map(c=>`<button type="button" class="mcatb" role="tab" data-mc="${c.id}" aria-selected="${UI.mnCat===c.id}">${ic(c.icon)}${c.name}${cnt?`<i>${cnt(c)}</i>`:''}</button>`).join('')}</div>`;
+ const openIn=c=>RECIPES.filter(r=>r.cat===c.id&&S.unlocked[r.id]);
+ const common=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return true}const c=e.target.closest('[data-mc]');if(c){UI.mnCat=c.dataset.mc;sfx('tap');renderMenu();return true}return false};
+ function mnMenu(L){try{if(S.tr==='menu2'&&RECIPE[T2_RECIPE])UI.mnCat=RECIPE[T2_RECIPE].cat}catch(e){}
+   if(!RCAT.some(c=>c.id===UI.mnCat))UI.mnCat=RCAT[0].id;
+   const on=RECIPES.filter(r=>S.menu[r.id]).length,C=RCAT.find(c=>c.id===UI.mnCat),rs=openIn(C);
+   L.innerHTML=`${mtabsHTML()}<div class="mrow2">${cats(c=>{const a=openIn(c);return a.filter(r=>S.menu[r.id]).length+'/'+a.length})}<span class="mcount">Menüde <b>${on}</b> ürün</span></div>
+    <div id="mnCards">${rs.length?rs.map(r=>{const m=!!S.menu[r.id];const tags=[machineOk(r)?'':`<b class="stkout">${CATALOG.find(x=>x.elv===1&&x.slot===EQUIP_OF[r.station]).name} yok</b>`,stockTag(r).replace(/^\s*·\s*/,''),S.req&&S.req.rid===r.id?'<b class="rqtag">Özel istek</b>':''].filter(Boolean).join('');
+      return `<div class="mi2 mcard" data-mi="${r.id}"><img src="${productThumb(r.id)}" alt=""><b>${r.name}</b><span class="mmeta">${ic('coin')}${priceOf(r)} · ${r.prep} sn</span><span class="mtags">${tags}</span>
+       <button class="tgl" type="button" data-tg="${r.id}" aria-pressed="${m}">${m?'Menüde ✓':'Menüye ekle'}</button></div>`}).join(''):`<div class="mempty2">${C.name} bölümünde henüz açılmış ürün yok.<br>Tarifler’den keşfedip açınca burada görünür.</div>`}</div>
+    <p class="mfoot">Müşteriler yalnızca menündeki ürünleri sipariş eder · yeni ürünleri <b>Tarifler</b>’de açarsın.</p>`;
+   L.onclick=e=>{if(common(e))return;const b=e.target.closest('[data-tg]');if(!b)return;const id=b.dataset.tg,want=!S.menu[id];
+     if(!setMenu(id,want)){sfx('nope');toast('Menüde en az bir ürün kalmalı',ic('menu'),2000);return}sfx(want?'place':'tap');toast(want?`${RECIPE[id].name} menüye eklendi`:`${RECIPE[id].name} menüden çıkarıldı`,`<img src="${productThumb(id)}" alt="">`,1600);renderMenu();if(typeof tut2Event==='function')tut2Event('menu',id)}}
+ function mnPrices(L){if(!RCAT.some(c=>c.id===UI.mnCat))UI.mnCat=RCAT[0].id;const C=RCAT.find(c=>c.id===UI.mnCat),rs=openIn(C);
+   const pi=priceIndex(),dm=demandMul(),eq=clamp(3+CONFIG.expect.q*(pi-1),1,5);
+   L.innerHTML=`${mtabsHTML()}<div class="mrow2">${cats(null)}<div class="pstrat2"><span>Fiyat düzeyi <b>%${Math.round(pi*100)}</b></span><span>Talep <b>×${dm.toFixed(2)}</b></span><span>Beklenen kalite <b>${eq.toFixed(1)}★</b></span></div></div>
+    <div id="mnCards">${rs.length?rs.map(r=>{const R=priceRange(r),p=priceOf(r),[lb,col]=priceLabel(r);
+      return `<div class="pi pcard" data-pi="${r.id}"><div class="ph"><img src="${productThumb(r.id)}" alt=""><div><b>${r.name}</b><span class="plbs"><span class="plb" style="--c:${col}">${lb}</span>${S.menu[r.id]?'':'<span class="plb off">menüde değil</span>'}</span></div></div>
+       <div class="pd"><span>Maliyet<b>${R.cost}</b></span><span>Kâr<b>${+(p-R.cost).toFixed(1)}</b></span><span>Kalite<b>${quality(r).toFixed(1)}★</b></span></div>
+       <small class="prng">Aralık ${R.min}–${R.max} · varsayılan ${R.def}</small>
+       <div class="pst"><button class="iconbtn" type="button" data-pd="-1" aria-label="${r.name} fiyatını düşür" ${p<=R.min?'disabled':''}>−</button><b>${ic('coin')}${p}</b><button class="iconbtn" type="button" data-pd="1" aria-label="${r.name} fiyatını artır" ${p>=R.max?'disabled':''}>+</button></div></div>`}).join(''):`<div class="mempty2">${C.name} bölümünde henüz açılmış ürün yok.</div>`}</div>
+    <p class="mfoot">Ucuz menü daha çok müşteri çeker ama ürün başı kâr düşer; pahalı menüde müşteri azalır, gelenler hızlı servis ve yüksek kalite bekler. Maliyet, sıradaki stoğun alış fiyatıdır.</p>`;
+   L.onclick=e=>{if(common(e))return;const b=e.target.closest('[data-pd]');if(!b)return;const id=b.closest('[data-pi]').dataset.pi;if(setPrice(id,priceOf(RECIPE[id])+(+b.dataset.pd))){sfx('tap');renderMenu()}else sfx('nope')}}
+ function mnStock(L){const T=stockS(),mb=menuBases(),now=nowT(),cap=CONFIG.stock.cap;
+   const rows=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a))||(stockN(a)-stockN(b))).map(k=>{const n=stockN(k),l=headLot(k),used=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]&&needsOf(r).includes(k)).length,pn=pendN(k);
+     const cls=!mb.has(k)?'off':n<1?'out':n<=CONFIG.stock.low?'low':'ok';const w=Math.min(100,n/cap*100);const au=(autoS()[k]||{}).on;const tag=cls==='out'?'Bitti':cls==='low'?'Azaldı':cls==='off'?'Menüde yok':'Yeterli';
+     return `<div class="sk2 ${cls}"><div class="r1"><b>${STOCK_NAME[k]}</b>${au?'<i class="oto">OTO</i>':''}<span class="tg">${tag}</span><em>${n}<small>/${cap}</small></em></div><i class="bar"><i style="width:${w}%"></i></i>
+      <div class="r2"><span>${l?`${stars(l.q)}<span class="c">birim ${l.c}</span>`:'<span class="c">Depoda yok</span>'}</span>${pn?`<b class="pn">+${pn} yolda</b>`:''}<span class="u">${used?`${used} üründe`:'kullanılmıyor'}</span></div></div>`}).join('');
+   const pend=T.pend.map(p=>`<div class="spend2"><b>${SUP(p.sup).name}</b><span>${Object.keys(p.items).length} çeşit yolda</span><em data-eta="${p.eta}">${p.eta<=now?'Geliyor…':fmtT(Math.ceil((p.eta-now)/1000))}</em></div>`).join('');
+   const outN=[...mb].filter(k=>stockN(k)<1).length,lowN=[...mb].filter(k=>stockN(k)>=1&&stockN(k)<=CONFIG.stock.low).length;
+   L.innerHTML=`${mtabsHTML()}<div class="skTop"><div class="skSum"><span class="d ok"></span>${[...mb].length-outN-lowN} yeterli<span class="d low"></span>${lowN} azaldı<span class="d out"></span>${outN} bitti</div>
+      <button class="btn sgo2" type="button" data-sup>${ic('market')}Sipariş ver</button><button class="btn alt sgo2" type="button" data-auto>${ic('box')}Otomatik tedarik</button></div>
+    <div id="mnCards" class="sks2 skgrid">${T.arr.length?`<div class="spend2 hi"><b>Koliler geldi</b><span>${FETCH.on?FETCH.who+' tezgâha taşıyor':'birazdan alınacak'}</span></div>`:''}${pend}${rows}</div>
+    <p class="mfoot">Her ürün tarifindeki malzemelerden 1’er birim harcar · malzeme başına depo sınırı ${cap} · önce eski stok kullanılır.</p>`;
+   L.onclick=e=>{if(common(e))return;if(e.target.closest('[data-sup]')){openSup();return}if(e.target.closest('[data-auto]')){openAuto();return}}}
+ try{const _rm=renderMenu;renderMenu=function(){const L=$('menuList');if(!L)return _rm.apply(this,arguments);const old=$('mnCards'),sx=old?old.scrollLeft:0,k0=L._hk;
+   try{if(menuTab==='price')mnPrices(L);else if(menuTab==='stock')mnStock(L);else mnMenu(L)}catch(e){console.warn('yatay menü',e);return _rm.apply(this,arguments)}
+   const k1=menuTab+':'+(menuTab==='stock'?'':UI.mnCat);L._hk=k1;const n=$('mnCards');if(n){hxAttach(n);n.scrollLeft=k0===k1?sx:0;hxUpd(n)}}}catch(e){console.warn('yatay: menü',e)}
+
+ // ---- EKİBİM ----
+ try{renderTeam=function(){const l=$('teamList'),tabs=$('tmTabs'),foot=$('tmFoot');if(!l)return;const T=UI.teamTab||'all';
+   const TB=[['all','Tüm Ekip','i_team'],['waiter','Garson','i_cloche'],['barista','Barista','i_cup'],['cashier','Kasiyer','i_register']];
+   const total=['waiter','barista','cashier'].reduce((a,r)=>a+S.staff[r],0),maxT=HIRE_MAX.waiter+HIRE_MAX.barista+HIRE_MAX.cashier;
+   let wage=0;try{wage=allStaffKeys().reduce((a,k)=>a+stWage(stOf(k)),0)}catch(e){}
+   tabs.innerHTML=TB.map(([id,n,i])=>`<button class="sktab" type="button" role="tab" data-tt="${id}" aria-selected="${T===id}">${uiIc(i)}${n}</button>`).join('')+
+     (S.created?`<span class="tmwage" title="Gün sonunda ödenir">Günlük maaş <b>${uiIc('i_coin')}${wage}</b></span><button class="skbtn green" type="button" id="tmHire">${uiIc('i_team')}İşçi bul <small>&nbsp;${total}/${maxT}</small></button>`:'');
+   tabs.onclick=e=>{if(e.target.closest('#tmHire')){openHire();return}const b=e.target.closest('[data-tt]');if(!b)return;UI.teamTab=b.dataset.tt;sfx('tap');renderTeam();l.scrollLeft=0};
+   foot.classList.toggle('on',!S.created);
+   if(!S.created){l.innerHTML=`<div class="skempty">Yeni! Ekibini kendine göre tasarla. İlk kurulum ücretsiz.</div>`;foot.innerHTML=`<button class="skbtn green big" type="button" id="tmSetup">${uiIc('i_paw')}Başla</button>`;
+     $('tmSetup').onclick=()=>{UI.backTo='cafe';openEditor('waiter','create')};return}
+   foot.innerHTML='';
+   const keys=allStaffKeys().filter(k=>T==='all'||roleOfKey(k)===T);const all=[...WSTAFF,...BSTAFF,...CSTAFF];
+   l.innerHTML=keys.map((key,i)=>{const c=S.chars[key],role=roleOfKey(key),R=ROLES.find(x=>x.id===role),stt=stOf(key),o=all.find(x=>x.key===key);
+     const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,n,ic2])=>`<div class="tmrow" title="${(k==='spc'?ST_TXT[role]:ST_TXT[k])[stt[k]-1]||''}">${uiIc(ic2)}<b>${n}</b>${skStars(stt[k])}</div>`).join('');
+     const lead=i===0&&T==='all';
+     return `<div class="tmc" data-key="${key}"><div class="tmp"><img class="tmi" src="${charBig(key)}" alt="${c.name}" draggable="false">${lead?uiIc('i_crown','crown'):''}${o&&o.resting?'<span class="rest">Molada</span>':''}<span class="tmw">${uiIc('i_coin')}${stWage(stt)}/gün</span></div>
+      <div class="tmb"><b class="tmn">${c.name}${uiIc(ROLE_DECO[role])}</b>
+       <div class="tmmeta"><span class="skbadge">${uiIc(ROLE_IC[role])}${R.name}</span>${skStars(stAvg(stt),'big')}</div>
+       <div class="tmrows">${rows}</div>
+       <div class="tmbtn"><button class="skbtn cream" type="button" data-ed="${key}">${uiIc('i_pencil')}Düzenle</button><button class="skbtn green" type="button" data-rp="${role}">${uiIc('i_paw')}Yerine bul</button></div></div></div>`}).join('')||`<div class="skempty">Bu bölümde henüz kimse yok.</div>`;
+   l.onclick=e=>{const b=e.target.closest('[data-ed]');if(b){UI.backTo='team';openEditor(b.dataset.ed,'edit');return}const r=e.target.closest('[data-rp]');if(r)openHire(r.dataset.rp)};
+   hxAttach(l);hxUpd(l)}}catch(e){console.warn('yatay: ekip',e)}
+ // ---- EKİP ALIMI ----
+ try{openHire=function(only){let m=$('skHire');if(!m){m=document.createElement('div');m.id='skHire';m.className='modal skmodal';m.hidden=true;$('game').appendChild(m)}UI.modal=true;const list=candList(false);let role=only||UI.hireRole||'waiter';UI.hireRole=role;
+   const draw=()=>{const L=list.filter(c=>c.role===role);let sel=L.find(c=>c.id===UI.hireSel)||L[0];if(sel)UI.hireSel=sel.id;
+     const R=ROLES.find(x=>x.id===role),n=S.staff[role],cap=HIRE_CAP(role),same=allStaffKeys().filter(k=>roleOfKey(k)===role);
+     const TB=[['waiter','Garson','i_cloche'],['barista','Barista','i_cup'],['cashier','Kasiyer','i_register']];
+     const adsH=ADS.slice(1).map(a=>`<button class="skbtn cream" type="button" data-ad="${a.id}" ${S.coins<a.cost?'disabled':''}>${a.name} · ${uiIc('i_coin')}${a.cost}</button>`).join('');
+     const cards=L.map(c=>{const st2=c.st,on=!!(sel&&c.id===sel.id);
+       const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,nm,i2])=>`<span class="tmrow" title="${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st2[k]-1]||''}">${uiIc(i2)}<b>${nm}</b>${skStars(st2[k])}</span>`).join('');
+       return `<button class="hrc" type="button" data-cs="${c.id}" aria-current="${on}"><span class="tmp"><img class="tmi" src="${candBig(c)}" alt="" draggable="false"></span>
+        <span class="hrb"><b class="tmn">${c.name}${uiIc(ROLE_DECO[role])}</b>${skStars(stAvg(st2),'big')}<span class="tmrows">${rows}</span><span class="hrm"><span>Maaş <b>${stWage(st2)}</b>/gün</span><span>İmza ${uiIc('i_coin')}<b>${stSign(st2)}</b></span></span></span>${on?uiIc('d_check','ok'):''}</button>`}).join('');
+     const acts=sel?(n<cap?`<button class="skbtn green" type="button" data-hire="${sel.id}">${uiIc('i_paw')}${sel.name}: işe al · ${uiIc('i_coin')}${stSign(sel.st)}</button>`:'')+same.map(k=>`<button class="skbtn cream" type="button" data-swap="${sel.id}:${k}">${S.chars[k].name} yerine</button>`).join(''):'';
+     const nx=HIRE[role].find(h=>S.lvl<h.lv),note=n>=cap?(n<HIRE_MAX[role]&&nx?`Yeni ${R.name.toLowerCase()} kadrosu Seviye ${nx.lv}’de açılır`:`${R.name} kadrosu dolu: biriyle değiştirebilirsin`):'';
+     m.innerHTML=`<div class="skwin" role="dialog" aria-label="Ekip alımı"><div class="skhead">${uiIc('cat_peek','skcat')}<div class="skplaque"><h2>Ekip Alımı</h2></div><button class="skclose" id="hrClose" type="button" aria-label="Kapat"></button></div>
+       <div class="sktabs" role="tablist">${TB.map(([id,nm,i])=>`<button class="sktab" type="button" role="tab" data-hr="${id}" aria-selected="${role===id}">${uiIc(i)}${nm}<small>${S.staff[id]}/${HIRE_CAP(id)}</small></button>`).join('')}</div>
+       <div class="skscroll"><div class="hrlist">${cards||`<div class="skempty">Bugün ${R.name.toLowerCase()} adayı kalmadı. Yeni aday için ilan ver.</div>`}</div></div>
+       <div class="skfoot hrbar"><div class="hrads"><span>Yeni aday ara</span>${adsH}</div><div class="hract">${note?`<span class="hrnote">${note}</span>`:''}${acts}</div></div></div>`;m.hidden=false;
+     $('hrClose').onclick=()=>{m.hidden=true;UI.modal=false;if(UI.mode==='team')renderTeam()};
+     m.querySelectorAll('[data-hr]').forEach(b=>b.onclick=()=>{role=b.dataset.hr;UI.hireRole=role;UI.hireSel=null;sfx('tap');draw()});
+     m.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{if(UI.hireSel===b.dataset.cs)return;UI.hireSel=b.dataset.cs;sfx('tap');draw()});
+     m.querySelectorAll('[data-ad]').forEach(b=>b.onclick=()=>{const A=ADS.find(a=>a.id===b.dataset.ad);if(S.coins<A.cost)return;addCoins(-A.cost,'hire');sfx('buy');candList(true,A.id);
+       toast(`<b>${A.name} verildi</b><br>Yeni adaylar geldi`,ic('paw'),1800);UI.hireSel=null;openHire(role)});
+     m.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>{UI.hireSel=null;hireCand(b.dataset.hire,null,role)});
+     m.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{const [id,k]=b.dataset.swap.split(':');UI.hireSel=null;hireCand(id,k,role)})};
+   draw()}}catch(e){console.warn('yatay: ekip alımı',e)}
+}
+
+// ================= DİĞER PENCERELER: Görevler, Duyurular, Ayarlar, Keşfet, Kıyafet Dolabı, Etkinlik, Rehber, eski rapor pencereleri =================
+// hxWrap(gövde, öğeSeçici, sınıf): gövdenin doğrudan çocuğu olan kartları yatay kayan bir satıra (.hxrow) toplar; gövde her yeniden
+// çizildiğinde (innerHTML) MutationObserver ile yinelenir. Uzun metinli pencerelerde (Etkinlik, Rehber, raporlar) CSS çok sütun kullanılır:
+// içerik sütun sütun sağa akar, kap yatay kayar.
+HX_SEL.push('#skMail .skscroll','#worldP .wlist','#clShop #csGrid','#evP .scroll','#guide .scroll','.lvup .unl');
+function hxWrap(body,itemSel,cls){if(!body)return;const items=[...body.children].filter(c=>c.matches(itemSel));if(!items.length)return;
+  let row=[...body.children].find(c=>c.classList.contains('hxrow'));if(!row){row=document.createElement('div');row.className='hxrow '+(cls||'');items[0].before(row)}
+  items.forEach(i=>row.appendChild(i));hxAttach(row);hxUpd(row)}
+function hxWatch(body,itemSel,cls){if(!body)return;if(!body._hxo){body._hxo=new MutationObserver(()=>hxWrap(body,itemSel,cls));body._hxo.observe(body,{childList:true})}hxWrap(body,itemSel,cls)}
+{
+ const G='html.land #game#game',INK='#4a2a14';
+ const st=document.createElement('style');st.textContent=`
+/* ---- GÖREVLER: iki sıralı ızgara, sütun sütun sağa ---- */
+${G} #skDaily .skscroll{overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:6px!important;touch-action:auto!important}
+${G} #skDaily .skscroll>*{flex:none!important;margin-top:0!important;margin-bottom:0!important}
+${G} #skDaily .skscroll>.skempty{margin:auto!important}
+${G} #skDaily .hxrow{flex:1 1 0!important;min-height:0!important;display:grid!important;grid-auto-flow:column!important;grid-template-rows:repeat(2,minmax(0,84px))!important;grid-auto-columns:calc(50% - 4px)!important;align-content:center!important;gap:8px!important;padding:0 2px 5px!important}
+${G} #skDaily .hxrow>.skq{margin:0!important;min-width:0!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:2px 12px!important;padding:6px 14px!important;text-align:left!important;box-sizing:border-box}
+${G} #skDaily .hxrow>.skq .qt{align-items:stretch!important;width:auto!important;grid-column:1;gap:4px!important}
+${G} #skDaily .hxrow>.skq .qt b{text-align:left;font-size:13.5px!important}
+${G} #skDaily .hxrow>.skq .qt .qbar{width:100%!important}
+${G} #skDaily .hxrow>.skq .qt small{text-align:left}
+${G} #skDaily .hxrow>.skq>:is(.qrw,.skbtn,.uic:last-child){grid-column:2;justify-self:end}
+${G} #skDaily .hxrow>.skq>.uic:last-child{display:block!important;width:30px;height:30px}
+
+/* ---- DUYURULAR: kartlar yan yana ---- */
+${G} #skMail .skscroll{display:flex!important;flex-direction:row!important;gap:10px!important;align-items:stretch!important;padding-bottom:5px!important}
+${G} #skMail .skscroll>.skmail{flex:none!important;width:252px;margin:0!important;display:flex!important;flex-direction:column!important;gap:6px;box-sizing:border-box;text-align:left}
+${G} #skMail .skscroll>.skmail:first-child{margin-left:auto!important}
+${G} #skMail .skscroll>.skmail:last-child{margin-right:auto!important}
+${G} #skMail .skscroll>.skmail .mb{display:block!important;flex:1 1 auto;min-height:0;overflow:hidden;margin:0!important}
+${G} #skMail .skscroll>.skmail .mr{display:flex!important;gap:6px;align-items:center;margin-top:auto!important}
+${G} #skMail .skscroll>.skmail.open{width:400px}
+${G} #skMail .skscroll>.skempty{margin:auto!important}
+
+/* ---- AYARLAR: iki sütun, kaydırma yok ---- */
+${G} #skSet .skwin{top:calc((100*var(--vh) - 274px)/2)!important;bottom:auto!important;height:274px!important;box-sizing:border-box!important}
+${G} #skSet .skscroll{overflow:hidden!important}
+${G} #skSet .skset{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important}
+${G} #skSet .skset .row{margin:0!important;min-width:0}
+${G} #skSet .skset .row:first-child{grid-column:1/-1}
+
+/* ---- KEŞFET: sıralama üç sıralı ızgara ---- */
+${G} #worldP .scroll{overflow:hidden!important;display:flex!important;flex-direction:column!important;touch-action:auto!important}
+${G} #worldP .scroll>*{flex:none}
+${G} #worldP .wlist{flex:1 1 0!important;min-height:0!important;display:grid!important;grid-auto-flow:column!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;grid-auto-columns:calc(50% - 4px)!important;gap:8px!important;padding:0 2px 5px!important}
+${G} #worldP .wlist>.wr{min-width:0;margin:0!important;box-sizing:border-box}
+${G} #worldP .wlist>p{grid-row:1/-1;grid-column:1/3;align-self:center;text-align:center}
+${G} #worldP .wlist .btn{min-height:40px}
+
+/* ---- KIYAFET DOLABI: iki sıra, sağa ---- */
+${G} #clShop #csGrid{display:grid!important;grid-auto-flow:column!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;grid-template-columns:none!important;grid-auto-columns:118px!important;gap:8px!important;align-content:stretch!important;padding-bottom:5px!important}
+${G} #clShop #csGrid>*{min-width:0;height:auto!important}
+${G} #clShop .csbody{grid-template-columns:minmax(200px,36%) minmax(0,1fr)!important}
+${G} #clShop .csright{min-width:0!important}
+${G} #clShop .csleft{min-width:0!important}
+
+/* ---- ETKİNLİK: içerik sütun sütun sağa akar ---- */
+${G} #evP .scroll{column-width:336px;column-gap:16px;column-fill:auto;padding:16px 12px 8px!important;box-sizing:border-box!important}
+${G} #evP .scroll>*{break-inside:avoid;-webkit-column-break-inside:avoid}
+${G} #evP .scroll>:is(ul,ol).bul{break-inside:auto;-webkit-column-break-inside:auto;display:block!important;margin:6px 0 0!important}
+${G} #evP .scroll .bul>li{break-inside:avoid;-webkit-column-break-inside:avoid;margin:0 0 6px!important}
+${G} #evP .scroll .evh{break-after:avoid;margin:2px 0 4px!important}
+${G} #evP .scroll .evhero{margin:0 0 10px!important}
+
+/* ---- REHBER: çerçeveli pencere; sayfa metni sütunlara akar, gezinme altta sabit ---- */
+${G} #guide{left:var(--elR)!important;top:calc(6px*var(--u))!important;width:calc(100%/var(--u) - var(--el) - var(--er))!important;height:calc(100%/var(--u) - 12px)!important;border:3px solid ${INK}!important;border-radius:20px!important;overflow:hidden!important;box-shadow:0 5px 0 ${INK},0 0 0 100vmax rgba(43,26,16,.5)!important;box-sizing:border-box!important}
+${G} #guide .panel-head{height:46px!important;min-height:46px!important;padding:0 6px!important;box-sizing:border-box!important;align-items:center!important}
+${G} #guide .panel-head>.iconbtn:first-child{width:44px!important;height:44px!important}
+${G} #guide .scroll{column-width:326px;column-gap:26px;column-fill:auto;column-rule:2px dashed #e6cfa8;padding:18px 18px 62px!important;box-sizing:border-box!important}
+${G} #guide :is(.gwrap,.gpage){display:contents!important}
+${G} #guide .scroll h3{break-after:avoid;margin:0 0 8px!important;text-align:center}
+${G} #guide .scroll :is(p,li,.gart,.gfxset,#gdReset,.acct,ul,ol){break-inside:avoid;-webkit-column-break-inside:avoid}
+${G} #guide .scroll :is(ul,ol).gsteps{break-inside:auto;-webkit-column-break-inside:auto}
+${G} #guide .scroll>*,${G} #guide .gpage>*,${G} #guide .gwrap>*{margin-bottom:10px!important}
+${G} #guide .gdots{display:none!important}
+${G} #guide .gnav{position:absolute!important;left:50%!important;bottom:8px!important;transform:translateX(-50%)!important;margin:0!important;display:flex!important;gap:12px!important;align-items:center!important;z-index:4;background:#fffdf6;border:3px solid ${INK};border-radius:999px;padding:3px!important;box-shadow:0 3px 0 ${INK}}
+${G} #guide .gnav .btn{min-height:40px!important;margin:0!important}
+${G} #guide .gnav>span{font-family:var(--font-display);font-weight:800;font-size:13.5px;color:${INK};white-space:nowrap;padding:0 2px}
+${G} #guide .acct{break-before:column;-webkit-column-break-before:always}
+${G} #guide .acct .ic{width:40px!important;height:40px!important;flex:none}
+${G} #guide .acct>span{width:auto!important;height:auto!important}
+
+${G} .modal:not(.skmodal){box-sizing:border-box!important;padding:8px max(12px,var(--el))!important}
+/* seviye atlama: "Yeni açılanlar" iki sıra, sağa kayar */
+${G} .modal>.lvcard.lvup{width:min(480px,calc(100*var(--vw) - 40px))!important}
+${G} .lvup .unl{display:grid!important;grid-auto-flow:column!important;grid-template-rows:repeat(2,auto)!important;grid-template-columns:none!important;grid-auto-columns:minmax(150px,1fr)!important;max-height:none!important;gap:5px!important;padding-bottom:4px}
+${G} .lvup .unl div:only-child{grid-row:1/-1}
+/* geniş ekranlarda (tablet) sanal yükseklik fazla: pencereler en çok 430 birim yüksek olur ve dikeyde ortalanır (kartlar boşluğa uzamasın) */
+${G} :is(#recipes,#menuScr,#evP,#guide,#worldP){top:calc(max(6px,(100%/var(--u) - 430px)/2)*var(--u))!important;height:min(calc(100%/var(--u) - 12px),430px)!important}
+${G} .skmodal:not(#skProf):not(#skSet) .skwin,${G} #team .skwin{top:max(6px,calc((100*var(--vh) - 430px)/2))!important;bottom:max(6px,calc((100*var(--vh) - 430px)/2))!important;height:auto!important}
+/* ---- ESKİ RAPOR PENCERELERİ (memnuniyet, işletme raporu, toptancı, otomatik tedarik, gün sonu): geniş kart, içerik sütunlara akar ---- */
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard){width:min(790px,calc(100*var(--vw) - 2*max(12px,var(--el))))!important;max-width:none!important;max-height:calc(100*var(--vh) - 16px)!important;height:auto!important;column-width:330px;column-gap:24px;column-rule:2px dashed #e6cfa8;padding:14px 18px 12px!important;box-sizing:border-box!important;text-align:left}
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>*{break-inside:avoid;-webkit-column-break-inside:avoid}
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>:is(.sups,.sitems,.rlist,ul,ol,.flist){break-inside:auto;-webkit-column-break-inside:auto;display:block!important}
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>:is(.sups,.sitems,.rlist,ul,ol,.flist)>*{break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:6px!important}
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard) :is(h4){break-after:avoid;margin-top:4px!important}
+`;document.head.appendChild(st);
+
+ // Görevler: kartları yatay satıra topla (her çizimde)
+ try{const _od=openDaily;openDaily=function(){const r=_od.apply(this,arguments);try{hxWatch(document.querySelector('#skDaily .skscroll'),'.skq','qrow')}catch(e){}return r}}catch(e){console.warn('yatay: görevler',e)}
+ // eski rapor pencereleri: kart her yeniden çizildiğinde yatay kaydırıcı olarak bağlanır, kaydırma konumu korunur
+ try{const lvFix=md=>{const c=[...md.children].find(x=>x.classList&&x.classList.contains('lvcard'));if(!c||c._lv||!c.matches('.repcard,.fincard,.supcard,.daycard'))return;c._lv=1;hxAttach(c);
+     c.scrollLeft=md._sx||0;c.addEventListener('scroll',()=>{md._sx=c.scrollLeft},{passive:true});hxUpd(c)};
+   const setup=md=>{if(!md||md._lvo||!md.classList||!md.classList.contains('modal')||md.classList.contains('skmodal'))return;md._lvo=new MutationObserver(()=>lvFix(md));md._lvo.observe(md,{childList:true});lvFix(md)};
+   new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)setup(n)}).observe($('game'),{childList:true});
+   document.querySelectorAll('#game>.modal').forEach(setup)}catch(e){console.warn('yatay: raporlar',e)}
+}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
