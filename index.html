@@ -490,14 +490,14 @@ const ENV_N0=scene.children.length;
  // kaldırım (arsanın çevresi, 2.6 m): lambalar bordürde, banklar ve ağaçlı saksılar kaldırımda, köşelerde çiçeklik
  {const ex=LOT.x1+2.15,ez=LOT.z1+2.15;
   for(const v of [-7,0,7]){lamp(-ex,v*0.9);lamp(ex,v*0.9);lamp(v,-ez);lamp(v,ez)}
-  for(const [x,z,ry] of [[-ex+0.25,-3.6,-Math.PI/2],[-ex+0.25,3.6,-Math.PI/2],[3.6,ez-0.25,0],[-3.6,ez-0.25,0],[ex-0.25,-3.6,Math.PI/2],[ex-0.25,3.6,Math.PI/2],[3.6,-ez+0.25,Math.PI],[-3.6,-ez+0.25,Math.PI]])bench(x,z,ry+Math.PI);
+  for(const [x,z,ry] of [[-ex+0.25,-3.6,-Math.PI/2],[-ex+0.25,3.6,-Math.PI/2],[3.6,ez-0.25,0],[-3.6,ez-0.25,0],[ex-0.25,-3.6,Math.PI/2],[ex-0.25,3.6,Math.PI/2],[3.6,-ez+0.25,Math.PI],[-3.6,-ez+0.25,Math.PI]])bench(x,z,ry);   // oturanlar yola bakar
   for(const sx of [-1,1])for(const sz of [-1,1])planterTree(sx*(LOT.x1+1.3),sz*(LOT.z1+1.3),0.9);
   for(const [x,z,c] of [[-ex+0.2,-7.2,0xe86aa8],[-ex+0.2,7.2,0xf6c453],[ex-0.2,7.2,0xb48fd6],[ex-0.2,-7.2,0xe86aa8]]){const f=new THREE.Group();scene.add(f);const P0=PARENT;PARENT=f;flowers(0,0,c);PARENT=P0;f.position.set(x,0,z);f.rotation.y=Math.PI/2}
   for(const [x,c] of [[-7.4,0xb48fd6],[7.4,0xe86aa8]]){flowers(x,ez-0.2,c);flowers(x,-ez+0.2,c)}}
  // açık hava masaları (süs): kaldırımda iki şemsiyeli masa
  const parasol=(x,z,c)=>{cyl(0.035,0.035,2.1,T(0xfbf6ec),x,0.9,z,8);const u=new THREE.Mesh(new THREE.ConeGeometry(1.05,0.45,8),T(c));u.position.set(x,2.05,z);u.castShadow=true;scene.add(u);cyl(0.42,0.42,0.04,T(0xfbf6ec),x,0.55,z,16);cyl(0.04,0.06,0.55,T(0x3e4a3a),x,0.27,z,8);
    for(const a of [0,Math.PI]){const ch=box(0.36,0.05,0.36,T(0x9a6a3e),x+Math.cos(a)*0.62,0.32,z+Math.sin(a)*0.62)}};
- parasol(LOT.x1+1.3,1.5,0xd9534f);parasol(-1.6,LOT.z1+1.35,0x8fae58);
+ /* kaldırımdaki şemsiyeli masalar kaldırıldı */
  // meydan çeşmesi (sağ-arka köşede)
  {const x=23.2,z=22.2;cyl(1.5,1.6,0.45,T(0xe8dcc6),x,-0.05,z,24);const w=cyl(1.32,1.32,0.05,T(0x7fd3dc),x,0.15,z,24);w.castShadow=false;cyl(0.25,0.32,1.1,T(0xe8dcc6),x,0.6,z,12);cyl(0.55,0.4,0.18,T(0xe8dcc6),x,1.2,z,16);const s=sph(0.16,T(0x7fd3dc),x,1.4,z)}
  // binalar: meydanı çevreleyen pastel cepheler (kiremit ya da düz çatı, panjur, balkon, tente)
@@ -7263,10 +7263,8 @@ function xmTip(){const ov=$('expOv'),t=ov.querySelector('.xmTip');const e=expSid
   t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{const ee=expSide(XM.sel);closeExpandMode();buyExpand(ee)}}
 // Pazardaki "Genişlet" seçimi ve dükkândaki + düğmeleri bu modu açar
 {const _rm=renderMarket;renderMarket=function(){if(UI.mkSec==='expand'){UI.mkSec=null;setTimeout(()=>{$('mkClose').click();setTimeout(openExpandMode,60)},0);return}return _rm.apply(this,arguments)}}
-expandUI=function(){if(UI.mode!=='cafe'||!S.created||S.tut!=='done'||XM.on)return;
-  for(const e of EXP_SIDES){const s=expandState(e.id);if(s.done||S.lvl<(s.lv||99))continue;const cx=(RM.x0+RM.x1)/2,cz=(RM.z0+RM.z1)/2;
-    const p=new THREE.Vector3(e.key==='x0'?RM.x0-1:e.key==='x1'?RM.x1+1:cx,1.0,e.key==='z0'?RM.z0-1:e.key==='z1'?RM.z1+1:cz);
-    place(el('expbtn_'+e.id,'act expbtn',`${ic('plus')}${e.name.split(' ')[0]}`,()=>openExpandMode()),p)}};
+// oyun sırasında kafenin kenarlarında genişletme düğmesi gösterilmez; genişletme yalnızca Yapı Pazarı › Genişlet'ten
+expandUI=function(){};
 {const _sm=setMode;setMode=function(m){if(XM.on&&m!=='cafe')closeExpandMode();return _sm.apply(this,arguments)}}
 {const st=document.createElement('style');st.textContent=`
 #expOv{position:absolute;inset:0;z-index:40;pointer-events:none}
