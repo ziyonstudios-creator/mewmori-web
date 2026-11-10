@@ -8116,6 +8116,35 @@ html.land #rbList .rcAct{width:132px}
 html.land #rbList .rcAct .rbact .btn{font-size:12px;padding:5px 6px;white-space:normal;line-height:1.1}
 html.land #rbList .rcRec{order:3;flex:1 1 100%;width:auto;flex-direction:row;align-items:center;gap:8px;padding:3px 8px}
 html.land #rbList .rcRec .combo .mi{width:24px;height:24px}
+/* --- Ekip: üç sütun, sık kartlar (bir bakışta üç çalışan) --- */
+html.land #game #teamList{grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:6px!important}
+html.land #game #teamList .skcard{margin-bottom:5px!important;min-width:0}
+html.land #game #teamList .skport{width:62px!important;height:84px!important}
+html.land #game #teamList .skbody{min-width:0}
+html.land #game #teamList .sktag{display:none!important}
+html.land #game #teamList .sktop b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html.land #game #teamList .skbtns{gap:4px!important;margin-top:3px!important;flex-wrap:nowrap!important}
+html.land #game #teamList .skbtns>*{flex:1 1 0;min-width:0;height:26px!important;font-size:10.5px!important;padding:0 4px!important;white-space:nowrap;overflow:hidden}
+html.land #game #teamList .skbtns>*:first-child{flex:0 0 30px;font-size:0!important;gap:0!important}   /* Düzenle: yalnız kalem simgesi */
+html.land #game #teamList .skrow{display:flex!important;align-items:center;gap:4px}
+html.land #game #teamList .skrow>span:not(.skstars):not(.sktag){flex:1 1 auto!important;width:auto!important;min-width:0;overflow:visible!important;white-space:nowrap}
+html.land #game #teamList .skrow .skstars{flex:none;margin-left:auto}
+html.land #game #teamList .skbtns>* .uic,html.land #game #teamList .skbtns>* img{width:13px!important;height:13px!important}
+html.land #game .skfoot p{padding-left:36px}
+/* --- Görevler: iki sütun, ilerleme ve sayaç aynı satırda --- */
+html.land #game .skwin:has(.skq){width:min(800px,calc(100*var(--vw) - 24px))!important}
+html.land #game .skmodal .skscroll:has(>.skq){display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:none!important;grid-auto-rows:min-content;gap:5px 8px;align-content:start}
+html.land #game .skmodal .skscroll:has(>.skq)>*{grid-column:1/-1}
+html.land #game .skmodal .skscroll:has(>.skq)>.skq{grid-column:auto!important;margin:0!important;min-width:0}
+html.land #game .skq .qt{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:2px 6px;align-items:center}
+html.land #game .skq .qt b{grid-column:1/-1;font-size:13px}
+html.land #game .skq .qt small{white-space:nowrap}
+/* --- Yapı Pazarı: kategori düğmeleri ve ürün kartları biraz küçük; şeritte daha çok ürün görünür --- */
+html.land #game #market .tabs{max-width:min(280px,calc(32*var(--vw)))!important;gap:5px!important;padding:6px!important}
+html.land #game #market .tab{width:58px!important;height:48px!important;font-size:10px!important}
+html.land #game #market .tab .ic{width:20px!important;height:20px!important}
+html.land #game #market .grid .card{flex:0 0 92px!important;padding:4px 5px 5px!important}
+html.land #game #market .grid .card .th{height:60px!important}
 /* --- Menü: iki sütun --- */
 html.land .mlist{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;max-width:none;padding:6px 12px 14px}
 html.land .mlist>*{grid-column:1/-1}
