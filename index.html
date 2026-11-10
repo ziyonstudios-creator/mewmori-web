@@ -208,8 +208,8 @@ svg.i{display:block;width:100%;height:100%}
 
   <div class="placebar" id="placebar" hidden><div class="msg" id="placeMsg"></div><div class="row" id="placeRow"></div></div>
 
-  <section class="sheet" id="market" aria-label="Yapı Pazarı">
-    <div class="panel-head"><span class="iconbtn" style="pointer-events:none" id="mkIc"></span><h2>Yapı Pazarı</h2><button class="btn light" id="mkEdit" type="button"></button><button class="iconbtn" id="mkClose" type="button" aria-label="Kapat"></button></div>
+  <section class="sheet" id="market" aria-label="Yapı Market">
+    <div class="panel-head"><span class="iconbtn" style="pointer-events:none" id="mkIc"></span><h2>Yapı Market</h2><button class="btn light" id="mkEdit" type="button"></button><button class="iconbtn" id="mkClose" type="button" aria-label="Kapat"></button></div>
     <div class="tabs" id="mkTabs" role="tablist"></div>
     <div class="detail" id="mkDetail" hidden></div>
     <div class="grid" id="mkGrid"></div>
@@ -628,14 +628,14 @@ function outdoorStatic(){const G=new THREE.Group();G.name='outdoor';scene.add(G)
     const pv=new THREE.MeshToonMaterial({color:0xffffff,map:ENV.pave,gradientMap:grad});
     const S1=RING.s1,RR=RING.r,S2=RING.s2;
     ring(LOT.x1,LOT.z1,S1.x,S1.z,-0.3,0.3,pv);                                  // kaldırım
-    ring(S1.x-0.1,S1.z-0.1,S1.x+0.1,S1.z+0.1,-0.24,0.18,T(0xcab79a));            // bordür
-    ring(LOT.x1-0.06,LOT.z1-0.06,LOT.x1+0.06,LOT.z1+0.06,-0.2,0.1,T(0xcab79a));  // arsa kenarı
+    ring(S1.x-0.1,S1.z-0.1,S1.x+0.1,S1.z+0.1,-0.225,0.21,T(0xcab79a));           // bordür (üstü kaldırımdan 3 cm yüksek: eş düzlem olmasın)
+    ring(LOT.x1-0.06,LOT.z1-0.06,LOT.x1+0.06,LOT.z1+0.06,-0.19,0.13,T(0xcab79a)); // arsa kenarı (üstü kaldırımdan 2,5 cm yüksek)
     const rd=new THREE.MeshToonMaterial({color:0xffffff,map:ENV.lane,gradientMap:grad});rd.userData.tile=2.6;ring(S1.x+0.1,S1.z+0.1,RR.x,RR.z,-0.4,0.2,rd);   // Arnavut kaldırımlı kasaba yolu
-    ring(RR.x,RR.z,S2.x,S2.z,-0.3,0.3,pv);ring(RR.x-0.1,RR.z-0.1,RR.x+0.1,RR.z+0.1,-0.24,0.18,T(0xcab79a));
+    ring(RR.x,RR.z,S2.x,S2.z,-0.3,0.3,pv);ring(RR.x-0.1,RR.z-0.1,RR.x+0.1,RR.z+0.1,-0.225,0.21,T(0xcab79a));
     // yaya geçişleri: yolun ortasında kireçtaşı döşeme şeridi (çizgi ve zebra yok: burası bir sahil kasabası sokağı)
     const mx=(S1.x+RR.x)/2,mz=(S1.z+RR.z)/2,eg=T(0xcab79a);
     for(const [x,z,ax] of [[0,mz,0],[0,-mz,0],[mx,0,1],[-mx,0,1]]){const w=ax?RR.x-S1.x-0.2:2.8,d=ax?2.8:RR.z-S1.z-0.2;envUV(box(w,0.02,d,pv,x,-0.295,z,{shadow:false}),2);
-      for(const s of [-1,1])box(ax?w:0.14,0.024,ax?0.14:d,eg,x+(ax?0:s*1.4),-0.294,z+(ax?s*1.4:0),{shadow:false})}
+      for(const s of [-1,1])box(ax?w:0.14,0.04,ax?0.14:d,eg,x+(ax?0:s*1.4),-0.285,z+(ax?s*1.4:0),{shadow:false})}   // kenar taşı geçitten 2 cm yüksek (eş düzlem olmasın)
   }finally{PARENT=P0}}
 // kapıdan kaldırıma taş yol (kapı ya da duvar taşınınca yeniden kurulur)
 function envShell(){if(ENV.shell){scene.remove(ENV.shell);disposeTree(ENV.shell)}const G=new THREE.Group();scene.add(G);ENV.shell=G;const P0=PARENT;PARENT=G;const T=ENV.T;
@@ -1011,7 +1011,7 @@ const NO_BUILD=[{minX:-ROOM_W/2,maxX:-2.9,minZ:0.95,maxZ:2.65},{minX:-ROOM_W/2,m
 // ---------- SABİT DEKOR ----------
 function plant(x,z){cyl(0.22,0.17,0.35,M.terracotta,x,0.175,z,12);for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const l=sph(0.17,M.leaf,x+Math.cos(a)*0.15,0.45+(i%2)*0.12,z+Math.sin(a)*0.15);l.scale.set(1,0.7,1)}sph(0.2,M.leaf,x,0.6,z);obst(x-0.35,x+0.35,z-0.35,z+0.35)}
 // köşe saksıları kaldırıldı: oyuncu dilediği bitkiyi marketten alır
-{const x=-3.65,z=-0.55;cyl(0.008,0.008,0.5,M.dark,x,WALL_H-0.25,z,6);const shade=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.2,0.17,16,1,true),M.cream.clone());shade.material.side=THREE.DoubleSide;shade.position.set(x,WALL_H-0.58,z);scene.add(shade);const bulb=sph(0.05,M.warmLight,x,WALL_H-0.64,z);bulb.castShadow=false;const pl=new THREE.PointLight(0xffd9a0,4,5);pl.position.set(x,WALL_H-0.7,z);scene.add(pl)}
+/* girişteki sarkıt lamba kaldırıldı: artık tezgâhın üstünde ve tezgâh grubuna bağlı (p72_duzeltme.js) */
 {const _oc=capStart();const x=-ROOM_W/2+0.6,z=-ROOM_D/2+0.3;box(0.04,0.04,0.32,M.woodDark,x,3.0,-ROOM_D/2+0.16);cyl(0.008,0.008,0.14,M.dark,x,2.93,z,6);cyl(0.2,0.14,0.25,M.terracotta,x,2.75,z,10);cyl(0.17,0.17,0.02,M.woodDark,x,2.865,z,10);/* sarkan yeşil kaldırıldı */capEnd('corner',_oc)}
 // masa lambaları için ışık havuzu (sayı sabit: gölgelendirici yeniden derlenmez)
 const LAMP_POOL=[];for(let i=0;i<6;i++){const pl=new THREE.PointLight(0xffd9a0,0,5);pl.position.set(0,-5,0);scene.add(pl);LAMP_POOL.push(pl)}
@@ -3526,7 +3526,7 @@ function offerSetup(isNew){if(S.created)return;if(isNew){UI.backTo='cafe';openEd
   $('ofLater').onclick=()=>{m.hidden=true;UI.modal=false;toast('İstediğin zaman alttaki “Ekip” menüsünden tasarlayabilirsin.',ic('paw'),3200)};
   $('ofNow').onclick=()=>{m.hidden=true;UI.modal=false;UI.backTo='cafe';openEditor('waiter','create')}}
 
-// ---- kıyafet mağazası (Yapı Pazarı içinde sekme) ----
+// ---- kıyafet mağazası (Yapı Market içinde sekme) ----
 const CL_F=[['waiter','Garson'],['barista','Barista'],['cashier','Kasiyer'],['hat','Şapkalar'],['acc','Aksesuarlar'],['outfit','Özel takımlar']];
 function clothList(f){const L=CLOTHES.filter(c=>!c.id.endsWith('_none'));if(f==='hat')return L.filter(c=>c.slot==='hat');if(f==='acc')return L.filter(c=>c.slot==='neck');if(f==='outfit')return L.filter(c=>c.slot==='outfit');
   return L.filter(c=>c.roles.includes(f)&&(c.slot==='apron'))}
@@ -6513,13 +6513,13 @@ setTimeout(()=>{for(const n of ['street','tray','c_empty','c_match','c_sel','i_t
   const rt=document.createElement('div');rt.className='skright';hud.appendChild(rt);
   for(const id of ['coinPill','gemPill','repPill'])if($(id))rt.appendChild($(id));
   const pc=document.createElement('button');pc.type='button';pc.className='plus';pc.setAttribute('aria-label','Altın');pc.onclick=e=>{e.stopPropagation();sfx('tap');setMode('market')};$('coinPill').appendChild(pc);
-  if($('gemPill')){const pg=document.createElement('button');pg.type='button';pg.className='plus';pg.setAttribute('aria-label','Elmas');pg.onclick=e=>{e.stopPropagation();sfx('tap');toast('<b>Elmas</b><br>Seviye atlayınca, günlük görevlerde ve mesaj hediyelerinde kazanılır',uiIc('i_gem'),2600)};$('gemPill').appendChild(pg)}
+  if($('gemPill')){const pg=document.createElement('button');pg.type='button';pg.className='plus';pg.setAttribute('aria-label','Elmas');pg.onclick=e=>{e.stopPropagation();sfx('tap');toast('<b>Elmas</b><br>Seviye atlayınca, günlük görevlerde ve duyuru hediyelerinde kazanılır',uiIc('i_gem'),2600)};$('gemPill').appendChild(pg)}
   const post=document.createElement('div');post.className='skpost';rt.appendChild(post);
   const sign=(id,label,img,fn)=>{let b=id&&$(id);if(!b){b=document.createElement('button');b.type='button';if(id)b.id=id}b.className='sksign';b.removeAttribute('style');b.innerHTML=`<img class="si" src="${UIIMG(img)}" alt="">${label}<span class="dot"></span>`;b.setAttribute('aria-label',label);if(fn)b.onclick=fn;post.appendChild(b);return b};
   const ev=$('evBtn'),evOn=ev&&ev.onclick;sign('evBtn','Etkinlik','h_gift',evOn);
   if(!EVMODE){sign('dailyBtn','Günlük','h_cal',()=>{sfx('tap');openDaily()});
     const wb=$('worldBtn'),wOn=wb&&wb.onclick;if(wb)sign('worldBtn','Ziyaret','h_medal',wOn);
-    sign('mailBtn','Mesaj','h_mail',()=>{sfx('tap');openMail()})}
+    sign('mailBtn','Duyurular','h_mail',()=>{sfx('tap');openMail()})}
   else{const wb=$('worldBtn');if(wb)wb.remove()}
   // sol düğmeler
   const sd=document.createElement('div');sd.className='skside';hud.appendChild(sd);
@@ -6564,7 +6564,7 @@ function openDaily(){const W=skWin('skDaily','Günlük Görevler','cat_bowl');co
     W.body.querySelectorAll('[data-dq]').forEach(b=>b.onclick=()=>{const q=D.q[+b.dataset.dq];if(q.got||dqCount(q.id)<q.n)return;q.got=true;addCoins(q.r,'daily');sfx('coin');markDirty();saveNow();draw()});
     const bb=$('dqBonus');if(bb)bb.onclick=()=>{if(D.bonus||!D.q.every(q=>q.got))return;D.bonus=true;S.gems+=3;try{hudGems()}catch(e){}sfx('levelup');markDirty();saveNow();toast('<b>Günün hediyesi</b><br>3 elmas kazandın',uiIc('i_gem'),2200);draw()}};
   draw()}
-try{FIN_IN.daily='Günlük görevler';FIN_IN.mail='Mesaj hediyeleri'}catch(e){}
+try{FIN_IN.daily='Günlük görevler';FIN_IN.mail='Duyuru hediyeleri'}catch(e){}
 
 // ---------- MESAJ KUTUSU ----------
 // Kaynak: Supabase "announcements" tablosu (başlık, metin, isteğe bağlı altın/elmas hediyesi). Okundu ve alındı bilgisi kayıtta.
@@ -6574,10 +6574,10 @@ async function mailLoad(force){if(MAIL.busy||(!force&&Date.now()-MAIL.t<5*60e3))
   MAIL.busy=false;hudDots()}
 const mailSt=()=>S.mail||(S.mail={read:{},got:{}});
 const mailUnread=()=>EVMODE?0:MAIL.list.filter(m=>!mailSt().read[m.id]||((m.reward_coins|0)+(m.reward_gems|0)>0&&!mailSt().got[m.id])).length;
-function openMail(){const W=skWin('skMail','Mesajlar','cat_hammer');const ms=mailSt();
+function openMail(){const W=skWin('skMail','Duyurular','cat_hammer');const ms=mailSt();
   const draw=()=>{W.body.innerHTML=MAIL.list.length?MAIL.list.map(m=>{const rw=(m.reward_coins|0)+(m.reward_gems|0)>0,got=ms.got[m.id];const d=new Date(m.created_at);
       return `<div class="skmail${ms.read[m.id]?'':' unread'}" data-mid="${m.id}"><div class="mh">${uiIc(rw?'i_gift':'h_mail')}<b></b><small>${d.toLocaleDateString('tr-TR',{day:'numeric',month:'short'})}</small></div><div class="mb"></div>
-        ${rw?`<div class="mr">${m.reward_coins?`<span>${uiIc('i_coin')} ${m.reward_coins}</span>`:''}${m.reward_gems?`<span>${uiIc('i_gem')} ${m.reward_gems}</span>`:''}<button class="skbtn ${got?'cream':'green'}" type="button" data-mg="${m.id}" ${got?'disabled':''}>${got?'Alındı':'Hediyeyi al'}</button></div>`:''}</div>`}).join(''):`<div class="skempty">Henüz mesaj yok. Duyurular ve hediyeler burada görünecek.</div>`;
+        ${rw?`<div class="mr">${m.reward_coins?`<span>${uiIc('i_coin')} ${m.reward_coins}</span>`:''}${m.reward_gems?`<span>${uiIc('i_gem')} ${m.reward_gems}</span>`:''}<button class="skbtn ${got?'cream':'green'}" type="button" data-mg="${m.id}" ${got?'disabled':''}>${got?'Alındı':'Hediyeyi al'}</button></div>`:''}</div>`}).join(''):`<div class="skempty">Henüz duyuru yok. Duyurular ve hediyeler burada görünecek.</div>`;
     // başlık ve metin kullanıcı verisi gibi düz metin olarak
     W.body.querySelectorAll('[data-mid]').forEach(el=>{const m=MAIL.list.find(x=>String(x.id)===el.dataset.mid);el.querySelector('.mh b').textContent=m.title;el.querySelector('.mb').textContent=m.body;
       el.onclick=e=>{if(e.target.closest('[data-mg]'))return;el.classList.toggle('open');if(!ms.read[m.id]){ms.read[m.id]=1;el.classList.remove('unread');markDirty()}}});
@@ -7036,7 +7036,7 @@ html.land .y2left{left:calc(var(--ed) + 4px)!important;top:calc(var(--top) + 72p
 
 // ================= PROFİL PANOSU (tasarım; işlevler sonra) =================
 // Profil kutusuna dokununca açılır: solda büyük profil resmi + "Değiştir", kafe adı (kalemle düzenlenir); sağda özet kartları;
-// altta VIP bandı. "Değiştir" 8 kedilik seçim ızgarasını açar. Seçim S.avatar'da saklanır, ana ekran portresi onu gösterir.
+// (V133: ortada artık oyunun logosu var; profil resmi seçimi ve VIP bandı kaldırıldı.) "Değiştir" 8 kedilik seçim ızgarasını açardı. Seçim S.avatar'da saklanır, ana ekran portresi onu gösterir.
 const AV_N=8;let AV_LOOKS=null,AV_THUMB=[];
 // sabit 8 profil kedisi (geçici: görseller gelince img/ui/av_1..8 ile değişecek)
 function avLooks(){if(AV_LOOKS)return AV_LOOKS;let sd=7;const R=Math.random;Math.random=()=>((sd=(sd*16807)%2147483647)/2147483647);
@@ -7078,17 +7078,14 @@ function openProfile(){const W=skWin('skProf','Profil','cat_peek');let edit=fals
   const stat=(ic,v,l)=>`<div class="pfS"><img src="${UIIMG(ic)}" alt=""><b>${v}</b><small>${l}</small></div>`;
   const draw=()=>{W.m.querySelector('.skplaque h2').textContent='Profil';let today=0;try{const w=finWindow(24*60);today=Math.round(w.rev||0)}catch(e){}
     const served=(S.rep&&S.rep.served)|0,rec=RECIPES.filter(r=>S.unlocked[r.id]).length,rate=(()=>{try{return repAvg().toFixed(1)}catch(e){return '–'}})();
-    W.body.innerHTML=`<div class="pf"><div class="pfL"><div class="pfAv"><img src="${avSrc()}" alt=""></div><button class="skbtn cream" type="button" id="pfAvBtn">${uiIc('i_pencil')}Değiştir</button></div>
+    W.body.innerHTML=`<div class="pf"><div class="pfL"><div class="pfLogo">${logoSVG('still')}</div></div>
       <div><div class="pfName">${edit?`<input id="pfIn" maxlength="24" value="${cafeName().replace(/"/g,'&quot;')}"><button class="skbtn green" style="width:auto;padding:0 12px;height:34px;background-image:none" type="button" id="pfOk">Kaydet</button>`:`<b id="pfNm"></b><button type="button" id="pfEd" aria-label="Kafe adını değiştir"></button>`}</div>
         <div class="pfStats">${stat('i_coins',today,'Bugünkü gelir')}${stat('h_cal',S.dayN|0,'Oynanan gün')}${stat('i_team',served,'Ağırlanan müşteri')}
-          ${stat('i_star',rate,'Kafe puanı')}${stat('h_star',S.lvl|0,'Seviye')}${stat('i_book',rec,'Açılan tarif')}</div></div>
-      <div class="pfVip">${uiIc('i_crown')}<div><b>VIP Kulübü · VIP ${typeof vipLv==='function'?vipLv():0}</b><small>Satış kârı bonusu, ekstra enerji ve günlük elmas hediyesi</small></div><button class="skbtn green" type="button" id="pfVip">Aç</button></div></div>`;
+          ${stat('i_star',rate,'Kafe puanı')}${stat('h_star',S.lvl|0,'Seviye')}${stat('i_book',rec,'Açılan tarif')}</div></div></div>`;
     const nm=$('pfNm');if(nm)nm.textContent=cafeName();
-    $('pfAvBtn').onclick=()=>{sfx('tap');pickAvatar()};
     const ed=$('pfEd');if(ed)ed.onclick=()=>{edit=true;draw();const i=$('pfIn');if(i){i.focus();i.select()}};
     const ok=$('pfOk');if(ok)ok.onclick=()=>{const v=($('pfIn').value||'').replace(/\s+/g,' ').trim();if(v.length<2||v.length>24||/[<>]/.test(v)||(typeof badWord==='function'&&badWord(v))){toast('Ad 2–24 harf olmalı ve uygun olmalı',ic('close'),2200);return}
       S.cafeName=v;markDirty();saveNow();try{cafePublish(true)}catch(e){}edit=false;y2Tick();draw();toast(`Kafenin adı: <b>${v.replace(/[&<>]/g,'')}</b>`,ic('check'),2000)};
-    $('pfVip').onclick=()=>{sfx('tap');openVip()};
     W.foot.innerHTML=''};
   function pickAvatar(){let sel=S.avatar??-1;const d2=()=>{W.body.innerHTML=`<div class="avGrid">${[...Array(AV_N)].map((_,i)=>`<button class="avC" type="button" data-av="${i}" aria-pressed="${sel===i}"><img src="${avThumb(i)}" alt="">${sel===i?uiIc('d_check','ok'):''}</button>`).join('')}</div>`;
       W.body.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{sel=+b.dataset.av;sfx('tap');d2()});
@@ -7141,7 +7138,7 @@ openDaily=function(tab){const W=skWin('skDaily','Görevler','cat_bowl');let T=ta
 
 // ================= YAPI PAZARI (yatay, referans tasarım) =================
 // Açılınca 3 bölüm seçilir: Mobilya & Dekor · Kıyafet · Genişlet. Geliştir sekmesi kaldırıldı.
-// Yatayda pazar alt şerit olur: solda tabela (kedi + "Yapı Pazarı"), ortada kategori düğmeleri, sağda kaydırılan ürün kartları.
+// Yatayda pazar alt şerit olur: solda tabela (kedi + "Yapı Market"), ortada kategori düğmeleri, sağda kaydırılan ürün kartları.
 const MK_ALL=MK_TABS.slice();
 const MK_SECS={decor:['table','chair','counter','wall','floor','decor','equip','store'],clothes:['clothes'],expand:['expand']};
 const MK_SEC_INFO=[{id:'decor',name:'Mobilya & Dekor',img:()=>itemThumb('t_round')},{id:'clothes',name:'Kıyafet',img:()=>UIIMG('i_chef')},{id:'expand',name:'Genişlet',img:()=>UIIMG('i_plus')}];
@@ -7264,7 +7261,7 @@ html.land #market.choose .mkSecB:active{transform:translateY(2px);box-shadow:0 1
 {const st=document.createElement('style');st.textContent=`html.land #market.choose .mkSecB::after{display:none}html.land #market.choose .mkSecB b{font-size:15px;padding:8px 0}`;document.head.appendChild(st)}
 
 // ================= KIYAFET DOLABI =================
-// Yapı Pazarı → Kıyafet: solda seçili çalışanın 3B modeli (döndürülebilir), sağda kıyafetler.
+// Yapı Market → Kıyafet: solda seçili çalışanın 3B modeli (döndürülebilir), sağda kıyafetler.
 // Kıyafete dokununca model üzerinde ücretsiz denenir; sahip olunmayan satın alınır; "Giydir" kalıcı yapar.
 const CS={key:null,cfg:null,orig:null,slot:'apron',sel:null};
 const CS_SLOTS=[['apron','Önlük'],['hat','Şapka'],['neck','Boyun'],['outfit','Takımlar']];
@@ -7351,7 +7348,7 @@ function renderCSFoot(){const need=csNeed(),f=$('csFoot');let h='';
 `;document.head.appendChild(st)}
 
 // ================= GENİŞLETME MODU (kafe üzerinde) =================
-// Yapı Pazarı › Genişlet: menü yerine kafe hafif buğulu görünür; açılabilecek alanlar keskin ve yeşil kalır,
+// Yapı Market › Genişlet: menü yerine kafe hafif buğulu görünür; açılabilecek alanlar keskin ve yeşil kalır,
 // her alanın ortasında + düğmesi. + → küçük onay balonu → Genişlet.
 // Kural: duvarlı kenarlar (sol, arka) sınıra kadar 2 kademe; açık kenarlar (sağ, ön) iç mekân olarak yalnız 1 kademe.
 const EXP_MAXS={l:2,b:2,r:0,f:0};   // sağ ve ön iç mekân olarak büyümez: oralar bahçe
@@ -7396,7 +7393,7 @@ function xmTip(){const ov=$('expOv'),t=ov.querySelector('.xmTip');const e=expSid
   t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{const ee=expSide(XM.sel);closeExpandMode();buyExpand(ee)}}
 // Pazardaki "Genişlet" seçimi ve dükkândaki + düğmeleri bu modu açar
 {const _rm=renderMarket;renderMarket=function(){if(UI.mkSec==='expand'){UI.mkSec=null;setTimeout(()=>{$('mkClose').click();setTimeout(openExpandMode,60)},0);return}return _rm.apply(this,arguments)}}
-// oyun sırasında kafenin kenarlarında genişletme düğmesi gösterilmez; genişletme yalnızca Yapı Pazarı › Genişlet'ten
+// oyun sırasında kafenin kenarlarında genişletme düğmesi gösterilmez; genişletme yalnızca Yapı Market › Genişlet'ten
 expandUI=function(){};
 {const _sm=setMode;setMode=function(m){if(XM.on&&m!=='cafe')closeExpandMode();return _sm.apply(this,arguments)}}
 {const st=document.createElement('style');st.textContent=`
@@ -7719,56 +7716,6 @@ function renderShop(){const w=UI.shopW;if(!w||w.m.hidden)return;const t=UI.shopT
 .shNote{margin:0;text-align:center;font-size:11.5px;font-weight:800;color:#7a4e2c}
 `;document.head.appendChild(st)}
 
-// ================= VIP KULÜBÜ =================
-// VIP puanı (VP): harcanan her elmas 1 VP (ileride gerçek para ile alınan elmas da). 8 VIP seviyesi.
-// Ayrıcalıklar: satışlardan (masa, paket, bahşiş, sen yokken) ek kâr %, en fazla enerji +, her gün ücretsiz elmas hediyesi, toptancı indirimi.
-const VIP_VP=[0,30,100,250,500,1000,2000,3500,6000];
-const VIP_PROFIT=[0,2,3,4,5,6,8,10,12],VIP_EN=[0,0,5,5,10,10,15,20,25],VIP_GIFT=[0,1,1,2,3,4,5,7,10],VIP_SUP=[0,0,0,2,3,4,5,6,8];
-const VIP_SALE=['sale','dlv','tip','afk'];
-function vipS(){if(!S.vip)S.vip={vp:0,lastG:S.gems|0,day:''};return S.vip}
-function vipLv(){const v=vipS().vp;let l=0;for(let i=1;i<VIP_VP.length;i++)if(v>=VIP_VP[i])l=i;return l}
-function vipEnergy(){try{return VIP_EN[vipLv()]}catch(e){return 0}}
-// elmas azaldıkça VP eklenir (her harcama yeri hudGems çağırır)
-{const _hg=hudGems;hudGems=function(){try{const V=vipS(),g=S.gems|0;if(g<V.lastG){const was=vipLv();V.vp+=V.lastG-g;const now=vipLv();if(now>was){setTimeout(()=>{sfx('levelup');toast(`<b>VIP ${now} oldun!</b><br>Satış kârı +%${VIP_PROFIT[now]} · enerji +${VIP_EN[now]}`,uiIc('i_crown'),3400)},300)}markDirty()}V.lastG=g}catch(e){}vipBadge();return _hg.apply(this,arguments)}}
-// satış gelirine VIP kâr bonusu
-{const _ac=addCoins;addCoins=function(n,cat){if(n>0&&VIP_SALE.includes(cat)){const p=VIP_PROFIT[vipLv()];if(p){const b=Math.round(n*p/100*100)/100;S.vipFrac=(S.vipFrac||0)+b;const whole=Math.floor(S.vipFrac);S.vipFrac-=whole;if(whole)n+=whole}}return _ac.call(this,n,cat)}}
-// toptancı indirimi: paket fiyatı
-{const _pp=packPrice;packPrice=function(sp,k,i){const v=_pp.apply(this,arguments);const d=VIP_SUP[vipLv()];return d?Math.max(1,Math.round(v*(100-d)/100)):v}}
-const vipToday=()=>todayKey();
-function vipClaim(){const V=vipS(),l=vipLv(),g=VIP_GIFT[l];if(!g||V.day===vipToday())return;V.day=vipToday();S.gems+=g;V.lastG=S.gems;hudGems();markDirty();saveNow();sfx('coin');toast(`<b>VIP hediyesi</b><br>+${g} elmas`,uiIc('i_gem'),2400);renderVip()}
-function openVip(){const w=skWin('vipWin','VIP Kulübü','cat_peek');UI.vipW=w;renderVip()}
-function renderVip(){const w=UI.vipW;if(!w||w.m.hidden)return;const V=vipS(),l=vipLv(),nx=l<8?VIP_VP[l+1]:null,pc=nx?Math.min(100,(V.vp-VIP_VP[l])/(nx-VIP_VP[l])*100):100,g=VIP_GIFT[l],got=V.day===vipToday();
-  w.body.innerHTML=`<div class="vpWrap"><div class="vpL"><div class="vpCrown">${uiIc('i_crown')}<b>VIP ${l}</b></div>
-      <div class="vpBar"><i style="width:${pc}%"></i><span>${nx?`${V.vp} / ${nx} VP`:`${V.vp} VP · en üst seviye`}</span></div>
-      <p class="vpHow">Harcadığın her ${uiIc('i_gem')} elmas <b>1 VIP puanı</b> kazandırır.${nx?` VIP ${l+1} için ${nx-V.vp} puan kaldı.`:''}</p>
-      <button class="btn ${g&&!got?'green':''}" type="button" id="vpGift" ${g&&!got?'':'disabled'}>${uiIc('i_gift')}${!g?'VIP 1’de günlük hediye':got?'Bugünkü hediye alındı':`Günlük hediye · ${g} elmas`}</button></div>
-    <div class="vpR"><table class="vpT"><thead><tr><th>VIP</th><th>Satış kârı</th><th>Enerji</th><th>Günlük elmas</th><th>Toptancı</th><th>Puan</th></tr></thead><tbody>
-      ${VIP_VP.map((vp,i)=>i?`<tr class="${i===l?'cur':i<l?'past':''}"><td><b>${i}</b></td><td>+%${VIP_PROFIT[i]}</td><td>${VIP_EN[i]?'+'+VIP_EN[i]:'—'}</td><td>${VIP_GIFT[i]}</td><td>${VIP_SUP[i]?'−%'+VIP_SUP[i]:'—'}</td><td>${vp}</td></tr>`:'').join('')}</tbody></table></div></div>`;
-  $('vpGift').onclick=vipClaim}
-// profil portresinin köşesinde VIP rozeti (dokununca VIP penceresi)
-function vipBadge(){let b=document.querySelector('.y2vip');const host=document.querySelector('.y2prof');if(!host)return;
-  if(!b){b=document.createElement('button');b.type='button';b.className='y2vip';b.onclick=e=>{e.stopPropagation();sfx('tap');openVip()};host.appendChild(b)}const t=`VIP ${vipLv()}`;if(b.textContent!==t)b.textContent=t;
-  const V=vipS();b.classList.toggle('gift',!!VIP_GIFT[vipLv()]&&V.day!==vipToday())}
-setTimeout(()=>{try{vipS();vipBadge()}catch(e){}},500);
-// hudGems çağrılmadan artan elmas da izlensin (artış VP saymaz, sonraki harcama doğru ölçülür)
-setInterval(()=>{try{const V=vipS();if((S.gems|0)>V.lastG)V.lastG=S.gems|0;vipBadge()}catch(e){}},700);
-{const st=document.createElement('style');st.textContent=`
-.y2vip{position:absolute;left:4px;bottom:-6px;z-index:3;height:18px;padding:0 7px;border:2px solid #7a4a0a;border-radius:999px;background:linear-gradient(#ffe590,#f0b52e);font-family:var(--font-display);font-weight:900;font-size:10px;color:#5a2f12;box-shadow:0 2px 0 #7a4a0a;cursor:pointer;line-height:1}
-.y2vip.gift::after{content:'';position:absolute;right:-4px;top:-4px;width:9px;height:9px;border-radius:50%;background:#e2574c;border:1.5px solid #fff}
-.vpWrap{grid-column:1/-1;width:100%;display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:start}
-.vpL{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:16px;background:linear-gradient(#fff3c8,#f9dc8c);border:3px solid #7a4a0a;box-shadow:0 3px 0 #7a4a0a}
-.vpCrown{display:flex;align-items:center;gap:8px}.vpCrown img{width:44px;height:44px;object-fit:contain}.vpCrown b{font-family:var(--font-display);font-size:28px;font-weight:900;color:#5a2f12}
-.vpBar{position:relative;width:100%;height:20px;border-radius:999px;background:#fff6e6;border:2.5px solid #5a2f12;overflow:hidden}
-.vpBar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#ffd86b,#f0a52e)}
-.vpBar span{position:relative;display:flex;justify-content:center;align-items:center;height:100%;font-size:11px;font-weight:900;color:#4a2a14}
-.vpHow{margin:0;text-align:center;font-size:11.5px;font-weight:800;color:#6b4012;line-height:1.35}.vpHow img{width:14px;height:14px;vertical-align:-2px}
-.vpL .btn{width:100%;height:36px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px}.vpL .btn img{width:20px;height:20px}
-.vpT{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-display);font-size:12px;color:#4a2a14;border:2.5px solid #5a2f12;border-radius:14px;overflow:hidden;background:var(--paper)}
-.vpT th{background:#9a5f2c;color:#fff3de;font-size:11px;padding:5px 4px;font-weight:900}
-.vpT td{text-align:center;padding:4px;font-weight:800;border-top:1.5px solid #ead7b8}
-.vpT tr.cur td{background:#ffe590;font-weight:900}.vpT tr.past td{opacity:.6}
-`;document.head.appendChild(st)}
-
 // ================= ROYAL PASS (aylık sezon) =================
 // Her ay yeni sezon (TR saati, ayın 1'i). 30 kademe, kademe başı 100 puan. Puan: servis edilen sipariş +10, paket teslimi +20,
 // özel istek +15, birleştirme +1, genişletme +100. İki yol: Ücretsiz (herkes) ve Royal (450 elmasla açılır, daha zengin ödüller).
@@ -7781,10 +7728,10 @@ function rpEnds(){const d=new Date(Date.now()+3*36e5);return Date.UTC(d.getUTCFu
 function rpS(){const s=rpSeason();if(!S.rp||S.rp.season!==s)S.rp={season:s,pts:0,royal:false,cf:{},cr:{}};return S.rp}
 const rpTier=()=>Math.min(RP_TIERS,Math.floor(rpS().pts/RP_PER));
 function rpReward(i,royal){if(!royal){if(i%10===0)return {k:'gems',n:10};if(i%5===0)return {k:'gems',n:5};return {k:'coins',n:60+i*12}}
-  if(i===30)return {k:'vp',n:200};if(i%10===0)return {k:'vp',n:i*5};if(i%5===0)return {k:'gems',n:25};if(i%2===0)return {k:'gems',n:8};return {k:'coins',n:180+i*25}}
+  if(i===30)return {k:'gems',n:60};if(i%10===0)return {k:'gems',n:20+i};if(i%5===0)return {k:'gems',n:25};if(i%2===0)return {k:'gems',n:8};return {k:'coins',n:180+i*25}}
 const RP_ICON={coins:'i_coins',gems:'i_gem',vp:'i_crown'};
 const rpLabel=r=>r.k==='coins'?`${r.n}`:r.k==='gems'?`${r.n}`:`${r.n} VP`;
-function rpGive(r){if(r.k==='coins')addCoins(r.n,'bonus');else if(r.k==='gems'){S.gems+=r.n;hudGems()}else if(r.k==='vp'){const V=vipS();V.vp+=r.n;vipBadge()}}
+function rpGive(r){if(r.k==='coins')addCoins(r.n,'bonus');else if(r.k==='gems'){S.gems+=r.n;hudGems()}}
 function rpAdd(n){if(!n)return;const R=rpS(),was=rpTier();R.pts+=n;const now=rpTier();if(now>was){setTimeout(()=>toast(`<b>Royal Pass · kademe ${now}</b><br>Ödülünü topla!`,uiIc('i_crown'),2600),200)}rpDot()}
 {const _b=bump;bump=function(k,n=1){const r=_b.apply(this,arguments);try{if(RP_PTS[k]&&n>0)rpAdd(RP_PTS[k]*n)}catch(e){}return r}}
 function rpClaim(i,royal){const R=rpS();const m=royal?R.cr:R.cf;if(m[i]||rpTier()<i||(royal&&!R.royal))return false;m[i]=1;rpGive(rpReward(i,royal));return true}
@@ -8149,7 +8096,7 @@ html.land #game .skmodal .skscroll:has(>.skq)>.skq{grid-column:auto!important;ma
 html.land #game .skq .qt{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:2px 6px;align-items:center}
 html.land #game .skq .qt b{grid-column:1/-1;font-size:13px}
 html.land #game .skq .qt small{white-space:nowrap}
-/* --- Yapı Pazarı: kategori düğmeleri ve ürün kartları biraz küçük; şeritte daha çok ürün görünür --- */
+/* --- Yapı Market: kategori düğmeleri ve ürün kartları biraz küçük; şeritte daha çok ürün görünür --- */
 html.land #game #market .tabs{max-width:min(280px,calc(32*var(--vw)))!important;gap:5px!important;padding:6px!important}
 html.land #game #market .tab{width:58px!important;height:48px!important;font-size:10px!important}
 html.land #game #market .tab .ic{width:20px!important;height:20px!important}
@@ -8367,7 +8314,7 @@ ${W} .screen .panel-head h2{flex:none!important;margin:0 auto!important;backgrou
 ${W} .screen .panel-head>.iconbtn:first-child{visibility:hidden}
 ${W} #recipes .tabs,${W} #menuScr .scroll,${W} #evP .scroll{padding-top:14px!important}
 ${W} .screen{background:radial-gradient(circle at 12px 12px,rgba(233,160,90,.10) 2px,transparent 2.5px) 0 0/24px 24px,linear-gradient(#fffaf0,#fdf0d8)!important}
-/* ---- Yapı Pazarı şeridi ---- */
+/* ---- Yapı Market şeridi ---- */
 ${W} #market .panel-head::after{display:none!important}
 ${W} #market .panel-head #mkIc{background:${KURL('shop')} center/contain no-repeat!important}
 ${W} #market>#mkClose>*{display:none!important}
@@ -8494,7 +8441,7 @@ ${W} .pfVip{grid-column:1/-1!important;grid-row:5!important;justify-self:center!
 // ================= TASARIM KONSEPTİ "TENTE VE ÖNLÜK" — 1. bölüm: ana ekran + tek ölçek =================
 // Kullanıcının onayladığı konsept sayfasına göre (claude.ai artifact: "TabbyChef Tasarım Konsepti"). p66_layout.js'in yerini alır.
 //  · Sol üst: profil tabelası (altın seviye rozeti · kafe adı + SEVİYE çubuğu · kafe puanı). Hemen altında yan yana küçük düğmeler:
-//    Görevler, Etkinlik, Pass, Mesaj (Duyurular "Mesaj" oldu; "yakında" diyen eski Mesaj düğmesi kalktı).
+//    Görevler, Etkinlik, Pass, Duyurular (megafon; mesajlaşma yok, buradan yalnız duyuru gelir. "Yakında" diyen eski Mesaj düğmesi kalktı).
 //  · Üst orta: gün simgesi, AÇIK/KAPALI tabelası, Otomatik anahtarı.   · Sağ üst: altın ve elmas yan yana.
 //  · Sağ kenar: Tarifler, Menü, Birleştir (kedi kulaklı), Ekip, Market — kemer (turuncu şerit) YOK; her düğme "daire + altında isim etiketi".
 //  · Sol alt köşe: Keşfet tek başına.   · Alt orta: Ayarlar · durum balonu · Fotoğraf modu.
@@ -8680,7 +8627,7 @@ ${G}:has(.modal:not([hidden])) :is(#y2,#nav,.bottom) *${NX},${G}:has(.screen:not
  setU();addEventListener('resize',()=>{setU();setTimeout(setU,80)});addEventListener('rotchange',setU);setInterval(setU,2500);
 
  // ---- öğeleri yeni yerlerine taşı; küçük düğmelere "daire + etiket" yapısını kur ----
- const BTN=[['dailyBtn','tasks','Görevler'],['evBtn','gift','Etkinlik'],['rpBtn','crown','Pass'],['mailBtn','mail','Mesaj'],['kesBtn','paw','Keşfet']];
+ const BTN=[['dailyBtn','tasks','Görevler'],['evBtn','gift','Etkinlik'],['rpBtn','crown','Pass'],['mailBtn','mega','Duyurular'],['kesBtn','paw','Keşfet']];
  const icon=n=>SVGI(KI[n]).replace(/#5a2f12/g,INK);
  function k3Fix(){try{const y=$('y2');if(!y)return;
    let tc=y.querySelector('.k3tc');if(!tc){tc=document.createElement('div');tc.className='k3tc';y.appendChild(tc)}
@@ -8711,7 +8658,7 @@ ${G}:has(.modal:not([hidden])) :is(#y2,#nav,.bottom) *${NX},${G}:has(.screen:not
 }
 
 // ================= TASARIM KONSEPTİ "TENTE VE ÖNLÜK" — 2. bölüm: tek ölçek her yerde =================
-// p68'in hesapladığı --u ölçeği pencerelere, tam ekranlara, Yapı Pazarı şeridine, bildirimlere ve kafe içi düğmelere uygulanır.
+// p68'in hesapladığı --u ölçeği pencerelere, tam ekranlara, Yapı Market şeridine, bildirimlere ve kafe içi düğmelere uygulanır.
 // Yöntem: kapsayıcı "sanal ekran" boyunda (gerçek boy / --u) kurulur ve transform:scale(--u) ile büyütülür; içindeki bütün px değerleri
 // böylece telefonda da tablette de aynı oranda görünür (tablet ≈ 1,4×). İçeride --vw/--vh/--sat/--sab sanal değerlere çevrilir.
 // Kendi transform'u olan öğelerde (pazar şeridi aç/kapa kayması) ayrı "scale" özelliği kullanılır; ikisi çarpışmaz.
@@ -8722,7 +8669,7 @@ ${G}:has(.modal:not([hidden])) :is(#y2,#nav,.bottom) *${NX},${G}:has(.screen:not
 /* ---- pencereler ve tam ekranlar ---- */
 ${G} .modal,${G} .screen,${G} #visitBar{inset:auto!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;width:calc(100%/var(--u))!important;height:calc(100%/var(--u))!important;transform:scale(var(--u))!important;transform-origin:0 0!important;--vw:var(--vwu);--vh:var(--vhu);--sat:var(--stV);--sab:var(--sbV)}
 ${G} :is(#recipes,#menuScr,#evP){left:var(--elR)!important;top:calc(6px*var(--u))!important;width:calc(100%/var(--u) - var(--el) - var(--er))!important;height:calc(100%/var(--u) - 12px)!important}
-/* ---- Yapı Pazarı şeridi ve yerleştirme çubuğu (alttan ortalı büyür) ---- */
+/* ---- Yapı Market şeridi ve yerleştirme çubuğu (alttan ortalı büyür) ---- */
 ${G} #market{left:50%!important;right:auto!important;width:calc(100%/var(--u) - 32px)!important;margin-left:calc((100%/var(--u) - 32px)/-2)!important;bottom:calc(var(--ebR) - 2px*var(--u))!important;scale:var(--u);transform-origin:50% 100%!important;--vw:var(--vwu);--vh:var(--vhu)}
 ${G} .placebar{left:50%!important;right:auto!important;width:calc(100%/var(--u))!important;margin-left:calc(100%/var(--u)/-2)!important;bottom:calc(var(--ebR) + 8px*var(--u))!important;scale:var(--u);transform-origin:50% 100%!important}
 /* ---- bildirimler: üst ortada, üst çubuğun altında ---- */
@@ -8871,6 +8818,66 @@ ${W} .pfS{padding:3px 8px!important;min-height:0!important}
 ${W} .pfAv{width:90px!important;height:90px!important}
 ${W} .pfName{padding-top:2px!important;padding-bottom:2px!important}
 `;document.head.appendChild(st);
+}
+
+// ================= KULLANICI DÜZELTMELERİ (V133) =================
+// (1) Profil penceresinde resim yerine oyunun logosu (p47'de)  (2) Mesaj → Duyurular (megafon; p42 + p68)
+// (3) Gün simgesine dokununca kaçıncı gün olduğu yazılır      (4) VIP Kulübü kaldırıldı (p58 silindi; "VIP gurme" müşteri duruyor)
+// (7) Karakter düzenle ekranında üstte tente yok               (8) Düğme yazıları gölgesiz (Ekip "Yerine birini bul" okunaklı)
+// (9) "Yapı Pazarı" → "Yapı Market"                            (10) Market seçim tezgâhında düğmelerin altındaki beyaz altlık yok
+// (11) Keşfet penceresinde tente kısa                          (12) Girişteki sarkıt lamba tezgâh grubuna bağlı, tezgâhın üstünde
+// (14) Kaldırım bordürleri kaldırımla eş düzlemli değil (titreme = z çakışması; p1b_env'de)
+{
+ const W='html.land #game#game',Y=W+' #y2',INK='#4a2a14';
+ const st=document.createElement('style');st.textContent=`
+/* (1) Profil: ortada oyunun logosu. VIP bandı kalktığı için pencere içeriği kadar yüksek ve ekranın ortasında. */
+${W} #skProf .skwin{top:calc((100*var(--vh) - 306px)/2)!important;bottom:auto!important;height:306px!important;box-sizing:border-box!important}
+${W} #skProf .pf{grid-template-columns:minmax(0,1fr) 184px minmax(0,1fr)!important}
+${W} #skProf .pfS{min-height:46px!important;box-sizing:border-box!important}
+${W} .pfLogo{width:176px;max-width:100%;margin:0 auto;display:grid;place-items:center}
+${W} .pfLogo svg{width:100%!important;height:auto!important;display:block;overflow:visible}
+/* (3) gün simgesi dokunulabilir */
+${Y} .k3tc .y2sun{pointer-events:auto!important;cursor:pointer!important;-webkit-tap-highlight-color:transparent}
+/* (7) Karakter düzenle: üstte tente yok */
+${W} #ce .panel-head{background:none!important;border-bottom:0!important}
+${W} #ce .panel-head::after{display:none!important}
+/* (8) düğme yazıları: gölgesiz, okunaklı */
+${W} :is(.skbtn,.btn,.tgl){text-shadow:none!important;-webkit-text-stroke:0!important}
+${W} #teamList .skbtns>*:not(:first-child){font-size:13.5px!important;letter-spacing:0!important}
+/* (10) Market seçim tezgâhı: düğmelerin altındaki beyaz altlık yok */
+${W} #market.choose .mkSecB{background:none!important;border:0!important;box-shadow:none!important;height:auto!important;padding:0!important}
+${W} #market.choose .mkSecB b{height:44px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:2px 0 0!important;font-size:15.5px!important;border-width:3px!important;box-shadow:0 3px 0 ${INK}!important}
+/* (11) Keşfet (Kafeler Dünyası): tam ekran yerine ortada çerçeveli pencere → tente hem kısa hem alçak */
+${W} #worldP{left:calc(50% - min(700px,100%/var(--u) - var(--el) - var(--er))*var(--u)/2)!important;top:calc(6px*var(--u))!important;width:min(700px,calc(100%/var(--u) - var(--el) - var(--er)))!important;height:calc(100%/var(--u) - 12px)!important;
+  border:3px solid ${INK}!important;border-radius:20px!important;overflow:hidden!important;box-shadow:0 5px 0 ${INK},0 0 0 100vmax rgba(43,26,16,.5)!important;box-sizing:border-box!important}
+${W} #worldP .panel-head{height:46px!important;min-height:46px!important;padding:0 6px!important;box-sizing:border-box!important;align-items:center!important}
+${W} #worldP .panel-head>.iconbtn:first-child{width:44px!important;height:44px!important}
+${W} #worldP .tabs{padding:16px 12px 8px!important;gap:8px!important;overflow:visible!important}
+${W} #worldP .tabs button{min-height:44px!important;box-sizing:border-box!important;padding:2px 8px 0!important;border:3px solid ${INK}!important;border-radius:14px!important;background:linear-gradient(#fffaf0,#fbe2ba)!important;box-shadow:0 3px 0 ${INK}!important;
+  font-family:var(--font-display)!important;font-weight:800!important;font-size:14.5px!important;color:${INK}!important}
+${W} #worldP .tabs button[aria-selected=true]{background:linear-gradient(#ffe08a,#f6b93a)!important}
+${W} #worldP .scroll>.wmsg:first-child{margin:0 0 4px!important}
+${W} #worldP .kfRow{margin:4px 0 8px!important}
+${W} #worldP .kfTop{height:48px!important}
+${W} #worldP .kfMore{margin:0!important}
+`;document.head.appendChild(st);
+
+ // (3) gün simgesi: dokununca "3. gün · Öğle"
+ setInterval(()=>{try{const s=document.querySelector('#y2 .y2sun');if(!s||s._k3)return;s._k3=1;s.setAttribute('role','button');s.tabIndex=0;s.setAttribute('aria-label','Kaçıncı gün');
+   s.onclick=()=>{try{sfx('tap')}catch(e){}const lbl=($('dayPill')&&$('dayPill')._n)||'',nm=lbl.split('· ').pop()||'',n=S.dayN||1;
+     toast(`<b>${n}. gün</b>${nm?'<br>'+nm:''}`,`<span class="ic">${nm==='Gece'?UI_IC.moon:UI_IC.sun}</span>`,2600)}}catch(e){}},900);
+
+ // (12) tezgâh lambası: tezgâh grubunun (KGI) çocuğu → tezgâhla birlikte taşınır ve döner. Işığı sahnede tek, konumu tezgâhı izler.
+ let LIGHT=null;
+ function lampPos(){if(!LIGHT)return;const w=kW(KIT.cx,KIT.cz);LIGHT.position.set(w.x,WALL_H-0.7,w.z)}
+ function counterLamp(){if(!KGI)return;const old=KGI.getObjectByName('tezgahLamba');if(old){KGI.remove(old);try{disposeTree(old)}catch(e){}}
+   const g=new THREE.Group();g.name='tezgahLamba';const x=KIT.cx,z=KIT.cz;
+   const cord=new THREE.Mesh(new THREE.CylinderGeometry(0.008,0.008,0.5,6),M.dark);cord.position.set(x,WALL_H-0.25,z);g.add(cord);
+   const shade=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.2,0.17,16,1,true),M.cream.clone());shade.material.side=THREE.DoubleSide;shade.position.set(x,WALL_H-0.58,z);g.add(shade);
+   const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.05,12,8),M.warmLight);bulb.position.set(x,WALL_H-0.64,z);bulb.castShadow=false;g.add(bulb);
+   KGI.add(g);if(!LIGHT){LIGHT=new THREE.PointLight(0xffd9a0,4,5);scene.add(LIGHT)}lampPos()}
+ try{const _b=buildKitchen;buildKitchen=function(){const r=_b.apply(this,arguments);try{counterLamp()}catch(e){console.warn('tezgâh lambası',e)}return r};
+   const _k=kPose;kPose=function(){const r=_k.apply(this,arguments);try{lampPos()}catch(e){}return r};counterLamp()}catch(e){console.warn('tezgâh lambası',e)}
 }
 
 // ================= BAŞLAT =================
