@@ -1176,6 +1176,7 @@ const CATALOG=[
  {id:'d_bigplant',kind:'decor',name:'Büyük salon bitkisi',price:35,lvl:4,half:[0.3,0.3],desc:'Geniş yapraklı, uzun bitki.'},
  {id:'d_lamp',kind:'decor',name:'Ayaklı lamba',price:40,lvl:5,half:[0.18,0.18],desc:'Sıcak ışıklı abajur.'},
  {id:'d_catbed',kind:'decor',name:'Kedi yatağı',price:30,lvl:5,half:[0.3,0.3],desc:'Yumuşacık minder ve yün yumağı.'},
+ {id:'d_gate',kind:'decor',name:'Bahçe kapısı',price:120,lvl:5,half:[1.0,0.3],rot:true,desc:'Duvar varmış gibi duran kemerli kapı. İstediğin yere taşı; kediler geçerken açılır.'},
  {id:'d_vitrin',kind:'decor',cat:'counter',name:'Pasta vitrini',price:140,lvl:6,half:[0.64,0.34],rot:true,desc:'Kavisli camın ardında pasta, donut ve makaronlar.'},
  {id:'w_it_ocra',kind:'wall',name:'Roma okrası',price:40,lvl:99,ev:'it',evLvl:1,color:0xf2d39a},
  {id:'d_it_bunting',kind:'walldecor',name:'İtalyan bayrak süsü',price:40,lvl:99,ev:'it',evLvl:2,desc:'Yeşil, beyaz, kırmızı üçgen bayraklar.'},
@@ -7884,6 +7885,55 @@ html.xmode .y2rp{visibility:hidden!important}
     return out}
 
   DECOR_BUILD.d_vitrin=()=>{try{return vitrinBake(vitrinParts())}catch(e){console.warn('vitrin',e);return vitrinParts()}};
+}
+
+// ================= BAHÇE KAPISI (dekor: d_gate) =================
+// Duvar varmış gibi duran, kemerli çift kanatlı kapı: iki yanında duvar parçası, üstünde kiremit saçak ve begonvil.
+// Dekor gibi yerleştirilir ve Düzenle modunda istenen yere taşınır/döndürülür (kafe ile bahçe arasına konmak üzere tasarlandı).
+// Yalnızca iki yan duvar engeldir; ortası açıktır. Yakınından biri geçerken kanatlar açılır.
+{
+  const GW=0.65,GH=2.2;   // açıklığın yarı genişliği ve kemer başlangıç yüksekliği
+  const GM={pink:[toon(0xd9488f),toon(0xe86aa8),toon(0xc93f86)],tile:toon(0xd0703f),stone:toon(0xe4d6bd)};
+  DECOR_BUILD.d_gate=()=>{const g=new THREE.Group(),P0=PARENT;PARENT=g;const leaves=[];
+    try{
+      // duvar: kemerli boşluklu tek parça
+      const sh=new THREE.Shape();sh.moveTo(-1,0);sh.lineTo(-1,2.95);sh.lineTo(1,2.95);sh.lineTo(1,0);sh.lineTo(GW,0);sh.lineTo(GW,GH);sh.absarc(0,GH,GW,0,Math.PI,false);sh.lineTo(-GW,0);sh.lineTo(-1,0);
+      const w=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:0.22,bevelEnabled:false,curveSegments:18}),M.wall);w.position.z=-0.11;g.add(w);
+      for(const s of [-1,1]){box(0.36,0.18,0.28,M.green,s*0.825,0.09,0);box(0.1,GH,0.28,M.green,s*(GW+0.01),GH/2,0)}   // süpürgelik + söve
+      const ar=new THREE.Mesh(new THREE.TorusGeometry(GW+0.02,0.055,8,24,Math.PI),M.green);ar.position.set(0,GH,0);ar.scale.z=2.4;g.add(ar);
+      // kiremit saçak
+      box(2.16,0.08,0.4,GM.stone,0,2.99,0);for(let i=0;i<9;i++){const t=cyl(0.13,0.13,0.44,GM.tile,-0.96+i*0.24,3.06,0,8);t.rotation.x=Math.PI/2;t.scale.y=1;t.scale.x=0.95}
+      // kemer camı (sabit) ve ışınları
+      const tg=new THREE.Mesh(new THREE.ShapeGeometry((()=>{const s=new THREE.Shape();s.moveTo(-GW,0);s.absarc(0,0,GW,Math.PI,0,true);s.lineTo(-GW,0);return s})(),16),M.glass);tg.position.set(0,GH,0);g.add(tg);
+      box(GW*2,0.07,0.09,M.green,0,GH,0);for(const a of [Math.PI/4,Math.PI/2,Math.PI*3/4]){const b=box(0.05,GW,0.07,M.green,Math.cos(a)*GW/2,GH+Math.sin(a)*GW/2,0);b.rotation.z=a-Math.PI/2}
+      // kanatlar: menteşeden döner (birleştirmeye girmesin diye renderOrder verilir)
+      for(const s of [-1,1]){const pv=new THREE.Group();pv.position.set(s*(GW-0.04),0,0);g.add(pv);const lw=GW-0.05,cx=-s*lw/2;PARENT=pv;
+        const parts=[box(lw,0.5,0.06,M.green,cx,0.3,0),box(lw,0.1,0.06,M.green,cx,GH-0.1,0),box(0.09,GH-0.1,0.06,M.green,-s*0.045,GH/2,0),box(0.09,GH-0.1,0.06,M.green,-s*(lw-0.045),GH/2,0),
+          box(lw,0.06,0.05,M.green,cx,1.35,0),box(0.05,GH-0.6,0.05,M.green,cx,1.35,0),box(0.05,0.14,0.14,M.gold,-s*(lw-0.1),1.05,0)];
+        const gl=new THREE.Mesh(new THREE.PlaneGeometry(lw-0.1,GH-0.65),M.glass);gl.position.set(cx,1.33,0);pv.add(gl);
+        for(const m of parts)m.renderOrder=1;PARENT=g;leaves.push({p:pv,side:s})}
+      // eşik taşı, saksılar, fener, begonvil
+      box(1.5,0.04,0.7,GM.stone,0,0.02,0,{shadow:false});
+      for(const s of [-1,1]){cyl(0.13,0.1,0.22,M.terracotta,s*0.82,0.11,0.3,10);const b=sph(0.15,M.leaf,s*0.82,0.33,0.3);b.scale.y=0.9;sph(0.05,GM.pink[1],s*0.82+0.07,0.44,0.34)}
+      box(0.05,0.05,0.2,M.dark,0.86,2.25,0.2);cyl(0.07,0.09,0.2,M.dark,0.86,2.1,0.3,6);const lt=sph(0.06,M.warmLight,0.86,2.08,0.3);lt.castShadow=false;
+      let sd=5;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;
+      for(let i=0;i<20;i++){const t=i/19,b=sph(0.11+rnd()*0.08,i%4===3?M.leaf:GM.pink[i%3],-1.02+t*0.9+rnd()*0.12,2.95-(1-t)*(1-t)*1.5+rnd()*0.12,0.15+rnd()*0.06);b.scale.z=0.6}
+    }finally{PARENT=P0}
+    g.userData.leaves=leaves;g.userData.gateA=0;return g};
+
+  // engel: yalnızca iki yan duvar (ortadan geçilir)
+  // (yerleştirirken tüm taban alanı sayılır: kapı bir masanın ya da sandalyenin üstüne konamaz)
+  let full=false;{const _v=validatePlacement;validatePlacement=function(rec,ex){if(rec.id!=='d_gate')return _v(rec,ex);full=true;try{return _v(rec,ex)}finally{full=false}}}
+  {const _d=decorBoxes;decorBoxes=function(rec){if(rec.id!=='d_gate'||full)return _d(rec);const odd=(rec.rot||0)%2,out=[];
+    for(const s of [-1,1]){const c=s*(GW+0.175),h=0.2;out.push(odd?{minX:rec.x-0.16,maxX:rec.x+0.16,minZ:rec.z+c-h,maxZ:rec.z+c+h}:{minX:rec.x+c-h,maxX:rec.x+c+h,minZ:rec.z-0.16,maxZ:rec.z+0.16})}return out}}
+
+  // kanatlar: yakında biri varsa açılır
+  {const _t=doorTick;doorTick=function(dt){_t(dt);let P=null;
+    for(const R of FURN.values()){if(R.rec.id!=='d_gate')continue;const G=R.group,L=G.userData.leaves;if(!L)continue;
+      if(!P){P=[];try{for(const c of customers)if(c.char)P.push(c.char.pos);for(const Ls of [WSTAFF,BSTAFF,CSTAFF])for(const k of Ls)P.push(k.ch.pos)}catch(e){}}
+      let near=false;for(const p of P){if(Math.hypot(p.x-G.position.x,p.z-G.position.z)<1.35){near=true;break}}
+      let a=G.userData.gateA||0;const want=near?1:0;a+=Math.sign(want-a)*Math.min(Math.abs(want-a),(want?3.2:1.6)*dt);G.userData.gateA=a;
+      const e=a<0.5?2*a*a:1-Math.pow(-2*a+2,2)/2;for(const l of L)l.p.rotation.y=-l.side*e*1.4}}}
 }
 
 // ================= BAŞLAT =================
