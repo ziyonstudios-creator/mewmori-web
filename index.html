@@ -7992,6 +7992,90 @@ html.xmode .y2rp{visibility:hidden!important}
       const e=a<0.5?2*a*a:1-Math.pow(-2*a+2,2)/2;for(const l of L)l.p.rotation.y=-l.side*e*1.4}}}
 }
 
+// ================= KÜÇÜK DEKORLAR + İTALYA PAKETİ: yeniden modelleme =================
+// Aynı kimlikler ve taban alanları; yalnızca biçimler değişti. Kedi yatağına (d_catbed) dokunulmadı.
+{
+  const SP=(r,w=9,h=7)=>new THREE.SphereGeometry(r,w,h),LA=(pts,seg=14)=>new THREE.LatheGeometry(pts.map(p=>new THREE.Vector2(p[0],p[1])),seg);
+  // yaprak: ucu a yönüne bakan, tilt kadar yukarı kalkık yassı elips (x,y,z = sapın çıktığı nokta)
+  const leaf=(G,c,x,y,z,L,W,a,tilt)=>{const m=bm(SP(1,8,5),c,x+Math.cos(a)*Math.cos(tilt)*L,y+Math.sin(tilt)*L,z+Math.sin(a)*Math.cos(tilt)*L,G);m.scale.set(L,L*0.07,W);m.rotation.set(0,-a,tilt);return m};
+  const pot=(G,r,h,c,rim)=>{bm(LA([[0,0],[r*0.72,0],[r*0.78,h*0.08],[r,h*0.86],[r*1.08,h*0.88],[r*1.08,h],[r*0.9,h],[r*0.86,h*0.9],[0,h*0.9]]),c,0,0,0,G);if(rim)bm(CY(r*0.93,r*0.9,h*0.1,14),rim,0,h*0.5,0,G);bm(CY(r*0.86,r*0.86,0.01,12),0x5a3a22,0,h*0.9,0,G)};
+  const G_LEAF=[0x7fae4a,0x6f9a3e,0x8fbe58];
+
+  // ---- zemin dekorları ----
+  DECOR_BUILD.d_plant=()=>{const G=new THREE.Group();pot(G,0.15,0.24,0xc9653a);bm(CY(0.17,0.17,0.02,14),0xb5562f,0,0.01,0,G);
+    for(let i=0;i<9;i++){const a=i*2.4,t=0.25+(i%3)*0.28,L=0.13-(i%3)*0.012;bm(CY(0.006,0.008,0.14+t*0.1,5),0x5f8a3a,Math.cos(a)*0.03,0.28+t*0.04,Math.sin(a)*0.03,G);leaf(G,G_LEAF[i%3],Math.cos(a)*0.04,0.3+t*0.12,Math.sin(a)*0.04,L,L*0.62,a,t)}
+    return G};
+  DECOR_BUILD.d_flower=()=>{const G=new THREE.Group();pot(G,0.13,0.22,0xfff3df,0xf2a6a0);
+    const cols=[0xf2a6a0,0xf2b134,0xd9534f,0xffffff,0xb27ad6];
+    for(let i=0;i<5;i++){const a=i/5*Math.PI*2+0.3,r=0.055,h=0.22+(i%2)*0.07,x=Math.cos(a)*r,z=Math.sin(a)*r;bm(CY(0.005,0.006,h,5),0x6f8a3a,x,0.2+h/2,z,G);
+      for(let p=0;p<5;p++){const b=p/5*Math.PI*2;const q=bm(SP(0.024,7,5),cols[i],x+Math.cos(b)*0.028,0.2+h,z+Math.sin(b)*0.028,G);q.scale.y=0.55;q.castShadow=false}bm(SP(0.017,7,5),0xf7d04a,x,0.2+h+0.006,z,G).castShadow=false;
+      leaf(G,G_LEAF[i%3],x*0.6,0.24,z*0.6,0.075,0.035,a+1,0.5)}return G};
+  DECOR_BUILD.d_bigplant=()=>{const G=new THREE.Group();pot(G,0.2,0.36,0xfff3df,0xc9653a);
+    for(let k=0;k<3;k++)bm(CY(0.018-k*0.003,0.022-k*0.003,0.34,6),0x7a5a3a,Math.sin(k*1.3)*0.02,0.5+k*0.3,Math.cos(k*1.7)*0.02,G);
+    for(let i=0;i<11;i++){const a=i*2.4,y=0.55+i*0.085,L=0.25-i*0.008;leaf(G,G_LEAF[i%3],Math.cos(a)*0.02,y,Math.sin(a)*0.02,L,L*0.55,a,0.35+(i%2)*0.2)}
+    leaf(G,G_LEAF[0],0,1.48,0,0.16,0.09,0.4,1.2);return G};
+  DECOR_BUILD.d_lamp=()=>{const G=new THREE.Group();bm(LA([[0,0],[0.17,0],[0.17,0.02],[0.09,0.045],[0.03,0.07],[0.024,0.12],[0,0.12]],16),0x8a5529,0,0,0,G);
+    bm(CY(0.016,0.02,1.2,8),0x8a5529,0,0.7,0,G);for(const y of [0.42,0.98])bm(CY(0.03,0.03,0.03,10),0xf2b134,0,y,0,G);bm(CY(0.04,0.02,0.05,10),0xf2b134,0,1.31,0,G);
+    const sh=bm(new THREE.CylinderGeometry(0.11,0.22,0.26,18,1,true),new THREE.MeshToonMaterial({color:0xfff3df,gradientMap:grad,side:THREE.DoubleSide}),0,1.44,0,G);
+    for(const [r,y] of [[0.11,1.57],[0.22,1.31]])bm(new THREE.TorusGeometry(r,0.012,6,22),0xf2a6a0,0,y,0,G).rotation.x=Math.PI/2;
+    const gl=bm(SP(0.055,9,7),M.warmLight,0,1.38,0,G);gl.castShadow=false;bm(CY(0.003,0.003,0.16,4),0xf2b134,0.08,1.24,0,G);bm(SP(0.014,6,5),0xf2b134,0.08,1.15,0,G);return G};
+
+  // ---- duvar dekorları ----
+  WALL_BUILD.pic=kind=>{const g=new THREE.Group();bm(new RoundedBoxGeometry(0.52,0.62,0.04,2,0.014),0x8a5529,0,0,0.02,g);bm(BX(0.46,0.56,0.012),0xf2b134,0,0,0.038,g);bm(BX(0.43,0.53,0.012),0xfff3df,0,0,0.041,g);
+    const p=new THREE.Mesh(new THREE.PlaneGeometry(0.38,0.475),new THREE.MeshToonMaterial({map:paintCanvas(kind),gradientMap:grad}));p.position.z=0.049;g.add(p);
+    bm(CY(0.012,0.012,0.02,8),0xf2b134,0,0.33,0.02,g).rotation.x=Math.PI/2;return g};
+  WALL_BUILD.d_shelf=()=>{const g=new THREE.Group();bm(new RoundedBoxGeometry(0.66,0.035,0.2,2,0.012),0xb5733a,0,-0.1,0.1,g);
+    for(const s of [-1,1]){const t=bm(new THREE.TorusGeometry(0.09,0.014,6,12,Math.PI/2),0x8a5529,s*0.25,-0.115,0.02,g);t.rotation.set(0,-Math.PI/2,-Math.PI/2)}
+    for(const [x,c] of [[-0.24,0xfff3df],[-0.13,0xf2a6a0]]){bm(CY(0.038,0.03,0.07,12),c,x,-0.047,0.1,g);const h=bm(new THREE.TorusGeometry(0.022,0.006,5,10,Math.PI),0xfff3df===c?0xfff3df:0xf2a6a0,x+0.036,-0.045,0.1,g);h.rotation.z=-Math.PI/2}
+    const tp=bm(SP(0.05,10,8),0xd9534f,0.01,-0.04,0.1,g);tp.scale.y=0.8;bm(CY(0.02,0.026,0.012,10),0xd9534f,0.01,0.002,0.1,g);bm(SP(0.01,6,5),0xf2b134,0.01,0.014,0.1,g);const sp=bm(CY(0.008,0.013,0.06,6),0xd9534f,0.063,-0.03,0.1,g);sp.rotation.z=-0.9;
+    bm(CY(0.055,0.042,0.08,10),0xc9653a,0.21,-0.042,0.1,g);for(let i=0;i<4;i++)bm(SP(0.05,8,6),G_LEAF[i%3],0.21+Math.cos(i*1.7)*0.03,0.03+(i%2)*0.03,0.1+Math.sin(i*1.7)*0.03,g);
+    for(let i=0;i<4;i++)bm(SP(0.022,6,5),G_LEAF[i%3],0.27+(i%2)*0.012,-0.06-i*0.045,0.17,g).castShadow=false;return g};
+  WALL_BUILD.d_clock=()=>{const g=new THREE.Group();const f=bm(CY(0.17,0.17,0.04,28),0xfff3df,0,0,0.02,g);f.rotation.x=Math.PI/2;bm(new THREE.TorusGeometry(0.17,0.024,8,28),0x8a5529,0,0,0.04,g);
+    for(const s of [-1,1]){const e=bm(new THREE.ConeGeometry(0.065,0.11,4),0x8a5529,s*0.115,0.175,0.03,g);e.rotation.z=-s*0.35;const i2=bm(new THREE.ConeGeometry(0.035,0.065,4),0xf2a6a0,s*0.112,0.168,0.046,g);i2.rotation.z=-s*0.35;i2.castShadow=false}
+    for(let i=0;i<12;i++){const a=i/12*Math.PI*2;bm(i%3?SP(0.006,6,4):BX(0.012,0.03,0.006),0x4a2e1c,Math.sin(a)*0.132,Math.cos(a)*0.132,0.043,g).rotation.z=-a}
+    bm(BX(0.014,0.1,0.008),0x4a2e1c,0,0.04,0.048,g);const h=bm(BX(0.011,0.075,0.008),0x4a2e1c,0.028,0.02,0.05,g);h.rotation.z=-0.95;bm(SP(0.014,8,6),0xf2b134,0,0,0.052,g);
+    for(const s of [-1,1])for(const dy of [0.012,-0.012]){const w=bm(BX(0.07,0.004,0.004),0x8a5529,s*0.2,-0.03+dy,0.04,g);w.rotation.z=s*dy*8}
+    const tl=bm(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[0.06,-0.16,0.02],[0.1,-0.24,0.02],[0.06,-0.31,0.02],[0.1,-0.36,0.02]].map(p=>new THREE.Vector3(...p))),12,0.016,6),0x8a5529,0,0,0,g);return g};
+  WALL_BUILD.d_garland=()=>{const g=new THREE.Group(),pts=[],Y=t=>-Math.sin(t*Math.PI)*0.11;for(let i=0;i<=12;i++){const t=i/12;pts.push(new THREE.Vector3(-0.34+0.68*t,Y(t),0.03))}
+    bm(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),20,0.005,4),0x4a2e1c,0,0,0,g);const cols=[0xd9534f,0xf2b134,0xf2a6a0,0x8fae58,0x86b8d8,0xfff3df,0xd9534f];
+    for(let i=0;i<7;i++){const t=(i+0.5)/7,s=new THREE.Shape();s.moveTo(-0.04,0);s.lineTo(0.04,0);s.lineTo(0.04,-0.05);s.lineTo(0,-0.1);s.lineTo(-0.04,-0.05);s.lineTo(-0.04,0);
+      bm(new THREE.ExtrudeGeometry(s,{depth:0.008,bevelEnabled:false}),cols[i],-0.34+0.68*t,Y(t),0.02,g);bm(SP(0.012,6,5),i%2?0xfff3df:0xf2b134,-0.34+0.68*t,Y(t)-0.045,0.031,g).castShadow=false}
+    for(const s of [-1,1]){const b=bm(SP(0.022,7,5),0xf2a6a0,s*0.34,0,0.035,g);b.scale.set(1.6,1,0.6)}return g};
+
+  // ---- İtalya paketi ----
+  brPlant=function(s=1,col=0x5f8a3a,fruit=null){const G=new THREE.Group(),Q=new THREE.Group();Q.scale.setScalar(s);G.add(Q);pot(Q,0.17,0.3,0xc8693e,0xe0895a);
+    bm(CY(0.022,0.03,0.52,6),0x6b4a2c,0,0.56,0,Q);for(const [a,y] of [[0.5,0.72],[2.6,0.78],[4.4,0.7]])bm(CY(0.01,0.014,0.2,5),0x6b4a2c,Math.cos(a)*0.07,y,Math.sin(a)*0.07,Q).rotation.set(Math.sin(a)*0.7,0,-Math.cos(a)*0.7);
+    for(const [x,y,z,r] of [[0,0.98,0,0.26],[0.17,0.88,0.08,0.19],[-0.16,0.9,-0.06,0.2],[0.03,1.14,-0.08,0.18],[-0.05,0.86,0.16,0.16],[0.06,0.9,-0.18,0.16]])bm(new THREE.IcosahedronGeometry(r,1),col,x,y,z,Q);
+    for(let i=0;i<10;i++){const a=i*2.4;leaf(Q,0x7fae4a,Math.cos(a)*0.22,0.86+(i%4)*0.09,Math.sin(a)*0.22,0.08,0.04,a,0.2)}
+    if(fruit)for(let i=0;i<8;i++){const a=i*2.1,f=bm(SP(0.045,8,6),fruit,Math.cos(a)*0.25,0.78+(i%3)*0.13,Math.sin(a)*0.25,Q);f.scale.set(1,1.25,1);bm(SP(0.012,5,4),fruit,Math.cos(a)*0.25,0.725+(i%3)*0.13,Math.sin(a)*0.25,Q)}return G};
+  brMachine=function(col=0xd5dbe1,acc=0xd9453b){const G=new THREE.Group();bm(new RoundedBoxGeometry(0.66,0.05,0.46,2,0.015),0x6c737a,0,0.025,0,G);bm(new RoundedBoxGeometry(0.62,0.3,0.34,3,0.05),col,0,0.2,-0.03,G);
+    bm(BX(0.63,0.05,0.345),acc,0,0.2,-0.03,G);bm(new RoundedBoxGeometry(0.66,0.035,0.42,2,0.012),0x9aa2aa,0,0.365,0,G);
+    for(const z of [-0.19,0.19])bm(CY(0.006,0.006,0.6,5),0x9aa2aa,0,0.41,z,G).rotation.z=Math.PI/2;for(const x of [-0.3,0.3])for(const z of [-0.19,0.19])bm(CY(0.006,0.006,0.035,5),0x9aa2aa,x,0.395,z,G);   // fincan korkuluğu
+    for(let i=0;i<4;i++)bm(CY(0.03,0.024,0.045,10),i%2?0xfff8ec:acc,-0.2+i*0.13,0.405,0,G);
+    for(const x of [-0.16,0.16]){bm(CY(0.045,0.045,0.06,12),0x9aa2aa,x,0.27,0.17,G).rotation.x=Math.PI/2;bm(CY(0.036,0.03,0.035,10),0x6c737a,x,0.2,0.2,G);const h=bm(CY(0.011,0.014,0.12,6),0x2a2a2a,x,0.185,0.27,G);h.rotation.x=1.3;
+      const lv=bm(CY(0.009,0.009,0.22,6),0x9aa2aa,x,0.42,0.14,G);lv.rotation.x=-0.35;bm(SP(0.024,8,6),0x2a2a2a,x,0.525,0.1,G)}   // grup, portafiltre, kol
+    bm(BX(0.56,0.012,0.12),0x9aa2aa,0,0.058,0.16,G);const gg=bm(CY(0.04,0.04,0.02,14),0xfff8ec,0,0.3,0.145,G);gg.rotation.x=Math.PI/2;bm(new THREE.TorusGeometry(0.04,0.007,5,16),0xc9a24a,0,0.3,0.155,G);
+    const w=bm(CY(0.009,0.009,0.16,6),0x9aa2aa,0.3,0.2,0.14,G);w.rotation.z=-0.3;return G};
+  {const _g=brGelato;brGelato=function(lv){const G=_g(lv);   // çizgili gövde, telli tekerlekler, tutamak, külah standı, tabela
+    for(let i=0;i<7;i++)if(i%2===0)bm(BX(0.186,0.66,0.012),0x8fcbb7,-0.558+i*0.186,0.49,0.305,G);
+    for(const x of [-0.5,0.5]){const t=bm(new THREE.TorusGeometry(0.16,0.022,6,18),0x4a4a4a,x,0.18,0.33,G);for(let k=0;k<4;k++)bm(BX(0.3,0.014,0.012),0x8a8a8a,x,0.18,0.33,G).rotation.z=k*Math.PI/4;bm(CY(0.03,0.03,0.05,8),0xf2b134,x,0.18,0.34,G).rotation.x=Math.PI/2}
+    bm(CY(0.014,0.014,0.62,6),0x8a5529,0.74,0.78,0,G).rotation.x=Math.PI/2;for(const z of [-0.28,0.28])bm(CY(0.012,0.012,0.14,6),0x4a4a4a,0.7,0.76,z,G).rotation.z=Math.PI/2;
+    bm(BX(0.2,0.03,0.14),0x8a5529,-0.5,0.905,-0.2,G);for(let i=0;i<3;i++){const c=bm(new THREE.ConeGeometry(0.03,0.11,8),0xd8a05a,-0.56+i*0.06,0.975,-0.2,G);c.rotation.x=Math.PI;bm(SP(0.03,7,5),[0xf2a6a0,0xfff3d0,0x9fd06a][i],-0.56+i*0.06,1.04,-0.2,G)}
+    const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');x.fillStyle='#fff8ec';x.fillRect(0,0,256,64);x.fillStyle='#d9453b';x.font='800 44px "Baloo 2",Nunito,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('GELATO',128,35);
+    const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const p=new THREE.Mesh(new THREE.PlaneGeometry(0.62,0.155),new THREE.MeshToonMaterial({map:tx,gradientMap:grad}));p.position.set(0,0.3,0.313);G.add(p);return G}}
+  {const _o=brOven;brOven=function(lv){const G=_o(lv);   // tuğla kemer, taş sıraları, baca şapkası, odun yığını
+    for(let i=0;i<9;i++){const a=i/8*Math.PI,b=bm(BX(0.075,0.11,0.06),i%2?0xc9653a:0xb5562f,Math.cos(a)*0.25,0.86+Math.sin(a)*0.25,0.6,G);b.rotation.z=a-Math.PI/2}
+    for(let r=0;r<3;r++)for(let i=0;i<5;i++)bm(BX(0.235,0.012,0.012),0xb8a888,-0.5+i*0.25+(r%2)*0.06,0.2+r*0.2,0.58,G);for(let r=0;r<3;r++)bm(BX(1.25,0.012,0.012),0xb8a888,0,0.1+r*0.2+0.2,0.58,G);
+    bm(BX(0.3,0.05,0.3),0x9a4426,0.22,1.96,-0.2,G);bm(new THREE.ConeGeometry(0.2,0.14,4),0x6b3a22,0.22,2.06,-0.2,G).rotation.y=Math.PI/4;
+    if(lv<2)for(let i=0;i<5;i++){const l=bm(CY(0.045,0.045,0.4,7),i%2?0x8b5a32:0x7a4a28,-0.78+(i%3)*0.1,0.05+Math.floor(i/3)*0.085,0.3,G);l.rotation.x=Math.PI/2}
+    bm(BX(0.36,0.02,0.1),0xe8dcc6,0,0.845,0.62,G);return G}}
+  DECOR_BUILD.d_it_oven=()=>brOven(2);DECOR_BUILD.d_it_gelato=()=>brGelato(3);DECOR_BUILD.d_it_lemon=()=>brPlant(1,0x5f8a3a,0xf7dc4a);
+  DECOR_BUILD.d_it_espresso=()=>{const G=new THREE.Group();bm(BX(0.74,0.08,0.52),0x5a3520,0,0.04,0,G);bm(new RoundedBoxGeometry(0.78,0.84,0.56,2,0.02),0x7a4a2a,0,0.5,0,G);
+    for(const x of [-0.19,0.19]){bm(new RoundedBoxGeometry(0.32,0.6,0.02,2,0.008),0x93603a,x,0.5,0.285,G);bm(new RoundedBoxGeometry(0.24,0.5,0.02,2,0.008),0xa8703f,x,0.5,0.292,G);bm(SP(0.016,7,5),0xc9a24a,x-Math.sign(x)*0.12,0.52,0.305,G)}
+    bm(new RoundedBoxGeometry(0.86,0.06,0.64,2,0.02),0xf1ece4,0,0.95,0,G);const m=brMachine();m.position.set(-0.06,0.98,-0.04);m.scale.setScalar(0.85);G.add(m);
+    bm(CY(0.06,0.06,0.012,12),0xfff8ec,0.31,0.986,0.18,G);bm(CY(0.034,0.026,0.045,10),0xfff8ec,0.31,1.012,0.18,G);bm(CY(0.028,0.028,0.004,10),0x4a2e1c,0.31,1.033,0.18,G);return G};
+}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
