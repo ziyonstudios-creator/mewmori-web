@@ -8076,6 +8076,54 @@ html.xmode .y2rp{visibility:hidden!important}
     bm(CY(0.06,0.06,0.012,12),0xfff8ec,0.31,0.986,0.18,G);bm(CY(0.034,0.026,0.045,10),0xfff8ec,0.31,1.012,0.18,G);bm(CY(0.028,0.028,0.004,10),0x4a2e1c,0.31,1.033,0.18,G);return G};
 }
 
+// ================= ARAYÜZ DÜZENLEMESİ (yatay kullanım, oyuncu gözüyle) =================
+// 1) Ana ekran: alt menü biraz küçüldü, kamera kafeye yaklaştı, "sade görünüm" düğmesi (göz) arayüzü gizleyip kafeyi öne alır.
+// 2) Tarif Defteri, Menü ve Etkinlik: diğer pencerelerle aynı çerçeveli görünüm; arkada kafe loş görünür.
+// 3) Tarif Defteri ve Menü: iki sütunlu, sık kartlar (yatay ekranda bir bakışta iki kat ürün).
+{const st=document.createElement('style');st.textContent=`
+html.land .nav{transform:translateX(-50%) scale(.9)!important;transform-origin:50% 100%!important}
+#cleanBtn{pointer-events:auto}
+#cleanBtn[aria-pressed="true"]{filter:drop-shadow(0 0 0 #f2b134) brightness(1.12) saturate(1.3);outline:3px solid var(--gold);outline-offset:1px;border-radius:50%}
+#game.hudoff #nav,#game.hudoff .bottom,#game.hudoff #autoBtn,#game.hudoff .y2prof,#game.hudoff .y2rate,#game.hudoff .y2signs,#game.hudoff .y2rp,#game.hudoff .y2open,#game.hudoff #kesBtn,#game.hudoff .y2sun,#game.hudoff #setBtn,#game.hudoff #mailBtn,#game.hudoff #dailyBtn,#game.hudoff .skdaybox,#game.hudoff .y2vip{opacity:0!important;pointer-events:none!important}
+#nav,.bottom,#autoBtn,.y2prof,.y2rate,.y2signs,.y2rp,.y2open,#kesBtn,.y2sun,.skdaybox{transition:opacity .22s}
+#game.hudoff .y2left{top:calc(max(8px,var(--sat)) + 4px)!important}
+/* --- çerçeveli pencere görünümü --- */
+html.land #recipes,html.land #menuScr,html.land #evP{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:6px;bottom:6px;border:3px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 5px 0 var(--ink),0 0 0 100vmax rgba(43,26,16,.5)}
+html.land #recipes .panel-head,html.land #menuScr .panel-head,html.land #evP .panel-head{padding:5px 10px!important;gap:8px}
+html.land #recipes .panel-head h2,html.land #menuScr .panel-head h2,html.land #evP .panel-head h2{font-size:18px}
+html.land #recipes .panel-head .iconbtn,html.land #menuScr .panel-head .iconbtn,html.land #evP .panel-head .iconbtn{width:36px;height:36px}
+html.land #recipes .tabs{padding:6px 12px 4px}
+/* --- Tarif Defteri: iki sütun --- */
+html.land #rbList{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;max-width:none!important;padding:4px 12px 14px}
+html.land #rbList>*:not(.rc){grid-column:1/-1}
+html.land #rbList .rc{padding:6px 8px;gap:8px;min-width:0;box-shadow:0 2px 0 var(--ink);border-radius:14px}
+html.land #rbList .rc .th{width:54px;height:54px}
+html.land #rbList .rc .tx{flex-wrap:wrap;gap:4px 8px}
+html.land #rbList .rc .tx b{font-size:14px}
+html.land #rbList .rcInfo{flex:1 1 0;gap:3px}
+html.land #rbList .rcAct{width:132px}
+html.land #rbList .rcAct .rbact .btn{font-size:12px;padding:5px 6px;white-space:normal;line-height:1.1}
+html.land #rbList .rcRec{order:3;flex:1 1 100%;width:auto;flex-direction:row;align-items:center;gap:8px;padding:3px 8px}
+html.land #rbList .rcRec .combo .mi{width:24px;height:24px}
+/* --- Menü: iki sütun --- */
+html.land .mlist{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;max-width:none;padding:6px 12px 14px}
+html.land .mlist>*{grid-column:1/-1}
+html.land .mlist>.mi2{grid-column:auto;min-width:0;box-shadow:0 2px 0 var(--ink)}
+html.land .mlist .mhead{font-size:12px;padding:5px 10px;border-width:2px;line-height:1.3}
+html.land .mlist .mi2 img{width:46px;height:46px}
+html.land .mlist .mi2 .tx b{font-size:15px}
+html.land .mlist .tgl{min-width:104px;padding:8px 10px}
+`;document.head.appendChild(st);
+ // sade görünüm düğmesi: ayar düğmesinin yanında, onunla aynı görünümde
+ try{const s=$('setBtn');if(s&&!$('cleanBtn')){const b=s.cloneNode(true);b.id='cleanBtn';b.setAttribute('aria-label','Sade görünüm');b.setAttribute('aria-pressed','false');b.title='Sade görünüm';
+   const im=b.querySelector('img');if(im)im.src=UIIMG('i_eye');else b.innerHTML=`<img src="${UIIMG('i_eye')}" alt="" style="width:70%;height:70%">`;s.parentElement.appendChild(b);
+   const set=on=>{$('game').classList.toggle('hudoff',on);b.setAttribute('aria-pressed',String(on));try{localStorage.setItem('mewmori-sade',on?'1':'0')}catch(e){}};
+   b.onclick=e=>{e.stopPropagation();try{sfx('tap')}catch(_){}set(!$('game').classList.contains('hudoff'))};
+   let on=false;try{on=localStorage.getItem('mewmori-sade')==='1'}catch(e){}if(on)set(true)}}catch(e){console.warn('sade görünüm',e)}
+ // yatay ekranda kamera kafeye biraz daha yakın başlar (kafe planı öne gelsin)
+ try{if(innerWidth>innerHeight*1.4){const t=controls.target;camera.position.sub(t).multiplyScalar(0.84).add(t);controls.update()}}catch(e){}
+}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
