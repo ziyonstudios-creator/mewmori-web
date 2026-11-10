@@ -8880,6 +8880,85 @@ ${W} #worldP .kfMore{margin:0!important}
    const _k=kPose;kPose=function(){const r=_k.apply(this,arguments);try{lampPos()}catch(e){}return r};counterLamp()}catch(e){console.warn('tezgâh lambası',e)}
 }
 
+// ================= YATAY KAYDIRMA (V134+) =================
+// Kullanıcı isteği: oyuncu yatay ekranda hiçbir menüyü aşağı doğru sürüklemesin; içerik sığmıyorsa SAĞA doğru kayar.
+// Ortak araç: hxAttach(kap) — kabı yatay kaydırıcı yapar: fare tekeri yataya çevrilir, taşma varsa iki uçta ok düğmesi çıkar
+// (Yapı Market şeridindeki oklarla aynı fikir). hxScan() her 500 ms'de HX_SEL'deki görünür kapları bağlar, okları günceller.
+// Yeni bir pencereye uygulamak için: kabın CSS'ini yatay yap (grid-auto-flow:column ya da çok sütun) ve seçicisini HX_SEL'e ekle.
+const HX_SEL=['#ce #ceOpts','#ce #ceCats'];
+const HX_ARROW=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="#4a2a14" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d==='l'?'M14.5 5 8 12l6.5 7':'M9.5 5 16 12l-6.5 7'}"/></svg>`;
+function hxUpd(el){if(!el._hx)return;const L=el._hxL,R=el._hxR;if(!L||!R)return;
+  if(!L.isConnected||L.parentElement!==el.parentElement){el.after(L,R)}
+  const max=el.scrollWidth-el.clientWidth,x=el.scrollLeft,vis=el.clientWidth>0&&max>4;
+  L.hidden=!(vis&&x>4);R.hidden=!(vis&&x<max-4);if(!vis)return;
+  const top=el.offsetTop+el.offsetHeight/2-18;L.style.top=R.style.top=top+'px';L.style.left=(el.offsetLeft-8)+'px';R.style.left=(el.offsetLeft+el.offsetWidth-28)+'px'}
+function hxAttach(el){if(!el||el._hx)return;el._hx=1;el.classList.add('hx');
+  el.addEventListener('wheel',e=>{if(el.scrollWidth<=el.clientWidth+2)return;const d=Math.abs(e.deltaY)>Math.abs(e.deltaX)?e.deltaY:0;if(!d)return;el.scrollLeft+=d;e.preventDefault()},{passive:false});
+  const mk=d=>{const b=document.createElement('button');b.type='button';b.className='hxa hxa-'+d;b.hidden=true;b.setAttribute('aria-label',d==='l'?'Sola kaydır':'Sağa kaydır');b.innerHTML=HX_ARROW(d);
+    b.onclick=ev=>{ev.stopPropagation();try{sfx('tap')}catch(e){}const step=(d==='l'?-1:1)*Math.max(120,el.clientWidth*0.8);try{el.scrollBy({left:step,behavior:'smooth'})}catch(e){el.scrollLeft+=step}};return b};
+  el._hxL=mk('l');el._hxR=mk('r');el.after(el._hxL,el._hxR);el.addEventListener('scroll',()=>hxUpd(el),{passive:true});hxUpd(el)}
+function hxScan(){try{for(const s of HX_SEL)document.querySelectorAll(s).forEach(el=>{if(!el._hx)hxAttach(el);if(el.offsetParent!==null||el.clientWidth)hxUpd(el)})}catch(e){}}
+setInterval(hxScan,500);
+{
+ const G='html.land #game#game',INK='#4a2a14';
+ const st=document.createElement('style');st.textContent=`
+/* ---- ortak: yatay kaydırıcı ve okları ---- */
+${G} .hx{overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch;touch-action:pan-x!important;overscroll-behavior:contain}
+${G} .hx::-webkit-scrollbar{display:none!important}
+${G} .hxa{all:unset;position:absolute;z-index:6;width:36px;height:36px;border-radius:50%;box-sizing:border-box;background:linear-gradient(#fffaf0,#fbe2ba);border:3px solid ${INK};box-shadow:0 3px 0 ${INK};display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+${G} .hxa[hidden]{display:none!important}
+${G} .hxa svg{width:18px;height:18px;display:block}
+${G} .hxa::after{content:'';position:absolute;inset:-6px}
+${G} .hxa:active{transform:translateY(2px);box-shadow:0 1px 0 ${INK}}
+
+/* ---- KARAKTER DÜZENLE (#ce): başlık yok, önizleme kartı ekranın üstüne kadar; sağ sütun aşağı kaymaz ----
+   Sağ sütun bir ızgara: [rol satırı] / [isim | Görünüm·Kıyafet] / [alt sekmeler] / [seçenekler → yatay]. */
+${G} #ce .panel-head{position:absolute!important;top:max(12px,var(--et))!important;right:var(--er)!important;left:auto!important;width:auto!important;height:44px!important;min-height:0!important;padding:0!important;margin:0!important;display:flex!important;align-items:center!important;gap:8px!important;background:none!important;border:0!important;z-index:5!important;pointer-events:none}
+${G} #ce .panel-head>*{pointer-events:auto}
+${G} #ce .panel-head>.iconbtn:first-child{display:none!important}
+${G} #ce[data-m="edit"] .panel-head h2{display:none!important}
+${G} #ce .panel-head h2{font-size:14px!important;padding:5px 14px 3px!important;margin:0!important;white-space:nowrap}
+${G} #ce .steps{margin:0!important;align-items:center!important;gap:4px!important}
+${G} #ce .steps i{width:18px!important;border-color:${INK}!important}
+${G} #ce .steps i.on{background:#f6b93a!important}
+${G} #ce .steps span{color:${INK}!important;font-size:13px!important;margin-left:2px!important}
+${G} #ce #ceScroll{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:44px 44px 38px minmax(0,1fr)!important;gap:8px 10px!important;padding:max(12px,var(--et)) var(--er) 6px calc(36% + var(--el) + 10px)!important;overflow:hidden!important;box-sizing:border-box!important;touch-action:auto!important}
+${G} #ce #ceScroll>.pv{position:absolute!important;left:var(--el)!important;top:max(12px,var(--et))!important;width:36%!important;bottom:62px!important;height:auto!important;margin:0!important}
+${G} #ce .pv .views{right:8px!important;top:8px!important;gap:6px!important}
+${G} #ce .pv .views button{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}
+${G} #ce .ce-role{grid-column:1/-1!important;grid-row:1!important;padding:0 56px 0 0!important;margin:0!important;align-self:center!important;min-width:0;font-size:11.5px!important;line-height:1.2!important}
+${G} #ce .ce-role b{font-size:15.5px!important;line-height:1.1!important}
+${G} #ce[data-m="hire"] .ce-role{padding-right:176px!important}
+${G} #ce[data-m="create"] .ce-role{padding-right:232px!important}
+${G} #ce .ce-name{grid-column:1!important;grid-row:2!important;padding:0!important;margin:0!important;min-width:0}
+${G} #ce .ce-name input{height:44px!important;box-sizing:border-box!important;padding:0 12px!important}
+${G} #ce .ce-err{position:absolute!important;left:calc(36% + var(--el) + 22px)!important;top:calc(max(12px,var(--et)) + 93px)!important;margin:0!important;z-index:3;background:#fff1ec;border:2px solid #b23b33;border-radius:9px;padding:1px 8px!important;font-size:11px!important;line-height:1.3!important}
+${G} #ce .ce-err:empty{display:none!important}
+${G} #ce #ceTabs{grid-column:2!important;grid-row:2!important;padding:0!important;margin:0!important;gap:6px!important;display:flex!important;flex-wrap:nowrap!important;overflow:visible!important}
+${G} #ce #ceTabs .tab{min-height:44px!important;box-sizing:border-box!important;padding:0 13px 0 9px!important;white-space:nowrap}
+${G} #ce #ceCats{grid-column:1/-1!important;grid-row:3!important;padding:0 0 4px!important;margin:0!important;display:flex!important;flex-wrap:nowrap!important;gap:6px!important;align-items:center!important;min-width:0}
+${G} #ce #ceCats .chip{flex:none!important;height:34px!important;box-sizing:border-box!important;padding:0 11px!important;font-size:13px!important;position:relative}
+${G} #ce #ceCats .chip::after{content:'';position:absolute;inset:-5px -2px}
+${G} #ce #ceOpts{grid-column:1/-1!important;grid-row:4!important;padding:0 0 4px!important;margin:0!important;display:flex!important;flex-flow:column wrap!important;align-content:flex-start!important;align-items:flex-start!important;gap:8px 24px!important;min-height:0!important;min-width:0}
+${G} #ce #ceOpts>*{flex:none!important;margin:0!important;max-width:470px}
+${G} #ce #ceOpts .ce-row b{margin:0 0 4px!important;font-size:12px!important}
+${G} #ce #ceOpts .ce-row .wrap{flex-wrap:nowrap!important;gap:6px!important}
+${G} #ce #ceOpts .ce-row:has(.chip) .wrap{flex-wrap:wrap!important}
+${G} #ce #ceOpts .ce-row:has(.cl){max-width:none!important}
+${G} #ce #ceOpts .sw{width:38px!important;height:38px!important;flex:none!important}
+${G} #ce #ceOpts .chip{height:36px!important;box-sizing:border-box!important;padding:0 12px!important;font-size:13px!important}
+${G} #ce #ceOpts .eyepair{margin:0!important;width:440px}
+${G} #ce #ceOpts .eyecol .sw{width:30px!important;height:30px!important;margin:2px!important}
+${G} #ce #ceOpts .eyecol .wrap{flex-wrap:wrap!important}
+${G} #ce #ceOpts .banner{padding:6px 10px!important;font-size:12px!important;border-radius:12px!important}
+${G} #ce #ceOpts .banner .ic{width:26px!important;height:26px!important}
+/* alt çubuk: sticky, ölçeklenmemiş atanın (#game) alt kenarına yapışıyordu → küçük telefonda seçeneklerin üstüne biniyordu */
+${G} #ce .ce-foot{position:relative!important;bottom:auto!important;flex:none!important}
+`;document.head.appendChild(st);
+ // düzenleyici kipi (edit / hire / create) CSS'e bildirilir: "Karakteri düzenle" yazısı yalnız edit kipinde gizlenir
+ try{const _r=renderCE;renderCE=function(){const r=_r.apply(this,arguments);try{$('ce').dataset.m=CE.mode||'edit';$('ceOpts').scrollLeft=0;hxScan()}catch(e){}return r}}catch(e){console.warn('yatay: karakter düzenle',e)}
+}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
