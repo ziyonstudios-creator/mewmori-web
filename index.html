@@ -8098,6 +8098,15 @@ html.land #y2 .y2prof.pf2 .xpbar{height:11px!important}
 #game.hudoff #nav,#game.hudoff .bottom,#game.hudoff #autoBtn,#game.hudoff .y2prof,#game.hudoff .y2rate,#game.hudoff .y2signs,#game.hudoff .y2rp,#game.hudoff .y2open,#game.hudoff #kesBtn,#game.hudoff .y2sun,#game.hudoff #setBtn,#game.hudoff #mailBtn,#game.hudoff #dailyBtn,#game.hudoff .skdaybox,#game.hudoff .y2vip{opacity:0!important;pointer-events:none!important}
 #nav,.bottom,#autoBtn,.y2prof,.y2rate,.y2signs,.y2rp,.y2open,#kesBtn,.y2sun,.skdaybox{transition:opacity .22s}
 #game.hudoff .y2left{top:calc(max(8px,var(--sat)) + 4px)!important}
+/* --- yeni oyuncu: ilk seviyelerde yalnız gerekli düğmeler görünür; diğerleri seviye atladıkça açılır --- */
+#game[data-nb="1"] .y2rp,#game[data-nb="1"] #evBtn,#game[data-nb="1"] #msgBtn,#game[data-nb="1"] #kesBtn,#game[data-nb="1"] .y2vip,#game[data-nb="1"] #mailBtn,#game[data-nb="1"] #worldBtn,
+#game[data-nb="2"] #msgBtn,#game[data-nb="2"] #kesBtn,#game[data-nb="2"] #worldBtn{display:none!important}
+/* --- giriş ekranı: yatayda misafir düğmesi kaydırmadan görünür --- */
+html.land #auth .acard{width:min(100%,560px);gap:8px;padding:12px 14px}
+html.land #auth .alogo{width:min(46%,170px)}
+#auth .aquick{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+#auth .aquick #aGuest{appearance:none;border:3px solid var(--ink);border-radius:999px;background:var(--mint);font-family:var(--font-display);font-weight:800;font-size:17px;line-height:1;padding:10px 16px;box-shadow:0 3px 0 var(--ink);text-decoration:none;color:var(--ink);cursor:pointer;width:100%;margin:0}
+#auth .aquick small{text-align:center;font-size:11.5px;font-weight:800;opacity:.7}
 /* --- çerçeveli pencere görünümü --- */
 html.land #recipes,html.land #menuScr,html.land #evP{left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:6px;bottom:6px;border:3px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 5px 0 var(--ink),0 0 0 100vmax rgba(43,26,16,.5)}
 html.land #recipes .panel-head,html.land #menuScr .panel-head,html.land #evP .panel-head{padding:5px 10px!important;gap:8px}
@@ -8161,6 +8170,11 @@ html.land .mlist .tgl{min-width:104px;padding:8px 10px}
    const set=on=>{$('game').classList.toggle('hudoff',on);b.setAttribute('aria-pressed',String(on));try{localStorage.setItem('mewmori-sade',on?'1':'0')}catch(e){}};
    b.onclick=e=>{e.stopPropagation();try{sfx('tap')}catch(_){}set(!$('game').classList.contains('hudoff'))};
    let on=false;try{on=localStorage.getItem('mewmori-sade')==='1'}catch(e){}if(on)set(true)}}catch(e){console.warn('sade görünüm',e)}
+ // giriş ekranı: "misafir olarak oyna" formun altından en üste alınır (yatay ekranda görünmüyordu)
+ const authFix=()=>{try{const A=$('auth'),card=A&&A.querySelector('.acard'),tabs=card&&card.querySelector('.atabs'),gb=card&&card.querySelector('#aGuest');
+   if(card&&tabs&&gb&&!card.querySelector('.aquick')){const q=document.createElement('div');q.className='aquick';tabs.parentElement.insertBefore(q,tabs);gb.classList.add('btn','green');gb.textContent='Hemen oyna (misafir)';q.appendChild(gb);const s=document.createElement('small');s.textContent='İlerlemen bu cihazda saklanır. Hesap açarsan başka cihazda da devam edersin:';q.appendChild(s)}}catch(e){console.warn('giriş',e)}};authFix();const _af=setInterval(()=>{authFix();if(document.querySelector('#auth .aquick')||(typeof started!=='undefined'&&started))clearInterval(_af)},400);
+ // yeni oyuncu görünümü: seviye 1'de yalnız temel düğmeler, seviye 2-3'te Etkinlik/Pass/Duyurular, seviye 4'te hepsi
+ setInterval(()=>{try{const l=S&&S.lvl||1,g=$('game'),v=EVMODE?'':l<2?'1':l<4?'2':'';if(g.dataset.nb!==v)g.dataset.nb=v}catch(e){}},1200);
  // profil: fotoğraf kalkar, yerine seviye madalyonu gelir (yıldız + seviye sayısı)
  try{const pf=document.querySelector('.y2prof');if(pf){const por=pf.querySelector('.por'),star=pf.querySelector('.star');if(por&&star){por.appendChild(star);pf.classList.add('pf2')}}}catch(e){console.warn('profil',e)}
  // yatay ekranda kamera kafeye biraz daha yakın başlar (kafe planı öne gelsin)
