@@ -8249,7 +8249,7 @@ ${P} .bottom{text-align:center}
     const s=$('setBtn');if(s&&s.dataset.k!=='gear'){s.style.setProperty('--k-ic',KURL('gear'));s.dataset.k='gear'}
     const d=$('y2DayIc'),box=d&&d.parentElement;if(box){const n=/moon/.test(d.src)?'moon':/dusk/.test(d.src)?'dusk':'sun';if(box.dataset.k!==n){box.style.setProperty('--k-ic',KURL(n));box.dataset.k=n}}
   }catch(e){}}
-  kApply();setInterval(kApply,900);
+  kApply();setInterval(kApply,900);window.__K={KI,SVGI,KSRC,KURL};
 }
 
 // ================= AÇILIŞ SİNEMASI + İLK ADIMLAR =================
@@ -8346,6 +8346,72 @@ ${P} .bottom .hint{max-width:100%;white-space:nowrap;overflow:hidden;text-overfl
 `;document.head.appendChild(st);
  const fix=()=>{try{const y=$('y2');if(!y)return;const d=$('dailyBtn');if(d&&d.parentElement!==y)y.appendChild(d);
    const sg=y.querySelector('.y2signs'),rp=$('rpBtn');if(sg&&rp&&rp.parentElement!==sg)sg.insertBefore(rp,sg.firstChild)}catch(e){}};fix();setInterval(fix,1500)}
+
+// ================= TASARIM DİLİ "PATİ TABELA" — 2. aşama: pencereler (kodla çizilir) =================
+// Pencere: krem gövde, kahve çerçeve, içte turuncu şerit; üstte turuncu-krem çizgili tente (dalgalı etek), ortasında kedi kulaklı altın isim tabelası,
+// köşede kırmızı kapatma düğmesi. Sekmeler ve düğmeler hap; kartlar krem tabela. Birleştirme tahtası turuncu tepsi + pati izli krem gözler.
+// Çerçeve, tente, tabela, kart, sekme, düğme ve tahta artık görsel dosyası kullanmaz. (Ürün/malzeme resimleri ve bazı küçük simgeler içerik olarak durur.)
+{const {KURL}=window.__K,W='html.land #game',INK='#4a2a14';
+ const sv=b=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${b}</svg>`)}")`;
+ const PAW=sv(`<g fill="#e9c592" opacity=".55"><ellipse cx="32" cy="41" rx="11" ry="9"/><circle cx="17" cy="29" r="5"/><circle cx="27" cy="20" r="5"/><circle cx="38" cy="20" r="5"/><circle cx="48" cy="29" r="5"/></g>`);
+ const LOCK=sv(`<g stroke="#7a5a3a" stroke-width="4" stroke-linejoin="round" opacity=".7"><path d="M22 30v-8a10 10 0 0 1 20 0v8" fill="none"/><rect x="16" y="29" width="32" height="24" rx="5" fill="#c9a77a"/></g>`);
+ const X=sv(`<path d="M20 20l24 24M44 20L20 44" stroke="#fff8ec" stroke-width="8" stroke-linecap="round"/>`);
+ const AWN='repeating-linear-gradient(90deg,#f58a3c 0 26px,#fff3de 26px 52px)',SCAL='radial-gradient(circle at 13px 0,#f58a3c 0 10px,transparent 10.5px) 0 0/52px 12px repeat-x,radial-gradient(circle at 39px 0,#fff3de 0 10px,transparent 10.5px) 0 0/52px 12px repeat-x';
+ const CARD=`border-image:none!important;border:2.5px solid #5a2f12!important;border-radius:16px!important;background:linear-gradient(#fffdf6,#fbeccf)!important;box-shadow:0 2px 0 #5a2f12!important`;
+ const PILL=(a,b)=>`border-image:none!important;border:2.5px solid ${INK}!important;border-radius:999px!important;background:linear-gradient(${a},${b})!important;box-shadow:0 2px 0 ${INK}!important;box-sizing:border-box!important`;
+ const CLOSE=`background:${X} center/58% no-repeat,linear-gradient(#ff9484,#e2574c)!important;border:3px solid ${INK}!important;border-radius:50%!important;box-shadow:inset 0 0 0 2px #ffc2b8,0 3px 0 ${INK}!important;box-sizing:border-box!important`;
+ const st=document.createElement('style');st.textContent=`
+/* ---- pencere gövdesi ---- */
+${W} .skwin{border-image:none!important;border:3px solid ${INK}!important;border-radius:22px!important;background:radial-gradient(circle at 12px 12px,rgba(233,160,90,.10) 2px,transparent 2.5px) 0 0/24px 24px,linear-gradient(#fffaf0,#fdf0d8)!important;box-shadow:inset 0 0 0 3px #f3a45a,0 5px 0 ${INK},0 12px 24px rgba(40,20,5,.4)!important;padding:60px 14px 10px!important;box-sizing:border-box!important}
+${W} .skwin>.napkin,${W} .skcat{display:none!important}
+${W} .skhead{top:0!important;left:0!important;right:0!important;height:40px!important;border-radius:18px 18px 0 0;background:${AWN};border-bottom:3px solid ${INK};box-sizing:border-box;pointer-events:none}
+${W} .skhead::after{content:'';position:absolute;left:0;right:0;top:100%;height:12px;background:${SCAL};filter:drop-shadow(0 2px 0 ${INK})}
+${W} .skplaque{background:linear-gradient(#ffe08a,#f6b93a)!important;border:3px solid ${INK};border-radius:999px;box-shadow:inset 0 0 0 2.5px #fff3b8,0 3px 0 ${INK};aspect-ratio:auto!important;width:auto!important;min-width:150px;max-width:60%;height:40px!important;top:6px!important;padding:0 24px!important;display:grid!important;place-items:center;box-sizing:border-box}
+${W} .skplaque::before,${W} .skplaque::after{content:'';position:absolute;top:-15px;width:20px;height:15px;background:#ffe08a;border:3px solid ${INK};border-bottom:0;border-radius:3px 14px 0 0;box-sizing:border-box}
+${W} .skplaque::before{left:18px;transform:skewX(-12deg)}${W} .skplaque::after{right:18px;transform:scaleX(-1) skewX(-12deg)}
+${W} .skplaque h2{font-size:19px!important;line-height:1!important;color:${INK}!important;white-space:nowrap;position:static!important;margin:2px 0 0!important}
+${W} .skclose,${W} #market>#mkClose,${W} .screen .panel-head .iconbtn[aria-label="Kapat"]{${CLOSE};width:38px!important;height:38px!important;pointer-events:auto}
+${W} .skclose{right:-9px!important;top:-9px!important}
+${W} .screen .panel-head .iconbtn[aria-label="Kapat"]>*,${W} .skclose>*{display:none!important}
+/* ---- sekmeler, kartlar, düğmeler ---- */
+${W} .sktabs{gap:6px!important}
+${W} .sktab{${PILL('#fffaf0','#f5e2c2')};height:34px!important;padding:0 8px!important;color:${INK}!important}
+${W} .sktab[aria-selected=true]{background:linear-gradient(#ffe08a,#f6b93a)!important}
+${W} .skcard,${W} .skq,${W} .skmail,${W} .skset .row,${W} .skhire,${W} .skc,${W} .pfS,${W} .pfName{${CARD};padding:7px 8px!important;box-sizing:border-box!important}
+${W} .skbtn.cream,${W} .skbadge{${PILL('#fffaf0','#f5e2c2')}}
+${W} .skbtn.green{${PILL('#c9ec8a','#8fcf4f')};color:#2f4a12!important}
+${W} .skbtn.gold,${W} .skwage{${PILL('#ffe08a','#f6b93a')}}
+${W} .skbtn{padding:0 10px!important}
+${W} .skbadge,${W} .skwage{padding:0 7px!important;border-width:2px!important;box-shadow:none!important}
+${W} .sksec span{border-image:none!important;border:2.5px solid ${INK}!important;border-radius:999px!important;background:linear-gradient(#ffe08a,#f6b93a)!important;padding:1px 14px!important}
+${W} .skport .fr{display:none!important}
+${W} .skport{border:2.5px solid #5a2f12;border-radius:13px;box-shadow:inset 0 0 0 2px #f3a45a;overflow:visible;box-sizing:border-box;background:radial-gradient(circle at 50% 35%,#fff4e0,#f3d2a4)}
+${W} .skport .bg{opacity:0!important}
+${W} .skport .crown{z-index:2}
+${W} .skport .cat{transform:none!important;height:88%!important;bottom:4px!important}
+${W} #teamList .skrole{overflow:hidden}${W} #teamList .skrole .skstars.big{transform:scale(.78);transform-origin:0 50%;flex:none}
+/* ---- tam pencere ekranlar (Tarif Defteri, Menü, Etkinlik): aynı tente ---- */
+${W} .screen .panel-head{background:${AWN}!important;border-bottom:3px solid ${INK}!important;position:relative;overflow:visible!important;z-index:2;min-height:44px;box-sizing:border-box}
+${W} .screen .panel-head::after{content:'';position:absolute;left:0;right:0;top:100%;height:12px;background:${SCAL};filter:drop-shadow(0 2px 0 ${INK});pointer-events:none}
+${W} .screen .panel-head h2{flex:none!important;margin:0 auto!important;background:linear-gradient(#ffe08a,#f6b93a);border:3px solid ${INK};border-radius:999px;box-shadow:inset 0 0 0 2.5px #fff3b8,0 3px 0 ${INK};padding:5px 22px 3px!important;color:${INK}!important;text-shadow:none!important;font-size:18px!important;line-height:1.1!important}
+${W} .screen .panel-head>.iconbtn:first-child{visibility:hidden}
+${W} #recipes .tabs,${W} #menuScr .scroll,${W} #evP .scroll{padding-top:14px!important}
+${W} .screen{background:radial-gradient(circle at 12px 12px,rgba(233,160,90,.10) 2px,transparent 2.5px) 0 0/24px 24px,linear-gradient(#fffaf0,#fdf0d8)!important}
+/* ---- Yapı Pazarı şeridi ---- */
+${W} #market .panel-head::after{display:none!important}
+${W} #market .panel-head #mkIc{background:${KURL('shop')} center/contain no-repeat!important}
+${W} #market>#mkClose>*{display:none!important}
+/* ---- Birleştirme ---- */
+${W} #merge.skin{background:radial-gradient(circle at 16px 16px,rgba(255,240,210,.35) 3px,transparent 3.5px) 0 0/32px 32px,linear-gradient(#f7b46a,#eb9440)!important}
+${W} #merge.skin .board{border-image:none!important;border:10px solid #e17d28!important;border-radius:22px!important;background:#c96a1e!important;box-shadow:0 0 0 3px ${INK},inset 0 0 0 3px ${INK},0 6px 0 ${INK},0 12px 18px rgba(40,20,5,.35)!important;padding:5px!important;gap:4px!important;filter:none!important}
+${W} #merge.skin .cell{background:${PAW} center/62% no-repeat,linear-gradient(#fff8ea,#fbe6c4)!important;border-radius:10px!important;box-shadow:inset 0 -3px 0 rgba(180,110,40,.18)}
+${W} #merge.skin .cell.hl{background:${PAW} center/62% no-repeat,linear-gradient(#e9f7c6,#c2e58e)!important;box-shadow:inset 0 0 0 3px #7fbf3f!important}
+${W} #merge.skin .cell.sel{background:${PAW} center/62% no-repeat,linear-gradient(#fff0b0,#ffd766)!important;box-shadow:inset 0 0 0 3px #f29a1e!important}
+${W} #merge.skin .cell.lock{background:${LOCK} center/52% no-repeat,linear-gradient(#e6d2b2,#d4bb94)!important}
+${W} #merge.skin .energy,${W} #merge.skin .mgtarget,${W} #merge.skin .info .box{${CARD};padding:7px 9px!important;box-sizing:border-box!important}
+${W} #merge.skin .mgtarget .btn,${W} #merge.skin .info .box .btn.light{${PILL('#ffe08a','#f6b93a')}}
+${W} #merge.skin .info .box .btn:not(.light){${PILL('#c9ec8a','#8fcf4f')}}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
