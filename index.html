@@ -8463,6 +8463,62 @@ ${M} .info .box .btn{align-self:center!important;margin:2px auto 0!important;min
 ${W} .skfoot{justify-content:center!important}
 ${W} .skfoot p:only-child{text-align:center!important;padding-left:0!important}
 ${W} .mlist .mhead,${W} .skempty,${W} .empty{text-align:center!important}
+/* ======== SİMETRİ KURALI bütün pencerelerde: kart içeriği ortalı, başlık üstte ortada, yan yana kartlar eşit ======== */
+/* Ekip: dikey, ortalı çalışan kartı (portre üstte, ad + ücret, rol + yıldız, nitelik tablosu, düğmeler) */
+${W} #teamList .skcard{flex-direction:column!important;align-items:center!important;text-align:center!important;gap:3px!important;padding:8px 10px!important}
+${W} #teamList .skport{width:50px!important;height:60px!important;align-self:center!important;flex:none!important}
+${W} #teamList .skbody{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:3px!important}
+${W} #teamList .sktop{justify-content:center!important;width:100%;gap:5px!important}
+${W} #teamList .sktop b{flex:none!important}
+${W} #teamList .skwage{margin-left:4px!important}
+${W} #teamList .skrole{justify-content:center!important;width:100%;overflow:visible!important}
+${W} #teamList .skrole .skstars.big{transform:none!important}
+${W} #teamList .skrow{width:min(100%,186px)!important}
+${W} #teamList .skbtns{justify-content:center!important;width:min(100%,200px)!important}
+/* Görevler: ortalı görev kartı (başlık, ilerleme, ödül alt alta) */
+${W} .skq{flex-direction:column!important;align-items:center!important;text-align:center!important;gap:4px!important;padding:8px 12px!important}
+${W} .skq>.uic{display:none!important}
+${W} .skq .qt{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important}
+${W} .skq .qt .qbar{width:min(100%,260px)!important}
+${W} .skq .qrw{justify-content:center!important;margin:0!important}
+${W} .skqhead{justify-content:center!important;gap:10px}
+${W} .skmodal .skscroll:has(>.skq){display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-content:flex-start!important;gap:6px 8px!important}
+${W} .skmodal .skscroll:has(>.skq)>*{flex:0 0 100%!important;box-sizing:border-box}
+${W} .skmodal .skscroll:has(>.skq)>.skq{flex:0 0 calc(50% - 4px)!important}
+/* Tarif Defteri: üç sütun, dikey ortalı tarif kartı */
+${W} #rbList{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+${W} #rbList .rc{flex-direction:column!important;align-items:center!important;text-align:center!important;gap:5px!important;padding:9px 8px!important}
+${W} #rbList .rc .th{width:56px!important;height:56px!important;align-self:center!important}
+${W} #rbList .rc .tx{flex-direction:column!important;align-items:center!important;width:100%!important;gap:5px!important}
+${W} #rbList .rcInfo{align-items:center!important;flex:none!important;width:100%}
+${W} #rbList .rc .meta{justify-content:center!important}
+${W} #rbList .rcRec{order:0!important;flex:none!important;width:100%!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;box-sizing:border-box}
+${W} #rbList .rc .status,${W} #rbList .rcInfo>*{align-self:center!important}
+${W} #rbList .rcRec .combo{justify-content:center!important}
+${W} #rbList .rcAct{width:100%!important;align-items:center!important}
+${W} #rbList .rcAct .rbact{align-items:center!important;width:min(100%,170px)}
+${W} #recipes .tabs{justify-content:center!important}
+/* Menü: dört sütun, dikey ortalı ürün kartı */
+${W} .mlist{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-content:flex-start!important}
+${W} .mlist>*{flex:0 0 100%!important;box-sizing:border-box}
+${W} .mlist>.mi2{flex:0 0 176px!important}
+${W} .mlist>.mi2{flex-direction:column!important;align-items:center!important;text-align:center!important;gap:4px!important;padding:8px 6px!important}
+${W} .mlist>.mi2 .tx{align-items:center!important;flex:none!important;width:100%}
+${W} .mlist>.mi2 .tgl{min-width:0!important;width:min(100%,130px)!important}
+${W} .mlist .mcat{justify-content:center!important}
+/* Profil: ortada portre, iki yanında üçer bilgi kartı; ad üstte, VIP altta ortalı */
+${W} .pf{grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr)!important;grid-auto-rows:auto;gap:6px 10px!important;align-items:stretch!important}
+${W} .pf>div:not(.pfL):not(.pfVip),${W} .pfStats{display:contents!important}
+${W} .pfL{grid-column:2!important;grid-row:2/5!important;justify-content:center!important}
+${W} .pfAv{width:104px!important;height:104px!important}
+${W} .pfName{grid-column:1/-1!important;grid-row:1!important;justify-self:center!important;width:min(100%,340px)!important;justify-content:center!important;text-align:center}
+${W} .pfS:nth-child(-n+3){grid-column:1!important}
+${W} .pfS:nth-child(n+4){grid-column:3!important}
+${W} .pfS:nth-child(1),${W} .pfS:nth-child(4){grid-row:2!important}
+${W} .pfS:nth-child(2),${W} .pfS:nth-child(5){grid-row:3!important}
+${W} .pfS:nth-child(3),${W} .pfS:nth-child(6){grid-row:4!important}
+${W} .pfS{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:8px!important;padding:5px 8px!important;text-align:center}
+${W} .pfVip{grid-column:1/-1!important;grid-row:5!important;justify-self:center!important;width:min(100%,520px)!important;box-sizing:border-box}
 `;document.head.appendChild(st);
  setInterval(()=>{try{const f=$('enFill');if(f&&f.style.width&&f.style.getPropertyValue('--p')!==f.style.width)f.style.setProperty('--p',f.style.width)}catch(e){}},350)}
 
