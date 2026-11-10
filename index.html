@@ -785,7 +785,8 @@ function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,pa
   A(new THREE.BoxGeometry(d.x1-d.x0+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),S.wood,(d.x0+d.x1)/2,(d.boardBot+d.cushBot)/2,(d.zb+d.zf)/2);
   const LH=d.boardBot-d.footY,mx=(d.x0+d.x1)/2,mz=(d.zb+d.zf)/2,leg=(x,z,rt,rb,h,y0,m,tx=0,tz=0)=>{const g=A(new THREE.CylinderGeometry(rt,rb,h,10),m||S.leg,x,y0+h/2,z);g.rotation.set(tx,0,tz);return g};
   const lgs=S.legs||'four';
-  if(lgs==='four'||lgs==='thin'){const r=lgs==='thin'?0.011:d.leg;for(const lx of [d.x0+0.03,d.x1-0.03])for(const lz of [d.zb+0.03,d.zf-0.03])leg(lx,lz,r,r,LH,d.footY);
+  if(lgs==='four'||lgs==='thin'){const r=lgs==='thin'?0.011:d.leg;for(const lx of [d.x0+0.03,d.x1-0.03])for(const lz of [d.zb+0.03,d.zf-0.03]){if(lgs==='thin')leg(lx,lz,r,r,LH,d.footY);else{leg(lx,lz,r*1.25,r*0.72,LH,d.footY);A(new THREE.CylinderGeometry(r*0.98,r*0.98,0.012,10),S.accent||S.wood,lx,d.footY+0.006,lz)}}
+    if(lgs==='four')for(const lx of [d.x0+0.03,d.x1-0.03])A(new THREE.BoxGeometry(0.016,0.02,d.zf-d.zb-0.06),S.leg,lx,d.footY+LH*0.42,mz);
     if(lgs==='thin'){const br=A(new THREE.CylinderGeometry(0.006,0.006,d.x1-d.x0-0.06,6),S.leg,mx,d.footY+LH*0.35,d.zf-0.03);br.rotation.z=Math.PI/2}}
   else if(lgs==='turned'){for(const lx of [d.x0+0.03,d.x1-0.03])for(const lz of [d.zb+0.03,d.zf-0.03]){leg(lx,lz,0.017,0.012,LH,d.footY);for(const t of [0.3,0.7]){const k=A(new THREE.SphereGeometry(0.024,10,8),S.leg,lx,d.footY+LH*t,lz);k.scale.y=0.6}}}
   else if(lgs==='x'){for(const lx of [d.x0+0.02,d.x1-0.02])for(const t of [-1,1]){const g=A(new THREE.BoxGeometry(0.03,LH*1.2,0.04),S.leg,lx,d.footY+LH/2,mz);g.rotation.x=t*0.45}}
@@ -795,9 +796,11 @@ function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,pa
   else if(lgs==='bent'){for(const lx of [d.x0+0.04,d.x1-0.04])for(const lz of [d.zb+0.04,d.zf-0.04]){const sx=lx<mx?-1:1,sz=lz<mz?-1:1;leg(lx,lz,0.012,0.012,LH*1.03,d.footY,null,sz*0.08,-sx*0.08)}
     const ring=A(new THREE.TorusGeometry(1,0.008,6,28),S.leg,mx,d.footY+LH*0.4,mz);ring.scale.set((d.x1-d.x0)/2-0.02,(d.zf-d.zb)/2+0.02,1);ring.rotation.x=Math.PI/2}
   const bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=(d.x0+d.x1)/2,bz=d.backZ-0.03,BK=S.back;
-  const posts=(h=d.backTop)=>{for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.CylinderGeometry(0.02,0.02,h-d.footY,10),S.leg,px,(d.footY+h)/2,bz)};
-  if(BK==='slats'){A(new THREE.BoxGeometry(bw+0.04,0.07,0.05),S.wood,bx,d.backTop-0.035,bz);A(new THREE.BoxGeometry(bw+0.04,0.05,0.05),S.wood,bx,d.boardBot+0.2,bz);
-    for(let i=0;i<4;i++)A(new THREE.BoxGeometry(0.05,bh-0.2,0.035),S.wood,d.x0+0.07+i*(bw-0.14)/3,d.boardBot+0.2+(bh-0.2)/2,bz);posts()}
+  const posts=(h=d.backTop)=>{for(const px of [d.x0-0.01,d.x1+0.01]){A(new THREE.CylinderGeometry(0.017,0.023,h-d.footY,10),S.leg,px,(d.footY+h)/2,bz);const k=A(new THREE.SphereGeometry(0.027,10,8),S.accent||S.leg,px,h+0.008,bz);k.scale.y=0.85}};
+  if(BK==='slats'){const w=bw+0.06,cs=new THREE.Shape();cs.moveTo(-w/2,0);cs.lineTo(w/2,0);cs.lineTo(w/2,0.06);cs.quadraticCurveTo(0,0.14,-w/2,0.06);cs.lineTo(-w/2,0);
+    const cg2=new THREE.ExtrudeGeometry(cs,{depth:0.05,bevelEnabled:false,curveSegments:10});cg2.translate(0,0,-0.025);A(cg2,S.wood,bx,d.backTop-0.1,bz);   // kavisli taç
+    A(new RoundedBoxGeometry(bw+0.04,0.045,0.045,2,0.012),S.wood,bx,d.boardBot+0.2,bz);const sl=bh-0.3,sy=d.boardBot+0.2+sl/2;
+    A(new RoundedBoxGeometry(0.11,sl,0.03,2,0.012),S.wood,bx,sy,bz);for(const k of [-2,-1,1,2])A(new THREE.CylinderGeometry(0.012,0.016,sl,8),S.wood,bx+k*(bw-0.08)/4.6,sy,bz);posts(d.backTop-0.06)}
   else if(BK==='planks'){for(let k=0;k<3;k++)A(new RoundedBoxGeometry(bw+0.06,0.1,0.04,2,0.012),k%2?S.seat:S.wood,bx,d.boardBot+bh*(0.42+k*0.22),bz);posts()}
   else if(BK==='twigs'){const tw=(x0,y0,x1,y1,r)=>{const len=Math.hypot(x1-x0,y1-y0);const g=A(new THREE.CylinderGeometry(r*0.8,r,len,6),S.wood,(x0+x1)/2,(y0+y1)/2,bz);g.rotation.z=Math.atan2(x0-x1,y1-y0)};
     tw(d.x0-0.01,d.footY,d.x0+0.02,d.backTop,0.025);tw(d.x1+0.01,d.footY,d.x1-0.02,d.backTop,0.025);tw(d.x0,d.backTop-0.05,d.x1,d.backTop-0.02,0.022);tw(d.x0+0.02,d.boardBot+0.15,d.x1-0.02,d.backTop-0.08,0.016);tw(d.x1-0.02,d.boardBot+0.15,d.x0+0.04,d.backTop-0.12,0.014);
@@ -813,14 +816,16 @@ function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,pa
   else if(BK==='flower'){posts();const hs=new THREE.Shape();hs.absellipse(0,0,bw/2+0.02,bh*0.45,0,Math.PI*2,false);const g=new THREE.ExtrudeGeometry(hs,{depth:0.05,bevelEnabled:false,curveSegments:24});A(g,S.wood,bx,d.boardBot+bh*0.55,bz-0.025);
     A(new THREE.CircleGeometry(1,28),S.pad,bx,d.boardBot+bh*0.55,bz+0.027).scale.set(bw/2-0.04,bh*0.38,1);
     for(let k=0;k<5;k++){const a=k/5*Math.PI*2;const p=A(new THREE.SphereGeometry(0.03,8,6),M.pink,bx+Math.cos(a)*0.045,d.boardBot+bh*0.62+Math.sin(a)*0.045,bz+0.035);p.scale.z=0.4}A(new THREE.SphereGeometry(0.018,8,6),M.gold,bx,d.boardBot+bh*0.62,bz+0.04)}
-  else{A(new THREE.BoxGeometry(bw+0.04,BK==='arch'?bh-0.1:bh,0.06),S.wood,bx,d.boardBot+(BK==='arch'?bh-0.1:bh)/2,bz);
+  else{if(BK==='pad'){const w=bw+0.04,y0=d.boardBot+0.17,ph=d.backTop-y0,r=0.09,r2=0.03,ps=new THREE.Shape();ps.moveTo(-w/2+r2,0);ps.lineTo(w/2-r2,0);ps.quadraticCurveTo(w/2,0,w/2,r2);ps.lineTo(w/2,ph-r);ps.quadraticCurveTo(w/2,ph,w/2-r,ph);ps.lineTo(-w/2+r,ph);ps.quadraticCurveTo(-w/2,ph,-w/2,ph-r);ps.lineTo(-w/2,r2);ps.quadraticCurveTo(-w/2,0,-w/2+r2,0);
+      const pg=new THREE.ExtrudeGeometry(ps,{depth:0.055,bevelEnabled:false,curveSegments:8});pg.translate(0,0,-0.0275);A(pg,S.wood,bx,y0,bz)}
+    else A(new THREE.BoxGeometry(bw+0.04,BK==='arch'?bh-0.1:bh,0.06),S.wood,bx,d.boardBot+(BK==='arch'?bh-0.1:bh)/2,bz);
     if(BK==='arch'){const hs=new THREE.Shape();hs.absellipse(0,0,bw/2+0.02,0.1,0,Math.PI,false);const ag=new THREE.ExtrudeGeometry(hs,{depth:0.06,bevelEnabled:false,curveSegments:20});ag.translate(0,0,-0.03);A(ag,S.wood,bx,d.backTop-0.1,bz)}
-    A(new THREE.BoxGeometry(bw-0.06,bh*0.62,0.02),S.pad||cush,bx,d.boardBot+bh*0.55,d.backZ-0.011);
+    A(new RoundedBoxGeometry(bw-0.07,bh*(BK==='pad'?0.5:0.62),0.034,3,0.016),S.pad||cush,bx,d.boardBot+bh*(BK==='pad'?0.6:0.55),d.backZ-0.018);
     if(BK==='tufted')for(let r=0;r<2;r++)for(let c=0;c<3;c++)A(new THREE.SphereGeometry(0.014,8,6),S.accent,d.x0+0.12+c*(bw-0.24)/2,d.boardBot+bh*0.42+r*bh*0.24,d.backZ-0.016);
     if(S.accent)A(new THREE.BoxGeometry(bw+0.05,0.025,0.055),S.accent,bx,d.boardBot+bh*(BK==='arch'?0.88:0.97)-0.02,bz);
-    posts(d.backTop-(BK==='arch'?0.1:0))}
+    posts(d.backTop-(BK==='arch'||BK==='pad'?0.1:0))}
   // kol dayanağı (oturma tarafının tersinde)
-  const ax=d.x0-0.045;A(new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),S.accent||S.wood,ax,d.armY-0.015,(d.zb+d.zf)/2);A(new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,8),S.leg,ax,(d.footY+d.armY-0.03)/2,d.zf);
+  const ax=d.x0-0.045;A(new RoundedBoxGeometry(0.056,0.032,d.zf-d.zb+0.05,2,0.014),S.accent||S.wood,ax,d.armY-0.015,(d.zb+d.zf)/2);A(new THREE.CylinderGeometry(0.013,0.019,d.armY-0.03-d.footY,8),S.leg,ax,(d.footY+d.armY-0.03)/2,d.zf);
   return L}
 // ---- masa tipleri (hepsi doğrulanmış masa dairesinin içinde) ----
 // masa tarzları: tabla biçimi (top) + ayak tipi (base) + üstündeki süs (deco) birbirinden bağımsız
@@ -852,20 +857,22 @@ function tableMeshes(parent,f,typeId,vase=true){const d=SEAT_D,L=frameGroup(f,pa
   const cx=d.tCx,cz=d.tCz,R=d.tR*(T.r||1),tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
   let surf=top;   // süslerin oturduğu yükseklik
   // ---- tabla ----
-  if(T.top==='round')A(new THREE.CylinderGeometry(R,R,tk,32),T.tm,cx,yT,cz);
+  if(T.top==='round'){A(new THREE.CylinderGeometry(R,R,tk*0.55,36),T.tm,cx,top-tk*0.275,cz);A(new THREE.CylinderGeometry(R-0.012,R-0.035,tk*0.45,36),T.tm,cx,top-tk*0.775,cz);
+    if(!T.cloth&&!T.clothTex&&!T.rim){const ir=A(new THREE.TorusGeometry(R-0.045,0.004,4,40),T.lm,cx,top+0.0005,cz);ir.rotation.x=Math.PI/2;ir.castShadow=false}}
   else if(T.top==='square')A(new RoundedBoxGeometry(R*1.42,tk,R*1.42,2,0.05),T.tm,cx,yT,cz);
   else if(T.top==='oct'){const o=A(new THREE.CylinderGeometry(R*1.04,R*1.04,tk,8),T.tm,cx,yT,cz);o.rotation.y=Math.PI/8}
   else if(T.top==='planks'){for(let k=-2;k<=2;k++){const p=A(new RoundedBoxGeometry(R*0.37,tk,R*1.9,2,0.015),k%2?T.tm:toon(0xb87a40),cx+k*R*0.385,yT,cz);p.rotation.y=(k*0.013)}}
   else if(T.top==='slice'){const g=new THREE.CylinderGeometry(R*1.02,R*1.05,tk*1.6,14);const P=g.attributes.position;for(let i=0;i<P.count;i++){const x=P.getX(i),z=P.getZ(i),a=Math.atan2(z,x),w=1+0.05*Math.sin(a*3)+0.03*Math.sin(a*7);P.setX(i,x*w);P.setZ(i,z*w)}g.computeVertexNormals();
     A(g,toon(0x6e4a2c),cx,yT,cz);const r=A(new THREE.CylinderGeometry(R*0.95,R*0.97,0.004,28),T.tm,cx,top+0.012,cz);for(let k=1;k<4;k++){const ring=A(new THREE.TorusGeometry(R*k*0.22,0.004,4,36),toon(0xb07a45),cx,top+0.015,cz);ring.rotation.x=Math.PI/2}surf=top+0.014}
   else if(T.top==='glass'){const g=A(new THREE.CylinderGeometry(R,R,0.014,40),GLASS_TOP,cx,top-0.007,cz);g.castShadow=false;const rr=A(new THREE.TorusGeometry(R,0.012,6,48),T.lm,cx,top-0.007,cz);rr.rotation.x=Math.PI/2}
-  if(T.cloth)A(new THREE.CylinderGeometry(R+0.012,R+0.006,0.02,32),T.cloth,cx,top-tk-0.004,cz);
+  if(T.cloth){A(new THREE.CylinderGeometry(R+0.008,R+0.008,0.006,40),T.cloth,cx,top+0.003,cz);const sk=new THREE.CylinderGeometry(R+0.01,R+0.032,0.066,48,1,true),P=sk.attributes.position;
+    for(let i=0;i<P.count;i++)if(P.getY(i)<0){const a=Math.atan2(P.getZ(i),P.getX(i));P.setY(i,P.getY(i)-0.008*Math.abs(Math.sin(a*8)))}sk.computeVertexNormals();A(sk,T.cloth,cx,top-0.033,cz);surf=top+0.006}
   if(T.clothTex){const cm=clothMat(T.clothTex);A(new THREE.CylinderGeometry(R*1.04+0.004,R*1.04+0.004,0.006,40),cm,cx,top+0.003,cz);A(new THREE.CylinderGeometry(R*1.04+0.014,R*1.04+0.035,0.08,40,1,true),cm,cx,top-0.035,cz);surf=top+0.006}
   if(T.runner){A(new THREE.BoxGeometry(R*0.7,0.005,R*1.96),clothMat(T.runner),cx,top+0.003,cz);surf=top+0.005}
   if(T.rim){const r=A(new THREE.TorusGeometry((T.top==='oct'?R*0.98:R)-0.012,0.01,6,T.top==='oct'?8:40),T.rim,cx,yT,cz);r.rotation.x=Math.PI/2;if(T.top==='oct')r.rotation.z=Math.PI/8}
   // ---- ayaklar ----
   const leg=(x,z,rt,rb,h,y0,m,tx=0,tz=0)=>{const g=A(new THREE.CylinderGeometry(rt,rb,h,10),m||T.lm,x,y0+h/2,z);g.rotation.set(tx,0,tz);return g};
-  if(T.base==='pedestal'){leg(cx,cz,d.pedR,d.pedR,H,fy);A(new THREE.CylinderGeometry(d.baseR,d.baseR,0.03,20),T.lm,cx,fy+0.015,cz)}
+  if(T.base==='pedestal'){const p=d.pedR,b=d.baseR;A(new THREE.LatheGeometry([[0,0],[b,0],[b,0.012],[b*0.78,0.03],[p*0.9,0.05],[p*0.62,0.11],[p,0.17],[p*0.6,0.22],[p*0.5,H*0.62],[p*0.95,H*0.86],[p*0.7,H*0.93],[p,H],[0,H]].map(q=>new THREE.Vector2(q[0],q[1])),20),T.lm,cx,fy,cz)}
   else if(T.base==='tripod'){for(let k=0;k<3;k++){const an=k/3*Math.PI*2+0.5,sx=Math.cos(an),sz=Math.sin(an);leg(cx+sx*R*0.42,cz+sz*R*0.42,0.011,0.015,H*1.03,fy,null,sz*0.2,-sx*0.2)}
     const ring=A(new THREE.TorusGeometry(R*0.38,0.008,6,24),T.lm,cx,fy+H*0.3,cz);ring.rotation.x=Math.PI/2;leg(cx,cz,0.02,0.02,H*0.25,fy+H*0.75)}
   else if(T.base==='four'){const q=(T.top==='square'?R*0.58:R*0.62),rr=T.thin?0.009:0.022;for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]])leg(cx+a*q,cz+b*q,rr,rr*(T.thin?1:0.8),H,fy);
@@ -888,7 +895,10 @@ function tableMeshes(parent,f,typeId,vase=true){const d=SEAT_D,L=frameGroup(f,pa
     else if(D==='herb'){A(new THREE.CylinderGeometry(0.04,0.03,0.06,10),M.terracotta,cx,y+0.03,cz);for(let k=0;k<5;k++){const b=A(new THREE.SphereGeometry(0.03,8,6),M.green,cx+Math.cos(k*1.3)*0.02,y+0.08+(k%2)*0.02,cz+Math.sin(k*1.3)*0.02);b.castShadow=false}}
     else if(D==='mushroom'){for(const [dx,dz,s] of [[0,0,1],[0.05,0.03,0.7]]){A(new THREE.CylinderGeometry(0.012*s,0.016*s,0.05*s,8),toon(0xf6efe2),cx+dx,y+0.025*s,cz+dz);const c=A(new THREE.SphereGeometry(0.035*s,12,8,0,Math.PI*2,0,Math.PI/2),M.red,cx+dx,y+0.05*s,cz+dz);for(let k=0;k<3;k++)A(new THREE.SphereGeometry(0.006*s,6,4),toon(0xffffff),cx+dx+Math.cos(k*2)*0.018*s,y+0.07*s,cz+dz+Math.sin(k*2)*0.018*s)}}
     else if(D==='orchid'){A(new THREE.CylinderGeometry(0.03,0.03,0.07,12),toon(0xffffff),cx,y+0.035,cz);const st=A(new THREE.CylinderGeometry(0.003,0.003,0.16,4),M.green,cx,y+0.15,cz);st.rotation.z=0.15;for(let k=0;k<4;k++){const p=A(new THREE.SphereGeometry(0.018,8,6),toon(0xc87bd6),cx-0.01-k*0.012,y+0.2-k*0.022,cz+((k%2)?0.01:-0.01));p.scale.y=0.6;p.castShadow=false}}
-    else{A(new THREE.CylinderGeometry(0.035,0.03,0.09,10),M.cream,cx,y+0.045,cz);const fl=A(new THREE.SphereGeometry(0.045,10,8),T.fl||M.pink,cx,y+0.115,cz);fl.castShadow=false}}
+    else{A(new THREE.LatheGeometry([[0,0],[0.022,0],[0.036,0.03],[0.03,0.055],[0.015,0.072],[0.022,0.088],[0.017,0.088]].map(q=>new THREE.Vector2(q[0],q[1])),14),M.cream,cx,y,cz);
+      for(let k=0;k<3;k++){const a=k*2.1+0.4,fx=cx+Math.cos(a)*0.026,fz=cz+Math.sin(a)*0.026,fh=y+0.125+(k%2)*0.022;A(new THREE.CylinderGeometry(0.003,0.003,fh-y-0.07,4),M.green,(cx+fx)/2,(y+0.08+fh)/2,(cz+fz)/2);
+        const b=A(new THREE.SphereGeometry(0.024,9,7),T.fl||M.pink,fx,fh,fz);b.scale.y=0.8;b.castShadow=false;A(new THREE.SphereGeometry(0.009,6,5),M.gold,fx,fh+0.016,fz).castShadow=false}
+      const lf=A(new THREE.SphereGeometry(0.022,8,6),M.leaf,cx-0.03,y+0.098,cz+0.01);lf.scale.set(1.3,0.35,0.7)}}
   return L}
 function seatData(f){const d=SEAT_D;return {frame:f,O:f.w(0,0),A:f.w(APPROACH.x,APPROACH.z),serve:f.w(SERVE.x,SERVE.z),serveYaw:f.yaw-Math.PI/2,rootY:-d.footY*YS,spot:f.w(d.tCx,d.tCz-0.17),occupant:null}}
 
@@ -7917,7 +7927,8 @@ html.xmode .y2rp{visibility:hidden!important}
       for(const s of [-1,1]){cyl(0.13,0.1,0.22,M.terracotta,s*0.82,0.11,0.3,10);const b=sph(0.15,M.leaf,s*0.82,0.33,0.3);b.scale.y=0.9;sph(0.05,GM.pink[1],s*0.82+0.07,0.44,0.34)}
       box(0.05,0.05,0.2,M.dark,0.86,2.25,0.2);cyl(0.07,0.09,0.2,M.dark,0.86,2.1,0.3,6);const lt=sph(0.06,M.warmLight,0.86,2.08,0.3);lt.castShadow=false;
       let sd=5;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;
-      for(let i=0;i<20;i++){const t=i/19,b=sph(0.11+rnd()*0.08,i%4===3?M.leaf:GM.pink[i%3],-1.02+t*0.9+rnd()*0.12,2.95-(1-t)*(1-t)*1.5+rnd()*0.12,0.15+rnd()*0.06);b.scale.z=0.6}
+      const lo=(r,m,x,y,z)=>{const q=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),m);q.position.set(x,y,z);q.castShadow=true;PARENT.add(q);return q};
+      for(let i=0;i<20;i++){const t=i/19,b=lo(0.11+rnd()*0.08,i%4===3?M.leaf:GM.pink[i%3],-1.02+t*0.9+rnd()*0.12,2.95-(1-t)*(1-t)*1.5+rnd()*0.12,0.15+rnd()*0.06);b.scale.z=0.6}
     }finally{PARENT=P0}
     g.userData.leaves=leaves;g.userData.gateA=0;return g};
 
