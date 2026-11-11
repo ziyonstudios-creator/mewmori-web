@@ -1830,7 +1830,10 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
     chars:null,created:false,setupOffered:false,gems:5,clothes:{},guideSeen:false,tut:'create',auto:false,
     staff:{waiter:1,barista:1,cashier:1},seen:{},br:{},ev:null,evs:{},evGot:{},evClaim:{},layout:null,avatar:null,exp:null,garden:null,evl:null,evx:0,evShared:false,tr:null,navMin:false,
-    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},lastSeen:Date.now()}}
+    objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},
+    // V150: bu alanlar kayda yazılıyor ama burada olmadıkları için geri OKUNMUYORDU (loadState yalnız bu listedeki anahtarları alır) →
+    // her açılışta sıfırlanıyorlardı: Royal Pass ilerlemesi, günlük görevler, posta ödülleri, günün adayları, ödenmemiş maaş, kurulum adımı, tanıtım filmi
+    rp:null,daily:null,mail:null,cand:null,unpaid:0,build:null,cine:0,lastSeen:Date.now()}}
 let S=defaultState();
 // kayıt bozulursa (yarım yazılmış/elle değişmiş) otomatik yedekten açılır
 const AUTO_BAK=EVMODE?'mewmori-etkinlik-yedek':'posa-yosun-kafe-oto-yedek';let autoBakT=0;
@@ -13089,8 +13092,14 @@ for(const [k,N] of PK_RP){
 const PK_CLOTHES={it:IT_CLOTHES,tr:TR_CLOTHES,jp:JP_CLOTHES,fr:FR_CLOTHES,rp:RP_CLOTHES},PK_STAFF={it:IT_STAFF_SETS,tr:TR_STAFF_SETS,jp:JP_STAFF_SETS,fr:FR_STAFF_SETS,rp:RP_STAFF_SETS};
 const PK_CUST={it:IT_CUST_LOOKS,tr:TR_CUST_LOOKS,jp:JP_CUST_LOOKS,fr:FR_CUST_LOOKS};
 const PK_CLO_ALL=[];
-for(const pk in PK_CLOTHES){const seen={};
-  for(const c of PK_CLOTHES[pk]){c.pk=pk;if(pk==='rp')c.rp=true;else{c.ev=pk;const i=seen[c.slot]=(seen[c.slot]||0)+1;c.evLvl=Math.min(10,i*2-1)}PK_CLO_ALL.push(c)}
+// Paket dosyaları birkaç parçayı XX_CLOTHES dizisinin DIŞINDA doğrudan ekler (TR balıkçı beresi; FR bachi şapkası, lavanta tacı, fotoğraf
+// makinesi): bunlar da kimliklerindeki ülke kodundan tanınıp aynı kilide alınır (yoksa etkinlik açılmadan herkesin dolabında görünür).
+const PK_CLO_RX=/^[a-z]+_(it|tr|jp|fr|rp)_/;
+for(const pk in PK_CLOTHES){const seen={},L=PK_CLOTHES[pk].slice();for(const c of CLOTHES){const m=PK_CLO_RX.exec(c.id);if(m&&m[1]===pk&&!c.set&&!L.includes(c))L.push(c)}
+  L.forEach((c,idx)=>{c.pk=pk;if(pk==='rp')c.rp=true;else{c.ev=pk;const i=seen[c.slot]=(seen[c.slot]||0)+1;let lv=Math.min(10,i*2-1);
+      // dizi dışı parça bir hazır takımın parçasıysa (FR bachi → Breton, lavanta tacı → Provence) takımın diğer parçalarıyla aynı aşamada açılır
+      if(idx>=PK_CLOTHES[pk].length){const st=(PK_STAFF[pk]||[]).find(s=>Object.values(s.wear).includes(c.id));let m=0;if(st)for(const k in st.wear){const p=CLO[st.wear[k]];if(p&&p!==c&&p.evLvl)m=Math.max(m,p.evLvl)}if(m)lv=m}
+      c.evLvl=lv}PK_CLO_ALL.push(c)});
   // hazır çalışan takımları → dolabın "Takımlar" sekmesi (parçaların toplamından %15 indirimli)
   for(const s of PK_STAFF[pk]||[]){const id='set_'+pk+'_'+s.key;if(CLO[id])continue;let C=0,G=0,lv=1;for(const k in s.wear){const p=CLO[s.wear[k]];if(!p||p.free)continue;C+=p.price||0;G+=p.gems||0;lv=Math.max(lv,p.evLvl||1)}
     const c={id,slot:'outfit',name:s.name+' takımı',roles:['waiter','barista','cashier'],set:{...s.wear},pk};if(G)c.gems=Math.max(1,Math.round((G+C/30)*0.85));else c.price=Math.max(5,Math.round(C*0.85/5)*5);
@@ -13100,6 +13109,13 @@ function pkClothSync(){for(const c of PK_CLO_ALL){const i=CLOTHES.indexOf(c),on=
 const evCloths=id=>PK_CLO_ALL.filter(c=>c.ev===id);
 // etkinlik kafesinde o ülkenin müşterileri de gelir (paketin müşteri görünümleri); dokuları init() hazırlar
 if(EVMODE&&PK_CUST[EVMODE])for(const L of PK_CUST[EVMODE])if(!LOOKS.some(x=>x.name===L.name))LOOKS.push(L);
+
+// Paket şapka ve boyunluklarının küçük resmi: parçanın kendi 3B modeli. (Oyunun hazır çizimleri yalnız eski aksesuar türlerini tanır;
+// yeni türler düz renkli daire çıkıyordu → dolapta, markette ve Pass ödüllerinde ayırt edilemiyordu.)
+const PK_ACC_SVG={bow:1,scarf:1,paper:1,chef:1,cap:1,beret:1,beanie:1,bowler:1,flowers:1};
+function pkAccThumb(c){return thumb('a:'+c.id,()=>{const g=new THREE.Group(),n=new THREE.Group(),h=new THREE.Group();ACC_BUILD[c.acc](n,h,c);g.add(n,h);return g},{dir:[0.4,0.32,1],pad:1.0})}
+{const _ci=clothIcon;clothIcon=function(id){const c=CLO[id];if(c&&c.pk&&c.acc&&!PK_ACC_SVG[c.acc]&&ACC_BUILD[c.acc]&&(c.slot==='hat'||c.slot==='neck')){const u=pkAccThumb(c);if(u)return `<img class="pkci" src="${u}" alt="" draggable="false">`}return _ci.apply(this,arguments)}}
+{const st=document.createElement('style');st.textContent=`img.pkci{display:block;width:100%;height:100%;object-fit:contain}`;document.head.appendChild(st)}
 
 // ---------- 4) TEZGÂH + KASA TEMALARI ----------
 // S.kTheme = seçili tema kaydının kimliği ('k_it_bar' …; yoksa oyunun klasik tezgâhı). Kancalar: p2 KIT_EXT.parts (buildKitchenParts),
@@ -13136,7 +13152,9 @@ function kThemeGroup(c){const g=new THREE.Group(),P0=PARENT,G0=GRP_PARENT,off=KI
 {const _ft=furnThumb;furnThumb=function(id){const c=CAT[id];if(c&&c.kind==='ktheme')return thumb('f:'+id,()=>kThemeGroup(c),{dir:[0.55,0.55,1],pad:1.02});if(c&&c.kind==='ostyle')return thumb('f:'+id,()=>oStyleGroup(c),{dir:[-1,0.3,0.55],pad:1.0});return _ft.apply(this,arguments)}}
 // market: ayrıntı + satın alma + "Kullanımda" etiketi
 const PK_SEL={ktheme:{cur:()=>S.kTheme||'k_default',def:'k_default',set:id=>setKTheme(id)},ostyle:{cur:()=>S.oStyle||'o_default',def:'o_default',set:id=>setOStyle(id)}};
-{const _rd=renderDetail;renderDetail=function(){const c=CAT[UI.sel],K=c&&PK_SEL[c.kind];if(!K||UI.tab==='clothes'||UI.tab==='upg'||UI.tab==='expand')return _rd.apply(this,arguments);
+{const _rd=renderDetail;renderDetail=function(){const c=CAT[UI.sel],K=c&&PK_SEL[c.kind];if(!K||UI.tab==='clothes'||UI.tab==='upg'||UI.tab==='expand'){const r=_rd.apply(this,arguments);
+      // ücretsiz eşya (Royal Pass ödülü): "0 · Satın al" yerine anlaşılır düğme
+      try{const a=$('dAct');if(a&&c&&c.price===0&&UI.tab!=='clothes'&&/Satın al/.test(a.textContent)){const put=c.kind==='table'||c.kind==='decor'||c.kind==='walldecor';a.innerHTML=put?`${ic('move')}Ücretsiz yerleştir`:`${ic('check')}Ücretsiz al`;a.classList.add('green')}}catch(e){}return r}
     const d=$('mkDetail');d.hidden=false;const lock=S.lvl<c.lvl,owned=!!(S.owned[c.id]||c.id===K.def),cur=K.cur()===c.id,afford=S.coins>=c.price;let btn='',note=c.desc||'';
     if(lock)btn=`<button class="btn" type="button" disabled>${ic('lock')}Seviye ${c.lvl} gerekli</button>`;
     else if(cur)note+=' Şu an kullanılıyor.';
@@ -13187,9 +13205,59 @@ function oStyleGroup(c){const g=new THREE.Group(),W=DOOR.w/2-0.005;
     const a=new THREE.Mesh(new THREE.TorusGeometry(DOOR.w/2+0.06,0.06,8,28,Math.PI),M.steel);a.rotation.y=Math.PI/2;a.position.set(0.02,DOOR.h,0);g.add(a)}
   return g}
 
+// ---------- 6) ROYAL PASS ÖDÜLLERİ ----------
+// Royal Pass setleri (PK_RP: Kraliyet, Kristal, Galaksi) sezonlara sırayla dağıtılır: 1. sezon (Kasım 2026) Kraliyet, sonraki ay Kristal,
+// sonraki Galaksi, sonra baştan (kaçıran oyuncu üç ay sonra yeniden yakalar). Setin 11 parçası ROYAL yolun tek sayılı kademelerine
+// yerleşir (o kademelerin altın ödülünün yerine): küçük parçalar başta, kapı ve tezgâh sonda. Ücretsiz yol değişmedi.
+//  • Parça oyuncuda zaten varsa (önceki turdan) o kademe eski altın ödülünü verir.
+//  • Ödül alınınca S.rpGot[id]=true → markette görünür: masa ve halı ücretsiz, sınırsız yerleştirilir; sandalye, duvar, zemin,
+//    tezgâh ve kapı "Sende" olur. Kıyafet doğrudan dolaba girer (S.clothes); üç parça tamamlanınca hazır takım da açılır.
+//  • R.cr[i] alınan Royal kademesini tutar: 'it' = set parçası olarak alındı (kutu parçayı göstermeye devam eder), 1 = altın/elmas.
+const PK_RP_T0=2026*12+10;
+const PK_RP_TIERS={1:'neck',3:'c',7:'t',9:'w',11:'hat',13:'f',17:'t4',19:'r',21:'apron',23:'o',27:'k'};
+const PK_RP_PRE={c:'c_rp_',t:'t_rp_',t4:'t_four_rp_',w:'w_rp_',f:'f_rp_',r:'r_rp_',o:'o_rp_',k:'k_rp_'};
+const PK_RP_LBL={neck:'Boyunluk',c:'Koltuk',t:'Masa',w:'Duvar',hat:'Başlık',f:'Zemin',t4:'4’lü masa',r:'Halı',apron:'Önlük',o:'Kapı',k:'Tezgâh'};
+const PK_RP_LBL2={hat_rp_crown:'Taç',hat_rp_tiara:'Taç',nk_rp_ermine:'Yaka',nk_rp_gems:'Gerdanlık',nk_rp_stars:'Yaka'};   // parçaya özel kısa ad (yoksa türün adı)
+const PK_RP_WHERE={table:'Market › Masalar',chair:'Market › Sandalyeler',wall:'Market › Duvar',floor:'Market › Zemin',decor:'Market › Dekor',ktheme:'Market › Tezgâh',ostyle:'Market › Duvar'};
+function rpSetOf(season){const n=PK_RP.length,i=(((season-PK_RP_T0)%n)+n)%n;return {k:PK_RP[i][0],name:PK_RP[i][1]}}
+function rpSetItem(i,season){const t=PK_RP_TIERS[i];if(!t)return null;const s=rpSetOf(season);if(PK_RP_PRE[t])return PK_RP_PRE[t]+s.k;const st=CLO['set_rp_'+s.k];return st&&st.set&&st.set[t]||null}
+const rpItemName=id=>(CAT[id]||CLO[id]||{}).name||'';
+function rpItemArt(id,cls){try{return CAT[id]?`<img class="${cls||'uic'}" src="${itemThumb(id)}" alt="" draggable="false">`:`<span class="${cls||'ic'}">${clothIcon(id)}</span>`}catch(e){return uiIc('i_gift')}}
+RP_ICON.item='i_gift';
+{const _rr=rpReward;rpReward=function(i,royal){if(royal){const R=rpS(),id=rpSetItem(i,R.season);if(id&&(CAT[id]||CLO[id])){const took=R.cr[i];if(took==='it'||(!took&&!(S.rpGot&&S.rpGot[id])))return {k:'item',id,n:1}}}return _rr.apply(this,arguments)}}
+let PK_RPQ=null;   // "Tümünü topla" sırasında tek tek bildirim yerine toplu bildirim
+// Bildirimler pencerenin alt satırında (.rpHow) gösterilir: oyunun toast'ları pencerelerin ARKASINDA kalır (z-index 12 < 15).
+let PK_RPMSG=null;
+function rpMsg(html,ms=3600){const w=UI.rpW;if(!w||w.m.hidden)return false;PK_RPMSG={html,until:Date.now()+ms};rpMsgShow();setTimeout(rpMsgShow,ms+80);return true}
+function rpMsgShow(){const w=UI.rpW;if(!w||w.m.hidden)return;const p=w.body.querySelector('.rpHow');if(!p)return;if(p.dataset.how==null)p.dataset.how=p.innerHTML;
+  const on=!!(PK_RPMSG&&Date.now()<PK_RPMSG.until);if(!on)PK_RPMSG=null;p.classList.toggle('rpMsg',on);p.innerHTML=on?PK_RPMSG.html:p.dataset.how}
+function pkRpGrant(id){if(!S.rpGot)S.rpGot={};S.rpGot[id]=true;const c=CAT[id];let where='Market';
+  if(c){c.lvl=1;if(c.kind==='wall'||c.kind==='floor'||c.kind==='chair'||PK_SEL[c.kind])S.owned[id]=true;where=PK_RP_WHERE[c.kind]||where}
+  else if(CLO[id]){S.clothes[id]=true;where='Kıyafet Dolabı';
+    for(const s of PK_CLO_ALL)if(s.rp&&s.set&&!S.rpGot[s.id]&&Object.values(s.set).every(k=>ownsCloth(k))){S.rpGot[s.id]=true;S.clothes[s.id]=true}
+    pkClothSync()}
+  else return;
+  if(PK_RPQ)PK_RPQ.push(id);else if(!rpMsg(`${rpItemArt(id,'rpMi')}<span><b>${rpItemName(id)} senin!</b> Yeri: ${where}</span>`))toast(`<b>${rpItemName(id)} senin!</b><br>Yeri: ${where}`,rpItemArt(id),3000)}
+{const _rg=rpGive;rpGive=function(r){if(r&&r.k==='item')return pkRpGrant(r.id);return _rg.apply(this,arguments)}}
+rpClaim=function(i,royal){const R=rpS(),m=royal?R.cr:R.cf;if(m[i]||rpTier()<i||(royal&&!R.royal))return false;const r=rpReward(i,royal);m[i]=r.k==='item'?'it':1;rpGive(r);return true};
+{const _ca=rpClaimAll;rpClaimAll=function(){PK_RPQ=[];try{return _ca.apply(this,arguments)}finally{const L=PK_RPQ;PK_RPQ=null;
+    if(L.length){markDirty();saveNow();const set=rpSetOf(rpS().season);rpMsg(`${rpItemArt(L[L.length-1],'rpMi')}<span><b>${set.name} setinden ${L.length} parça senin!</b> Eşyalar Market’te, kıyafetler Kıyafet Dolabı’nda</span>`,5200)}}}}
+// güncellemeden önce altın olarak alınmış set kademeleri: parça oyuncuda yoksa kademe yeniden alınabilir olur (parçayı kaçırmasın)
+function pkRpMigrate(){const R=S.rp;if(!R||!R.cr||R.season!==rpSeason())return;for(const i in PK_RP_TIERS){const id=rpSetItem(+i,R.season);if(id&&R.cr[i]&&R.cr[i]!=='it'&&!(S.rpGot&&S.rpGot[id]))delete R.cr[i]}}
+// Pass penceresi: set kademelerinde parçanın küçük resmi + kısa adı; dokununca parçanın adı ve durumu; sezon rozetinde setin adı
+{const _rp=renderPass;renderPass=function(){_rp.apply(this,arguments);try{const w=UI.rpW;if(!w||w.m.hidden)return;const R=rpS(),t=rpTier(),set=rpSetOf(R.season);
+    w.body.querySelectorAll('.rpBox.roy').forEach(b=>{const i=+b.dataset.c,r=rpReward(i,true);if(r.k!=='item')return;const nm=rpItemName(r.id);b.classList.add('rpi');b.title=nm;
+      const im=b.querySelector('img');if(im)im.outerHTML=rpItemArt(r.id,'rpIt');const lb=b.querySelector('b');if(lb)lb.textContent=PK_RP_LBL2[r.id]||PK_RP_LBL[PK_RP_TIERS[i]]||'';
+      if(!b.classList.contains('can'))b.onclick=()=>{sfx('tap');const got=!!R.cr[i];rpMsg(`${rpItemArt(r.id,'rpMi')}<span><b>${nm}</b> · ${got?'sende':!R.royal?`Royal ödülü, kademe ${i}`:`kademe ${i}’de senin olur`}</span>`,3000)}});
+    const sp=w.body.querySelector('.rpSea span');if(sp&&!sp.querySelector('i'))sp.innerHTML=`<i>${set.name} seti</i> · ${sp.textContent}`;rpMsgShow()}catch(e){console.warn('pass ödülleri',e)}}}
+{const st=document.createElement('style');st.textContent=`.rpBox.rpi{cursor:pointer;gap:1px;padding:2px}.rpBox .rpIt{width:44px;height:44px;object-fit:contain;display:grid;place-items:center;flex:none}.rpBox span.rpIt svg{width:36px;height:36px}
+.rpBox.rpi b{font-size:10.5px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.rpBox.rpi.lock .rpIt{filter:none;opacity:1}.rpSea span i{font-style:normal;color:#fff3de}.rpBox span.rpIt img{width:100%;height:100%}
+.rpHow{min-height:24px;display:flex;align-items:center;justify-content:center;gap:6px}.rpHow.rpMsg{color:#3a2350;font-size:12px;font-weight:800}.rpHow.rpMsg b{font-weight:900}
+.rpHow .rpMi{width:24px;height:24px;flex:none;object-fit:contain;display:block}.rpHow span.rpMi svg,.rpHow span.rpMi img{width:100%;height:100%}`;document.head.appendChild(st)}
+
 // ---------- kayıt: getirilen / ödül verilen eşyalar markette açık ----------
 {const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{if(!S.rpGot)S.rpGot={};for(const id in S.rpGot)if(S.rpGot[id]&&CAT[id])CAT[id].lvl=1;
-    if(!EVMODE)for(const id in S.evGot||{})if(S.evGot[id]&&CAT[id]&&CAT[id].pk)CAT[id].lvl=1;pkClothSync();pkBootTheme();pkBootOpen()}catch(e){console.warn('paket',e)}return r}}
+    if(!EVMODE)for(const id in S.evGot||{})if(S.evGot[id]&&CAT[id]&&CAT[id].pk)CAT[id].lvl=1;try{pkRpMigrate()}catch(e){}pkClothSync();pkBootTheme();pkBootOpen()}catch(e){console.warn('paket',e)}return r}}
 
 // ---------- Etkinlikler › Dünya Keşfi: paket kıyafetleri de listede; hazır olan her şeyi tek dokunuşla getir ----------
 function evClothTake(id,k,quiet){const c=CLO[k];if(!c||!evItemState(id,c).ok)return false;S.evGot[k]=true;pkClothSync();if(!quiet){sfx('goal');markDirty();saveNow();toast(`<b>${c.name}</b><br>Artık Kıyafet Dolabında`,`<span class="ic">${clothIcon(c.slot==='outfit'?(c.set.apron||c.set.hat):c.id)}</span>`,2600);renderEvents();evBadge()}return true}
@@ -13207,7 +13275,7 @@ function evTakeAll(){if(EVMODE)return 0;const id=evOfWeek(evWeek());let n=0;
     if(EVMODE)return;const n=ul.querySelectorAll('[data-take],[data-takec]').length;if(n<2)return;const b=document.createElement('button');b.type='button';b.className='btn green evall';b.innerHTML=`${ic('check')}Hazır olanların hepsini kafeme ekle (${n})`;
     b.onclick=()=>{sfx('tap');evTakeAll()};ul.before(b)}catch(e){console.warn('paket',e)}}}
 {const st=document.createElement('style');st.textContent=`.evall{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 8px;width:100%}.evall svg,.evall .ic{width:18px;height:18px}
-.bul .buic{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:#fff6e0}.bul .buic svg{width:34px;height:34px}`;document.head.appendChild(st)}
+.bul .buic{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:#fff6e0}.bul .buic svg,.bul .buic img.pkci{width:34px;height:34px}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
