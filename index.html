@@ -5152,17 +5152,21 @@ function dayEndTick(){if(!S.created||S.tut!=='done'||window.__noDayEnd)return;
 function showDayReport(){dayRepOpen=true;const F=dayFlags();const mins=Math.max(1,(nowT()-S.dayStart)/60000),W=finWindow(mins),E=W.ev,net=W.rev-W.cost;
   const sold=Object.keys(E).filter(k=>k.startsWith('sold:')).map(k=>[k.slice(5),E[k]]).filter(([id])=>RECIPE[id]).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const f=v=>Math.round(v).toLocaleString('tr-TR');const a=repAvg();UI.modal=true;sfx('levelup');
+  {const old=$('dayModal');if(old)old.remove()}   // (V151) eski kopya kalmasın: düğme her zaman bu pencereninki olsun
   const md=document.createElement('div');md.className='modal';md.id='dayModal';
   md.innerHTML=`<div class="lvcard daycard" role="dialog" aria-label="Gün sonu"><div class="dhead">${UI_IC.moon}<div><small>${S.dayN}. gün bitti</small><h3>Günün hasılatı</h3></div></div>
     <div class="dnet ${net>=0?'pos':'neg'}"><span>Net kâr</span><b>${net>=0?'+':'−'}${f(Math.abs(net))} ${ic('coin')}</b></div>
     <div class="ftiles"><div class="ft in"><span>Gelir</span><b>+${f(W.rev)}</b></div><div class="ft out"><span>Gider</span><b>−${f(W.cost)}</b></div><div class="ft"><span>Puan</span><b>${a.toFixed(1)} ★</b></div><div class="ft cash"><span>Kasa</span><b>${f(S.coins)}</b></div></div>
     <div class="ftiles t2 d3"><div class="ft"><span>Ağırlanan</span><b>${E.srv||0}</b></div><div class="ft"><span>Kaybedilen</span><b>${E.lost||0}</b></div><div class="ft"><span>Paket teslim</span><b>${E.dlv||0}</b></div></div>
-    ${sold.length?`<h4>En çok satanlar</h4><div class="dsold">${sold.map(([id,n],i)=>`<div><img src="${productThumb(id)}" alt=""><span>${RECIPE[id].name}</span><b>${n}</b></div>`).join('')}</div>`:''}
-    <h4>Gelir kalemleri</h4>${Object.keys(W.inc).length?Object.keys(W.inc).sort((x,y)=>W.inc[y]-W.inc[x]).map(k=>`<div class="frow"><span>${FIN_IN[k]||k}</span><b class="pos">+${f(W.inc[k])}</b></div>`).join(''):'<div class="frow none"><span>Bugün gelir yok</span></div>'}
-    ${Object.keys(W.exp).length?`<h4>Gider kalemleri</h4>${Object.keys(W.exp).sort((x,y)=>W.exp[y]-W.exp[x]).map(k=>`<div class="frow"><span>${FIN_OUT[k]||k}</span><b class="neg">−${f(W.exp[k])}</b></div>`).join('')}`:''}
+    ${sold.length?`<div class="dsec"><h4>En çok satanlar</h4><div class="dsold">${sold.map(([id,n],i)=>`<div><img src="${productThumb(id)}" alt=""><span>${RECIPE[id].name}</span><b>${n}</b></div>`).join('')}</div></div>`:''}
+    <div class="dsec"><h4>Gelir kalemleri</h4>${Object.keys(W.inc).length?Object.keys(W.inc).sort((x,y)=>W.inc[y]-W.inc[x]).map(k=>`<div class="frow"><span>${FIN_IN[k]||k}</span><b class="pos">+${f(W.inc[k])}</b></div>`).join(''):'<div class="frow none"><span>Bugün gelir yok</span></div>'}</div>
+    ${Object.keys(W.exp).length?`<div class="dsec"><h4>Gider kalemleri</h4>${Object.keys(W.exp).sort((x,y)=>W.exp[y]-W.exp[x]).map(k=>`<div class="frow"><span>${FIN_OUT[k]||k}</span><b class="neg">−${f(W.exp[k])}</b></div>`).join('')}</div>`:''}
     <button class="btn" id="dayOk" type="button">${UI_IC.sun}Tamam · sabaha geç</button></div>`;
-  $('game').appendChild(md);let done=false;
-  $('dayOk').onclick=()=>{if(done)return;done=true;F.rep=1;md.remove();nightSkip(F.wasOpen!==false)}}
+  $('game').appendChild(md);let done=false,off=null;const btn=md.querySelector('#dayOk');
+  // (V151) Bu düğmeye basılamazsa oyun burada kilitlenir (rapor her açılışta yeniden gelir). Üç önlem: düğme sütunların dışında (p73 lvFix),
+  // işleyici doğrudan bu pencerenin düğmesine bağlı, ve dokunuş düğmenin ekrandaki alanına geldiyse hedef ne olursa olsun gün ilerler (tapGuard, pencere düzeyi).
+  const go=()=>{if(done)return;done=true;try{off&&off()}catch(e){}F.rep=1;try{dayFlags().rep=1}catch(e){}md.remove();nightSkip(F.wasOpen!==false)};
+  btn.onclick=go;try{off=tapGuard(window,()=>md.isConnected?[btn]:[],go)}catch(e){console.warn(e)}}
 // gece hızlıca sarılır: ekran lacivertten sabaha döner, yeni gün başlar
 function nightSkip(reopen){const ov=document.createElement('div');ov.className='nightov';ov.innerHTML=`<div class="nsky"><i class="moon">${UI_IC.moon}</i><i class="sun">${UI_IC.sun}</i></div><b>${S.dayN+1}. gün</b><span>Günaydın!</span>`;$('game').appendChild(ov);
   sfx('tap');setTimeout(()=>{const t=dayPhase(),len=CONFIG.day.len;if(inNight(t)||t>=CONFIG.day.lastCall){const ahead=((CONFIG.day.morning+0.005-t+1)%1)*len;S.dayOff=(S.dayOff||0)+ahead}
@@ -9130,7 +9134,7 @@ ${W} #worldP .kfMore{margin:0!important}
 // Ortak araç: hxAttach(kap) — kabı yatay kaydırıcı yapar: fare tekeri yataya çevrilir, taşma varsa iki uçta ok düğmesi çıkar
 // (Yapı Market şeridindeki oklarla aynı fikir). hxScan() her 500 ms'de HX_SEL'deki görünür kapları bağlar, okları günceller.
 // Yeni bir pencereye uygulamak için: kabın CSS'ini yatay yap (grid-auto-flow:column ya da çok sütun) ve seçicisini HX_SEL'e ekle.
-const HX_SEL=['#ce #ceOpts','#ce #ceCats'];
+const HX_SEL=['#ce #ceOpts','#ce #ceCats','.modal>.lvcard>.lvcols'];
 const HX_ARROW=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="#4a2a14" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d==='l'?'M14.5 5 8 12l6.5 7':'M9.5 5 16 12l-6.5 7'}"/></svg>`;
 function hxUpd(el){if(!el._hx)return;const L=el._hxL,R=el._hxR;if(!L||!R)return;
   if(!L.isConnected||L.parentElement!==el.parentElement){el.after(L,R)}
@@ -9144,6 +9148,27 @@ function hxAttach(el){if(!el||el._hx)return;el._hx=1;el.classList.add('hx');
   el._hxL=mk('l');el._hxR=mk('r');el.after(el._hxL,el._hxR);el.addEventListener('scroll',()=>hxUpd(el),{passive:true});hxUpd(el)}
 function hxScan(){try{for(const s of HX_SEL)document.querySelectorAll(s).forEach(el=>{if(!el._hx)hxAttach(el);if(el.offsetParent!==null||el.clientWidth)hxUpd(el)})}catch(e){}}
 setInterval(hxScan,500);
+// ================= DOKUNUŞ GÜVENLİK AĞI (V151) =================
+// Dokunuş bir düğmenin ekrandaki alanına geldiği hâlde tarayıcı o düğmeyi hedef almadıysa düğmeye biz basarız. Neden: gün sonu raporunda
+// "Tamam · sabaha geç" düğmesi iPhone'da görünüyor ama basılamıyordu (çok sütunlu kabın 2. sütunundaydı; oyun o noktada kilitleniyordu).
+// Doğru hedef bulan tarayıcıda hiçbir etkisi yoktur (hedef zaten bir düğmeyse karışmaz). Kaydırma hareketi dokunuş sayılmaz (12 px / 0,8 sn).
+// target: dinlenecek öğe (window olabilir) · getBtns(): o an geçerli düğmeler · onHit(b): verilmezse b.click(). Dönen işlev dinlemeyi kaldırır.
+function tapGuard(target,getBtns,onHit){let sx=-1,sy=-1,st=0,last=0;
+  const pt=e=>e.changedTouches&&e.changedTouches.length?e.changedTouches[0]:e;
+  const down=e=>{const q=pt(e);sx=q.clientX;sy=q.clientY;st=Date.now()};
+  const up=e=>{const q=pt(e),x=q.clientX,y=q.clientY,now=Date.now();if(sx<0||!(Math.hypot(x-sx,y-sy)<=12)||now-st>800||now-last<500)return;
+    const tg=e.target;if(tg&&tg.closest&&tg.closest('button,a[href],input,select,textarea,[role="button"]'))return;
+    let L;try{L=getBtns()}catch(_){return}
+    for(const b of L||[]){if(!b||b.disabled||!b.isConnected)continue;const r=b.getBoundingClientRect();if(!(r.width>0)||x<r.left||x>r.right||y<r.top||y>r.bottom)continue;
+      last=now;try{if(e.cancelable)e.preventDefault()}catch(_){}
+      // ardından gelebilecek gerçek tıklama başka bir şeye gitmesin
+      const eat=ev=>{ev.stopPropagation();ev.preventDefault()};window.addEventListener('click',eat,{capture:true,once:true});setTimeout(()=>window.removeEventListener('click',eat,true),450);
+      try{if(onHit)onHit(b);else b.click()}catch(err){console.warn('tapGuard',err)}return}};
+  const o1={capture:true,passive:true},o2={capture:true,passive:false};
+  target.addEventListener('pointerdown',down,o1);target.addEventListener('touchstart',down,o1);target.addEventListener('pointerup',up,o2);target.addEventListener('touchend',up,o2);
+  return ()=>{target.removeEventListener('pointerdown',down,true);target.removeEventListener('touchstart',down,true);target.removeEventListener('pointerup',up,true);target.removeEventListener('touchend',up,true)}}
+// çok sütunlu öteki paneller (Etkinlikler/Dünya Keşfi listeleri, rehber): aynı ağ, panel ilk görüldüğünde bağlanır
+setInterval(()=>{try{for(const id of ['evP','guide']){const el=document.getElementById(id);if(el&&!el._tg){el._tg=1;tapGuard(el,()=>el.hidden?[]:[...el.querySelectorAll('.scroll button:not([disabled])')])}}}catch(e){}},1000);
 {
  const G='html.land #game#game',INK='#4a2a14';
  const st=document.createElement('style');st.textContent=`
@@ -9557,18 +9582,28 @@ ${G} .lvup .unl div:only-child{grid-row:1/-1}
 ${G} :is(#recipes,#menuScr,#evP,#guide,#worldP){top:calc(max(6px,(100%/var(--u) - 430px)/2)*var(--u))!important;height:min(calc(100%/var(--u) - 12px),430px)!important}
 ${G} .skmodal:not(#skProf):not(#skSet) .skwin,${G} #team .skwin{top:max(6px,calc((100*var(--vh) - 430px)/2))!important;bottom:max(6px,calc((100*var(--vh) - 430px)/2))!important;height:auto!important}
 /* ---- ESKİ RAPOR PENCERELERİ (memnuniyet, işletme raporu, toptancı, otomatik tedarik, gün sonu): geniş kart, içerik sütunlara akar ---- */
-${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard){width:min(790px,calc(100*var(--vw) - 2*max(12px,var(--el))))!important;max-width:none!important;max-height:calc(100*var(--vh) - 16px)!important;height:auto!important;column-width:330px;column-gap:24px;column-rule:2px dashed #e6cfa8;padding:14px 18px 12px!important;box-sizing:border-box!important;text-align:left}
-${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>*{break-inside:avoid;-webkit-column-break-inside:avoid}
-${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>:is(.sups,.sitems,.rlist,ul,ol,.flist){break-inside:auto;-webkit-column-break-inside:auto;display:block!important}
-${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>:is(.sups,.sitems,.rlist,ul,ol,.flist)>*{break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:6px!important}
-${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard) :is(h4){break-after:avoid;margin-top:4px!important}
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard){width:min(790px,calc(100*var(--vw) - 2*max(12px,var(--el))))!important;max-width:none!important;max-height:none!important;height:auto!important;overflow:hidden!important;padding:14px 18px 12px!important;box-sizing:border-box!important;text-align:left}
+/* (V151) içerik .lvcols içinde sütunlara akar ve sağa kayar; kartın son düğmesi (Tamam) sütunların DIŞINDA, altta sabit durur:
+   düğme hiçbir zaman ekran dışındaki bir sütuna düşmez ve çok sütunlu kabın içinde kalmaz (iPhone'da basılamıyordu). */
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>.lvcols{max-height:calc(100*var(--vh) - 106px);column-width:330px;column-gap:24px;column-rule:2px dashed #e6cfa8}
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>.lvcols.nofoot{max-height:calc(100*var(--vh) - 48px)}
+${G} .lvcols>*{break-inside:avoid;-webkit-column-break-inside:avoid}
+${G} .lvcols>:first-child{margin-top:0!important}
+${G} .lvcols>:is(.sups,.sitems,.rlist,ul,ol,.flist){break-inside:auto;-webkit-column-break-inside:auto;display:block!important}
+${G} .lvcols>:is(.sups,.sitems,.rlist,ul,ol,.flist)>*{break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:6px!important}
+${G} .lvcols :is(h4){break-after:avoid;margin-top:4px!important}
+${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard)>.btn{display:flex!important;align-items:center;justify-content:center;gap:6px;width:min(100%,380px)!important;margin:10px auto 0!important;box-sizing:border-box}
 `;document.head.appendChild(st);
 
  // Görevler: kartları yatay satıra topla (her çizimde)
  try{const _od=openDaily;openDaily=function(){const r=_od.apply(this,arguments);try{hxWatch(document.querySelector('#skDaily .skscroll'),'.skq','qrow')}catch(e){}return r}}catch(e){console.warn('yatay: görevler',e)}
- // eski rapor pencereleri: kart her yeniden çizildiğinde yatay kaydırıcı olarak bağlanır, kaydırma konumu korunur
- try{const lvFix=md=>{const c=[...md.children].find(x=>x.classList&&x.classList.contains('lvcard'));if(!c||c._lv||!c.matches('.repcard,.fincard,.supcard,.daycard'))return;c._lv=1;hxAttach(c);
-     c.scrollLeft=md._sx||0;c.addEventListener('scroll',()=>{md._sx=c.scrollLeft},{passive:true});hxUpd(c)};
+ // eski rapor pencereleri (V151): kart her yeniden çizildiğinde içerik .lvcols sarmalına alınır (yatay kaydırıcı odur, kaydırma konumu korunur);
+ // kartın sonundaki düğme sarmalın dışında kalır. Dikey ekranda .lvcols düz bir bloktur, görünüm değişmez.
+ try{const lvFix=md=>{const c=[...md.children].find(x=>x.classList&&x.classList.contains('lvcard'));if(!c||c._lv||!c.matches('.repcard,.fincard,.supcard,.daycard'))return;c._lv=1;
+     const kids=[...c.children],last=kids[kids.length-1],foot=last&&last.matches('button.btn')?kids.pop():null;
+     const cols=document.createElement('div');cols.className='lvcols'+(foot?'':' nofoot');for(const k of kids)cols.appendChild(k);c.insertBefore(cols,c.firstChild);
+     hxAttach(cols);cols.scrollLeft=md._sx||0;cols.addEventListener('scroll',()=>{md._sx=cols.scrollLeft},{passive:true});hxUpd(cols);
+     if(!md._tg){md._tg=1;tapGuard(md,()=>[...md.querySelectorAll('button:not([disabled])')])}};
    const setup=md=>{if(!md||md._lvo||!md.classList||!md.classList.contains('modal')||md.classList.contains('skmodal'))return;md._lvo=new MutationObserver(()=>lvFix(md));md._lvo.observe(md,{childList:true});lvFix(md)};
    new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)setup(n)}).observe($('game'),{childList:true});
    document.querySelectorAll('#game>.modal').forEach(setup)}catch(e){console.warn('yatay: raporlar',e)}
