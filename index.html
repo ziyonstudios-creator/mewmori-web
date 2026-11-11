@@ -13369,7 +13369,7 @@ function pkRpGrant(id){if(!S.rpGot)S.rpGot={};S.rpGot[id]=true;const c=CAT[id];l
 {const _rg=rpGive;rpGive=function(r){if(r&&r.k==='item')return pkRpGrant(r.id);return _rg.apply(this,arguments)}}
 rpClaim=function(i,royal){const R=rpS(),m=royal?R.cr:R.cf;if(m[i]||rpTier()<i||(royal&&!R.royal))return false;const r=rpReward(i,royal);m[i]=r.k==='item'?'it':1;rpGive(r);return true};
 {const _ca=rpClaimAll;rpClaimAll=function(){PK_RPQ=[];try{return _ca.apply(this,arguments)}finally{const L=PK_RPQ;PK_RPQ=null;
-    if(L.length){markDirty();saveNow();const set=rpSetOf(rpS().season);rpMsg(`${rpItemArt(L[L.length-1],'rpMi')}<span><b>${set.name} setinden ${L.length} parça senin!</b> Eşyalar Market’te, kıyafetler Kıyafet Dolabı’nda</span>`,5200)}}}}
+    if(L.length){markDirty();saveNow();const set=rpSetOf(rpS().season);rpMsg(`${rpItemArt(L[L.length-1],'rpMi')}<span><b>${L.length} yeni parça senin!</b> Eşyalar Market’te, kıyafetler Kıyafet Dolabı’nda</span>`,5200)}}}}
 // güncellemeden önce altın olarak alınmış set kademeleri: parça oyuncuda yoksa kademe yeniden alınabilir olur (parçayı kaçırmasın)
 function pkRpMigrate(){const R=S.rp;if(!R||!R.cr||R.season!==rpSeason())return;for(const i in PK_RP_TIERS){const id=rpSetItem(+i,R.season);if(id&&R.cr[i]&&R.cr[i]!=='it'&&!(S.rpGot&&S.rpGot[id]))delete R.cr[i]}}
 // Pass penceresi: set kademelerinde parçanın küçük resmi + kısa adı; dokununca parçanın adı ve durumu; sezon rozetinde setin adı
@@ -13987,6 +13987,212 @@ function evaDress(){const p=$('evP');if(!p||p.hidden)return;
 #evP .evpcn b{font:800 13px var(--font-display,inherit)}#evP .evpcn small{font-size:11px;font-weight:800;opacity:.7;overflow:hidden;text-overflow:ellipsis}
 #evP .evpcn .mflag{width:22px;height:15px;border-width:1.8px;border-radius:4px}
 `;document.head.appendChild(st)}
+
+// ================= ROYAL PASS · ÜCRETSİZ YOL ÖGELERİ (V157) =================
+// Kullanıcı isteği: "royalpass ta özel olmayan alanlara da en az 12 adet ögeler tasarla".
+//  · Ücretsiz yolda 12 kademe artık altın yerine TASARIM ÖGESİ verir: 2, 4, 6, 8, 12, 14, 16, 18, 22, 24, 26, 28
+//    (5'in katlarındaki elmas ödülleri ve kalan altın kademeleri aynı).
+//  · 12 öge: 6 zemin dekoru (saksı, puf, fener, sehpa, lamba, heykel) + 4 duvar süsü (flama, tablo, saat, ayna) + 2 kıyafet (rozet, külah).
+//  · Her sezonun ücretsiz koleksiyonu o ayın Royal setiyle aynı temadadır (rpSetOf): Kraliyet → "Saray", Kristal → "Kış", Galaksi → "Yıldız".
+//    Aynı 12 öge üç temada ayrı tasarlandı (RPF_NAMES; kurucular tema anahtarına göre dallanır) → katalogda 36 kayıt.
+//  · Kimlikler: zemin 'd_rpf_<tür>_<set>', duvar 'wd_rpf_<tür>_<set>', kıyafet 'nk_rpf_<set>' / 'hat_rpf_<set>'.
+//  · Kazanılınca Royal ödülleriyle aynı yoldan verilir (pkRpGrant): dekorlar markette ücretsiz ve sınırsız yerleştirilir, kıyafet dolaba girer.
+//    Öge oyuncuda zaten varsa (tema üç ayda bir geri gelir) o kademe eski altın ödülünü verir.
+//  · Güncellemeden önce altın olarak alınmış ücretsiz kademeler: öge oyuncuda yoksa kademe yeniden alınabilir olur (rpfMigrate).
+const RPF_TIERS={2:'flama',4:'saksi',6:'rozet',8:'tablo',12:'puf',14:'saat',16:'kulah',18:'fener',22:'sehpa',24:'ayna',26:'lamba',28:'heykel'};
+const RPF_KIND={flama:'w',tablo:'w',saat:'w',ayna:'w',saksi:'d',puf:'d',fener:'d',sehpa:'d',lamba:'d',heykel:'d',rozet:'nk',kulah:'hat'};
+const RPF_SETS={kraliyet:{k:'kraliyet',ad:'Saray',A:0x7a1424,A2:0x9a2a3a,B:0xd6aa5a,C:0xfff3dc,D:0x2a5ab0,G:0xffd66b,L:0x3f7a3a,orn:'tac'},
+  kristal:{k:'kristal',ad:'Kış',A:0x8cc4e4,A2:0xb8dcf0,B:0xa8c0dc,C:0xf6fcff,D:0x4f93c8,G:0x8fdcff,L:0x4f8f7a,orn:'kar'},
+  galaksi:{k:'galaksi',ad:'Yıldız',A:0x1e1e58,A2:0x34307a,B:0x8a6ae0,C:0xe8e2ff,D:0x3ad0d8,G:0x4fe0f0,L:0x6a54c0,orn:'yildiz'}};
+const RPF_NAMES={
+  flama:{kraliyet:['Saray flaması','Bordo ve altın flamalar; aralarında altın toplar.'],kristal:['Kar tanesi flaması','Buz mavisi flamalar; üstlerinde kar taneleri.'],galaksi:['Yıldız flaması','Gece mavisi flamalar; üstlerinde parlayan yıldızlar.']},
+  saksi:{kraliyet:['Gül topiarisi','Altın bantlı saksıda top budanmış gül ağacı.'],kristal:['Karlı çam','Dalları kar tutmuş minik çam; tepesinde yıldız.'],galaksi:['Yıldız çiçeği','Dallarında ışıldayan yıldızlar açan bitki.']},
+  rozet:{kraliyet:['Saray rozeti','Bordo kurdele, altın madalyon ve minik taç.'],kristal:['Kar tanesi rozeti','Buz mavisi kurdele, gümüş madalyon ve kar tanesi.'],galaksi:['Yıldız rozeti','Gece mavisi kurdele; ortasında parlayan yıldız.']},
+  tablo:{kraliyet:['Kraliyet portresi','Taçlı ve kürk yakalı şef kedinin altın çerçeveli portresi.'],kristal:['Kış manzarası','Karlı tepeler, çamlar ve iri bir kar tanesi.'],galaksi:['Kedi takımyıldızı','Gece göğünde kedi biçimli takımyıldız.']},
+  puf:{kraliyet:['Kadife puf','Altın şeritli bordo puf; üstünde minik yastık.'],kristal:['Kar topu pufu','Kabarık beyaz kürk kenarlı kış pufu.'],galaksi:['Bulut puf','Etrafında yıldızlar dolaşan yumuşacık bulut.']},
+  saat:{kraliyet:['Saray saati','Tepesinde taç duran altın çerçeveli duvar saati.'],kristal:['Kar tanesi saati','Kolları dışarı uzanan gümüş kar tanesi saat.'],galaksi:['Yörünge saati','Çevresinde gezegen dönen gece mavisi saat.']},
+  kulah:{kraliyet:['Şenlik külahı','Altın şeritli bordo külah; ucunda altın ponpon.'],kristal:['Kış külahı','Kürk kenarlı buz mavisi külah; önünde kar tanesi.'],galaksi:['Sihirbaz külahı','Üstünde yıldızlar parlayan gece mavisi külah.']},
+  fener:{kraliyet:['Altın şamdan','Üç kollu altın şamdan; mumları hep yanar.'],kristal:['Buz feneri','İçinde mavi alev yanan gümüş fener.'],galaksi:['Yıldız feneri','Halkanın içinde ışıldayan büyük yıldız.']},
+  sehpa:{kraliyet:['Çay sehpası','Mermer tabla; safir vazoda güller ve bir fincan.'],kristal:['Kar küresi sehpası','Üstünde, içinde minik çam olan kar küresi.'],galaksi:['İksir sehpası','Üstünde renk renk ışıldayan iksir şişeleri.']},
+  ayna:{kraliyet:['Altın ayna','Tepesinde taç duran oval altın ayna.'],kristal:['Buz aynası','Altından buz sarkıtları inen gümüş ayna.'],galaksi:['Ay aynası','Hilalin kucağında duran ayna ve yıldızlar.']},
+  lamba:{kraliyet:['Saray lambası','Saçaklı kadife abajurlu altın ayaklı lamba.'],kristal:['Kristal lamba','Buz sarkıtlı, içi ışıldayan cam küre.'],galaksi:['Ay lambası','Halkalı, sıcak ışıklı ay lambası.']},
+  heykel:{kraliyet:['Altın kedi heykeli','Mermer kaidede taçlı altın kedi.'],kristal:['Buz kristali','Mermer kaidede içi ışıldayan kristal kümesi.'],galaksi:['Gezegen heykeli','Mermer kaidede halkalı gezegen ve ayı.']}};
+const rpfId=(t,k)=>RPF_KIND[t]==='nk'?'nk_rpf_'+k:RPF_KIND[t]==='hat'?'hat_rpf_'+k:(RPF_KIND[t]==='w'?'wd_rpf_':'d_rpf_')+t+'_'+k;
+
+// ---------- ortak yapı taşları ----------
+const rpfAdd=G=>(geo,mat,x=0,y=0,z=0,rx=0,ry=0,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;G.add(m);return m};
+const RFG={c:{},
+  cyl:(rt,rb,h,s=16)=>new THREE.CylinderGeometry(rt,rb,h,s),sph:(r,w=14,h=10,...rest)=>new THREE.SphereGeometry(r,w,h,...rest),box:(w,h,d)=>new THREE.BoxGeometry(w,h,d),
+  cone:(r,h,s=12)=>new THREE.ConeGeometry(r,h,s),tor:(r,t,a=8,b=24,arc=Math.PI*2)=>new THREE.TorusGeometry(r,t,a,b,arc),
+  // beş köşeli yıldız (birim yarıçap, z ekseninde kalın); ölçek kullanan yerde verilir
+  star(){if(RFG.c.star)return RFG.c.star;const s=new THREE.Shape();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,q=i%2?0.42:1,x=Math.cos(a)*q,y=Math.sin(a)*q;i?s.lineTo(x,y):s.moveTo(x,y)}s.closePath();
+    const g=new THREE.ExtrudeGeometry(s,{depth:0.3,bevelEnabled:false});g.translate(0,0,-0.15);return RFG.c.star=g},
+  pennant(){if(RFG.c.pen)return RFG.c.pen;const s=new THREE.Shape();s.moveTo(-0.042,0);s.lineTo(0.042,0);s.lineTo(0,-0.1);s.closePath();return RFG.c.pen=new THREE.ExtrudeGeometry(s,{depth:0.008,bevelEnabled:false})},
+  ds(c){const k='ds'+c;if(RFG.c[k])return RFG.c[k];const m=itc(c).clone();m.side=THREE.DoubleSide;return RFG.c[k]=m}};
+const rpfStar=(A,x,y,z,r,mat,ry=0)=>{const m=A(RFG.star(),mat,x,y,z,0,ry,0);m.scale.set(r,r,r*0.5);m.castShadow=false;return m};
+function rpfFlake(A,x,y,z,r,mat,flat){for(let k=0;k<3;k++){const m=A(RFG.box(r*2,r*0.17,r*0.17),mat,x,y,z,0,0,k*Math.PI/3);if(flat)m.rotation.set(Math.PI/2,k*Math.PI/3,0)}
+  for(let k=0;k<6;k++){const a=k*Math.PI/3;if(flat)A(RFG.sph(r*0.15,6,5),mat,x+Math.cos(a)*r,y,z+Math.sin(a)*r);else A(RFG.sph(r*0.15,6,5),mat,x+Math.cos(a)*r,y+Math.sin(a)*r,z)}}
+
+// ---------- 6 zemin dekoru ----------
+function rpfSaksi(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B);
+  A(RFG.cyl(0.15,0.11,0.24),itc(T.A),0,0.12,0);A(RFG.cyl(0.162,0.162,0.03),B,0,0.245,0);A(RFG.cyl(0.137,0.129,0.03),B,0,0.11,0);A(RFG.cyl(0.14,0.14,0.012),itc(0x5a3a22),0,0.262,0);
+  if(k==='kraliyet'){A(RFG.cyl(0.014,0.017,0.26,8),itc(0x6b4a2c),0,0.39,0);A(RFG.sph(0.16,16,12),itc(T.L),0,0.63,0);
+    for(let i=0;i<11;i++){const a=i*2.4,y=0.515+(i%4)*0.07,r=Math.sqrt(Math.max(0.003,0.0256-(y-0.63)*(y-0.63)))+0.008;A(RFG.sph(0.03,8,6),itc(i%3?0xc8203a:0xf6c0c8),Math.cos(a)*r,y,Math.sin(a)*r).scale.y=0.8}
+    for(const s of [-1,1])A(RFG.cone(0.03,0.06,4),B,s*0.035,0.44,0.02,0,0,s*Math.PI/2);A(RFG.sph(0.02,8,6),B,0,0.44,0.02)}
+  else if(k==='kristal'){A(RFG.cyl(0.02,0.024,0.1,8),itc(0x6b4a2c),0,0.31,0);
+    [[0.2,0.22,0.45],[0.155,0.2,0.59],[0.11,0.19,0.725]].forEach(([r,h,y])=>{A(RFG.cone(r,h,14),itc(T.L),0,y,0);A(RFG.cone(r*0.66,h*0.6,14),itc(0xffffff),0,y+h*0.215,0)});
+    rpfStar(A,0,0.86,0,0.05,rpGlow(0xfff6c8));for(const [x,y,z,c] of [[0.13,0.4,0.06,0xe0483f],[-0.1,0.42,0.1,0xf6c84a],[0.06,0.55,-0.11,0x5fa3d0],[-0.09,0.56,-0.04,0xe0483f],[0.05,0.68,0.07,0xf6c84a]])A(RFG.sph(0.02,8,6),itc(c),x,y,z)}
+  else{for(let i=0;i<4;i++){const a=i/4*Math.PI*2+0.4;A(RFG.sph(0.11,10,8),itc(T.L),Math.cos(a)*0.1,0.31,Math.sin(a)*0.1,0,-a,0).scale.set(1,0.28,0.5)}
+    for(let i=0;i<5;i++){const a=i/5*Math.PI*2+0.3,len=0.3+(i%3)*0.09,tx=Math.cos(a),tz=Math.sin(a),lean=0.34+(i%2)*0.14,sx=Math.sin(lean)*len,cy=Math.cos(lean)*len;
+      A(RFG.cyl(0.011,0.014,len,6),itc(T.L),tx*sx*0.5,0.27+cy/2,tz*sx*0.5,tz*lean,0,-tx*lean);
+      rpfStar(A,tx*sx*1.05,0.3+cy,tz*sx*1.05,0.062,rpGlow(i%2?T.G:0xffcf40),-a+Math.PI/2)}
+    A(RFG.sph(0.03,8,6),rpGlow(0xff8ad8),0,0.34,0).castShadow=false}
+  return G}
+function rpfPuf(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B);
+  if(k==='galaksi'){const c=itc(0xd9d0ff);[[0,0.17,0,0.21],[0.18,0.13,0.04,0.14],[-0.18,0.13,-0.03,0.15],[0.05,0.13,0.17,0.14],[-0.06,0.13,-0.17,0.14],[0.1,0.26,-0.06,0.13],[-0.1,0.27,0.07,0.13]].forEach(([x,y,z,r])=>A(RFG.sph(r,14,10),c,x,y,z));
+    for(const [x,y,z,r,c] of [[0.24,0.36,0.1,0.05,0xffcf40],[-0.22,0.4,-0.08,0.04,T.G],[0.02,0.46,-0.2,0.035,0xffcf40]]){A(RFG.cyl(0.004,0.004,y-0.12,4),itc(T.B),x,(y+0.12)/2,z);rpfStar(A,x,y,z,r,rpGlow(c),0.5)}return G}
+  const body=itc(k==='kristal'?T.C:T.A);A(RFG.cyl(0.25,0.25,0.22,24),body,0,0.15,0);A(RFG.sph(0.25,24,10,0,Math.PI*2,0,Math.PI/2),body,0,0.26,0).scale.y=0.32;
+  A(RFG.tor(0.25,0.014,6,28),B,0,0.26,0,Math.PI/2);A(RFG.tor(0.25,0.014,6,28),B,0,0.045,0,Math.PI/2);A(RFG.sph(0.022,8,6),B,0,0.342,0);for(const sx of [-1,1])for(const sz of [-1,1])A(RFG.sph(0.03,8,6),B,sx*0.16,0.025,sz*0.16);
+  if(k==='kraliyet'){for(let i=0;i<8;i++){const a=i/8*Math.PI*2;A(RFG.box(0.012,0.2,0.006),B,Math.cos(a)*0.252,0.15,Math.sin(a)*0.252,0,-a+Math.PI/2,0)}
+    A(RFG.box(0.2,0.06,0.2),itc(T.C),0.02,0.375,0,0,0.5,0);for(const sx of [-1,1])for(const sz of [-1,1]){const c=Math.cos(0.5),s=Math.sin(0.5),x=sx*0.1,z=sz*0.1;A(RFG.sph(0.018,6,5),B,0.02+x*c+z*s,0.375,-x*s+z*c)}}
+  else{for(let i=0;i<12;i++){const a=i/12*Math.PI*2;A(RFG.sph(0.055,8,6),itc(0xffffff),Math.cos(a)*0.235,0.275,Math.sin(a)*0.235)}
+    A(RFG.tor(0.252,0.028,6,28),itc(T.D),0,0.15,0,Math.PI/2);rpfFlake(A,0,0.15,0.283,0.05,itc(0xffffff))}
+  return G}
+function rpfFener(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B);A(RFG.cyl(0.13,0.16,0.035,18),B,0,0.018,0);
+  if(k==='kraliyet'){A(RFG.cyl(0.02,0.027,0.62,10),B,0,0.34,0);A(RFG.sph(0.042),B,0,0.3,0);A(RFG.sph(0.03),B,0,0.5,0);
+    for(const s of [-1,0,1]){const x=s*0.14,y=s?0.62:0.67;if(s)A(RFG.tor(0.07,0.012,6,16,Math.PI),B,s*0.07,0.6,0,0,0,Math.PI);
+      A(RFG.cyl(0.036,0.02,0.03,10),B,x,y,0);A(RFG.cyl(0.015,0.015,0.11,8),itc(0xfff6e2),x,y+0.07,0);const f=A(RFG.cone(0.016,0.05,8),rpGlow(0xffb84a),x,y+0.152,0);f.castShadow=false;A(RFG.sph(0.011,6,5),rpGlow(0xfff3c4),x,y+0.134,0).castShadow=false}}
+  else if(k==='kristal'){A(RFG.cyl(0.018,0.022,0.56,10),B,0,0.315,0);A(RFG.box(0.2,0.022,0.2),B,0,0.6,0);for(const sx of [-1,1])for(const sz of [-1,1])A(RFG.box(0.014,0.22,0.014),B,sx*0.085,0.72,sz*0.085);
+    A(RFG.box(0.16,0.2,0.16),rpGlass(0xd4f0ff,0.38),0,0.715,0).castShadow=false;A(RFG.box(0.2,0.02,0.2),B,0,0.835,0);A(RFG.cone(0.15,0.1,4),B,0,0.895,0,0,Math.PI/4,0);A(RFG.tor(0.03,0.007,5,14),B,0,0.97,0);
+    A(RFG.cyl(0.02,0.024,0.05,8),itc(0xfff6e2),0,0.636,0);A(RFG.cone(0.028,0.09,8),rpGlow(T.G),0,0.705,0).castShadow=false;A(RFG.sph(0.018,6,5),rpGlow(0xffffff),0,0.675,0).castShadow=false}
+  else{A(RFG.cyl(0.018,0.022,0.6,10),B,0,0.335,0);A(RFG.tor(0.17,0.014,6,32),B,0,0.82,0);rpfStar(A,0,0.82,0,0.125,rpGlow(T.G));
+    for(const [x,y,c] of [[0.2,0.98,0xffcf40],[-0.21,0.72,0xff8ad8],[0.1,0.63,0xffcf40]])rpfStar(A,x,y,0.01,0.032,rpGlow(c))}
+  return G}
+function rpfSehpa(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B),C=itc(T.C),y=0.523;
+  A(RFG.cyl(0.16,0.18,0.03,20),B,0,0.015,0);A(RFG.cyl(0.028,0.034,0.46,10),B,0,0.26,0);A(RFG.sph(0.046),B,0,0.27,0);A(RFG.cyl(0.25,0.25,0.035,24),C,0,0.505,0);A(RFG.tor(0.25,0.014,6,28),B,0,0.505,0,Math.PI/2);
+  if(k==='kraliyet'){const V=itc(T.D);A(RFG.cyl(0.035,0.06,0.07,12),V,-0.07,y+0.035,0);A(RFG.sph(0.066,12,10),V,-0.07,y+0.1,0).scale.y=0.9;A(RFG.cyl(0.04,0.03,0.05,12),V,-0.07,y+0.17,0);A(RFG.tor(0.04,0.008,6,16),B,-0.07,y+0.195,0,Math.PI/2);
+    for(let i=0;i<4;i++){const a=i*1.7+0.3;A(RFG.cyl(0.005,0.005,0.12,5),itc(T.L),-0.07+Math.cos(a)*0.02,y+0.25,Math.sin(a)*0.02);A(RFG.sph(0.032,8,6),itc(i%2?0xc8203a:0xf6c0c8),-0.07+Math.cos(a)*0.04,y+0.31+(i%2)*0.025,Math.sin(a)*0.04).scale.y=0.85}
+    A(RFG.cyl(0.05,0.05,0.008,14),C,0.11,y+0.004,0.06);A(RFG.cyl(0.032,0.022,0.038,12),C,0.11,y+0.027,0.06);A(RFG.tor(0.032,0.004,5,14),B,0.11,y+0.046,0.06,Math.PI/2);A(RFG.cyl(0.028,0.028,0.004,10),itc(0x8a4a2a),0.11,y+0.04,0.06)}
+  else if(k==='kristal'){A(RFG.cyl(0.09,0.1,0.045,16),B,0,y+0.022,0);A(RFG.sph(0.105,18,14),rpGlass(0xeaf8ff,0.34),0,y+0.135,0).castShadow=false;A(RFG.cyl(0.08,0.08,0.02,14),itc(0xffffff),0,y+0.055,0);
+    A(RFG.cone(0.042,0.09,10),itc(T.L),0,y+0.11,0);A(RFG.cone(0.03,0.055,10),itc(0xffffff),0,y+0.142,0);for(const [x,yy,z] of [[0.05,0.16,0.02],[-0.04,0.19,0.03],[0.02,0.21,-0.04],[-0.05,0.13,-0.03],[0.04,0.11,-0.05]])A(RFG.sph(0.008,5,4),itc(0xffffff),x,y+yy,z)}
+  else{const bot=(x,z,r,h,col)=>{A(RFG.sph(r,12,10),rpGlass(0xffffff,0.32),x,y+r,z).castShadow=false;A(RFG.sph(r*0.76,10,8),rpGlow(col),x,y+r*0.9,z).castShadow=false;A(RFG.cyl(r*0.3,r*0.34,h,8),rpGlass(0xffffff,0.45),x,y+r*1.9+h/2,z).castShadow=false;A(RFG.cyl(r*0.36,r*0.32,0.022,8),itc(0x9a6a3a),x,y+r*1.9+h+0.011,z)};
+    bot(-0.09,0.02,0.06,0.05,T.G);bot(0.08,0.07,0.048,0.06,0xff8ad8);bot(0.05,-0.1,0.04,0.045,0xffcf40);rpfStar(A,-0.02,y+0.016,0.14,0.03,rpGlow(0xffcf40)).rotation.set(-Math.PI/2,0,0.3)}
+  return G}
+function rpfLamba(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B);
+  A(RFG.cyl(0.15,0.18,0.04,20),B,0,0.02,0);A(RFG.cyl(0.02,0.02,1.2,10),B,0,0.64,0);A(RFG.sph(0.034),B,0,0.42,0);A(RFG.sph(0.034),B,0,0.9,0);
+  if(k==='kraliyet'){A(new THREE.CylinderGeometry(0.11,0.21,0.26,20,1,true),RFG.ds(T.A),0,1.37,0);A(RFG.tor(0.21,0.014,6,24),B,0,1.24,0,Math.PI/2);A(RFG.tor(0.11,0.012,6,20),B,0,1.5,0,Math.PI/2);
+    for(let i=0;i<12;i++){const a=i/12*Math.PI*2;A(RFG.sph(0.016,6,5),B,Math.cos(a)*0.21,1.212,Math.sin(a)*0.21)}A(RFG.sph(0.06),rpGlow(T.G),0,1.33,0).castShadow=false;A(RFG.sph(0.024),B,0,1.53,0)}
+  else if(k==='kristal'){A(RFG.cyl(0.07,0.05,0.05,12),B,0,1.245,0);A(RFG.sph(0.18,18,14),rpGlass(0xc4e8ff,0.46),0,1.43,0).castShadow=false;A(RFG.sph(0.1),rpGlow(T.G),0,1.43,0).castShadow=false;A(RFG.cyl(0.03,0.06,0.04,10),B,0,1.61,0);
+    for(let i=0;i<6;i++){const a=i/6*Math.PI*2;A(RFG.cone(0.014,0.07+(i%2)*0.04,6),rpGlass(0xbfe6ff,0.72),Math.cos(a)*0.1,1.2-(i%2)*0.02,Math.sin(a)*0.1,Math.PI).castShadow=false}}
+  else{A(RFG.sph(0.16,18,14),itc(0xffe08a),0,1.42,0);for(const [x,y,z,r] of [[0.07,1.47,0.125,0.036],[-0.06,1.38,0.14,0.026],[0.02,1.34,0.15,0.018],[-0.11,1.5,0.08,0.022]])A(RFG.sph(r,8,6),itc(0xe8b84a),x,y,z).scale.z=0.5;
+    A(RFG.tor(0.25,0.012,6,36),rpGlow(T.D),0,1.42,0,Math.PI/2-0.35,0,0.2).castShadow=false;for(const [x,y,z] of [[0.2,1.64,0.05],[-0.23,1.58,-0.04],[0.04,1.7,-0.14]])rpfStar(A,x,y,z,0.035,rpGlow(T.G),0.4)}
+  return G}
+function rpfHeykel(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B),C=itc(T.C),y=0.56;
+  A(RFG.box(0.36,0.07,0.36),C,0,0.035,0);A(RFG.cyl(0.115,0.13,0.44,16),C,0,0.29,0);A(RFG.tor(0.126,0.018,6,20),B,0,0.09,0,Math.PI/2);A(RFG.tor(0.118,0.016,6,20),B,0,0.5,0,Math.PI/2);A(RFG.box(0.32,0.05,0.32),C,0,0.535,0);
+  if(k==='kraliyet'){A(RFG.sph(0.1,14,12),B,0,y+0.11,0).scale.set(1,1.15,0.9);A(RFG.sph(0.086,14,12),B,0,y+0.285,0.02);for(const s of [-1,1]){A(RFG.cone(0.034,0.075,4),B,s*0.052,y+0.37,0.02,0,Math.PI/4,-s*0.22);A(RFG.sph(0.034,8,6),B,s*0.04,y+0.035,0.085).scale.set(1,0.7,1.3);A(RFG.sph(0.012,6,5),itc(0x2a5ab0),s*0.032,y+0.3,0.097)}
+    A(RFG.tor(0.075,0.018,6,16,Math.PI*1.15),B,0.08,y+0.035,-0.03,Math.PI/2,0,0.5);A(RFG.sph(0.011,6,5),itc(0xc8203a),0,y+0.27,0.103);rpCrown(A,0,y+0.365,0.02,0.046,0.062,B)}
+  else if(k==='kristal'){const gl=rpGlass(0xbfe6ff,0.62),sh=(x,z,h,r,rx,rz)=>{const g=new THREE.Group();g.position.set(x,y,z);g.rotation.set(rx,0,rz);G.add(g);const a=rpfAdd(g);a(RFG.cyl(r,r,h,6),gl,0,h/2,0).castShadow=false;a(RFG.cone(r,r*1.7,6),gl,0,h+r*0.85,0).castShadow=false};
+    sh(0,0,0.3,0.062,0,0);sh(0.07,0.02,0.2,0.046,0.1,-0.5);sh(-0.07,0.01,0.22,0.046,-0.05,0.45);sh(0.01,0.07,0.15,0.04,0.55,0.05);sh(-0.01,-0.07,0.17,0.04,-0.55,-0.05);A(RFG.sph(0.05),rpGlow(T.G),0,y+0.11,0).castShadow=false}
+  else{A(RFG.cyl(0.012,0.016,0.13,6),B,0,y+0.065,0);A(RFG.sph(0.14,18,14),itc(T.B),0,y+0.27,0);A(RFG.sph(0.1425,18,5,0,Math.PI*2,1.15,0.32),itc(0xb9a2f0),0,y+0.27,0);A(RFG.sph(0.1425,18,4,0,Math.PI*2,1.75,0.2),itc(0x6a4ac0),0,y+0.27,0);
+    A(RFG.tor(0.23,0.016,6,36),rpGlow(T.D),0,y+0.27,0,Math.PI/2-0.4,0,0.25).castShadow=false;A(RFG.sph(0.04,10,8),itc(T.C),0.2,y+0.42,0.08);for(const [x,yy,z] of [[-0.19,0.46,0.04],[0.12,0.52,-0.1]])rpfStar(A,x,y+yy,z,0.03,rpGlow(0xffcf40),0.4)}
+  return G}
+
+// ---------- 4 duvar süsü (yerel: duvar yüzeyi z=0, öne +z) ----------
+function rpfFlama(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,f=t=>-Math.sin(t*Math.PI)*0.11,pts=[];for(let i=0;i<=12;i++){const t=i/12;pts.push(new THREE.Vector3(-0.33+0.66*t,f(t),0.03))}
+  G.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),20,0.006,4),itc(T.B)));const cols=k==='kraliyet'?[T.A,T.B,T.A,T.C,T.A,T.B]:k==='kristal'?[T.A,T.C,T.D,T.C,T.A,T.C]:[T.A,T.B,T.A2,T.D,T.A,T.B];
+  for(let i=0;i<6;i++){const t=(i+0.5)/6,x=-0.33+0.66*t,y=f(t);A(RFG.pennant(),itc(cols[i]),x,y,0.02);
+    if(k==='kraliyet'){if(i%2===0)A(RFG.sph(0.013,6,5),itc(T.B),x,y-0.04,0.034)}else if(k==='kristal'){if(i%2===0)rpfFlake(A,x,y-0.04,0.033,0.02,itc(0xffffff))}else rpfStar(A,x,y-0.042,0.034,i%2?0.016:0.022,rpGlow(i%2?0xffcf40:T.G))}
+  for(let i=0;i<=6;i++){const t=i/6,x=-0.33+0.66*t,y=f(t);if(k==='kraliyet')A(RFG.sph(0.016,8,6),itc(T.B),x,y-0.008,0.03);else if(k==='kristal')A(RFG.sph(0.014,8,6),itc(0xffffff),x,y-0.008,0.03);else A(RFG.sph(0.012,8,6),rpGlow(T.D),x,y-0.008,0.03).castShadow=false}
+  return G}
+function rpfPicMat(T){return itTex('rpf_pic_'+T.k,256,320,(x,w,h)=>{const I='#4a2e1c';x.lineJoin=x.lineCap='round';
+    if(T.k==='kraliyet'){x.fillStyle='#7a1424';x.fillRect(0,0,w,h);x.fillStyle='rgba(214,170,90,.32)';for(let r=0;r<9;r++)for(let c=0;c<7;c++){const px=c*40+(r%2?20:0),py=r*40;x.beginPath();x.moveTo(px,py-9);x.lineTo(px+7,py);x.lineTo(px,py+9);x.lineTo(px-7,py);x.fill()}
+      // kürk yaka
+      x.fillStyle='#fbf8f2';x.strokeStyle=I;x.lineWidth=6;x.beginPath();x.ellipse(128,292,104,56,0,0,Math.PI*2);x.fill();x.stroke();x.fillStyle='#3a2a2a';for(const [px,py] of [[60,268],[92,254],[128,250],[164,254],[196,268],[76,296],[180,296],[128,280]]){x.beginPath();x.ellipse(px,py,4,7,0.3,0,Math.PI*2);x.fill()}
+      // kedi
+      x.fillStyle='#e9a25a';x.beginPath();x.moveTo(62,170);x.lineTo(70,96);x.lineTo(106,132);x.lineTo(150,132);x.lineTo(186,96);x.lineTo(194,170);x.quadraticCurveTo(200,244,128,246);x.quadraticCurveTo(56,244,62,170);x.closePath();x.fill();x.stroke();
+      x.fillStyle='#f2a6a0';x.beginPath();x.moveTo(78,138);x.lineTo(80,112);x.lineTo(98,132);x.fill();x.beginPath();x.moveTo(178,138);x.lineTo(176,112);x.lineTo(158,132);x.fill();
+      x.fillStyle='#fbf3e4';x.beginPath();x.ellipse(128,208,32,22,0,0,Math.PI*2);x.fill();x.fillStyle=I;for(const ex of [102,154]){x.beginPath();x.ellipse(ex,180,8,10,0,0,Math.PI*2);x.fill()}x.fillStyle='#fff';for(const ex of [105,157]){x.beginPath();x.arc(ex,176,3,0,Math.PI*2);x.fill()}
+      x.fillStyle='#f2a6a0';x.beginPath();x.moveTo(121,197);x.lineTo(135,197);x.lineTo(128,205);x.closePath();x.fill();x.lineWidth=3.5;x.beginPath();x.moveTo(128,205);x.quadraticCurveTo(122,216,114,210);x.moveTo(128,205);x.quadraticCurveTo(134,216,142,210);x.stroke();
+      // taç
+      x.lineWidth=6;x.fillStyle='#e8c060';x.beginPath();x.moveTo(84,112);x.lineTo(78,58);x.lineTo(104,86);x.lineTo(128,44);x.lineTo(152,86);x.lineTo(178,58);x.lineTo(172,112);x.closePath();x.fill();x.stroke();
+      for(const [px,py,c] of [[128,96,'#c8203a'],[100,100,'#2a5ab0'],[156,100,'#2a8a5a']]){x.fillStyle=c;x.beginPath();x.arc(px,py,6,0,Math.PI*2);x.fill()}x.fillStyle='#fff6e2';for(const [px,py] of [[78,56],[128,42],[178,56]]){x.beginPath();x.arc(px,py,7,0,Math.PI*2);x.fill();x.lineWidth=3;x.stroke()}}
+    else if(T.k==='kristal'){const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#9fd0ec');g.addColorStop(1,'#e8f6fc');x.fillStyle=g;x.fillRect(0,0,w,h);x.fillStyle='#fffbe8';x.beginPath();x.arc(60,62,26,0,Math.PI*2);x.fill();
+      x.fillStyle='#cfe6f4';x.beginPath();x.ellipse(60,260,150,70,0,0,Math.PI*2);x.fill();x.fillStyle='#ffffff';x.beginPath();x.ellipse(190,300,170,84,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(40,318,140,60,0,0,Math.PI*2);x.fill();
+      const pine=(px,py,s)=>{for(let i=0;i<3;i++){const ww=(34-i*8)*s,yy=py-i*26*s;x.fillStyle='#3f7f74';x.strokeStyle=I;x.lineWidth=4;x.beginPath();x.moveTo(px-ww,yy);x.lineTo(px,yy-44*s);x.lineTo(px+ww,yy);x.closePath();x.fill();x.stroke();x.fillStyle='#fff';x.beginPath();x.moveTo(px-ww*0.5,yy-22*s);x.lineTo(px,yy-44*s);x.lineTo(px+ww*0.5,yy-22*s);x.quadraticCurveTo(px,yy-14*s,px-ww*0.5,yy-22*s);x.fill()}x.fillStyle='#7a4a2a';x.fillRect(px-4*s,py,8*s,12*s)};
+      pine(70,250,1);pine(126,268,0.8);pine(206,256,1.15);
+      x.strokeStyle='#ffffff';x.lineWidth=7;x.save();x.translate(188,84);for(let k=0;k<3;k++){x.rotate(Math.PI/3);x.beginPath();x.moveTo(-42,0);x.lineTo(42,0);x.stroke();for(const s of [-1,1]){x.beginPath();x.moveTo(s*26,0);x.lineTo(s*36,-10);x.moveTo(s*26,0);x.lineTo(s*36,10);x.stroke()}}x.restore();
+      x.fillStyle='#fff';for(let i=0;i<26;i++){const px=(i*97)%256,py=(i*61+30)%230;x.beginPath();x.arc(px,py,2+(i%3),0,Math.PI*2);x.fill()}}
+    else{const g=x.createRadialGradient(90,110,10,128,160,230);g.addColorStop(0,'#3a2a7a');g.addColorStop(0.55,'#1a1a4a');g.addColorStop(1,'#0a0c26');x.fillStyle=g;x.fillRect(0,0,w,h);
+      for(let i=0;i<70;i++){const px=(i*131+17)%256,py=(i*89+23)%320,r=0.8+(i%4)*0.5;x.fillStyle=i%7?'rgba(255,255,255,.8)':'rgba(154,244,255,.95)';x.beginPath();x.arc(px,py,r,0,Math.PI*2);x.fill()}
+      const P=[[70,176],[78,104],[108,138],[148,138],[178,104],[186,176],[168,226],[128,240],[88,226]];x.strokeStyle='rgba(154,244,255,.7)';x.lineWidth=2.5;x.beginPath();P.forEach(([px,py],i)=>i?x.lineTo(px,py):x.moveTo(px,py));x.closePath();x.stroke();
+      x.beginPath();x.moveTo(108,186);x.lineTo(128,204);x.lineTo(148,186);x.stroke();
+      const st=(px,py,r)=>{x.fillStyle='#fff6c8';x.beginPath();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,q=i%2?r*0.42:r;x.lineTo(px+Math.cos(a)*q,py-Math.sin(a)*q)}x.closePath();x.fill()};P.forEach(([px,py],i)=>st(px,py,i%2?7:10));st(108,186,8);st(148,186,8);st(128,204,6);
+      x.fillStyle='#8a6ae0';x.beginPath();x.arc(206,58,20,0,Math.PI*2);x.fill();x.strokeStyle='#3ad0d8';x.lineWidth=4;x.beginPath();x.ellipse(206,58,34,9,-0.4,0,Math.PI*2);x.stroke();x.fillStyle='#fff2b8';x.beginPath();x.arc(46,282,13,0,Math.PI*2);x.fill()}})}
+function rpfTablo(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B);A(RFG.box(0.5,0.6,0.04),B,0,0,0.02);A(RFG.box(0.44,0.54,0.012),itc(k==='kristal'?0xffffff:T.A2),0,0,0.04);
+  const p=new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.5),rpfPicMat(T));p.position.z=0.0475;G.add(p);for(const sx of [-1,1])for(const sy of [-1,1])A(RFG.sph(0.024,8,6),B,sx*0.235,sy*0.285,0.04);
+  if(k==='kraliyet')rpCrown(A,0,0.3,0.03,0.045,0.06,B);else if(k==='kristal')rpfFlake(A,0,0.325,0.035,0.045,itc(0xffffff));else rpfStar(A,0,0.33,0.035,0.05,rpGlow(T.G));
+  return G}
+function rpfSaat(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B),face=itc(k==='galaksi'?T.A:T.C),hand=k==='galaksi'?rpGlow(0xffffff):itc(k==='kristal'?T.D:T.A);
+  A(RFG.cyl(0.17,0.17,0.04,28),face,0,0,0.02,Math.PI/2);A(RFG.tor(0.17,0.022,8,28),B,0,0,0.04);
+  for(let i=0;i<12;i++){const a=i/12*Math.PI*2,x=Math.sin(a)*0.135,y=Math.cos(a)*0.135;if(k==='galaksi')rpfStar(A,x,y,0.045,i%3?0.009:0.016,rpGlow(i%3?0xffffff:0xffcf40));else A(RFG.sph(i%3?0.007:0.012,6,5),i%3?hand:B,x,y,0.045)}
+  A(RFG.box(0.014,0.105,0.01),hand,0,0.045,0.05);A(RFG.box(0.075,0.014,0.01),hand,0.03,0,0.05);A(RFG.sph(0.015,8,6),B,0,0,0.056);
+  if(k==='kraliyet'){rpCrown(A,0,0.195,0.03,0.052,0.07,B);for(const s of [-1,1]){A(RFG.sph(0.04,8,6),B,s*0.2,-0.02,0.03,0,0,s*0.5).scale.set(0.45,1.2,0.4);A(RFG.sph(0.034,8,6),B,s*0.19,-0.1,0.03,0,0,s*0.9).scale.set(0.45,1.2,0.4)}A(RFG.sph(0.02,8,6),itc(0xc8203a),0,-0.2,0.04)}
+  else if(k==='kristal'){for(let i=0;i<6;i++){const a=i/6*Math.PI*2,sx=Math.sin(a),cy=Math.cos(a);A(RFG.box(0.016,0.11,0.012),rpSilver(),sx*0.245,cy*0.245,0.03,0,0,-a);for(const s of [-1,1])A(RFG.box(0.012,0.045,0.01),rpSilver(),sx*0.262+cy*s*0.018,cy*0.262-sx*s*0.018,0.03,0,0,-a-s*0.8);
+      A(new THREE.OctahedronGeometry(0.016),rpGlow(T.G),sx*0.31,cy*0.31,0.03).castShadow=false}}
+  else{const r=A(RFG.tor(0.26,0.007,5,40),rpGlow(T.D),0,0,0.03,0,0,0.5);r.scale.y=0.5;r.castShadow=false;A(RFG.sph(0.03,10,8),itc(T.B),Math.cos(0.5)*0.26,Math.sin(0.5)*0.26,0.035);A(RFG.sph(0.016,8,6),rpGlow(0xfff2b8),-Math.cos(0.5)*0.26,-Math.sin(0.5)*0.26,0.035).castShadow=false}
+  return G}
+const RPF_MIRROR=new THREE.MeshBasicMaterial({color:0xd6efff});
+function rpfAyna(T){const G=new THREE.Group(),A=rpfAdd(G),k=T.k,B=itc(T.B);
+  A(RFG.tor(0.17,0.026,8,32),B,0,0,0.03).scale.y=1.3;A(RFG.cyl(0.166,0.166,0.012,28),RPF_MIRROR,0,0,0.022,Math.PI/2).scale.z=1.3;
+  for(const [x,y,l] of [[-0.05,0.05,0.17],[0.0,0.0,0.1]])A(RFG.box(0.012,l,0.002),rpGlow(0xffffff),x,y,0.03,0,0,-0.6).castShadow=false;
+  if(k==='kraliyet'){rpCrown(A,0,0.24,0.03,0.05,0.065,B);for(const s of [-1,1]){A(RFG.sph(0.045,8,6),B,s*0.1,0.235,0.03,0,0,-s*1.1).scale.set(0.4,1.15,0.35);A(RFG.sph(0.03,8,6),B,s*0.19,-0.07,0.035)}A(RFG.sph(0.024,8,6),itc(0xc8203a),0,-0.245,0.04)}
+  else if(k==='kristal'){rpfFlake(A,0,0.275,0.035,0.05,itc(0xffffff));for(let i=0;i<5;i++){const t=(i-2)/2,x=t*0.115,L=0.06+(1-Math.abs(t))*0.055,ye=-0.221*Math.sqrt(1-(x/0.17)*(x/0.17));A(RFG.cone(0.016,L,6),rpGlass(0xbfe6ff,0.75),x,ye-0.022-L/2,0.03,Math.PI).castShadow=false}}
+  else{A(RFG.tor(0.245,0.034,8,30,Math.PI*1.05),rpGlow(0xffcf40),0.02,0,0.012,0,0,Math.PI*0.48).castShadow=false;for(const [x,y,r] of [[0.21,0.2,0.04],[0.25,-0.02,0.028],[0.18,-0.2,0.034]])rpfStar(A,x,y,0.03,r,rpGlow(T.G))}
+  return G}
+
+// ---------- 2 kıyafet parçası ----------
+Object.assign(ACC_BUILD,{
+  // boyun: ince bant + pilili rozet + iki kurdele ucu; ortasında temanın işareti (c.orn)
+  rpfrozet(n,h,c){const p=n||h;accMesh(p,new THREE.TorusGeometry(0.088,0.011,6,22),c.c,0,0.03,0.035,Math.PI/2+0.15,0,0);const g=new THREE.Group();g.userData.cacc=true;g.position.set(0,-0.012,0.135);g.rotation.x=-0.3;p.add(g);
+    for(const s of [-1,1]){const t=new THREE.BoxGeometry(0.026,0.07,0.007);t.translate(0,-0.035,0);accMesh(g,t,c.c,s*0.014,-0.02,-0.004,0,0,s*0.28)}
+    for(let i=0;i<10;i++){const a=i/10*Math.PI*2;accMesh(g,new THREE.SphereGeometry(0.017,8,6),i%2?c.c:c.c3||c.c,Math.cos(a)*0.033,Math.sin(a)*0.033,0).scale.z=0.45}
+    accMesh(g,new THREE.CylinderGeometry(0.027,0.027,0.012,16),c.c2,0,0,0.006,Math.PI/2,0,0);
+    if(c.orn==='tac'){for(const x of [-0.011,0,0.011])accMesh(g,new THREE.ConeGeometry(0.006,x?0.014:0.021,4),0x7a1424,x,x?0.001:0.004,0.014);accMesh(g,new THREE.BoxGeometry(0.03,0.007,0.004),0x7a1424,0,-0.008,0.014)}
+    else if(c.orn==='kar'){for(let k=0;k<3;k++)accMesh(g,new THREE.BoxGeometry(0.036,0.005,0.004),0xffffff,0,0,0.014,0,0,k*Math.PI/3)}
+    else{const s=new THREE.Mesh(RFG.star(),rpoGlow(0xfff2b8));s.scale.set(0.019,0.019,0.006);s.position.set(0,0,0.014);g.add(s)}},
+  // şapka: külah (kulakların arasına sığar) + kenar + ponpon; temaya göre şerit / kürk + kar tanesi / yıldızlar
+  rpfkulah(n,h,c){accMesh(h,new THREE.ConeGeometry(0.07,0.2,18),c.c,0,0.41,0.0);accMesh(h,new THREE.TorusGeometry(0.07,0.014,8,22),c.c2,0,0.312,0.0,Math.PI/2,0,0);accMesh(h,new THREE.SphereGeometry(0.026,10,8),c.c2,0,0.515,0);
+    if(c.orn==='tac'){for(const [y,r] of [[0.36,0.054],[0.41,0.036],[0.46,0.019]])accMesh(h,new THREE.TorusGeometry(r,0.006,5,18),c.c2,0,y,0,Math.PI/2,0,0)}
+    else if(c.orn==='kar'){for(let i=0;i<12;i++){const a=i/12*Math.PI*2;accMesh(h,new THREE.SphereGeometry(0.02,8,6),0xffffff,Math.sin(a)*0.072,0.314,Math.cos(a)*0.072)}
+      for(let k=0;k<3;k++)accMesh(h,new THREE.BoxGeometry(0.04,0.006,0.004),0xffffff,0,0.385,0.046,-0.34,0,k*Math.PI/3)}
+    else{for(const [x,y,z,r,ry] of [[0,0.375,0.052,0.017,0],[0.036,0.43,0.02,0.012,1.0],[-0.04,0.4,0.028,0.012,-0.9],[0.0,0.45,-0.03,0.012,3.1]]){const s=new THREE.Mesh(RFG.star(),rpoGlow(0xffcf40));s.scale.set(r,r,0.004);s.position.set(x,y,z);s.rotation.set(-0.34,ry,0);h.add(s)}}}});
+
+// ---------- katalog + kıyafet kayıtları ----------
+const RPF_BUILD={saksi:rpfSaksi,puf:rpfPuf,fener:rpfFener,sehpa:rpfSehpa,lamba:rpfLamba,heykel:rpfHeykel,flama:rpfFlama,tablo:rpfTablo,saat:rpfSaat,ayna:rpfAyna};
+const RPF_HALF={saksi:[0.22,0.22],puf:[0.28,0.28],fener:[0.2,0.2],sehpa:[0.27,0.27],lamba:[0.21,0.21],heykel:[0.2,0.2]};
+const RPF_CLO=[];
+for(const k in RPF_SETS){const T=RPF_SETS[k];
+  for(const t in RPF_BUILD){const id=rpfId(t,k),[name,desc]=RPF_NAMES[t][k],wall=RPF_KIND[t]==='w';
+    (wall?WALL_BUILD:DECOR_BUILD)[id]=()=>RPF_BUILD[t](T);
+    pkAdd(Object.assign({id,kind:wall?'walldecor':'decor',name,price:0,rp:'f_'+k,rpf:t,desc:desc+' Royal Pass ücretsiz yol ödülü.'},wall?{}:{half:RPF_HALF[t]}))}
+  const mk=(t,slot,acc,cols)=>{const id=rpfId(t,k),[name,desc]=RPF_NAMES[t][k];if(CLO[id])return;const c=Object.assign({id,slot,name,desc,roles:['waiter','barista','cashier'],gems:5,rp:true,pk:'rp',rpf:t,acc,orn:T.orn},cols);CLO[id]=c;PK_CLO_ALL.push(c);RPF_CLO.push(c)};
+  mk('rozet','neck','rpfrozet',{c:T.A,c2:k==='galaksi'?0x3ad0d8:T.B,c3:k==='kraliyet'?0x9a2a3a:k==='kristal'?0xf6fcff:0x34307a});
+  mk('kulah','hat','rpfkulah',{c:T.A,c2:k==='kristal'?0xffffff:k==='galaksi'?0x8a6ae0:T.B})}
+PK_RP_WHERE.walldecor='Market › Dekor';
+
+// ---------- Pass bağlantısı ----------
+const rpfItem=(i,season)=>{const t=RPF_TIERS[i];return t?rpfId(t,rpSetOf(season).k):null};
+const rpfSetName=season=>(RPF_SETS[rpSetOf(season).k]||{}).ad||'';
+{const _rr=rpReward;rpReward=function(i,royal){if(!royal){const R=rpS(),id=rpfItem(i,R.season);if(id&&(CAT[id]||CLO[id])){const took=R.cf[i];if(took==='it'||(!took&&!(S.rpGot&&S.rpGot[id])))return {k:'item',id,n:1}}}return _rr.apply(this,arguments)}}
+function rpfMigrate(){const R=S.rp;if(!R||!R.cf||R.season!==rpSeason())return;for(const i in RPF_TIERS){const id=rpfItem(+i,R.season);if(id&&R.cf[i]&&R.cf[i]!=='it'&&!(S.rpGot&&S.rpGot[id]))delete R.cf[i]}}
+{const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{rpfMigrate();pkClothSync()}catch(e){console.warn('pass ücretsiz',e)}return r}}
+const RPF_LBL={flama:'Flama',saksi:'Saksı',rozet:'Rozet',tablo:'Tablo',puf:'Puf',saat:'Saat',kulah:'Külah',fener:'Fener',sehpa:'Sehpa',ayna:'Ayna',lamba:'Lamba',heykel:'Heykel'};
+{const _rp=renderPass;renderPass=function(){_rp.apply(this,arguments);try{const w=UI.rpW;if(!w||w.m.hidden)return;const R=rpS();
+    w.body.querySelectorAll('.rpBox.free').forEach(b=>{const i=+b.dataset.c,r=rpReward(i,false);if(r.k!=='item')return;const nm=rpItemName(r.id);b.classList.add('rpi');b.title=nm;
+      const im=b.querySelector('img');if(im)im.outerHTML=rpItemArt(r.id,'rpIt');const lb=b.querySelector('b');if(lb)lb.textContent=RPF_LBL[RPF_TIERS[i]]||'';
+      if(!b.classList.contains('can'))b.onclick=()=>{sfx('tap');const got=!!R.cf[i];rpMsg(`${rpItemArt(r.id,'rpMi')}<span><b>${nm}</b> · ${got?'sende':`ücretsiz ödül · kademe ${i}’de senin olur`}</span>`,3000)}});
+    const lf=w.body.querySelector('.rpLbl .f');if(lf&&!lf.dataset.k){lf.dataset.k='1';lf.classList.add('kol');lf.innerHTML=`Ücretsiz<small>${rpfSetName(R.season)}<br>koleksiyonu</small>`}}catch(e){console.warn('pass ücretsiz',e)}}}
+{const st=document.createElement('style');st.textContent=`.rpLbl .f.kol{flex-direction:column;gap:1px;line-height:1.05;text-align:center;padding:0 2px}.rpLbl .f.kol small{display:block;font-family:var(--font-body,inherit);font-size:8.5px;font-weight:800;opacity:.78;line-height:1.08}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
