@@ -1742,6 +1742,7 @@ function applyFloor(id){const c=CAT[id];if(!c)return;
 
 // --- yerleşik mobilya kaydı (çalışma zamanı) ---
 const FURN=new Map();              // uid → {rec,group,boxes,table?}
+let FVER=0;                        // mobilya her değiştiğinde artar (kare doluluk önbelleği: p31)
 let TABLES=[];                     // müşteri masaları (yalnızca yerleştirilmiş)
 const yawOf=r=>(r||0)*Math.PI/2;
 function decorBoxes(rec){const c=CAT[rec.id];if(!c.half||c.flat)return [];let [hx,hz]=c.half;if((rec.rot||0)%2)[hx,hz]=[hz,hx];return [{minX:rec.x-hx,maxX:rec.x+hx,minZ:rec.z-hz,maxZ:rec.z+hz}]}
@@ -1755,8 +1756,8 @@ function spawnFurn(rec){const c=CAT[rec.id];const G=buildFurnGroup(rec);placeGro
   if(c.kind==='table'){const W=(c.seats===4?set4World:setWorld)(rec.x,rec.z,yawOf(rec.rot));R.boxes=W.boxes;R.table={id:rec.uid,uid:rec.uid,center:W.center,topY:W.topY,seats:W.seats,occupant:null,cap:W.seats.length};
     W.seats.forEach(s=>s.table=R.table)}
   else if(c.kind==='decor')R.boxes=decorBoxes(rec);
-  FURN.set(rec.uid,R);return R}
-function despawnFurn(uid){const R=FURN.get(uid);if(!R)return;scene.remove(R.group);FURN.delete(uid)}
+  FURN.set(rec.uid,R);FVER++;return R}
+function despawnFurn(uid){const R=FURN.get(uid);if(!R)return;scene.remove(R.group);FURN.delete(uid);FVER++}
 function refreshWorld(){TABLES=[...FURN.values()].filter(R=>R.table).map(R=>R.table);
   // lamba ışıkları masaların üstüne
   const ts=[...FURN.values()].filter(R=>R.table);LAMP_POOL.forEach((pl,i)=>{const R=ts[i];if(R){pl.position.set(R.rec.x,WALL_H-0.7,R.rec.z);pl.intensity=4}else{pl.intensity=0;pl.position.set(0,-5,0)}});
@@ -1772,14 +1773,17 @@ function candidateInfo(rec){const c=CAT[rec.id];if(c.kind==='table'){const W=(c.
 function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
   if(c.kind==='walldecor'){if(rec.slot==null||rec.slot<0||rec.slot>=WALL_SLOTS.length)return 'Duvarda boş yer yok';for(const [u,R] of FURN)if(u!==exUid&&CAT[R.rec.id].kind==='walldecor'&&R.rec.slot===rec.slot)return 'Bu duvar yeri dolu';return null}
   const {boxes,points}=candidateInfo(rec);
-  const lim={minX:RM.x0+0.12,maxX:RM.x1+GDN.r-0.12,minZ:RM.z0+0.12,maxZ:RM.z1+GDN.f-0.12};
+  const lim={minX:RM.x0-0.05,maxX:RM.x1+GDN.r+0.05,minZ:RM.z0-0.05,maxZ:RM.z1+GDN.f+0.05};   // V137: kareler duvara kadar kullanılır (sandalye sırtının 4 cm'lik taşması hoş görülür)
   const area=boxes.length?boxes:[{minX:rec.x-c.half[0],maxX:rec.x+c.half[0],minZ:rec.z-c.half[1],maxZ:rec.z+c.half[1]}];
   if(c.flat){let [hx,hz]=c.half;if((rec.rot||0)%2)[hx,hz]=[hz,hx];const b={minX:rec.x-hx,maxX:rec.x+hx,minZ:rec.z-hz,maxZ:rec.z+hz};
-    if(b.minX<RM.x0+0.05||b.maxX>RM.x1+GDN.r-0.05||b.minZ<RM.z0+0.05||b.maxZ>RM.z1+GDN.f-0.05)return 'Kafenin içine yerleştir';
+    if(b.minX<RM.x0-0.06||b.maxX>RM.x1+GDN.r+0.06||b.minZ<RM.z0-0.06||b.maxZ>RM.z1+GDN.f+0.06)return 'Kafenin içine yerleştir';
     for(const o of OBST)if(ovl(b,o,-0.02))return 'Tezgaha ya da sabit eşyaya denk geliyor';if(ovl(b,NO_BUILD[0]))return 'Kapı girişini kapatmasın';return null}
   for(const b of area)if(b.minX<lim.minX||b.maxX>lim.maxX||b.minZ<lim.minZ||b.maxZ>lim.maxZ)return 'Kafenin içine yerleştir';
-  for(const b of boxes){for(const o of OBST)if(ovl(b,o,0.04))return 'Başka bir eşyaya çarpıyor';
-    for(const o of furnBoxes(exUid))if(ovl(b,o,0.06))return 'Başka bir eşyaya çarpıyor';
+  // V137 kare kuralı: bir karede tek eşya durur; tezgâh/kasa arkası çalışanlara ayrılmıştır. Komşu karedeki eşyalar birbirine değebilir
+  // (4,5 cm'ye kadar iç içe geçme hoş görülür; daha fazlası çarpışmadır).
+  {const occ=tileOcc(),blk=tileBlk();for(const k of tileCells(boxes)){const u=occ.get(k);if(u!=null&&u!==exUid)return 'Bu karede başka bir eşya var';if(blk.has(k))return 'Tezgâh ve kasanın yeri çalışanlara ayrıldı'}}
+  for(const b of boxes){for(const o of OBST)if(ovl(b,o,0.02))return 'Başka bir eşyaya çarpıyor';
+    for(const o of furnBoxes(exUid))if(ovl(b,o,-0.045))return 'Başka bir eşyaya çarpıyor';
     for(const z of NO_BUILD)if(ovl(b,z))return 'Bu alan yürüme yolu (kapı / tezgah önü)';
     for(const ch of allChars())if(inside(ch.pos,b,0.25))return 'Bir kedinin üstüne konamaz'}
   for(const p of points){if(p.x<ROOM.minX||p.x>ROOM.maxX||p.z<ROOM.minZ||p.z>ROOM.maxZ)return 'Sandalyenin yanında yürüme payı kalmalı';
@@ -1798,8 +1802,9 @@ const customers=[],orders=[],jobs=[],baristaQ=[];
 let posaJob=null;   // eski ad: ilk baristanın işi (UI uyumu)
 const WSTAFF=[],BSTAFF=[],CSTAFF=[];   // çalışan nesneleri: {key,ch,i,...}
 let gameT=0;const sleep=s=>new Promise(r=>{const t0=gameT;const f=()=>{if(gameT-t0>=s-1e-6)r();else waiters.push(f)};waiters.push(f)});
-const waiters=[];function tickWaiters(){const w=waiters.splice(0);for(const f of w)f()}
-function tween(dur,f){return new Promise(r=>{let t=0;const step=()=>{t+=lastDt;const u=Math.min(1,t/dur);f(u*u*(3-2*u));if(u>=1)r();else waiters.push(step)};waiters.push(step)})}
+// V137: bekleyenlerden biri hata verirse diğerleri kaybolmasın (eskiden tek bir hata bütün bekleyen zincirleri dondururdu: herkes yerinde kalırdı)
+const waiters=[];let WF_ERR=0;function tickWaiters(){const w=waiters.splice(0);for(let i=0;i<w.length;i++){try{w[i]()}catch(e){if(!WF_ERR++)console.error('[bekleyen]',e)}}}
+function tween(dur,f){return new Promise(r=>{let t=0;const step=()=>{t+=lastDt;const u=Math.min(1,t/dur);try{f(u*u*(3-2*u))}catch(e){if(!WF_ERR++)console.error('[tween]',e)}if(u>=1)r();else waiters.push(step)};waiters.push(step)})}
 
 function defaultBoard(){const b=Array(CONFIG.board.w*CONFIG.board.h).fill(null);b[31]='bag_food';b[34]='bag_drink';
   b[24]='kahve1';b[25]='kahve1';b[28]='un1';b[29]='seker1';return b}
@@ -1902,7 +1907,8 @@ async function waitSpotClear(w,p){const near=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z)<
   while(n++<60&&WSTAFF.some(o=>o!==w&&(near(o.ch.pos,p)||(o.ch.path.length&&o.ch.goal&&near(o.ch.goal,p)))))await sleep(0.2)}
 const atSpot=(ch,p,e=0.05)=>!ch.path.length&&Math.hypot(ch.pos.x-p.x,ch.pos.z-p.z)<e;
 async function waiterLoop(w){let idle=0;const ch=w.ch;
-  while(true){const P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);
+  while(true){if(w.edIn){w.edAck=1;await sleep(0.2);continue}   // V137 düzenleme oturumu: bekler, sonra kapıdan girer (p75)
+    const P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);
     if(stTired(w)){await staffRest(w,P,yaw);continue}   // yorgun: molaya çıkar, işleri diğer garsonlar alır
     if(w.i===0&&!jobs.length&&idle>16&&atSpot(ch,P)&&await idleChat(w)){idle=0;continue}
     if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w);stDrain(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w)}   // bir iş hata verse de garson çalışmaya devam eder
@@ -1968,7 +1974,7 @@ function bIdleSpot(b){const mine=B_HOME[b.i]||B_HOME[0];if(BSTAFF.length<2)retur
 function takeable(b){const o2=BSTAFF.find(x=>x!==b);return baristaQ.findIndex(o=>{const Z=zoneOf(o.item);if(ZLOCK[Z]&&ZLOCK[Z]!==b)return false;
   if(o2&&!o2.busy&&o2.idleAt&&o2.idleAt.zone===Z&&!(b.idleAt&&b.idleAt.zone===Z)&&Math.hypot(o2.ch.pos.x-o2.idleAt.x,o2.ch.pos.z-o2.idleAt.z)<0.4)return false;return true})}
 async function baristaLoop(b){let idle=0;const ch=b.ch;
-  while(true){if(stTired(b)){const h=bIdleSpot(b);await staffRest(b,h,0);continue}const i=takeable(b);
+  while(true){if(b.edIn){b.edAck=1;await sleep(0.2);continue}if(stTired(b)){const h=bIdleSpot(b);await staffRest(b,h,0);continue}const i=takeable(b);
     if(i>=0){idle=0;b.idleAt=null;b.busy=true;const o=baristaQ.splice(i,1)[0];const Z=zoneOf(o.item);ZLOCK[Z]=b;o.state='PREPARING';
       try{await prepare(b,o);stDrain(b)}finally{unlockZ(Z,b);unlockZ('pick',b);b.busy=false}
       continue}
@@ -2905,8 +2911,8 @@ const snap=v=>Math.round(v/0.25)*0.25;   // 25 cm'lik kareler (p31_grid)
 function ghostify(G,ok){G.traverse(m=>{if(m.isMesh){m.material=ok?GHOST_OK:GHOST_BAD;m.castShadow=false}})}
 function findSpot(rec){const c=CAT[rec.id];if(c.kind==='walldecor')return;const ctr=screenToFloor(innerWidth/2,innerHeight*0.45)||new THREE.Vector3(1.5,0,0);
   const base={x:THREE.MathUtils.clamp(ctr.x,-1.5,3.8),z:THREE.MathUtils.clamp(ctr.z,-3,3)};
-  for(let r=0;r<=4;r+=0.25)for(let a=0;a<Math.max(1,r*10);a++){const t=a/Math.max(1,r*10)*Math.PI*2;rec.x=snap(base.x+Math.cos(t)*r);rec.z=snap(base.z+Math.sin(t)*r);if(!validatePlacement(rec,rec.uid))return}
-  rec.x=snap(base.x);rec.z=snap(base.z)}
+  for(let r=0;r<=5;r+=0.5)for(let a=0;a<Math.max(1,r*8);a++){const t=a/Math.max(1,r*8)*Math.PI*2;tileSnap(rec,base.x+Math.cos(t)*r,base.z+Math.sin(t)*r);if(!validatePlacement(rec,rec.uid))return}
+  tileSnap(rec,base.x,base.z)}   // V137: karelere oturur (p31)
 function startPlacement({rec,isNew,price,fromStore=false,fromEdit=false}){const c=CAT[rec.id];revertPreview();
   const orig={...rec};if(!isNew&&!fromStore){despawnFurn(rec.uid);refreshWorld()}
   if(isNew||fromStore)findSpot(rec);
@@ -2936,7 +2942,7 @@ function confirmPlacement(){if(!PL)return;const why=validatePlacement(PL.rec,PL.
 {let drag=null;const cv=renderer.domElement;
  cv.addEventListener('pointerdown',e=>{if(UI.mode==='place'&&PL&&CAT[PL.rec.id].kind!=='walldecor'){const p=screenToFloor(e.clientX,e.clientY);if(!p)return;drag={id:e.pointerId,ox:PL.rec.x-p.x,oz:PL.rec.z-p.z};cv.setPointerCapture(e.pointerId)}
    if(UI.mode==='edit')tapStart={x:e.clientX,y:e.clientY,t:performance.now()}});
- cv.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId||!PL)return;const p=screenToFloor(e.clientX,e.clientY);if(!p)return;PL.rec.x=snap(THREE.MathUtils.clamp(p.x+drag.ox,RM.x0,RM.x1+GDN.r));PL.rec.z=snap(THREE.MathUtils.clamp(p.z+drag.oz,RM.z0,RM.z1+GDN.f));moveGhost()});
+ cv.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId||!PL)return;const p=screenToFloor(e.clientX,e.clientY);if(!p)return;const ox=PL.rec.x,oz=PL.rec.z;tileSnap(PL.rec,p.x+drag.ox,p.z+drag.oz);if(PL.rec.x!==ox||PL.rec.z!==oz)moveGhost()});
  const up=e=>{if(drag&&drag.id===e.pointerId)drag=null;if(UI.mode==='edit'&&tapStart&&Math.hypot(e.clientX-tapStart.x,e.clientY-tapStart.y)<10&&performance.now()-tapStart.t<600)editTap(e.clientX,e.clientY);tapStart=null};
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up)}
 let tapStart=null;
@@ -2963,7 +2969,7 @@ function drawEditBar(){const pb=$('placebar');pb.hidden=false;if(selRing){scene.
   $('edDone').onclick=()=>{UI.edit=null;drawEditBar()};
   if(busy)return;
   $('edMove').onclick=()=>{const rec=R.rec;if(selRing){scene.remove(selRing);selRing=null}startPlacement({rec,isNew:false,price:0,fromEdit:true})};
-  if($('edRot'))$('edRot').onclick=()=>{const rec=R.rec;const old=rec.rot||0;rec.rot=(old+1)%4;const why=validatePlacement(rec,rec.uid);if(why){rec.rot=old;sfx('nope');toast(why,ic('rotate'));return}despawnFurn(rec.uid);spawnFurn(rec);refreshWorld();markDirty();drawEditBar()};
+  if($('edRot'))$('edRot').onclick=()=>{const rec=R.rec;const old=rec.rot||0,ox=rec.x,oz=rec.z;rec.rot=(old+1)%4;tileSnap(rec,ox,oz);const why=validatePlacement(rec,rec.uid);if(why){rec.rot=old;rec.x=ox;rec.z=oz;sfx('nope');toast(why,ic('rotate'));return}despawnFurn(rec.uid);spawnFurn(rec);refreshWorld();markDirty();drawEditBar()};
   if($('edChair'))$('edChair').onclick=()=>{const own=CATALOG.filter(x=>x.kind==='chair'&&S.owned[x.id]).map(x=>x.id);const i=own.indexOf(R.rec.chair);R.rec.chair=own[(i+1)%own.length];restyleTable(R);markDirty();toast(CAT[R.rec.chair].name,`<img src="${itemThumb(R.rec.chair)}" alt="">`,1400)};
   $('edStore').onclick=()=>{R.rec.stored=true;despawnFurn(R.rec.uid);refreshWorld();UI.edit=null;markDirty();toast(`${c.name} depoya kaldırıldı`,ic('box'));drawEditBar()}}
 
@@ -3582,7 +3588,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <p>Sol üstteki ${tagb('target','hedef','l')} sana aynı anda üç küçük görev verir (dokununca hepsini görürsün); tamamlayınca ekstra altın, XP ve elmas gelir. Seviye arttıkça müşteriler biraz daha sık uğrar.</p>`},
    {t:'Kafeni büyüt',art:`${ic('market')}${ic('table')}${ic('chair')}${ic('paint')}${ic('plant')}`,body:`<p>${tagb('market','Market','l')} sekmesinde masa, sandalye, duvar boyası, zemin, dekor ve ekipman var. Kilitli olanlar hangi seviyede açılacağını gösterir.</p>
      <ul class="gsteps"><li>${ic('move')}<span>Masa ya da dekor alınca kafede <b>sürükleyerek</b> yerleştir, ${tagb('rotate','Döndür','l')} ile çevir. Yeşil = uygun, kırmızı = yol kapanıyor.</span></li>
-     <li>${ic('move')}<span>Bir eşyayı taşımak için üstüne <b>basılı tut</b> ve sürükle: masalar, dekorlar, tezgâh, kasa, kapı ve pencereler taşınır. Yeşil yerlere bırakabilirsin; kırmızı yerler yolu kapatır.</span></li><li>${ic('pencil')}<span><b>Düzenle</b>’de eşyaya dokununca döndürür, sandalye stilini değiştirir ya da depoya kaldırırsın.</span></li><li>${ic('machine')}<span>Yeni ekipmanlar hazırlığı %25 hızlandırır.</span></li></ul>`},
+     <li>${ic('pencil')}<span>Ana ekrandaki <b>Düzenle</b> düğmesi kafeyi boşaltır: ekip ve müşteriler görünmez, zemin <b>karelere</b> bölünür. Bitince ekip kapıdan girip yerine geçer.</span></li><li>${ic('move')}<span>Bir eşyaya dokun, <b>Taşı</b>’ya bas: masalar, dekorlar, tezgâh, kasa, kapı ve pencereler taşınır. Her eşya belli sayıda kare kaplar; <b>yeşil</b> karelere konur, <b>kırmızı</b> kareler dolu ya da yolu kapatır. Aynı çubuktan döndürür, sandalye stilini değiştirir ya da depoya kaldırırsın.</span></li><li>${ic('machine')}<span>Yeni ekipmanlar hazırlığı %25 hızlandırır.</span></li></ul>`},
    {t:'Tarif Defteri',art:`${ic('book')}<img src="${productThumb('latte')}" alt=""><img src="${productThumb('pasta')}" alt="">`,body:`<ul class="gsteps"><li><span class="n">1</span><span><b>Keşfet:</b> tarifin malzemesini birleştirme tahtasında yap.</span></li>
      <li><span class="n">2</span><span><b>Ürünü aç:</b> ${tagb('book','Tarifler','l')}’de ${tagb('check','Ürünü aç','g')}’a dokun. Seviye ve altın ister; ilk ürünün ücretsiz.</span></li>
      <li><span class="n">3</span><span><b>Menüye ekle:</b> alttaki ${tagb('menu','Menü','l')}’de ürünü menüye ekle ya da çıkar. Müşteriler yalnızca menüdekileri sipariş eder.</span></li></ul>
@@ -4368,7 +4374,7 @@ function groupGiveUp(g,leavers,why){if(g.gaveUp&&why==='order')return;const n=le
   const R=repState();R.lost+=n;bump('lost',n);finEv('lost',n);sfx('nope');
   addReview({s:1,w:n,who:leavers[0].look.name+(n>1?` ve ${n-1} arkadaşı`:''),txt:why==='order'?'Kimse siparişimizi almadı, gittik.':'Yemeğimiz gelmedi, beklemekten vazgeçtik.',kind:'lost'});
   toast(`<b>${n>1?n+' müşteri':leavers[0].look.name} kızıp gitti</b><br>${why==='order'?'Siparişi zamanında alınmadı':'Siparişi çok gecikti'} · puanın düştü`,ic('sleepy'),2800)}
-async function angryLeave(c){const ch=c.char;c.state='LEAVING';c.bubble='angry';c.ate=true;ch.look=0;ch.acts.Chair_Sit_Idle_F.timeScale=1;
+async function angryLeave(c){const ch=c.char;c.state='LEAVING';c.bubble=c.angry==='edit'?null:'angry';c.ate=true;ch.look=0;ch.acts.Chair_Sit_Idle_F.timeScale=1;
   if(c.menu){scene.remove(c.menu);c.menu=null}await ch.standUp();freeSeat(c);await sleep(0.4);c.bubble=null;
   await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});scene.remove(ch.o);const i=customers.indexOf(c);if(i>=0)customers.splice(i,1)}
 // sabır göstergesi: balonun çevresindeki halka (yeşil → sarı → kırmızı)
@@ -5324,44 +5330,74 @@ async function cashierIdle(k){const R=REGS[k.i],st=R.stand,ch=k.ch;k.ready=false
 function staffIdleTick(dt){if(!IDLE.on||!S.created)return;if(!CASH_CHAIR)cashChair();for(const k of CSTAFF){if(k.idleBusy)continue;if(!cashIdleOk(k)){k.idleT=0;continue}k.idleT=(k.idleT||0)+dt;
     if(k.idleT>(k.idleNext||(k.idleNext=irnd(6,11)))){k.idleT=0;k.idleNext=irnd(12,22);cashierIdle(k)}}}
 
-// ================= KARELİ YERLEŞTİRME ALANI =================
-// Düzenleme/yerleştirme sırasında zemine 25 cm'lik kareler çizilir; eşya bu karelere oturur.
-// Eşyanın kapladığı kareler yeşil (uygun) ya da kırmızı (olmaz) yanar; sandalyelere yaklaşma/servis noktaları mavi,
-// kapı ve tezgah önündeki yürüme yolları turuncu gösterilir. Her konumda kapıdan bütün masalara, garson köşesine ve
-// tezgaha yol kaldığı denetlenir (validatePlacement) — servis yolunu kapatan konum kırmızı olur.
-const GRID_STEP=0.25;
+// ================= KARE ZEMİN (V137) =================
+// Kafenin zemini (bahçe dahil) 50 cm'lik KARELERE bölünür. Her eşya belli sayıda kare kaplar (iki kişilik masa 1×3, dört kişilik 3×3,
+// saksı 1×1, kasa 3×3, tezgâh 9×5 …) ve yalnızca karelere oturur; bir karede tek eşya durur.
+// Kareler yalnız Düzenle ve yerleştirme (satın alma) modunda görünür (setMode → gridShow).
+// Konumlar hâlâ 25 cm'nin katıdır: tek sayıda kare kaplayan eşyanın ortası kare ortasına, çift sayıda kaplayanınki kare çizgisine gelir;
+// bu yüzden eski kayıtlar bozulmaz (kareye oturmayan eski eşyalar açılışta en yakın kareye alınır: p74 tileAlignAll).
+// Yerleştirme kuralları değişmedi (validatePlacement / layoutCheck): yalnızca eşya-eşya çakışması kare tabanlı oldu.
+const GRID_STEP=0.25,TILE=0.5;
+const K_LANE={minX:-4.6,maxX:-1.1,minZ:-3.3,maxZ:-2.45};   // tezgâhın arkasındaki barista koridoru (tezgâhın kendi koordinatlarında)
+const tR2=v=>Math.round(v*100)/100;
+const tileN=()=>({nx:Math.round((RM.x1+GDN.r-RM.x0)/TILE),nz:Math.round((RM.z1+GDN.f-RM.z0)/TILE)});
+// bir kutunun bir eksende kapladığı kareler [i0,i1): kareye en az 12 cm giren kutu o kareyi kaplar (sandalye sırtı gibi küçük taşmalar sayılmaz)
+function tSpan(a,b,o){const mid=Math.floor(((a+b)/2-o)/TILE+1e-9);if(b-a<=0.12)return [mid,mid+1];
+  let i0=Math.floor((a-o)/TILE+1e-6);if(o+(i0+1)*TILE-a<0.12)i0++;let i1=Math.ceil((b-o)/TILE-1e-6);if(b-(o+(i1-1)*TILE)<0.12)i1--;return i1>i0?[i0,i1]:[mid,mid+1]}
+// kare anahtarı: k*1000+i
+function tileCells(boxes){const out=new Set(),N=tileN();for(const b of boxes){const [i0,i1]=tSpan(b.minX,b.maxX,RM.x0),[k0,k1]=tSpan(b.minZ,b.maxZ,RM.z0);
+    for(let i=Math.max(0,i0);i<Math.min(N.nx,i1);i++)for(let k=Math.max(0,k0);k<Math.min(N.nz,k1);k++)out.add(k*1000+i)}return out}
+// bir eşyanın (kayıt) dünya kutuları
+function recBoxes(rec){const c=CAT[rec.id];let bs=null;try{if(!c.flat){const I=candidateInfo(rec);if(I.boxes&&I.boxes.length)bs=I.boxes}}catch(e){}
+  if(!bs){let [hx,hz]=c.half||[0.2,0.2];if((rec.rot||0)%2)[hx,hz]=[hz,hx];bs=[{minX:rec.x-hx,maxX:rec.x+hx,minZ:rec.z-hz,maxZ:rec.z+hz}]}return bs}
+// eşyanın kare ölçüsü (en × boy) ve kareye oturtma
+const TDIM={};
+function tileDims(rec){const key=rec.id+'|'+((rec.rot||0)%2);const D=TDIM[key];if(D)return D;let a=1e9,b=-1e9,d=1e9,e=-1e9;
+  for(const q of recBoxes({...rec,x:0,z:0})){a=Math.min(a,q.minX);b=Math.max(b,q.maxX);d=Math.min(d,q.minZ);e=Math.max(e,q.maxZ)}
+  return TDIM[key]={nx:Math.max(1,Math.round((b-a)/TILE)),nz:Math.max(1,Math.round((e-d)/TILE))}}
+const tileSnapV=(v,o,n,N)=>tR2(o+(Math.max(0,Math.min(Math.max(0,N-n),Math.round((v-o)/TILE-n/2)))+n/2)*TILE);
+function tileSnap(rec,x,z){const D=tileDims(rec),N=tileN();rec.x=tileSnapV(x,RM.x0,D.nx,N.nx);rec.z=tileSnapV(z,RM.z0,D.nz,N.nz);return rec}
+const tileLabel=D=>`${D.nx}×${D.nz} kare`;
+// dolu kareler: mobilya (kare → uid) ve tezgâh/kasa blokları (koridor dahil)
+const TOCC={v:-1,m:null,bv:'',b:null};
+function tileOcc(){if(TOCC.v===FVER&&TOCC.m)return TOCC.m;const m=new Map();for(const [uid,R] of FURN){if(!R.boxes||!R.boxes.length)continue;for(const k of tileCells(R.boxes))if(!m.has(k))m.set(k,uid)}TOCC.v=FVER;TOCC.m=m;return m}
+function blkBoxes(b){try{return b==='k'?KOBST.concat([boxW(K_LANE,KP,K_PIV)]):b==='c'?COBST.slice():KOBST.concat(COBST,[boxW(K_LANE,KP,K_PIV)])}catch(e){return []}}
+function tileBlk(){const key=[KP.x,KP.z,KP.r,CP.x,CP.z,CP.r,RM.x0,RM.z0,KOBST.length,COBST.length].join('|');if(TOCC.bv===key&&TOCC.b)return TOCC.b;TOCC.bv=key;return TOCC.b=tileCells(blkBoxes())}
+function tileBB(set){let a=1e9,c=-1,d=1e9,e=-1;for(const k of set){const i=k%1000,j=(k-i)/1000;a=Math.min(a,i);c=Math.max(c,i);d=Math.min(d,j);e=Math.max(e,j)}return set.size?{nx:c-a+1,nz:e-d+1}:{nx:0,nz:0}}
+
 // oda büyüyünce kareli katman yeniden kurulur
-function gridRebuild(){if(!GRID.g)return;const on=GRID.on;scene.remove(GRID.g);disposeTree(GRID.g);GRID.g=null;GRID.key='';if(on)gridShow(true)}
+function gridRebuild(){FVER++;TOCC.bv='';if(!GRID.g)return;const on=GRID.on;scene.remove(GRID.g);disposeTree(GRID.g);GRID.g=null;GRID.key='';if(on)gridShow(true)}
 const gsnap=v=>Math.round(v/GRID_STEP)*GRID_STEP;
 const GRID={g:null,lines:null,foot:null,res:null,on:false,key:''};
 function gridBuild(){if(GRID.g)return;const G=new THREE.Group();G.renderOrder=5;scene.add(G);GRID.g=G;
-  // çizgiler: her 25 cm ince, her metre kalın
-  const nx=Math.round((ROOM_W+GDN.r)/GRID_STEP),nz=Math.round((ROOM_D+GDN.f)/GRID_STEP),S=24,cv=document.createElement('canvas');cv.width=nx*S;cv.height=nz*S;const c=cv.getContext('2d');
-  for(let i=0;i<=nx;i++){c.fillStyle=i%4===0?'rgba(255,255,255,.55)':'rgba(255,255,255,.28)';c.fillRect(i*S-(i%4===0?1.5:0.75),0,i%4===0?3:1.5,cv.height)}
-  for(let k=0;k<=nz;k++){c.fillStyle=k%4===0?'rgba(255,255,255,.55)':'rgba(255,255,255,.28)';c.fillRect(0,k*S-(k%4===0?1.5:0.75),cv.width,k%4===0?3:1.5)}
+  // kareler: açık çizgi + koyu ince gölge (her zemin renginde okunur), dama gibi çok hafif tonlama
+  const {nx,nz}=tileN(),P=nx*nz>700?32:48,cv=document.createElement('canvas');cv.width=nx*P;cv.height=nz*P;const c=cv.getContext('2d');
+  c.fillStyle='rgba(255,255,255,.09)';for(let i=0;i<nx;i++)for(let k=0;k<nz;k++)if((i+k)%2)c.fillRect(i*P,k*P,P,P);
+  const ln=(col,w)=>{c.fillStyle=col;for(let i=0;i<=nx;i++)c.fillRect(i*P-w/2,0,w,cv.height);for(let k=0;k<=nz;k++)c.fillRect(0,k*P-w/2,cv.width,w)};
+  ln('rgba(74,42,20,.22)',P/7);ln('rgba(255,255,255,.88)',P/16);
   const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;tx.anisotropy=4;
-  const pl=new THREE.Mesh(new THREE.PlaneGeometry(nx*GRID_STEP,nz*GRID_STEP),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
-  pl.rotation.x=-Math.PI/2;pl.position.set(RM.x0+nx*GRID_STEP/2,0.032,RM.z0+nz*GRID_STEP/2);G.add(pl);GRID.lines=pl;
-  const quad=new THREE.PlaneGeometry(GRID_STEP*0.92,GRID_STEP*0.92);quad.rotateX(-Math.PI/2);
+  const pl=new THREE.Mesh(new THREE.PlaneGeometry(nx*TILE,nz*TILE),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
+  pl.rotation.x=-Math.PI/2;pl.position.set(RM.x0+nx*TILE/2,0.032,RM.z0+nz*TILE/2);G.add(pl);GRID.lines=pl;
+  const quad=new THREE.PlaneGeometry(TILE*0.88,TILE*0.88);quad.rotateX(-Math.PI/2);
   const mk=(n,op)=>{const m=new THREE.InstancedMesh(quad,new THREE.MeshBasicMaterial({transparent:true,opacity:op,depthWrite:false,vertexColors:false}),n);m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.count=0;m.frustumCulled=false;G.add(m);return m};
-  GRID.res=mk(1500,0.24);GRID.foot=mk(800,0.62);G.visible=false}
+  GRID.res=mk(1300,0.46);GRID.foot=mk(320,0.72);G.visible=false}
 const _gm=new THREE.Matrix4(),_gc=new THREE.Color();
-function gridCells(boxes){const out=new Set();for(const b of boxes){const i0=Math.floor((b.minX-RM.x0)/GRID_STEP+1e-6),i1=Math.ceil((b.maxX-RM.x0)/GRID_STEP-1e-6),k0=Math.floor((b.minZ-RM.z0)/GRID_STEP+1e-6),k1=Math.ceil((b.maxZ-RM.z0)/GRID_STEP-1e-6);
-    for(let i=Math.max(0,i0);i<i1;i++)for(let k=Math.max(0,k0);k<k1;k++)out.add(i+','+k)}return out}
-const cellPt=p=>Math.floor((p.x-RM.x0)/GRID_STEP)+','+Math.floor((p.z-RM.z0)/GRID_STEP);
-function gridPut(m,list){m.count=0;for(const [key,col,y] of list){if(m.count>=m.instanceMatrix.count)break;const [i,k]=key.split(',').map(Number);_gm.makeTranslation(RM.x0+(i+0.5)*GRID_STEP,y||0.036,RM.z0+(k+0.5)*GRID_STEP);m.setMatrixAt(m.count,_gm);m.setColorAt(m.count,_gc.set(col));m.count++}
+function gridPut(m,list){m.count=0;for(const [key,col,y] of list){if(m.count>=m.instanceMatrix.count)break;const i=key%1000,k=(key-i)/1000;_gm.makeTranslation(RM.x0+(i+0.5)*TILE,y||0.036,RM.z0+(k+0.5)*TILE);m.setMatrixAt(m.count,_gm);m.setColorAt(m.count,_gc.set(col));m.count++}
   m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
-// sabit bilgiler: yürüme yolları (turuncu) + mevcut masaların servis/yaklaşma noktaları (mavi)
-function gridReserved(exUid){const L=[];for(const k of gridCells(NO_BUILD))L.push([k,0xf2b45a]);
-  for(const [u,R] of FURN)if(u!==exUid&&R.table)for(const s of R.table.seats)for(const p of [s.A,s.serve])L.push([cellPt(p),0x5aa9e6]);
-  for(const p of [staffSeat.A,PREP_SPOT,PICKUP_SPOT])L.push([cellPt(p),0x5aa9e6]);return L}
+// dolu kareler (eşyalar, tezgâh, kasa): hafif altın tonu → "her eşyanın kare ölçüsü" bir bakışta görülür
+function gridReserved(exUid){const L=[],seen=new Set();const add=(set,col)=>{for(const k of set)if(!seen.has(k)){seen.add(k);L.push([k,col])}};
+  for(const [u,R] of FURN)if(u!==exUid&&R.boxes&&R.boxes.length)add(tileCells(R.boxes),0xfff0b0);
+  add(tileBlk(),0xfff0b0);return L}
 function gridShow(on){gridBuild();GRID.on=on;GRID.g.visible=on;if(!on){GRID.foot.count=0;GRID.key='';return}gridRefresh()}
-function gridRefresh(){if(!GRID.on)return;const ex=PL&&PL.rec?PL.rec.uid:null;gridPut(GRID.res,gridReserved(ex));gridFoot()}
-// yerleştirilen eşyanın kapladığı kareler
-function gridFoot(){if(!GRID.on||!GRID.foot)return;if(UI.mode!=='place'||!PL||!PL.rec||CAT[PL.rec.id].kind==='walldecor'){GRID.foot.count=0;return}
-  const rec=PL.rec,c=CAT[rec.id];const ok=!validatePlacement(rec,rec.uid);const key=rec.id+'|'+rec.x+'|'+rec.z+'|'+rec.rot+'|'+ok;if(key===GRID.key)return;GRID.key=key;
-  let boxes,points=[];if(c.flat){let [hx,hz]=c.half;if((rec.rot||0)%2)[hx,hz]=[hz,hx];boxes=[{minX:rec.x-hx,maxX:rec.x+hx,minZ:rec.z-hz,maxZ:rec.z+hz}]}else{const I=candidateInfo(rec);boxes=I.boxes.length?I.boxes:[{minX:rec.x-(c.half?c.half[0]:0.2),maxX:rec.x+(c.half?c.half[0]:0.2),minZ:rec.z-(c.half?c.half[1]:0.2),maxZ:rec.z+(c.half?c.half[1]:0.2)}];points=I.points}
-  const L=[];for(const k of gridCells(boxes))L.push([k,ok?0x5ccf6a:0xe5534b,0.04]);for(const p of points)L.push([cellPt(p),ok?0x5aa9e6:0xe5534b,0.041]);gridPut(GRID.foot,L)}
+function gridRefresh(){if(!GRID.on)return;const ex=PL&&PL.rec?PL.rec.uid:null;gridPut(GRID.res,gridReserved(ex));GRID.key='';gridFoot()}
+// öne çıkan kareler: taşınan eşyanın ayak izi (yeşil/kırmızı) ya da seçili eşyanın kareleri (altın)
+function gridFoot(){if(!GRID.on||!GRID.foot)return;const L=[];let key='';
+  try{
+    if(UI.mode==='place'&&PL&&PL.rec&&CAT[PL.rec.id].kind!=='walldecor'){const r=PL.rec,ok=!PL.why;key='p|'+r.id+'|'+r.x+'|'+r.z+'|'+r.rot+'|'+ok;if(key!==GRID.key)for(const k of tileCells(recBoxes(r)))L.push([k,ok?0x2fc457:0xe5463c,0.043])}
+    else if(UI.mode==='edit'&&(LAY.on==='k'||LAY.on==='c')){const b=LAY.on,P=b==='k'?KP:CP,mv=MV.b===b,ok=!LAY.why;key='b|'+b+'|'+P.x+'|'+P.z+'|'+P.r+'|'+ok+'|'+mv;if(key!==GRID.key)for(const k of tileCells(blkBoxes(b)))L.push([k,mv?(ok?0x2fc457:0xe5463c):0xffa51e,0.043])}
+    else if(UI.mode==='edit'&&UI.edit!=null&&FURN.get(UI.edit)&&CAT[FURN.get(UI.edit).rec.id].kind!=='walldecor'){const r=FURN.get(UI.edit).rec;key='s|'+r.uid+'|'+r.x+'|'+r.z+'|'+r.rot;if(key!==GRID.key)for(const k of tileCells(recBoxes(r)))L.push([k,0xffa51e,0.043])}
+  }catch(e){}
+  if(key===GRID.key)return;GRID.key=key;gridPut(GRID.foot,L)}
 
 // ================= BULUT KAYIT (Supabase: public.saves) =================
 // Oturum açıksa kayıt hesaba bağlanır: telefon değişse de kafe kaybolmaz. Cihazdaki kayıt her zaman yedek olarak durur.
@@ -9333,18 +9369,15 @@ ${G} .modal>.lvcard:is(.repcard,.fincard,.supcard,.daycard) :is(h4){break-after:
    document.querySelectorAll('#game>.modal').forEach(setup)}catch(e){console.warn('yatay: raporlar',e)}
 }
 
-// ================= BASILI TUT · SÜRÜKLE · BIRAK (V136) =================
-// Kullanıcı isteği: eşyaya dokununca "Taşı" çıkmasın; eşyaya BASILI TUTUNCA oyuncu onu sürükleyip istediği yere bıraksın.
-// Tezgâh, kasa, kapı, pencereler, masalar, dekorlar, duvar süsleri: hepsi. Tutulurken konabilecek yerler YEŞİL, konamayacaklar KIRMIZI.
-// Yasak olan yalnızca karakterlerin yolunu/hareketini kapatan (ve başka eşyanın üstüne binen) yerlerdir: kurallar değişmedi
-// (validatePlacement / layoutCheck), yalnızca bütün zemine önceden uygulanıp boyanıyor.
-//  · Kafe modunda da çalışır: basılı tutunca Düzenle'ye geçilir, bırakınca kafeye dönülür.
-//  · Mobilya: geçerli yere bırakılınca hemen yerleşir; geçersizse eski yerine döner. Pencere/kapı: bırakınca kaydedilir.
-//  · Tezgâh/kasa: bırakınca "Tamam" onayı istenir (sayfa yenilenerek uygulanır; içeride müşteri varken taşınmaz).
-//  · Uygunluk haritası (VM): zemine serilen tek doku; hücreler eşyanın o noktaya konup konamayacağını gösterir, kare kare ve
-//    eşyanın yakınından başlayarak birkaç karede hesaplanır. Hız için makeGrid ve floodFrom aynı sonucu veren hızlı sürümlerle değişti.
-const TS={hold:null,drag:null,ptrs:new Set(),fromCafe:false,mapOn:false};
-const TS_LONG=380,TS_MOVE=12;
+// ================= DOKUN → "TAŞI" → KARELERE YERLEŞTİR (V137) =================
+// Kullanıcı isteği (V137): basılı tutarak taşıma KALDIRILDI. Düzenle'de eşyaya dokununca "Taşı" çıkar; ona dokununca eşya taşınır.
+//  · Mobilya: Taşı → eşya parmakla sürüklenir ya da bir kareye dokunulur → Yerleştir / Vazgeç / Döndür.
+//  · Tezgâh, kasa, kapı, pencereler: dokun → Taşı → sürükle → Yerleştir / Vazgeç / Döndür (ya da Öbür duvar).
+//    Düzenleme oturumunda kafe boş olduğundan (p75) tezgâh/kasa da SAYFA YENİLENMEDEN, canlı uygulanır.
+//  · Her şey 50 cm'lik karelere oturur (p31). Taşıma sırasında zemindeki kareler boyanır: YEŞİL = eşya oraya konabilir,
+//    KIRMIZI = konamaz (başka eşya, tezgâh önü, kapı girişi, sandalye yaklaşma payı, yolu kapatan yerler). Kurallar aynı
+//    (validatePlacement / layoutCheck); yalnızca bütün karelere önceden uygulanıp gösteriliyor.
+// Hız için makeGrid ve floodFrom aynı sonucu veren hızlı sürümlerle değiştirildi (V136).
 
 // ---- hızlı yol ızgarası (sonuç birebir aynı; hücre başına bütün kutuları gezmek yerine kutular ızgaraya basılır) ----
 const _mgOld=makeGrid,_ffOld=floodFrom;
@@ -9357,52 +9390,48 @@ floodFrom=function(g,x,z){const N=GX*GZ,seen=new Uint8Array(N);const st=nearestF
   while(n){const c=q[--n],i=c%GX,k=(c-i)/GX;for(let dk=-1;dk<=1;dk++)for(let di=-1;di<=1;di++){if(!di&&!dk)continue;const ni=i+di,nk=k+dk;if(ni<0||nk<0||ni>=GX||nk>=GZ)continue;const id=nk*GX+ni;
     if(g[id]===1||seen[id])continue;if(di&&dk&&(g[k*GX+ni]===1||g[nk*GX+i]===1))continue;seen[id]=1;q[n++]=id}}return seen};
 
-// ---- uygunluk haritası ----
-// Zemin karelerine (25 cm) serilir. Önce bütün zemin kırmızı; eşyanın konabildiği her yer bulundukça, eşyanın orada kaplayacağı
-// kareler yeşile döner (yani yeşil = "eşya buraya gelebilir", kırmızı = "hiçbir geçerli yerleşim bu kareyi kullanamaz":
-// başka eşyalar, tezgâh önü, kapı girişi, sandalye yaklaşma payları, yolu kapatan yerler).
-const VM={mesh:null,cv:null,ctx:null,tex:null,job:null,raf:0,x0:0,z0:0,nx:0,nz:0,cov:null,PX:10,OK:'rgba(64,200,92,.56)',NO:'rgba(236,70,60,.34)',ms:0};
-function vmEnsure(){const x0=RM.x0,z0=RM.z0,nx=Math.round((RM.x1+GDN.r-x0)/0.25),nz=Math.round((RM.z1+GDN.f-z0)/0.25);
+// ---- uygunluk haritası (kare kare) ----
+// Önce bütün kareler kırmızı; eşyanın konabildiği her yer bulundukça, eşyanın orada kaplayacağı kareler yeşile döner
+// (yeşil = "eşya bu kareye gelebilir", kırmızı = "hiçbir geçerli yerleşim bu kareyi kullanamaz").
+const VM={mesh:null,cv:null,ctx:null,tex:null,job:null,raf:0,x0:0,z0:0,nx:0,nz:0,cov:null,PX:24,OK:'rgba(64,200,92,.52)',NO:'rgba(236,70,60,.32)',ms:0,on:false,key:''};
+function vmEnsure(){const N=tileN(),nx=N.nx,nz=N.nz;
   if(!VM.mesh||VM.nx!==nx||VM.nz!==nz){if(VM.mesh){scene.remove(VM.mesh);VM.mesh.geometry.dispose();VM.mesh.material.dispose();VM.tex.dispose()}
     const cv=document.createElement('canvas');cv.width=nx*VM.PX;cv.height=nz*VM.PX;VM.cv=cv;VM.ctx=cv.getContext('2d');VM.tex=new THREE.CanvasTexture(cv);VM.tex.colorSpace=THREE.SRGBColorSpace;
-    const m=new THREE.Mesh(new THREE.PlaneGeometry(nx*0.25,nz*0.25),new THREE.MeshBasicMaterial({map:VM.tex,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3}));
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(nx*TILE,nz*TILE),new THREE.MeshBasicMaterial({map:VM.tex,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3}));
     m.rotation.x=-Math.PI/2;m.renderOrder=6;m.visible=false;scene.add(m);VM.mesh=m;VM.nx=nx;VM.nz=nz}
-  VM.x0=x0;VM.z0=z0;VM.mesh.position.set(x0+nx*0.125,0.034,z0+nz*0.125)}
-function vmPaint(i,k,ok){if(i<0||k<0||i>=VM.nx||k>=VM.nz)return;const c=VM.ctx,P=VM.PX;c.clearRect(i*P,k*P,P,P);c.fillStyle=ok?VM.OK:VM.NO;c.beginPath();if(c.roundRect)c.roundRect(i*P+1,k*P+1,P-2,P-2,2.5);else c.rect(i*P+1,k*P+1,P-2,P-2);c.fill()}
-// kutuların kapladığı kareler (düz dizi: i,k,i,k…)
-function vmCells(boxes){const out=[];for(const b of boxes){const i0=Math.max(0,Math.floor((b.minX-VM.x0)/0.25+1e-6)),i1=Math.min(VM.nx,Math.ceil((b.maxX-VM.x0)/0.25-1e-6)),k0=Math.max(0,Math.floor((b.minZ-VM.z0)/0.25+1e-6)),k1=Math.min(VM.nz,Math.ceil((b.maxZ-VM.z0)/0.25-1e-6));
-    for(let i=i0;i<i1;i++)for(let k=k0;k<k1;k++)out.push(i,k)}return out}
-// items: {x,z,t():bool, cells?():dizi, paint?(ok)} — yakından uzağa, kare başına birkaç ms'lik dilimlerle hesaplanır
+  VM.x0=RM.x0;VM.z0=RM.z0;VM.mesh.position.set(RM.x0+nx*TILE/2,0.034,RM.z0+nz*TILE/2)}
+function vmPaint(i,k,ok){if(i<0||k<0||i>=VM.nx||k>=VM.nz)return;const c=VM.ctx,P=VM.PX;c.clearRect(i*P,k*P,P,P);c.fillStyle=ok?VM.OK:VM.NO;c.beginPath();if(c.roundRect)c.roundRect(i*P+2,k*P+2,P-4,P-4,4);else c.rect(i*P+2,k*P+2,P-4,P-4);c.fill()}
+// items: {x,z,t():bool, cells?():Set, paint?(ok)} — yakından uzağa, kare başına birkaç ms'lik dilimlerle hesaplanır
 function vmRun(items,ox,oz,red){const c=VM.ctx;c.clearRect(0,0,VM.cv.width,VM.cv.height);VM.cov=new Uint8Array(VM.nx*VM.nz);if(red)for(let i=0;i<VM.nx;i++)for(let k=0;k<VM.nz;k++)vmPaint(i,k,false);
-  VM.tex.needsUpdate=true;VM.mesh.visible=true;TS.mapOn=true;for(const it of items)it.d=(it.x-ox)*(it.x-ox)+(it.z-oz)*(it.z-oz);items.sort((a,b)=>a.d-b.d);
+  VM.tex.needsUpdate=true;VM.mesh.visible=true;VM.on=true;for(const it of items)it.d=(it.x-ox)*(it.x-ox)+(it.z-oz)*(it.z-oz);items.sort((a,b)=>a.d-b.d);
   VM.job={items,i:0,t0:performance.now(),cpu:0};try{gridRefresh()}catch(e){}if(!VM.raf)VM.raf=requestAnimationFrame(vmStep)}
-function vmOne(it){let ok=false;try{ok=!!it.t()}catch(e){}if(it.paint){it.paint(ok);return}if(!ok||!it.cells)return;const cs=it.cells();for(let j=0;j<cs.length;j+=2){const id=cs[j+1]*VM.nx+cs[j];if(!VM.cov[id]){VM.cov[id]=1;vmPaint(cs[j],cs[j+1],true)}}}
+function vmOne(it){let ok=false;try{ok=!!it.t()}catch(e){}if(it.paint){it.paint(ok);return}if(!ok||!it.cells)return;for(const key of it.cells()){const i=key%1000,k=(key-i)/1000,id=k*VM.nx+i;if(i<VM.nx&&k<VM.nz&&!VM.cov[id]){VM.cov[id]=1;vmPaint(i,k,true)}}}
 function vmStep(){VM.raf=0;const J=VM.job;if(!J)return;const t0=performance.now();let n=0;
   while(J.i<J.items.length&&(n<4||performance.now()-t0<7)){vmOne(J.items[J.i++]);n++}
   J.cpu+=performance.now()-t0;VM.tex.needsUpdate=true;if(J.i<J.items.length)VM.raf=requestAnimationFrame(vmStep);else{VM.ms=Math.round(performance.now()-J.t0);VM.cpu=Math.round(J.cpu);VM.job=null}}
-function vmHide(){VM.job=null;TS.mapOn=false;if(VM.mesh)VM.mesh.visible=false;try{gridRefresh()}catch(e){}}
-// harita açıkken turuncu/mavi "ayrılmış kare" katmanı gizlenir (iki renk dili karışmasın)
-{const _gr=gridReserved;gridReserved=function(ex){return TS.mapOn?[]:_gr(ex)}}
-const r2=v=>+v.toFixed(2);
-// mobilya (duvar süsü dışı): her 25 cm'lik nokta için validatePlacement; geçerliyse eşyanın oradaki ayak izi yeşil
-function vmFurn(){if(!PL||!PL.rec||CAT[PL.rec.id].kind==='walldecor'){vmHide();return}vmEnsure();const base={...PL.rec},uid=PL.rec.uid,c=CAT[base.id],items=[];
-  let bx=null;try{if(!c.flat){const I=candidateInfo(base);if(I.boxes&&I.boxes.length)bx=I.boxes}}catch(e){}
-  if(!bx){let [hx,hz]=c.half||[0.2,0.2];if((base.rot||0)%2)[hx,hz]=[hz,hx];bx=[{minX:base.x-hx,maxX:base.x+hx,minZ:base.z-hz,maxZ:base.z+hz}]}
-  const rel=bx.map(b=>({minX:b.minX-base.x,maxX:b.maxX-base.x,minZ:b.minZ-base.z,maxZ:b.maxZ-base.z}));
-  for(let i=0;i<=VM.nx;i++)for(let k=0;k<=VM.nz;k++){const x=r2(VM.x0+i*0.25),z=r2(VM.z0+k*0.25);
-    items.push({x,z,t:()=>{base.x=x;base.z=z;return !validatePlacement(base,uid)},cells:()=>vmCells(rel.map(b=>({minX:b.minX+x,maxX:b.maxX+x,minZ:b.minZ+z,maxZ:b.maxZ+z})))})}
+function vmHide(){VM.job=null;VM.on=false;VM.key='';if(VM.mesh)VM.mesh.visible=false;try{gridRefresh()}catch(e){}}
+// harita açıkken altın "dolu kare" katmanı gizlenir (iki renk dili karışmasın)
+{const _gr=gridReserved;gridReserved=function(ex){return VM.on?[]:_gr(ex)}}
+// mobilya (duvar süsü dışı): eşyanın oturabileceği her kare konumu için validatePlacement; geçerliyse oradaki ayak izi yeşil
+function vmFurn(){if(!PL||!PL.rec||CAT[PL.rec.id].kind==='walldecor'){vmHide();return}vmEnsure();const base={...PL.rec},uid=PL.rec.uid,D=tileDims(base),N=tileN(),items=[];
+  for(let i=0;i<=N.nx-D.nx;i++)for(let k=0;k<=N.nz-D.nz;k++){const x=tR2(RM.x0+(i+D.nx/2)*TILE),z=tR2(RM.z0+(k+D.nz/2)*TILE);
+    items.push({x,z,t:()=>{base.x=x;base.z=z;return !validatePlacement(base,uid)},cells:()=>{base.x=x;base.z=z;return tileCells(recBoxes(base))}})}
   vmRun(items,PL.rec.x,PL.rec.z,true)}
-// tezgâh / kasa: bloğun her aday konumu için layoutCheck; geçerliyse bloğun oradaki kutuları yeşil
-function vmBlock(b){vmEnsure();const piv=b==='k'?K_PIV:C_PIV,baseB=b==='k'?KOBST_BASE:COBST_BASE,P0={...(b==='k'?KP:CP)},items=[];
-  for(let n=-56;n<=56;n++)for(let m=-56;m<=56;m++){const T={x:r2(P0.x+n*0.25),z:r2(P0.z+m*0.25),r:P0.r},wx=piv.x+T.x,wz=piv.z+T.z;if(wx<RM.x0-0.5||wx>RM.x1+0.5||wz<RM.z0-0.5||wz>RM.z1+0.5)continue;let W=null;
-    items.push({x:wx,z:wz,t:()=>{W=baseB.map(q=>boxW(q,T,piv));for(const w of W)if(w.minX<RM.x0-0.02||w.maxX>RM.x1+0.02||w.minZ<RM.z0-0.02||w.maxZ>RM.z1+0.02)return false;return !layoutCheck(b==='k'?T:KP,b==='c'?T:CP)},cells:()=>vmCells(W||[])})}
+// ---- tezgâh / kasa: kare adımıyla, bloğun sol-arka köşesi kare çizgisine oturur (duvara tam yaslanabilsin) ----
+const blkBase=b=>b==='k'?KOBST_BASE.concat([K_LANE]):COBST_BASE.slice();
+function blkBB(b,r){const piv=b==='k'?K_PIV:C_PIV;let a=1e9,c=-1e9,d=1e9,e=-1e9;for(const q of (b==='k'?KOBST_BASE:COBST_BASE)){const w=boxW(q,{x:0,z:0,r},piv);a=Math.min(a,w.minX);c=Math.max(c,w.maxX);d=Math.min(d,w.minZ);e=Math.max(e,w.maxZ)}return {minX:a,maxX:c,minZ:d,maxZ:e}}
+function blkSnap(b,x,z,r){const B=blkBB(b,r),ax=RM.x0-B.minX,az=RM.z0-B.minZ,mi=Math.max(0,Math.floor((RM.x1-RM.x0-(B.maxX-B.minX))/TILE+0.07)),mk=Math.max(0,Math.floor((RM.z1-RM.z0-(B.maxZ-B.minZ))/TILE+0.07));
+  return {x:tR2(ax+TILE*Math.max(0,Math.min(mi,Math.round((x-ax)/TILE)))),z:tR2(az+TILE*Math.max(0,Math.min(mk,Math.round((z-az)/TILE))))}}   // oda içinde kalır
+function vmBlock(b){vmEnsure();const piv=b==='k'?K_PIV:C_PIV,P0={...(b==='k'?KP:CP)},B=blkBB(b,P0.r),ax=RM.x0-B.minX,az=RM.z0-B.minZ,w=B.maxX-B.minX,d=B.maxZ-B.minZ,base=blkBase(b),items=[];
+  for(let i=0;i*TILE+w<=RM.x1-RM.x0+0.03;i++)for(let k=0;k*TILE+d<=RM.z1-RM.z0+0.03;k++){const T={x:tR2(ax+i*TILE),z:tR2(az+k*TILE),r:P0.r};
+    items.push({x:piv.x+T.x,z:piv.z+T.z,t:()=>!layoutCheck(b==='k'?T:KP,b==='c'?T:CP),cells:()=>tileCells(base.map(q=>boxW(q,T,piv)))})}
   vmRun(items,piv.x+P0.x,piv.z+P0.z,true)}
-// kapı / pencere: iki duvar boyunca aday yerler; duvar dibindeki iki sıra kare yeşil ya da kırmızı
+// kapı / pencere: iki duvar boyunca aday yerler; duvar dibindeki kare sırası yeşil ya da kırmızı
 function vmOpening(b){vmEnsure();const items=[],hw=OP_DIM()[b].w/2;
-  for(const wall of ['left','back']){const [a,c]=wallSpan(wall);for(let t=Math.ceil((a+0.3+hw)/0.25)*0.25;t<=c-0.3-hw+1e-6;t+=0.25){const tt=r2(t),p=wallPt(wall,tt);
-      const j=Math.floor(((wall==='left'?tt-RM.z0:tt-RM.x0))/0.25-1e-6);
+  for(const wall of ['left','back']){const [a,c]=wallSpan(wall);for(let t=Math.ceil((a+0.3+hw)/0.25)*0.25;t<=c-0.3-hw+1e-6;t+=0.25){const tt=tR2(t),p=wallPt(wall,tt);
+      const j=Math.floor((tt-(wall==='left'?RM.z0:RM.x0))/TILE+1e-6),ci=wall==='left'?0:j,ck=wall==='left'?j:0;
       items.push({x:p.x,z:p.z,t:()=>{const cur=OP[b];OP[b]={wall,t:tt};let ok=false;try{if(b==='door')opDerived();ok=!layoutCheck()}catch(e){}OP[b]=cur;if(b==='door')try{opDerived()}catch(e){}return ok},
-        paint:ok=>{if(wall==='left'){vmPaint(0,j,ok);vmPaint(1,j,ok)}else{vmPaint(j,0,ok);vmPaint(j,1,ok)}}})}}
+        paint:ok=>{const id=ck*VM.nx+ci;if(ci>=VM.nx||ck>=VM.nz)return;if(ok){VM.cov[id]=1;vmPaint(ci,ck,true)}else if(!VM.cov[id]&&VM.cov[id]!==2){VM.cov[id]=2;vmPaint(ci,ck,false)}}})}}
   const o=OP[b],p=wallPt(o.wall,o.t);vmRun(items,p.x,p.z,false)}
 // duvar süsü: duvardaki yerler (yeşil/kırmızı küçük levhalar)
 const WS={g:null};
@@ -9411,104 +9440,244 @@ function wsShow(){wsHide();if(!PL||CAT[PL.rec.id].kind!=='walldecor')return;cons
   WALL_SLOTS.forEach((s,i)=>{let ok=false;try{ok=i===PL.rec.slot?!PL.why:freeSlotOk(i)}catch(e){}if(slotBlocked(i)==='out')return;
     const m=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5),new THREE.MeshBasicMaterial({color:ok?0x58cd68:0xe84e46,transparent:true,opacity:i===PL.rec.slot?0.2:0.5,depthWrite:false}));
     m.position.set(s.x+(s.ry?0.012:0),s.y,s.z+(s.ry?0:0.012));m.rotation.y=s.ry;m.renderOrder=4;G.add(m)})}
-// yerleştirme modu açıkken (yeni alınan eşya dahil) harita gösterilir; döndürünce yeniden hesaplanır
-{const _ug=updateGhost;updateGhost=function(){const r=_ug.apply(this,arguments);try{if(PL){if(CAT[PL.rec.id].kind==='walldecor'){vmHide();wsShow()}else{wsHide();const key=PL.rec.id+'|'+(PL.rec.rot||0)+'|'+PL.rec.uid;if(TS.vkey!==key||!TS.mapOn){TS.vkey=key;vmFurn()}}}}catch(e){console.warn('uygunluk haritası',e)}return r}}
-{const _ep=endPlacement;endPlacement=function(){try{vmHide();wsHide();TS.vkey=''}catch(e){}return _ep.apply(this,arguments)}}
-
-// ---- neye basıldı? ----
-function tsPick(x,y){const cv=renderer.domElement,r=cv.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
-  const vis=h=>{let o=h.object;while(o){if(o.visible===false)return false;o=o.parent}return true},C=[];
-  const fh=raycaster.intersectObjects([...FURN.values()].map(R=>R.group),true).filter(vis);if(fh.length){let o=fh[0].object;while(o&&o.userData.uid==null)o=o.parent;if(o)C.push({d:fh[0].distance,kind:'furn',uid:o.userData.uid})}
-  const bh=raycaster.intersectObjects([KG,CG].filter(Boolean),true).filter(vis);if(bh.length){let o=bh[0].object;while(o&&!o.userData.block)o=o.parent;if(o)C.push({d:bh[0].distance,kind:'block',b:o.userData.block})}
-  const oh=raycaster.intersectObjects([OPG.door,OPG.side,SHELL.win].filter(o=>o&&o.visible!==false),true).filter(vis);if(oh.length){let o=oh[0].object;while(o&&!o.userData.opening)o=o.parent;if(o)C.push({d:oh[0].distance,kind:'op',b:o.userData.opening==='w'?'win':o.userData.opening})}
-  C.sort((a,b)=>a.d-b.d);return C[0]||null}
-function tsCan(){try{if(!started||UI.modal||PL||TS.drag)return false;if(UI.mode!=='cafe'&&UI.mode!=='edit')return false;if(!S.created||S.tut!=='done')return false;if(typeof XM!=='undefined'&&XM.on)return false;
-    const g=$('game');if(g.classList.contains('visiting')||g.classList.contains('cineOn'))return false;if(typeof S.tr==='string'&&S.tr!=='done'&&S.tr!=='')return false;return true}catch(e){return false}}
-const tsBusy=()=>{toast('<b>İçeride müşteri var</b><br>Bunu taşımak için önce dükkânı kapat, müşteriler çıksın',ic('lock'),3000);try{sfx('nope')}catch(e){}};
+// yerleştirme modu (taşıma ve yeni alınan eşya): eşya kareye oturtulur, harita gösterilir; döndürünce yeniden hesaplanır
+{const _ug=updateGhost;updateGhost=function(){try{if(PL&&PL.rec&&CAT[PL.rec.id].kind!=='walldecor')tileSnap(PL.rec,PL.rec.x,PL.rec.z)}catch(e){}
+  const r=_ug.apply(this,arguments);
+  try{if(PL){if(CAT[PL.rec.id].kind==='walldecor'){vmHide();wsShow()}else{wsHide();const key=PL.rec.id+'|'+(PL.rec.rot||0)+'|'+PL.rec.uid;if(VM.key!==key||!VM.on){vmFurn();VM.key=key}}}}catch(e){console.warn('uygunluk haritası',e)}return r}}
+{const _ep=endPlacement;endPlacement=function(){try{vmHide();wsHide()}catch(e){}return _ep.apply(this,arguments)}}
+// taşınan eşya kendi görünümüyle çizilir (uygunluğu zaten yeşil/kırmızı kareler gösterir; eski yarı saydam yeşil gölge haritanın üstünde seçilmiyordu);
+// konamayacağı yerde kırmızıya döner
+ghostify=function(G,ok){G.traverse(m=>{if(!m.isMesh||Array.isArray(m.material))return;const U=m.userData;if(!U.m0)U.m0=m.material;m.castShadow=false;
+  if(ok){m.material=U.m0;return}
+  if(!U.mBad){const c=U.m0.clone();try{if(c.color)c.color.lerp(new THREE.Color(0xff5a48),0.6);if(c.emissive)c.emissive.setHex(0x4a0d0d)}catch(e){}c.transparent=true;c.opacity=0.86;U.mBad=c}m.material=U.mBad})};
 const tsMsg=(t,bad)=>{const m=$('placeMsg');if(m){m.className='msg'+(bad?' bad':'');m.textContent=t}};
-function tsBegin(d){d.hx=TS.hx;d.hy=TS.hy;d.tsDown=TS.hts;TS.drag=d;tapStart=null;$('game').classList.add('tsdrag');try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}try{sfx('tap')}catch(e){}}
-function tsEndCommon(){TS.drag=null;$('game').classList.remove('tsdrag');if(UI.mode!=='place')controls.enabled=true}
 
-// ---- tutma ----
-function tsFire(){const H=TS.hold;TS.hold=null;if(!H||!tsCan())return;const e=H.ev,tg=H.tg;TS.fromCafe=UI.mode==='cafe';TS.hx=H.x;TS.hy=H.y;TS.hts=H.ts;
-  if(tg.kind==='furn'){const R=FURN.get(tg.uid);if(!R)return;const c=CAT[R.rec.id];
-    if(R.table&&R.table.occupant){if(UI.mode==='edit'){toast(`<b>${c.name}</b><br>Masada müşteri var, şimdi taşınamaz`,ic('lock'),2200);try{sfx('nope')}catch(e2){}}return}
-    if(LAY.on){if(layMoved()){toast('Önce tezgâh / kasa değişikliğini onayla ya da vazgeç',ic('move'),2200);return}layCancel()}
-    const wasEdit=UI.mode==='edit';UI.edit=null;if(selRing){scene.remove(selRing);selRing=null}
-    const p0=screenToFloor(e.clientX,e.clientY),ox=p0?R.rec.x-p0.x:0,oz=p0?R.rec.z-p0.z:0,uid=R.rec.uid;
-    startPlacement({rec:R.rec,isNew:false,price:0,fromEdit:wasEdit});if(!PL)return;
-    tsBegin({kind:'furn',id:e.pointerId,ox,oz,wall:c.kind==='walldecor',uid,wasEdit});return}
-  if(tg.kind==='block'){const b=tg.b;if(customers.length){tsBusy();return}if(UI.mode!=='edit')setMode('edit');
-    layStart(b);const P=b==='k'?KP:CP,p0=screenToFloor(e.clientX,e.clientY);controls.enabled=false;
-    tsBegin({kind:'block',b,id:e.pointerId,ox:p0?P.x-p0.x:0,oz:p0?P.z-p0.z:0,x0:P.x,z0:P.z});vmBlock(b);tsMsg((b==='k'?'Tezgâh':'Kasa')+' · yeşil yerlere bırakabilirsin');return}
-  if(tg.kind==='op'){const b=tg.b;if(b==='door'&&customers.length){tsBusy();return}if(UI.mode!=='edit')setMode('edit');
-    layStart(b);controls.enabled=false;tsBegin({kind:'op',b,id:e.pointerId,prev:{...OP[b]},t:0});vmOpening(b);tsMsg(OP_NAME[b]+' · duvar boyunca sürükle, yeşil yerlere bırakabilirsin')}}
-function tsCancelHold(){if(TS.hold){clearTimeout(TS.hold.timer);TS.hold=null}}
+// ---- tezgâh / kasa / kapı / pencere: seç → Taşı → sürükle → Yerleştir ----
+const MV={b:null,d:null};
+const lyName=b=>b==='k'?'Tezgâh':b==='c'?'Kasa':(OP_NAME[b]||'');
+const mvHint=b=>isOp(b)?`${lyName(b)} · duvar boyunca sürükle`:`${lyName(b)} · sürükle, yeşil karelere bırak`;
+function mvStart(){const b=LAY.on;if(!b)return;MV.b=b;MV.d=null;controls.enabled=false;try{sfx('tap')}catch(e){}try{if(isOp(b))vmOpening(b);else vmBlock(b)}catch(e){console.warn('uygunluk haritası',e)}layBar()}
+function mvStop(){MV.b=null;MV.d=null;vmHide();if(UI.mode==='edit')controls.enabled=true}
+function mvCancel(){layCancel();mvStop();drawEditBar()}
+function mvRefresh(){LAY.why=layoutCheck();const ok=$('lyOk2');if(ok)ok.disabled=!!LAY.why;tsMsg(LAY.why||mvHint(MV.b),!!LAY.why);try{gridFoot()}catch(e){}}
+function mvRotate(){const b=MV.b;if(!b)return;layRotate();   // blok 90° döner / açıklık öbür duvara geçer
+  if(!isOp(b)){const P=b==='k'?KP:CP,q=blkSnap(b,P.x,P.z,P.r);if(q.x!==P.x||q.z!==P.z){P.x=q.x;P.z=q.z;layPoseMeshes(b);layMark()}try{vmBlock(b)}catch(e){}}
+  layBar()}
+function mvCommit(){const why=layoutCheck();if(why){toast(why,ic('close'),2200);return}
+  if(!layMoved()){layCancel();mvStop();drawEditBar();return}
+  if(typeof ED==='undefined'||!ED.on){mvStop();layConfirm();if(LAY.on){layCancel();drawEditBar()}return}   // oturum dışında (ör. öğretici): eski yol
+  const blocks=!poseEq(KP,LAY.k0)||!poseEq(CP,LAY.c0);
+  S.layout={k:{...KP},c:{...CP},w:OP.win.wall==='back'?OP.win.t:WIN.x,op:JSON.parse(JSON.stringify(OP))};
+  if(blocks){layBase();buildCash();layApply();   // kafe boş: bütün durma noktaları yeni yere göre canlı hesaplanır (sayfa yenilenmez)
+    try{for(const o of orders)if(o.state==='READY'&&o.slot>=0&&o.mesh)o.mesh.position.copy(PICKUP_SLOTS[o.slot])}catch(e){}}
+  LAY.on=null;layMark();mvStop();TOCC.bv='';markDirty();saveNow();try{sfx('place')}catch(e){}toast('Yeni yeri kaydedildi',ic('check'),1500);drawEditBar()}
+function mvDown(e){const b=MV.b;if(isOp(b)){MV.d={id:e.pointerId,op:1,t:0};mvMove(e);return}
+  const p=screenToFloor(e.clientX,e.clientY);if(!p)return;const P=b==='k'?KP:CP;MV.d={id:e.pointerId,ox:P.x-p.x,oz:P.z-p.z}}
+function mvMove(e){const D=MV.d,b=MV.b;if(!D||!b||D.id!==e.pointerId)return;
+  if(!D.op){const p=screenToFloor(e.clientX,e.clientY);if(!p)return;const P=b==='k'?KP:CP,piv=b==='k'?K_PIV:C_PIV,base=b==='k'?KOBST_BASE:COBST_BASE;
+    const q=blkSnap(b,p.x+D.ox,p.z+D.oz,P.r);if(q.x===P.x&&q.z===P.z)return;
+    const fits=(x,z)=>!base.map(w=>boxW(w,{...P,x,z},piv)).some(w=>w.minX<RM.x0-0.02||w.maxX>RM.x1+0.02||w.minZ<RM.z0-0.02||w.maxZ>RM.z1+0.02);
+    let tx=q.x,tz=q.z;if(!fits(tx,tz)){if(fits(q.x,P.z))tz=P.z;else if(fits(P.x,q.z))tx=P.x;else return}if(tx===P.x&&tz===P.z)return;
+    P.x=tx;P.z=tz;layPoseMeshes(b);layMark();mvRefresh();return}
+  const now=performance.now();if(now-D.t<50)return;const cv=renderer.domElement,r=cv.getBoundingClientRect();
+  raycaster.setFromCamera(new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1),camera);const o=raycaster.ray.origin,d=raycaster.ray.direction,C=[];
+  if(Math.abs(d.x)>1e-4){const s=(RM.x0-o.x)/d.x;if(s>0){const y=o.y+d.y*s,z=o.z+d.z*s;if(y>-0.2&&y<WALL_H+0.8&&z>RM.z0-0.6&&z<RM.z1+0.6)C.push({wall:'left',t:z,s})}}
+  if(Math.abs(d.z)>1e-4){const s=(RM.z0-o.z)/d.z;if(s>0){const y=o.y+d.y*s,x=o.x+d.x*s;if(y>-0.2&&y<WALL_H+0.8&&x>RM.x0-0.6&&x<RM.x1+0.6)C.push({wall:'back',t:x,s})}}
+  C.sort((a,b2)=>a.s-b2.s);let c=C[0];if(!c){const p=screenToFloor(e.clientX,e.clientY);if(!p)return;c=(p.x-RM.x0)<(p.z-RM.z0)?{wall:'left',t:p.z}:{wall:'back',t:p.x}}
+  const [a,z1]=wallSpan(c.wall),hw=OP_DIM()[b].w/2,lo=Math.ceil((a+0.3+hw)/LAY_STEP)*LAY_STEP,hi=Math.floor((z1-0.3-hw)/LAY_STEP)*LAY_STEP;if(hi<lo)return;
+  const nt=tR2(THREE.MathUtils.clamp(Math.round(c.t/LAY_STEP)*LAY_STEP,lo,hi));if(OP[b].wall===c.wall&&OP[b].t===nt)return;D.t=now;
+  OP[b]={wall:c.wall,t:nt};opApplyLive();layMark();mvRefresh()}
 
-// ---- sürükleme ----
-function tsMove(e){const D=TS.drag;if(!D||D.id!==e.pointerId)return;
-  // kare hızı düşükken parmak hareketi zamanlayıcıdan SONRA işlenebilir: olayın kendi zaman damgası tutma süresi dolmadan önceyse
-  // ve parmak o sırada uzaklaşmışsa bu aslında bir kamera kaydırmasıydı → taşımayı geri al
-  if(e.timeStamp<D.tsDown+TS_LONG&&Math.hypot(e.clientX-D.hx,e.clientY-D.hy)>TS_MOVE){tsDrop(null,true);return}
-  if(D.kind==='furn'){if(!PL){tsEndCommon();return}
-    if(D.wall){const cv=renderer.domElement,r=cv.getBoundingClientRect();let best=-1,bd=1e9;const v=new THREE.Vector3();
-      WALL_SLOTS.forEach((s,i)=>{if(slotBlocked(i)==='out')return;v.set(s.x,s.y,s.z).project(camera);const sx=(v.x+1)/2*r.width+r.left,sy=(1-v.y)/2*r.height+r.top,d=Math.hypot(sx-e.clientX,sy-e.clientY);if(d<bd){bd=d;best=i}});
-      if(best>=0&&best!==PL.rec.slot){PL.rec.slot=best;updateGhost()}return}
-    const p=screenToFloor(e.clientX,e.clientY);if(!p)return;const nx=snap(THREE.MathUtils.clamp(p.x+D.ox,RM.x0,RM.x1+GDN.r)),nz=snap(THREE.MathUtils.clamp(p.z+D.oz,RM.z0,RM.z1+GDN.f));
-    if(nx!==PL.rec.x||nz!==PL.rec.z){PL.rec.x=nx;PL.rec.z=nz;moveGhost()}return}
-  if(D.kind==='block'){const p=screenToFloor(e.clientX,e.clientY);if(!p)return;const b=D.b,P=b==='k'?KP:CP,piv=b==='k'?K_PIV:C_PIV,base=b==='k'?KOBST_BASE:COBST_BASE;
-    const nx=r2(Math.round((p.x+D.ox)/LAY_STEP)*LAY_STEP),nz=r2(Math.round((p.z+D.oz)/LAY_STEP)*LAY_STEP);if(nx===P.x&&nz===P.z)return;
-    const fits=(x,z)=>!base.map(q=>boxW(q,{...P,x,z},piv)).some(q=>q.minX<RM.x0-0.02||q.maxX>RM.x1+0.02||q.minZ<RM.z0-0.02||q.maxZ>RM.z1+0.02);
-    let tx=nx,tz=nz;if(!fits(tx,tz)){if(fits(nx,P.z))tz=P.z;else if(fits(P.x,nz))tx=P.x;else return}if(tx===P.x&&tz===P.z)return;
-    P.x=tx;P.z=tz;layPoseMeshes(b);layMark();const why=layoutCheck();tsMsg(why||((b==='k'?'Tezgâh':'Kasa')+' · buraya bırakabilirsin'),!!why);return}
-  if(D.kind==='op'){const now=performance.now();if(now-D.t<50)return;const b=D.b,cv=renderer.domElement,r=cv.getBoundingClientRect();
-    raycaster.setFromCamera(new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1),camera);const o=raycaster.ray.origin,d=raycaster.ray.direction,C=[];
-    if(Math.abs(d.x)>1e-4){const s=(RM.x0-o.x)/d.x;if(s>0){const y=o.y+d.y*s,z=o.z+d.z*s;if(y>-0.2&&y<WALL_H+0.8&&z>RM.z0-0.6&&z<RM.z1+0.6)C.push({wall:'left',t:z,s})}}
-    if(Math.abs(d.z)>1e-4){const s=(RM.z0-o.z)/d.z;if(s>0){const y=o.y+d.y*s,x=o.x+d.x*s;if(y>-0.2&&y<WALL_H+0.8&&x>RM.x0-0.6&&x<RM.x1+0.6)C.push({wall:'back',t:x,s})}}
-    C.sort((a,b2)=>a.s-b2.s);let c=C[0];if(!c){const p=screenToFloor(e.clientX,e.clientY);if(!p)return;c=(p.x-RM.x0)<(p.z-RM.z0)?{wall:'left',t:p.z}:{wall:'back',t:p.x}}
-    const [a,z1]=wallSpan(c.wall),hw=OP_DIM()[b].w/2,lo=Math.ceil((a+0.3+hw)/LAY_STEP)*LAY_STEP,hi=Math.floor((z1-0.3-hw)/LAY_STEP)*LAY_STEP;if(hi<lo)return;
-    const nt=r2(THREE.MathUtils.clamp(Math.round(c.t/LAY_STEP)*LAY_STEP,lo,hi));if(OP[b].wall===c.wall&&OP[b].t===nt)return;D.t=now;
-    OP[b]={wall:c.wall,t:nt};opApplyLive();layMark();const why=layoutCheck();tsMsg(why||(OP_NAME[b]+' · buraya bırakabilirsin'),!!why)}}
-
-// ---- bırakma ----
-function tsDrop(e,cancel){const D=TS.drag;if(!D||(e&&D.id!==e.pointerId))return;
-  if(D.kind==='furn'){tsEndCommon();if(!PL)return;const why=cancel?'İptal edildi':PL.why;
-    if(why){cancelPlacement();if(!cancel){try{sfx('nope')}catch(e2){}toast(`<b>Buraya konamaz</b><br>${why}`,ic('close'),2200)}}
-    else{if(D.wasEdit)UI.edit=D.uid;confirmPlacement()}return}
-  const b=D.b;vmHide();
-  if(D.kind==='block'){const P=b==='k'?KP:CP;const why=cancel?'iptal':layoutCheck();
-    if(why){P.x=D.x0;P.z=D.z0;layPoseMeshes(b);if(!cancel){try{sfx('nope')}catch(e2){}toast(`<b>Buraya konamaz</b><br>${why}`,ic('close'),2400)}}else if(P.x!==D.x0||P.z!==D.z0)try{sfx('place')}catch(e2){}
-    tsEndCommon();layMark();if(!layMoved()){layCancel();if(TS.fromCafe)setMode('cafe');else drawEditBar()}else layBar();return}
-  if(D.kind==='op'){const moved=JSON.stringify(OP[b])!==JSON.stringify(D.prev);const why=cancel?'iptal':(moved?layoutCheck():null);
-    if(why){OP[b]={...D.prev};opApplyLive();if(!cancel){try{sfx('nope')}catch(e2){}toast(`<b>Buraya konamaz</b><br>${why}`,ic('close'),2400)}}
-    tsEndCommon();layMark();const blocks=!poseEq(KP,LAY.k0)||!poseEq(CP,LAY.c0);
-    if(blocks){layBar();return}
-    if(!why&&moved)layConfirm();else{layCancel();drawEditBar()}
-    if(LAY.on){layCancel();drawEditBar()}if(TS.fromCafe&&UI.mode==='edit')setMode('cafe')}}
+// ---- çubuklar ----
+// tezgâh / kasa / kapı / pencere çubuğu: seçiliyken "Taşı · Bitti", taşınırken "Döndür · Vazgeç · Yerleştir" (kurulum rehberi kendi çubuğunu kullanır)
+{const _lb=layBar;layBar=function(){const r=_lb.apply(this,arguments);try{if(typeof buildOn==='function'&&buildOn())return r;const b=LAY.on;if(!b)return r;const op=isOp(b),mv=MV.b===b;LAY.why=layoutCheck();
+   if(!mv){tsMsg(lyName(b)+(op?'':' · '+tileLabel(tileBB(tileCells(blkBoxes(b))))),false);
+     $('placeRow').innerHTML=`<button class="btn light" type="button" id="lyMove">${ic('move')}Taşı</button><button class="btn green" type="button" id="lyDone">${ic('check')}Bitti</button>`;
+     $('lyMove').onclick=mvStart;$('lyDone').onclick=()=>{layCancel();drawEditBar()}}
+   else{tsMsg(LAY.why||mvHint(b),!!LAY.why);
+     $('placeRow').innerHTML=`<button class="btn light" type="button" id="lyRot2">${ic('rotate')}${op?'Öbür duvar':'Döndür'}</button><button class="btn red" type="button" id="lyNo2">${ic('close')}Vazgeç</button><button class="btn green" type="button" id="lyOk2" ${LAY.why?'disabled':''}>${ic('check')}Yerleştir</button>`;
+     $('lyRot2').onclick=mvRotate;$('lyNo2').onclick=mvCancel;$('lyOk2').onclick=mvCommit}
+   gridFoot()}catch(e){console.warn('taşıma çubuğu',e)}return r}}
+// eşya çubuğu: adın yanında kare ölçüsü; seçim değişince kareler yenilenir
+{const _d=drawEditBar;drawEditBar=function(){const r=_d.apply(this,arguments);try{if(!LAY.on){const R=UI.edit!=null?FURN.get(UI.edit):null,m=$('placeMsg');
+     if(R&&m&&CAT[R.rec.id].kind!=='walldecor'&&!(R.table&&R.table.occupant))m.textContent=CAT[R.rec.id].name+' · '+tileLabel(tileDims(R.rec));
+     else if(!R&&m)m.textContent='Taşımak istediğin eşyaya dokun'}
+   gridRefresh()}catch(e){}return r}}
+// taşıma sürerken başka şeye dokunulmaz; yalnızca seçiliyken başka yere dokununca seçim bırakılır
+{const _t=editTap;editTap=function(x,y){if(MV.b)return;if(LAY.on&&!layMoved())layCancel();return _t(x,y)}}
+{const _x=exitEdit;exitEdit=function(){try{if(MV.b)mvStop()}catch(e){}return _x.apply(this,arguments)}}
+// yerleştirme modunda ipucu metni
+{const _rp=renderPlacebar;renderPlacebar=function(){const r=_rp.apply(this,arguments);try{if(PL&&!PL.why){const m=$('placeMsg'),c=CAT[PL.rec.id];if(m)m.textContent=c.kind==='walldecor'?'Duvardaki yeşil yerlerden birine dokun':`${tileLabel(tileDims(PL.rec))} · sürükle ya da bir kareye dokun`}}catch(e){}return r}}
 
 // ---- işaretçi olayları ----
-{const cv=renderer.domElement;
- cv.addEventListener('pointerdown',e=>{TS.ptrs.add(e.pointerId);if(TS.ptrs.size>1){tsCancelHold();if(TS.drag)tsDrop(null,true);return}if(e.button>0||!tsCan())return;
-   let tg=null;try{tg=tsPick(e.clientX,e.clientY)}catch(er){}if(!tg)return;
-   TS.hold={id:e.pointerId,x:e.clientX,y:e.clientY,ts:e.timeStamp,tg,ev:{clientX:e.clientX,clientY:e.clientY,pointerId:e.pointerId},timer:setTimeout(tsFire,TS_LONG)}});
- cv.addEventListener('pointermove',e=>{const H=TS.hold;if(H&&H.id===e.pointerId){if(Math.hypot(e.clientX-H.x,e.clientY-H.y)>TS_MOVE)tsCancelHold();else{H.ev.clientX=e.clientX;H.ev.clientY=e.clientY}}if(TS.drag)tsMove(e)});
- const up=e=>{TS.ptrs.delete(e.pointerId);if(TS.hold&&TS.hold.id===e.pointerId)tsCancelHold();if(TS.drag&&TS.drag.id===e.pointerId)tsDrop(e,e.type==='pointercancel')};
+{const cv=renderer.domElement;let tap=null;
+ const slotAt=e=>{const r=cv.getBoundingClientRect();let best=-1,bd=90;const v=new THREE.Vector3();
+   WALL_SLOTS.forEach((s,i)=>{if(slotBlocked(i)==='out')return;v.set(s.x,s.y,s.z).project(camera);const d=Math.hypot((v.x+1)/2*r.width+r.left-e.clientX,(1-v.y)/2*r.height+r.top-e.clientY);if(d<bd){bd=d;best=i}});return best};
+ const wallPick=e=>{if(UI.mode!=='place'||!PL||CAT[PL.rec.id].kind!=='walldecor')return;const s=slotAt(e);if(s>=0&&s!==PL.rec.slot){PL.rec.slot=s;updateGhost()}};
+ cv.addEventListener('pointerdown',e=>{if(e.button>0)return;
+   if(UI.mode==='edit'&&MV.b&&!MV.d){try{mvDown(e);if(MV.d)cv.setPointerCapture(e.pointerId)}catch(er){}return}
+   if(UI.mode==='place'&&PL){tap={id:e.pointerId,x:e.clientX,y:e.clientY,t:e.timeStamp};wallPick(e)}});
+ cv.addEventListener('pointermove',e=>{if(MV.d&&MV.d.id===e.pointerId){try{mvMove(e)}catch(er){}return}if(tap&&tap.id===e.pointerId&&e.buttons)wallPick(e)});
+ const up=e=>{if(MV.d&&MV.d.id===e.pointerId){MV.d=null;return}
+   // yerleştirme modunda bir kareye dokunmak: eşya o kareye gelir
+   if(tap&&tap.id===e.pointerId){const T=tap;tap=null;if(e.type==='pointerup'&&UI.mode==='place'&&PL&&CAT[PL.rec.id].kind!=='walldecor'&&Math.hypot(e.clientX-T.x,e.clientY-T.y)<9&&e.timeStamp-T.t<600){   // olayların kendi zaman damgası: kare hızı düşükken de doğru
+       const p=screenToFloor(e.clientX,e.clientY);if(p){const ox=PL.rec.x,oz=PL.rec.z;tileSnap(PL.rec,p.x,p.z);if(PL.rec.x!==ox||PL.rec.z!==oz){moveGhost();try{sfx('tap')}catch(er){}}}}}};
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
- addEventListener('blur',()=>{TS.ptrs.clear();tsCancelHold();if(TS.drag)tsDrop(null,true)});
+ addEventListener('blur',()=>{MV.d=null;tap=null});
  cv.addEventListener('contextmenu',e=>e.preventDefault())}
 
-// ---- çubuklar: "Taşı" ve ok düğmeleri yok ----
-{const _d=drawEditBar;drawEditBar=function(){const r=_d.apply(this,arguments);try{const mv=$('edMove');if(mv)mv.remove();
-   if(!LAY.on&&UI.edit==null){const m=$('placeMsg');if(m)m.textContent='Taşımak için eşyaya basılı tut ve sürükle · seçenekler için dokun'}}catch(e){}return r}}
-{const _lb=layBar;layBar=function(){const r=_lb.apply(this,arguments);try{if(typeof buildOn==='function'&&buildOn())return r;const b=LAY.on;document.querySelectorAll('#placeRow .lypad,#placeRow [data-ly]').forEach(x=>x.remove());
-   const why=layoutCheck(),moved=layMoved(),op=b==='door'||b==='side'||b==='win';if(op){const rt=$('lyRot');if(rt)rt.remove()}
-   if(!why)tsMsg(moved?((b==='k'?'Tezgâh':b==='c'?'Kasa':OP_NAME[b])+' yeni yerinde · Tamam dersen kafe yeniden düzenlenir'):((b==='k'?'Tezgâh':b==='c'?'Kasa':OP_NAME[b])+' · basılı tutup sürükle'+(op?'':' · Döndür ile çevir')))}catch(e){}return r}}
+// ---- eski kayıtlar: kareye oturmayan eşyalar en yakın uygun kareye alınır (en çok 25 cm kayar) ----
+function tileAlignAll(){let n=0;try{for(const R of [...FURN.values()]){const rec=R.rec,c=CAT[rec.id];if(!c||c.kind==='walldecor'||rec.stored||(R.table&&R.table.occupant))continue;const ox=rec.x,oz=rec.z,t=tileSnap({...rec},ox,oz);
+      if(t.x===ox&&t.z===oz)continue;const xs=[t.x,tR2(t.x+(ox>t.x?TILE:-TILE))],zs=[t.z,tR2(t.z+(oz>t.z?TILE:-TILE))],C=[];
+      for(const x of xs)for(const z of zs){const q=tileSnap({...rec},x,z);C.push({x:q.x,z:q.z,d:Math.hypot(q.x-ox,q.z-oz)})}C.sort((a,b)=>a.d-b.d);let done=false;
+      for(const q of C){rec.x=q.x;rec.z=q.z;if(!validatePlacement(rec,rec.uid)){done=true;break}}
+      if(!done){rec.x=ox;rec.z=oz;continue}despawnFurn(rec.uid);spawnFurn(rec);n++}
+    if(n){refreshWorld();markDirty()}}catch(e){console.warn('kareye oturtma',e)}return n}
+
 {const st=document.createElement('style');st.textContent=`
-#game.tsdrag #placebar #placeRow,#game.tsdrag .placebar .row{display:none!important}
 #game canvas{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 `;document.head.appendChild(st)}
-// yerleştirme modunda ipucu metni
-{const _rp=renderPlacebar;renderPlacebar=function(){const r=_rp.apply(this,arguments);try{if(PL&&!PL.why){const m=$('placeMsg');if(m)m.textContent=CAT[PL.rec.id].kind==='walldecor'?'Duvardaki yeşil yerlerden birine bırak':'Yeşil yerlere bırakabilirsin'}}catch(e){}return r}}
+
+// ================= DÜZENLEME OTURUMU (V137) =================
+// Kullanıcı isteği:
+//  1) Keşfet'in yanında "Düzenle" düğmesi: dokununca düzenleme açılır.
+//  2) Düzenlerken hiçbir çalışan ve müşteri görünmez; oyuncu eşyaları rahatça taşır. Bitince ekip KAPIDAN girip yerine geçer.
+// Nasıl çalışır:
+//  · Düzenle'ye girilirken kafe BOŞALTILIR: yeni müşteri gelmez; siparişi alınmamış ya da siparişi henüz hazırlanmaya başlanmamış
+//    müşteriler ceza yazılmadan kalkar (kullanılan malzeme depoya iade edilir); siparişi hazırlanan/hazır olanlar servisini alır, yer,
+//    hesabı öder ve çıkar (oyuncunun parası ve malzemesi yanmaz). Bu sırada oyun perde arkasında hızlı ileri sarılır (birkaç saniye);
+//    kafe zaten boşsa geçiş anındadır. Çok uzarsa (90 oyun-sn) yemeği gelmemiş herkes kalkar; 200 oyun-sn'de hâlâ müşteri varsa
+//    sayfa yenilenip doğrudan düzenlemeye girilir (güvenlik ağı; bugüne dek testlerde hiç gerekmedi).
+//  · Sonra ekip yerinde "bekleme"ye alınır (waiterLoop/baristaLoop'taki edIn; kasiyerde chasing; kuryede busy) ve herkes gizlenir.
+//    Kafe boş olduğundan tezgâh/kasa taşıması sayfa yenilenmeden canlı uygulanır (p74 mvCommit).
+//  · Oturum Düzenle → Taşı (yerleştirme) → Market arasında sürer; kafeye dönülünce (Bitti) ekip kapının dışından sırayla girer:
+//    garson köşesine, barista tezgâhın yanından arkaya, kasiyer kasanın arkasına, kurye kendi yerine yürür. Hepsi yerleşince müşteriler gelir.
+// Öğretici / kurulum rehberi / ziyaret sırasında oturum kurulmaz (eski davranış: edCan()).
+const ED={on:false,busy:false,hid:[],hold:false,holdT:0,jobs:0,entering:0,ph:'',t0:0,tp:0,cb:null,el:null,force:false,courier:false};
+const edCan=()=>{try{return !!started&&!!S.created&&S.tut==='done'&&!(typeof buildOn==='function'&&buildOn())&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!$('game').classList.contains('cineOn')}catch(e){return false}};
+window.__editTip=1;   // "dükkânı kapatırsan…" ipucu artık gereksiz
+
+// ---- oyun mantığına küçük kancalar ----
+{const _enq=enqueue;enqueue=function(name,run){return _enq(name,async w=>{ED.jobs++;try{return await run(w)}finally{ED.jobs--}})}}   // süren garson işleri sayılır
+{const _at=arrivalTick;arrivalTick=function(dt){if(ED.hold&&!ED.on&&!ED.busy&&gameT-ED.holdT>40)ED.hold=false;if(ED.busy||ED.on||ED.hold)return;return _at(dt)}}
+{const _wr=willRun;willRun=function(c){return ED.busy?false:_wr(c)}}
+{const _gg=groupGiveUp;groupGiveUp=function(g,leavers,why){if(ED.busy){for(const m of leavers)edSend(m,true);return}return _gg(g,leavers,why)}}
+{const _sf=sfx;sfx=function(){if(ED.busy)return;return _sf.apply(this,arguments)}}
+{const _ac=allChars;allChars=function(){return ED.on?[]:_ac()}}
+// boşaltma sırasında manuel modda da siparişler kendiliğinden ilerler (kalıcı ayar değişmez)
+{const _au=autoTick;autoTick=function(dt){if(ED.busy&&!S.auto){S.auto=true;try{return _au(dt)}finally{S.auto=false}}return _au(dt)}}
+
+// ---- müşteriyi cezasız uğurla ----
+// Hazırlanmasına başlanmamış siparişin malzemesi depoya geri konur (oyuncunun malı yanmaz).
+function edRefund(o){if(!o||o.edRef)return;o.edRef=1;try{const ks=needsOf(o.item);for(const k of ks){const L=stockS().b[k];if(L.length)L[0].n++;else L.push({n:1,q:CONFIG.stock.startQ,c:STOCK_COST[k]})}if(ks.length&&o.cost)ledger('cogs',-o.cost)}catch(e){}}
+function edSend(c,force){if(c.edOut)return;
+  if(c.state==='WAITING_TO_ORDER'&&c._taken){c.edOut=1;c.angry='edit';c.gone=true;c.orderQueued=true;if(c.menu){scene.remove(c.menu);c.menu=null}c._taken()}
+  else if(force&&c.state==='WAITING_FOR_FOOD'&&c._served){c.edOut=1;c.angry='edit';c.gone=true;const o=c.order;if(o){if(o.state==='TAKEN'||o.state==='WAITING_FOR_PREPARATION')edRefund(o);o.cancel=true;if(o.state==='READY')o.pickupQueued=true}c._served()}
+  else return;
+  const g=c.group;if(g&&g.members){if(g.leader&&g.leader.gone){const nl=g.members.find(m=>!m.gone);if(nl)g.leader=nl}if(g.members.every(m=>m.gone))g.gaveUp=true}}
+// Bir adım: siparişi alınmamışlar ve siparişi henüz hazırlanmaya başlanmamışlar kalkar; hazırlanan/hazır siparişler servis edilir, yenir, ödenir.
+// Girip çıkanların yürüyüşü beklenmez (perde arkasında yolun sonuna alınırlar).
+function edStep(){for(const c of customers.slice()){const st=c.state,o=c.order,ch=c.char;
+    if(st==='WAITING_TO_ORDER'&&!o)edSend(c,false);
+    else if(st==='WAITING_FOR_FOOD'&&o&&(ED.force||o.state==='TAKEN'||o.state==='WAITING_FOR_PREPARATION'))edSend(c,true);
+    if((st==='LEAVING'||st==='ENTERING'||st==='WALKING_TO_TABLE')&&ch.path.length&&!ch.trans){const q=ch.path[ch.path.length-1];ch.pos.x=q.x;ch.pos.z=q.z;ch.path=[q]}}
+  try{if(DLV.call)DLV.call.left+=0.1;if(DLV.cd<4)DLV.cd=4}catch(e){}   // telefon bu sırada ne çalar ne kaçar
+  simStep(0.1)}
+function edCourierOut(){try{const p=COURIER.ch.pos;return p.x<RM.x0-0.2||p.z<RM.z0-0.2||p.x>RM.x1+GDN.r+0.2||p.z>RM.z1+GDN.f+0.2||!COURIER.ch.o.visible}catch(e){return true}}
+function edWorkDone(){try{return !customers.length&&!jobs.length&&!ED.jobs&&!ED.entering&&!baristaQ.length&&BSTAFF.every(b=>!b.busy)&&REGS.every(R=>!R.busy&&!R.cust)&&!CASH.queue.length&&CSTAFF.every(k=>!k.chasing)&&!cashMoving&&(!COURIER||!COURIER.busy||edCourierOut())}catch(e){return true}}
+function edPark(){for(const w of WSTAFF){w.edIn=true;w.edAck=0}for(const b of BSTAFF){b.edIn=true;b.edAck=0}for(const k of CSTAFF){k.chasing=true;k.ready=false}
+  ED.courier=false;try{if(COURIER&&!COURIER.busy){COURIER.busy=true;ED.courier=true}}catch(e){}}
+const edParked=()=>WSTAFF.every(w=>w.edAck)&&BSTAFF.every(b=>b.edAck)&&CSTAFF.every(k=>!k.idleBusy);
+function edFreeze(){ED.busy=false;ED.ph='';ED.on=true;ED.hold=true;ED.hid=[];
+  scene.traverse(o=>{if(o.userData&&o.userData.isChar&&o.visible){o.visible=false;ED.hid.push(o)}});
+  for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const s of L){const t=s.ch.tray;if(t&&t.visible&&t.parent===scene){t.visible=false;ED.hid.push(t)}}
+  edCurtain(false);const cb=ED.cb;ED.cb=null;try{cb&&cb()}catch(e){console.error('düzenleme',e)}}
+function edBegin(cb){if(ED.busy||ED.on)return;ED.busy=true;ED.cb=cb;ED.force=false;ED.ph='drain';edCurtain(true);edRun()}
+// Hızlı ileri sarma: her adım 0,1 oyun-saniyesi; adımlar arasında bekleyen sözler (await) çalıştırılır ki sipariş/ödeme zincirleri
+// normal oyundaki gibi ilerlesin (yalnızca daha hızlı). Kare başına ~10 ms çalışır; perde açıkken sahne çizilmediği için akıcıdır.
+// Süre sınırları oyun-saniyesiyle sayılır (yavaş cihazda yanlış tetiklenmesin): 90 sn → yemeği gelmemiş herkes kalkar, 200 sn → güvenlik ağı.
+async function edRun(){let steps=0,park=0,frames=0;const raf=()=>new Promise(r=>requestAnimationFrame(r));
+  while(ED.busy){
+    if(UI.modal||document.hidden||($('auth')&&!$('auth').hidden)){await raf();continue}   // açık pencere varken bekler
+    const t0=performance.now();let n=0;frames++;
+    while(ED.busy&&n<30&&performance.now()-t0<10){
+      if(ED.ph==='drain'&&edWorkDone()){ED.ph='park';park=0;edPark()}
+      if(ED.ph==='park'&&(edParked()||park>400)){edFreeze();return}
+      try{edStep()}catch(e){console.error('boşaltma',e)}
+      for(let j=0;j<6;j++)await null;
+      n++;steps++;ED.steps=steps;if(ED.ph==='park')park++;if(UI.modal)break}
+    if(!ED.busy)return;edCurtainText();
+    if(ED.ph==='drain'){if(steps>900&&customers.length&&!ED.force){ED.force=true;try{console.warn('düzenleme: boşaltma uzadı',customers.map(c=>c.state))}catch(e){}}
+      if(steps>2000||frames>3600){if(customers.length){edReload();return}ED.ph='park';park=0;edPark()}}
+    await raf()}}
+// güvenlik ağı: kafe boşalmadıysa kaydet, sayfayı yenile ve doğrudan düzenlemeye gir
+function edReload(){ED.busy=false;try{sessionStorage.setItem('tcEdit','1')}catch(e){}try{clearTimeout(saveTimer)}catch(e){}try{saveNow()}catch(e){}RESETTING=true;setTimeout(()=>location.reload(),250)}
+{let n=0;const iv=setInterval(()=>{let f=null;try{f=sessionStorage.getItem('tcEdit')}catch(e){}if(!f||++n>160){clearInterval(iv);return}
+  try{if(started&&!UI.modal&&UI.mode==='cafe'&&edCan()){clearInterval(iv);sessionStorage.removeItem('tcEdit');enterEdit()}}catch(e){}},500)}
+// perde: hemen dokunmayı keser; 0,3 sn'den uzun sürerse görünür
+function edCurtain(on){if(!on){if(ED.el){ED.el.remove();ED.el=null}return}if(ED.el)return;const e=document.createElement('div');e.className='edcur';
+  e.innerHTML=`<div class="edcard"><span class="edpaw">${ED_ICON}</span><b>Kafe boşaltılıyor…</b><i></i></div>`;$('game').appendChild(e);ED.el=e;edCurtainText()}
+function edCurtainText(){const t=ED.el&&ED.el.querySelector('i');if(!t)return;const n=customers.length,s=n?`${n} müşteri uğurlanıyor`:'Ekip toparlanıyor';if(t.textContent!==s)t.textContent=s}
+
+// ---- oturum sonu: ekip kapıdan girer ----
+async function edWalkIn(o,role,p,yaw,i){const ch=o.ch;ED.entering++;try{
+    warpCh(ch,p.x,p.z,yaw);await sleep(0.05+0.15*i);
+    await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});if(i===0)try{sfx('door')}catch(e){}
+    if(role==='w'){o.edIn=false;return}   // garson: kendi döngüsü köşesine yürütür
+    if(role==='b'){const h=B_HOME[o.i]||B_HOME[0],g1=kW(-0.72,-2.12),g2=kW(-0.72,PZ);   // tezgâhın açık ucundan arkaya
+      let ok=false;try{ok=astar(DOOR_IN.x,DOOR_IN.z,g1.x,g1.z).length>0}catch(e){}
+      if(ok){await ch.walkTo(g1.x,g1.z);await ch.walkTo(g2.x,g2.z,{direct:true});await bGo(o,{x:h.x,z:h.z})}else warpCh(ch,h.x,h.z,KP.r);
+      await ch.face(KP.r);o.idleAt=null;return}
+    if(role==='c'){await chaseBack(o);return}   // kasiyer: kasanın yanındaki geçitten arkaya
+    await ch.walkTo(COURIER_IDLE.x,COURIER_IDLE.z);await ch.face(COURIER_YAW)
+  }catch(e){console.warn('ekip girişi',e)}
+  finally{ED.entering--;if(role==='w'||role==='b'){o.edIn=false;o.edAck=0}else if(role==='c'){if(o.chasing){o.chasing=false;o.ready=REGS.length>o.i}}else o.busy=false}}
+function edLeave(){if(!ED.on)return;ED.on=false;for(const o of ED.hid)o.visible=true;ED.hid=[];
+  const N=DOOR_OUTN,yaw=Math.atan2(-N.x,-N.z),P=[];let i=0;
+  const go=(o,role)=>{const d=1.1+0.8*i,p={x:DOOR_IN.x+N.x*d,z:DOOR_IN.z+N.z*d};P.push(edWalkIn(o,role,p,yaw,i));i++};
+  try{for(const w of WSTAFF)go(w,'w');for(const b of BSTAFF)go(b,'b');for(const k of CSTAFF)go(k,'c');if(COURIER&&ED.courier)go(COURIER,'k')}catch(e){console.error('ekip girişi',e)}
+  ED.courier=false;ED.holdT=gameT;Promise.all(P).then(()=>{ED.hold=false;try{if(spawnT>4)spawnT=4}catch(e){}})}
+
+// ---- mod geçişleri ----
+{const _ee=enterEdit;enterEdit=function(keep){if(!ED.on&&UI.mode!=='edit'&&UI.mode!=='place'&&edCan()){if(!ED.busy)edBegin(()=>_ee(keep));return}return _ee(keep)}}
+{const _sm=setMode;setMode=function(m){
+   if(m==='edit'&&!ED.on&&UI.mode!=='edit'&&edCan()){if(!ED.busy)edBegin(()=>{_sm('edit');try{drawEditBar()}catch(e){}});return}
+   const r=_sm(m);try{edView(m==='edit'||m==='place')}catch(e){}if(ED.on&&m!=='edit'&&m!=='place'&&m!=='market')edLeave();return r}}
+// düzenleme/yerleştirme görünümü: küçük ana ekran düğmeleri gizlenir, sahne biraz yukarı alınır (alttaki çubuk kafenin önünü kapatmasın)
+function edView(on){const g=$('game');if(g.classList.contains('edmode')===on)return;g.classList.toggle('edmode',on);
+  try{if(on){const r=renderer.domElement.getBoundingClientRect(),W=Math.max(1,r.width),H=Math.max(1,r.height);camera.setViewOffset(W,H,0,Math.round(H*0.085),W,H)}else camera.clearViewOffset()}catch(e){}}
+{const _ep=endPlacement;endPlacement=function(){if(ED.on&&PL)PL.fromEdit=true;return _ep.apply(this,arguments)}}   // oturumda Market'ten alınan eşya da Düzenle'ye döner
+
+// ---- ana ekran düğmesi: Keşfet'in yanında "Düzenle" ----
+const ED_ICON=(()=>{const b=`<rect x="6" y="18" width="40" height="40" rx="7" fill="#fff6e2"/><path d="M26 18v40M6 38h40" stroke="#d98a3a" stroke-width="3"/><path d="M29 47l3.5-12.5L48 19l9 9L41.5 43.5z"/><path d="M29 47l3.5-12.5l9 9z" fill="#fff6e2"/><path d="M44 23l9 9"/>`;
+  try{return window.__K.SVGI(b).replace(/#5a2f12/g,'#4a2a14')}catch(e){return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#ffc93c" stroke="#4a2a14" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">${b}</svg>`}})();
+function duzFix(){try{const y=$('y2'),k=$('kesBtn');if(!y)return;let b=$('duzBtn');
+    if(!b){b=document.createElement('button');b.type='button';b.id='duzBtn';b.className='k3b';b.setAttribute('aria-label','Düzenle');b.innerHTML=`<span class="k3c">${ED_ICON}</span><span class="k3t">Düzenle</span>`;
+      b.onclick=()=>{if(UI.mode!=='cafe'||UI.modal||ED.busy)return;try{sfx('tap')}catch(e){}enterEdit()};y.appendChild(b)}
+    const show=edCan();if(b.hidden===show)b.hidden=!show;b.classList.toggle('solo',!k||k.hidden||getComputedStyle(k).display==='none')}catch(e){}}
+duzFix();setInterval(duzFix,900);
+{const Y='html.land #game#game #y2',G='html.land #game#game',INK='#4a2a14',NX=':not(#_a#_b#_c)';const st=document.createElement('style');st.textContent=`
+${Y} #duzBtn{position:absolute!important;left:calc(var(--el) + 62px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important;transition:opacity .22s}
+${Y} #duzBtn.solo{left:var(--el)!important}
+${Y} #duzBtn .k3c{left:4px;top:0;width:48px;height:48px;padding-top:4.5px}
+${Y} #duzBtn .k3c svg{width:27px;height:27px}
+${Y} #duzBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
+#game.hudoff #duzBtn,#game.tutA #duzBtn,#game.tutB #duzBtn,html.land #game:has(.modal:not([hidden])) #duzBtn,html.land #game:has(.screen:not([hidden])) #duzBtn{opacity:0!important;pointer-events:none!important}
+${G}[data-nb="1"] #duzBtn,${G}[data-nb="2"] #duzBtn{display:none!important}
+${G}.nonav #duzBtn${NX}{visibility:hidden!important;pointer-events:none!important}
+${G}.edmode #y2 .k3mini${NX},${G}.edmode #y2 .k3chips${NX}{visibility:hidden!important;pointer-events:none!important}
+#game .edcur{position:absolute;inset:0;z-index:13;display:grid;place-items:center;background:rgba(74,42,20,.38);opacity:0;animation:edcIn .18s .3s forwards;touch-action:none}
+@keyframes edcIn{to{opacity:1}}
+#game .edcur .edcard{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:250px;max-width:330px;box-sizing:border-box;padding:14px 22px 13px;border:3px solid ${INK};border-radius:18px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 4px 0 ${INK};color:${INK};text-align:center;transform:scale(var(--u,1))}
+#game .edcur .edpaw{width:44px;height:44px;animation:edcBob .7s ease-in-out infinite alternate}
+#game .edcur .edpaw svg{width:44px;height:44px;display:block}
+@keyframes edcBob{to{transform:translateY(-5px) rotate(-6deg)}}
+#game .edcur b{font:800 17px/1.2 var(--font-display,inherit)}
+#game .edcur i{font:700 12.5px/1.2 var(--font-body,inherit);font-style:normal;opacity:.82;min-height:15px}
+`;document.head.appendChild(st)}
+
+// ---- açılışta: eski kayıtlardaki eşyalar karelere oturtulur (bir kez denenir; uymayan olduğu yerde kalır) ----
+{let n=0;const iv=setInterval(()=>{if(++n>120){clearInterval(iv);return}try{if(!started)return;clearInterval(iv);if(S.created&&S.tut==='done'&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!customers.length)tileAlignAll()}catch(e){console.warn('kareye oturtma',e)}},400)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
