@@ -13713,6 +13713,97 @@ const PK_SHELF_T={
 // oyunun klasik raf kurucusu temalıysa bunu kullanır (paketin xxKitchenParts işlevleri buildBackShelf'i adıyla çağırır)
 {const _bs=buildBackShelf;buildBackShelf=function(bx,bw){if(!KIT_EXT.off){const c=kThemeOf();if(c){const n0=PARENT.children.length;try{const g=pkBackShelf(c.pk,c.tema,bx,bw);if(g)return g}catch(e){console.warn('tema rafı',e);while(PARENT.children.length>n0)PARENT.remove(PARENT.children[PARENT.children.length-1])}}}return _bs.apply(this,arguments)}}
 
+// ================= SANDALYE: MASAYA ÖZEL (V155) =================
+// Kullanıcı isteği: "markette sandalye alındığında direk bütün masalara uygulanmasını istemiyorum. istediği sandalyeyi istediği
+// masaya ekleyebilsin oyuncu."
+//  · Market › Sandalyeler: "Satın al" sandalyeyi yalnızca SATIN ALIR (hiçbir masa kendiliğinden değişmez), ardından "masa seç" kipi açılır.
+//    Sahip olunan sandalyede düğme "Masaya ekle"dir.
+//  · Masa seç kipi (CHP): Düzenle oturumunda (kafe boş, p75) alttaki çubukta sandalyenin adı durur; dokunulan masa o sandalyeye geçer,
+//    yeniden dokunulursa eski sandalyesine döner. Yeşil halka = bu sandalye o masada; açık halka = değil. "Tüm masalara" ayrı, isteğe
+//    bağlı bir düğmedir. "Bitti" → oturum marketten önce açıktıysa Düzenle'ye, değilse kafeye döner.
+//  · Düzenle › masa › Sandalye: eskiden sırayla dolaşıyordu; artık sahip olunan sandalyelerin küçük resimli şeridi açılır, dokunulan
+//    sandalye o masaya uygulanır (sondaki market kutusu Sandalyeler sekmesini açar).
+// Sandalye kaydı zaten masa başınadır (rec.chair); S.chairDefault yalnız "Tüm masalara" ile değişir (kendi sandalyesi olmayan yeni masalar onu alır).
+const CHP={id:null,prev:new Map(),back:false,g:null};
+const chpTables=()=>[...FURN.values()].filter(R=>R.table);
+// yeniden kurulan masanın gölgeleri (spawnFurn ile aynı): eskiden sandalye değişince masa gölgesini yitiriyordu
+{const _rs=restyleTable;restyleTable=function(R){const r=_rs.apply(this,arguments);try{R.group.traverse(m=>{if(m.isMesh){m.castShadow=m.castShadow!==false;m.receiveShadow=true}})}catch(e){}return r}}
+function chSet(R,id){R.rec.chair=id;restyleTable(R);markDirty()}
+
+// ---- masa seç kipi ----
+function chpClear(){CHP.id=null;CHP.prev=new Map();if(CHP.g){scene.remove(CHP.g);disposeTree(CHP.g);CHP.g=null}}
+function chpStart(id){chpClear();CHP.id=id;CHP.back=!!(typeof ED!=='undefined'&&ED.on);UI.edit=null;UI.edCh=0;enterEdit()}
+function chpRings(){if(CHP.g){scene.remove(CHP.g);disposeTree(CHP.g);CHP.g=null}if(!CHP.id)return;const G=new THREE.Group();CHP.g=G;
+  for(const R of chpTables()){const c=CAT[R.rec.id],on=R.rec.chair===CHP.id,r=c.seats===4?1.22:0.97;
+    const m=new THREE.Mesh(new THREE.TorusGeometry(r,on?0.04:0.022,8,48),new THREE.MeshBasicMaterial({color:on?0x35b85a:0xfff3d6,transparent:!on,opacity:on?1:0.8}));
+    m.rotation.x=Math.PI/2;m.position.set(R.rec.x,0.045,R.rec.z);m.renderOrder=7;G.add(m)}
+  scene.add(G)}
+function chpBar(){const pb=$('placebar');pb.hidden=false;if(selRing){scene.remove(selRing);selRing=null}UI.edit=null;
+  const c=CAT[CHP.id],T=chpTables(),n=T.filter(R=>R.rec.chair===CHP.id).length,m=$('placeMsg');m.className='msg chpm';
+  m.innerHTML=`<img src="${itemThumb(c.id)}" alt=""><span><b>${c.name}</b>${T.length?` · ${n}/${T.length} masada`:''}<br>${T.length?'Eklemek istediğin masaya dokun':'Kafede masa yok · önce bir masa yerleştir'}</span>`;
+  $('placeRow').innerHTML=(T.length&&n<T.length?`<button class="btn light" type="button" id="chpAll">${ic('table')}Tüm masalara</button>`:'')+`<button class="btn green" type="button" id="chpDone">${ic('check')}Bitti</button>`;
+  const a=$('chpAll');if(a)a.onclick=chpAll;$('chpDone').onclick=chpDone;chpRings();try{gridRefresh()}catch(e){}}
+function chpHit(x,y){const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
+  const T=chpTables(),hits=raycaster.intersectObjects(T.map(R=>R.group),true);
+  if(hits.length){let o=hits[0].object;while(o&&o.userData.uid==null)o=o.parent;const R=o&&FURN.get(o.userData.uid);if(R&&R.table)return R}
+  const p=screenToFloor(x,y);if(!p)return null;let best=null,bd=1e9;   // ince ayakların arasına denk gelen dokunuş: zeminde en yakın masa
+  for(const R of T){const d=Math.hypot(R.rec.x-p.x,R.rec.z-p.z),lim=CAT[R.rec.id].seats===4?1.3:1.05;if(d<lim&&d<bd){bd=d;best=R}}return best}
+function chpTap(R){const rec=R.rec;if(R.table.occupant){try{sfx('nope')}catch(e){}toast('Masada müşteri var, şimdi değiştirilemez',ic('table'),1600);return}
+  if(rec.chair===CHP.id){if(!CHP.prev.has(rec.uid)){toast('Bu masada zaten bu sandalye var',ic('check'),1300);return}chSet(R,CHP.prev.get(rec.uid));CHP.prev.delete(rec.uid)}
+  else{CHP.prev.set(rec.uid,rec.chair);chSet(R,CHP.id)}
+  try{sfx('place')}catch(e){}chpBar()}
+function chpAll(){let k=0;for(const R of chpTables()){if(R.table.occupant||R.rec.chair===CHP.id)continue;if(!CHP.prev.has(R.rec.uid))CHP.prev.set(R.rec.uid,R.rec.chair);chSet(R,CHP.id);k++}
+  if(k){S.chairDefault=CHP.id;try{sfx('place')}catch(e){}}chpBar()}
+function chpDone(){const c=CAT[CHP.id],n=chpTables().filter(R=>CHP.prev.has(R.rec.uid)&&R.rec.chair===CHP.id).length,back=CHP.back;chpClear();try{saveNow()}catch(e){}
+  if(n)toast(`<b>${c.name}</b><br>${n} masaya eklendi`,`<img src="${itemThumb(c.id)}" alt="">`,2200);
+  if(back)drawEditBar();else setMode('cafe')}
+
+// ---- market: satın almak masaları değiştirmez ----
+function chBuy(c){if(S.lvl<c.lvl)return;
+  if(!S.owned[c.id]){if(S.coins<c.price)return;if(c.price)addCoins(-c.price,'decor');S.owned[c.id]=true;firstXP(c.id);markDirty();try{sfx('buy')}catch(e){}
+    toast(`<b>${c.name} alındı</b><br>Eklemek istediğin masaya dokun`,`<img src="${itemThumb(c.id)}" alt="">`,2600)}
+  else try{sfx('tap')}catch(e){}
+  chpStart(c.id)}
+{const _by=buy;buy=function(c){if(c&&c.kind==='chair')return chBuy(c);return _by.apply(this,arguments)}}
+{const _rd=renderDetail;renderDetail=function(){const r=_rd.apply(this,arguments);
+  try{const c=CAT[UI.sel];if(c&&c.kind==='chair'&&UI.tab==='chair'&&S.lvl>=c.lvl){const d=$('mkDetail'),a=$('dAct'),p=d&&d.querySelector('.tx p'),own=S.owned[c.id];
+      if(p)p.textContent=(c.desc||'')+(own?' Hangi masaya ekleyeceğini sen seçersin.':' Alınca hiçbir masa kendiliğinden değişmez; hangi masaya ekleyeceğini sen seçersin.')+(!own&&c.price&&S.coins<c.price?' Yeterli paran yok.':'');
+      if(a&&own){a.innerHTML=`${ic('chair')}Masaya ekle`;a.classList.add('green')}}}catch(e){console.warn('sandalye ayrıntısı',e)}return r}}
+
+// ---- Düzenle › masa › Sandalye: küçük resimli şerit ----
+function chStripDraw(R){const row=$('placeRow'),m=$('placeMsg'),own=CATALOG.filter(x=>x.kind==='chair'&&S.owned[x.id]),old=row.querySelector('.chs'),sl=old?old.scrollLeft:null;
+  m.className='msg';m.textContent=`${CAT[R.rec.id].name} · ${CAT[R.rec.chair]?CAT[R.rec.chair].name:'sandalye seç'}`;
+  row.innerHTML=`<div class="chs" role="listbox" aria-label="Sandalye seç">${own.map(x=>`<button type="button" class="chsB${x.id===R.rec.chair?' on':''}" data-ch="${x.id}" role="option" aria-selected="${x.id===R.rec.chair}" aria-label="${x.name}"><img src="${itemThumb(x.id)}" alt=""></button>`).join('')}<button type="button" class="chsB add" id="chsMk" aria-label="Markette başka sandalyeler">${ic('market')}</button></div><button class="btn green" type="button" id="chsOk">${ic('check')}Tamam</button>`;
+  const st=row.querySelector('.chs');if(sl!=null)st.scrollLeft=sl;else{const on=st.querySelector('.on');if(on)st.scrollLeft=Math.max(0,on.offsetLeft-st.clientWidth/2+on.offsetWidth/2)}
+  st.addEventListener('wheel',e=>{if(st.scrollWidth>st.clientWidth+2){st.scrollLeft+=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;e.preventDefault()}},{passive:false});   // fareyle: teker yana kaydırır
+  st.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{const id=b.dataset.ch;if(id===R.rec.chair)return;chSet(R,id);try{sfx('place')}catch(e){}chStripDraw(R)});
+  $('chsMk').onclick=()=>{UI.edCh=0;try{sfx('tap')}catch(e){}setMode('market');try{UI.mkSec=mkSecOf('chair');UI.tab='chair';UI.mkTab0=null;UI.sel=null;renderMarket()}catch(e){console.warn('sandalye marketi',e)}};
+  $('chsOk').onclick=()=>{UI.edCh=0;drawEditBar()}}
+{const _d=drawEditBar;drawEditBar=function(){
+   if(CHP.id&&UI.mode==='edit'&&!LAY.on){try{chpBar()}catch(e){console.warn('sandalye kipi',e);chpClear()}if(CHP.id)return}
+   const r=_d.apply(this,arguments);
+   try{const R=UI.edit!=null?FURN.get(UI.edit):null,b=$('edChair');
+     if(!R||!R.table||LAY.on)UI.edCh=0;
+     else if(b&&!R.table.occupant){if(UI.edCh)chStripDraw(R);else b.onclick=()=>{UI.edCh=1;try{sfx('tap')}catch(e){}drawEditBar()}}
+   }catch(e){console.warn('sandalye şeridi',e)}return r}}
+{const _t=editTap;editTap=function(x,y){if(CHP.id&&UI.mode==='edit'){const R=chpHit(x,y);if(R)chpTap(R);return}return _t(x,y)}}
+{const _x=exitEdit;exitEdit=function(){UI.edCh=0;return _x.apply(this,arguments)}}
+{const _sm=setMode;setMode=function(m){if(m!=='edit'){if(CHP.id)chpClear();UI.edCh=0}return _sm.apply(this,arguments)}}
+
+{const st=document.createElement('style');st.textContent=`
+.placebar .msg.chpm{display:flex;align-items:center;gap:8px;text-align:left;max-width:400px;padding:4px 14px 4px 6px}
+.placebar .msg.chpm img{width:40px;height:40px;object-fit:contain;flex:none}
+.placebar .chs{flex:0 1 auto;min-width:120px;max-width:436px;display:flex;gap:6px;overflow-x:auto;padding:5px 6px;border:3px solid var(--ink);border-radius:16px;background:rgba(255,248,236,.96);box-shadow:0 3px 0 var(--ink);scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior:contain}
+.placebar .chs::-webkit-scrollbar{display:none}
+.placebar .chsB{flex:none;width:46px;height:46px;padding:1px;border:2.5px solid transparent;border-radius:12px;background:#fff1d8;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.placebar .chsB img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.placebar .chsB.on{border-color:var(--ink);background:#ffd66b;box-shadow:inset 0 0 0 2px #fff8ec}
+.placebar .chsB.add{background:#dff3d8;border-color:rgba(74,42,20,.35);border-style:dashed}
+.placebar .chsB.add .ic{width:26px;height:26px;display:grid;place-items:center}
+.placebar .chsB.add .ic svg{width:26px;height:26px}
+.placebar .chsB:active{transform:scale(.94)}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
