@@ -3764,10 +3764,10 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <li>${ic('coin')}<span><b>Fiyatlar:</b> Menü → Fiyatlar’da her ürünün fiyatını ±1 altınla ayarla. Ucuz fiyat müşteriyi mutlu eder ama kârı azaltır; pahalı fiyat kârı artırır, kalite yetmezse puanı düşürür.</span></li>
      <li>${ic('clock')}<span><b>Sabır:</b> masadaki halka müşterinin sabrını gösterir: önce siparişin alınmasını, sonra yemeğini bekler. Halka kırmızıya dönmeden yetiş; yetişemezsen müşteri kızıp gider ve puanın düşer. Hızlı servis puanı yükseltir.</span></li>
      <li>${UI_IC.chart}<span><b>İşletme raporu:</b> sağ üstteki altına dokun. Son 60 dakikanın (ya da 24 saatin) gelirini, giderini, net kârını, ağırlanan ve kaybedilen müşteriyi görürsün. Yıldıza dokununca yorumlar ve puanı neyin düşürdüğü çıkar.</span></li></ul>`},
-   {t:'Stok ve toptancılar',art:`${itemArt('kahve1')}${ic('box')}${itemArt('sut1')}`,body:`<ul class="gsteps"><li>${ic('box')}<span><b>Stok:</b> her ürün tarifindeki malzemelerden 1’er birim harcar (ör. kurabiye = 1 un + 1 şeker). Bir malzeme biterse onu kullanan ürün satılamaz; hiçbir ürün satılamıyorsa müşteri gelmez.</span></li>
-     <li>${ic('market')}<span><b>Toptancılar:</b> Menü → Stok → <b>Toptancıdan sipariş ver</b>. 5 toptancı var: ucuz olanın kalitesi düşük, pahalı olanın kalitesi yüksek. Kalite müşteri puanını, alış fiyatı kârını belirler. 25’li pakette %5, 50’li pakette %10 indirim.</span></li>
-     <li>${ic('clock')}<span><b>Teslimat:</b> sipariş gerçek zamanlı yola çıkar (oyun kapalıyken de). Toptancı kolileri kapının önüne bırakır; kurye (boşsa) ya da bir garson alıp tezgaha taşır ve stoğa ekler. Önce eski stok kullanılır.</span></li>
-     <li>${ic('box')}<span><b>Otomatik tedarik:</b> Menü › Stok › Otomatik tedarik. İstediğin malzemeleri seç, her biri için toptancıyı (kaliteyi) belirle; stok azalınca sipariş kendiliğinden verilir. Toptancıyı istediğin an değiştirebilirsin.</span></li></ul>`},
+   {t:'Malzeme ve toptancılar',art:`${itemArt('kahve1')}${ic('box')}${itemArt('sut1')}`,body:`<ul class="gsteps"><li>${ic('box')}<span><b>Malzeme:</b> bütün malzemen tek depoda durur. Her ürün, tarifindeki malzeme sayısı kadar malzeme harcar (ör. kurabiye = un + şeker = 2). Malzeme biterse ürün satılamaz; hiçbir ürün satılamıyorsa müşteri gelmez.</span></li>
+     <li>${ic('auto')}<span><b>Otomatik tedarik:</b> sipariş vermene gerek yok. Depo azalınca seçili toptancıdan 150’lik toplu koli kendiliğinden istenir, parası kasadan düşer. Kasadaki altın tam koliye yetmiyorsa yettiği kadarı alınır.</span></li>
+     <li>${ic('market')}<span><b>Toptancı seçimi:</b> Menü › Stok. 5 toptancı var: ucuz olanın kalitesi düşük, pahalı olanın kalitesi yüksek ve teslimatı yavaş. Kalite müşteri puanını, koli fiyatı kârını belirler. Bir toptancıya dokununca sıradaki koliler ondan gelir.</span></li>
+     <li>${ic('clock')}<span><b>Teslimat:</b> koli gerçek zamanlı yola çıkar (oyun kapalıyken de). Toptancı kolileri kapının önüne bırakır; kurye (boşsa) ya da bir garson alıp tezgâha taşır ve depoya ekler. Önce eski stok kullanılır.</span></li></ul>`},
    {t:'Kafe stratejisi',art:`${UI_IC.chart}${ic('coin')}${UI_IC.starF}`,body:`<ul class="gsteps"><li>${ic('coin')}<span><b>Ekonomik kafe:</b> ucuz toptancı + düşük fiyat. Çok müşteri gelir, müşteriler beklemeye daha hoşgörülüdür; ürün başı kâr düşüktür. Büyük ekip ve çok masa ile parlar.</span></li>
      <li>${UI_IC.starF}<span><b>Lüks kafe:</b> kaliteli toptancı + yüksek fiyat. Daha az ama daha kârlı müşteri; hızlı servis ve yüksek kalite beklerler. Küçük kafede en verimli yol olabilir. Çok pahalı fiyat ise müşteriyi kaçırır.</span></li>
      <li>${UI_IC.chart}<span><b>Dengeli kafe:</b> orta toptancı + uygun fiyat. İstikrarlı puan ve kâr. Hangisinin daha iyi olduğu ekibine, masalarına ve puanına göre değişir; İşletme raporundan takip et.</span></li></ul>`},
@@ -3973,18 +3973,18 @@ function tut2Tick(){const m=UI.mode;
     t2Show('menu2',{title:'Menü',text:`Burada açtığın ürünler var. Müşteriler yalnızca <b>menündeki</b> ürünleri sipariş eder. <b>Ballı Süt</b>’ü menüye eklemek için <b>Menüye ekle</b>’ye dokun.`,target:tg});return}
   if(S.tr==='menu3'){t2Show('menu3',{title:'Harika!',text:`Artık müşterilerin <b>Ballı Süt</b> de sipariş edebilir. Ürünleri istediğin zaman buradan ekleyip çıkarabilirsin; yeni tarifler keşfettikçe menün büyüyecek.<br>Şimdi son bir şey: ürünlerin <b>malzemeleri</b> nereden geliyor?`,dim:true,center:true,
       buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st1';markDirty();t2Shown=''}}]});return}
-  // --- tedarik: Stok sekmesi → depo → toptancı siparişi → otomatik tedarik ---
+  // --- tedarik (V144): Stok sekmesi → malzeme deposu → otomatik tedarik → toptancı seçimi ---
   if(/^st/.test(S.tr)&&m!=='menu'){if(['book','cafe','merge'].includes(m))t2Show('stnav',{text:'Tedarik sistemini öğrenmek için <b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>{menuTab=S.tr==='st1'?'menu':'stock';setMode('menu')}}]});else t2Hide();return}
   if(S.tr==='st1'){if(menuTab==='stock'){S.tr='st2';markDirty();t2Shown='';return}
-    t2Show('st1',{title:'Malzeme stoğu',text:'Her ürün, tarifindeki malzemelerden <b>1’er birim</b> harcar: Ballı Süt satıldıkça depodaki süt azalır. Depona bakmak için <b>Stok</b> sekmesine dokun.',target:()=>document.querySelector('[data-mt="stock"]'),place:'bottom'});return}
+    t2Show('st1',{title:'Malzeme',text:'Her ürün, tarifindeki malzeme sayısı kadar <b>malzeme</b> harcar: Ballı Süt satıldıkça depodaki malzeme azalır. Depona bakmak için <b>Stok</b> sekmesine dokun.',target:()=>document.querySelector('[data-mt="stock"]'),place:'bottom'});return}
   if(S.tr==='st2'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
-    t2Show('st2',{title:'Depon',text:'Burada her malzemenin <b>adedi</b>, <b>kalitesi</b> ve birim maliyeti var. Çubuk azalınca sarıya, bitince kırmızıya döner. <b>Bir malzeme biterse onu kullanan ürünler satılamaz</b>, müşteri başka bir şey ister ya da gider.',target:()=>document.querySelector('#menuList .sk,#menuList .sk2'),place:'top',
+    t2Show('st2',{title:'Depon',text:'Bütün malzemen tek depoda durur: burada <b>kalan malzemeyi</b>, <b>kalitesini</b> ve birim maliyetini görürsün. Çubuk azalınca sarıya, bitince kırmızıya döner. <b>Malzeme biterse ürün satılamaz</b>, müşteri gider.',target:()=>document.querySelector('#menuList .depo'),place:'top',
       buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st3';markDirty();t2Shown=''}}]});return}
   if(S.tr==='st3'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
-    t2Show('st3',{title:'Toptancıdan sipariş',text:'<b>Sipariş ver</b> ile toptancı seçip malzeme alırsın. Ucuz toptancının kalitesi düşük, pahalı olanınki yüksek; kalite müşteri puanını etkiler. Sipariş <b>gerçek zamanlı</b> yola çıkar; toptancı kolileri kapının önüne bırakır, kurye ya da bir garson içeri taşır.',target:()=>document.querySelector('[data-sup]'),place:'bottom',
+    t2Show('st3',{title:'Otomatik tedarik',text:'Sipariş vermekle uğraşmazsın: depo azalınca toptancıdan <b>toplu koli</b> kendiliğinden istenir, parası kasadan düşer. Toptancı kolileri kapının önüne bırakır; kurye ya da bir garson içeri taşır.',target:()=>document.querySelector('#menuList .supstat'),place:'top',
       buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st4';markDirty();t2Shown=''}}]});return}
   if(S.tr==='st4'){if(menuTab!=='stock'){menuTab='stock';renderMenu()}
-    t2Show('st4',{title:'Otomatik tedarik',text:'Uğraşmak istemezsen <b>Otomatik tedarik</b>’i aç: seçtiğin malzeme azalınca, seçtiğin toptancıdan kendiliğinden sipariş verilir. Stok azalınca üstte uyarı da çıkar. Kafe artık senin, iyi eğlenceler!',target:()=>document.querySelector('[data-auto]'),place:'bottom',
+    t2Show('st4',{title:'Toptancını seç',text:'Seçim sende: <b>5 toptancıdan</b> birine dokun. Ucuz olanın kalitesi düşük, pahalı olanınki yüksek; kalite müşteri puanını etkiler. İstediğin an değiştirebilirsin. Kafe artık senin, iyi eğlenceler!',target:()=>document.querySelector('#menuList .supc[aria-pressed="true"]'),place:'bottom',
       buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:()=>{S.tr='done';markDirty();t2Hide();menuTab='menu';setMode('cafe')}}]});return}}
 
 // ================= HESAP: Supabase ile e-posta kaydı / girişi =================
@@ -4375,7 +4375,7 @@ function openCall(){const c=DLV.call;if(!c||$('dlvPanel'))return;UI.modal=true;c
   $('dlvNo').onclick=()=>{if(done)return;done=true;DLV.call=null;DLV.cd=dRnd(CONFIG.dlv.gap);close();toast('Sipariş reddedildi',ic('close'),1600)};
   $('dlvYes').onclick=()=>{if(done)return;done=true;close();acceptCall(c)}}
 const dRnd=([a,b])=>a+Math.random()*(b-a);
-function acceptCall(c){if(!c||DLV.call!==c||DLV.active)return false;const miss=stockShort(c.items);if(miss){sfx('nope');toast(`<b>Malzeme yetmiyor</b><br>${miss} bitti · Menü › Stok’tan toptancıya sipariş ver`,ic('box'),2800);return false}DLV.call=null;const d={id:c.id,who:c.who,addr:c.addr,items:c.items,orders:[],total:callTotal(c),paid:false,state:'PREP',acceptT:gameT};DLV.active=d;
+function acceptCall(c){if(!c||DLV.call!==c||DLV.active)return false;const miss=stockShort(c.items);if(miss){sfx('nope');toast(`<b>Malzeme yetmiyor</b><br>${pendN()?'Toptancının kolisi yolda':'Otomatik tedarik koli istiyor'}`,ic('box'),2800);return false}DLV.call=null;const d={id:c.id,who:c.who,addr:c.addr,items:c.items,orders:[],total:callTotal(c),paid:false,state:'PREP',acceptT:gameT};DLV.active=d;
   for(const r of c.items){const u=stockUse(r);const o={id:'D'+(++orderSeq),customer:null,delivery:d,table:null,seat:null,item:r,price:priceOf(r),qual:u.q,cost:u.c,state:'WAITING_FOR_PREPARATION',paid:false,mesh:null,slot:-1,pickupQueued:true,submitQueued:true};orders.push(o);d.orders.push(o);baristaQ.push(o)}
   sfx('order');courierSay('Siparişi hazırlayın!');toast(`<b>Paket sipariş alındı</b><br>${c.items.length} ürün · ${c.who}`,ic('box'),2400);bump('dlvAccepted')}
 // ---------- paketleme + teslimat ----------
@@ -4669,12 +4669,12 @@ function afkEstimate(){const A=afkState();if(A.rate>0)return {rate:A.rate,cust:A
 function offlineCheck(){if(!started||!S.created||S.tut!=='done'||UI.modal||$('offModal'))return;const last=S.lastSeen||Date.now();const mins=(nowT()-last)/60000;S.lastSeen=nowT();
   if(mins<CONFIG.afk.minMin)return;if(S.closed){toast('Dükkan kapalıydı; sen yokken satış yapılmadı',ic('lock'),2600);return}
   const m=Math.min(mins,CONFIG.afk.capMin),E=afkEstimate();let coins=Math.round(E.rate*CONFIG.afk.eff*m),served=Math.round(E.cust*CONFIG.afk.eff*m);
-  if(typeof afkStockLimit==='function'){const lim=afkStockLimit(served);if(lim<served){coins=Math.round(coins*lim/Math.max(1,served));served=lim}}
+  let supCost=0;if(typeof afkStockLimit==='function'){const per=coins/Math.max(1,served),R=afkStockLimit(served,per);if(R.n<served){coins=Math.round(per*R.n);served=R.n}supCost=Math.min(R.spent||0,Math.max(0,S.coins)+coins)}   // (V144) sen yokken de otomatik tedarik çalışır: koli parası hasılatla birlikte gösterilir
   if(coins<2)return;const N=S.chars||{waiter:{name:'Yosun'}};const h=Math.floor(m/60),mm=Math.round(m%60);const dur=(h?h+' saat ':'')+(mm?mm+' dakika':'');
   UI.modal=true;const md=document.createElement('div');md.className='modal';md.id='offModal';
   md.innerHTML=`<div class="lvcard offcard" role="dialog" aria-label="Sen yokken"><div class="star">${UI_IC.coin}</div><h3>Tekrar hoş geldin!</h3><p>${dur} boyunca ${N.waiter.name} ve ekip kafeyi işletti.${mins>CONFIG.afk.capMin?' (En fazla 8 saatlik hasılat birikir.)':''}</p>
-    <div class="unl"><div>${ic('paw')}<span>${served} müşteri ağırlandı</span></div><div>${ic('coin')}<span>Hasılat: +${coins} altın</span></div></div><button class="btn" id="offOk" type="button">${ic('coin')}Hasılatı topla</button></div>`;
-  $('game').appendChild(md);sfx('levelup');let got=false;$('offOk').onclick=()=>{if(got)return;got=true;md.remove();UI.modal=false;addCoins(coins,'afk');bump('orders',0);sfx('coin');floatCoinHud&&floatCoinHud(coins);markDirty();saveNow();if(lvQueue.length)showLevelUp()};$('offOk').focus()}
+    <div class="unl"><div>${ic('paw')}<span>${served} müşteri ağırlandı</span></div><div>${ic('coin')}<span>Hasılat: +${coins} altın</span></div>${supCost?`<div>${ic('box')}<span>Otomatik tedarik: −${supCost} altın</span></div>`:''}</div><button class="btn" id="offOk" type="button">${ic('coin')}Hasılatı topla</button></div>`;
+  $('game').appendChild(md);sfx('levelup');let got=false;$('offOk').onclick=()=>{if(got)return;got=true;md.remove();UI.modal=false;addCoins(coins,'afk');if(supCost)addCoins(-supCost,'stock');bump('orders',0);sfx('coin');floatCoinHud&&floatCoinHud(coins);markDirty();saveNow();if(lvQueue.length)showLevelUp()};$('offOk').focus()}
 const floatCoinHud=n=>{};
 // ---------- kurye motoru ----------
 const SCOOT={park:{x:-7.15,z:2.95,yaw:0},route:[{x:-8.9,z:3.7},{x:-8.9,z:9.6},{x:30,z:9.6}],speed:3.2,g:null,rider:null};
@@ -4727,68 +4727,100 @@ function extrasTick(dt){afkTick(dt);staffIdleTick(dt);hudShop();stockTick(dt);do
 setInterval(()=>dayTick(false),1000);setTimeout(()=>{dayTick(true);hudShop()},0);
 
 // ================= AŞAMA 8: STOK + TOPTANCILAR =================
-// Her ürün, tarifindeki temel malzemelerden 1'er birim harcar (sipariş alınınca). Stok bitince ürün satılamaz.
-// Stok lotlar halinde tutulur (FIFO): her lotun adedi, kalitesi ve birim alış maliyeti vardır.
+// (V144) TOPLU MALZEME: depoda tek bir "Malzeme" sayısı vardır. Satılan her ürün, tarifindeki temel malzeme sayısı kadar (1–4) bu sayıdan düşer.
+// Tedarik yalnız OTOMATİKTİR: depo azalınca oyuncunun seçtiği toptancıdan (5 seçenek: kalite / fiyat / teslim süresi) toplu koli kendiliğinden
+// sipariş edilir, parası kasadan düşer. Elle sipariş ve malzeme başına ayar yoktur. Stok lotlar halinde tutulur (FIFO): adet, kalite, birim maliyet.
 // Not: cihazda çalışan yerel bir prototiptir; üretimde stok, satın alma ve teslimat sunucuda doğrulanmalıdır.
-CONFIG.stock={start:25,startQ:3,cap:150,low:6,skipAnimAfter:60};
+CONFIG.stock={start:150,startQ:3,cap:600,low:30,unit:0.9,pack:150,packDisc:0.1,minPack:20,autoAt:45,skipAnimAfter:60};
+// tariflerin temel malzemeleri (bir ürünün kaç malzeme harcadığı buradan sayılır)
 const STOCK_BASES=['kahve','sut','cay','kakao','limon','un','yum','seker','cilek','peynir'];
 const STOCK_NAME={kahve:'Kahve',sut:'Süt',cay:'Çay',kakao:'Kakao',limon:'Limon',un:'Un',yum:'Yumurta',seker:'Şeker',cilek:'Çilek',peynir:'Peynir'};
-const STOCK_COST={kahve:1.2,sut:0.8,cay:0.7,kakao:1.1,limon:0.8,un:0.6,yum:0.7,seker:0.5,cilek:1.3,peynir:1.4};
 const SUPPLIERS=[
- {id:'ucuz',name:'Ucuzcu Pati Toptan',q:1.5,mul:0.55,eta:40,miss:['cilek','peynir'],tag:'En ucuz · kalite düşük',col:'#c9b08e'},
- {id:'mahalle',name:'Mahalle Gıda Deposu',q:2.5,mul:0.8,eta:60,miss:[],tag:'Uygun fiyat · her şey var',col:'#9fc3d8'},
- {id:'bereket',name:'Bereket Çiftlik',q:3.5,mul:1.0,eta:90,miss:['kahve','kakao'],tag:'Taze çiftlik ürünleri',col:'#a9cf8a'},
- {id:'basak',name:'Altın Başak Gurme',q:4.3,mul:1.35,eta:120,miss:['yum'],tag:'Gurme seçki',col:'#f2c46b'},
- {id:'saray',name:'Saray Mutfağı Seçkin',q:5,mul:1.8,eta:150,miss:[],tag:'En yüksek kalite',col:'#d8a8e0'}];
-const PACKS=[{n:10,d:0},{n:25,d:0.05},{n:50,d:0.1}];
+ {id:'ucuz',name:'Ucuzcu Pati Toptan',q:1.5,mul:0.55,eta:40,tag:'En ucuz · kalite düşük',col:'#c9b08e'},
+ {id:'mahalle',name:'Mahalle Gıda Deposu',q:2.5,mul:0.8,eta:60,tag:'Uygun fiyat · hızlı teslimat',col:'#9fc3d8'},
+ {id:'bereket',name:'Bereket Çiftlik',q:3.5,mul:1.0,eta:90,tag:'Taze çiftlik ürünleri',col:'#a9cf8a'},
+ {id:'basak',name:'Altın Başak Gurme',q:4.3,mul:1.35,eta:120,tag:'Gurme seçki',col:'#f2c46b'},
+ {id:'saray',name:'Saray Mutfağı Seçkin',q:5,mul:1.8,eta:150,tag:'En yüksek kalite',col:'#d8a8e0'}];
+const SUP_DEF='bereket';
 const SUP=id=>SUPPLIERS.find(s=>s.id===id);
+const r2=v=>Math.round(v*100)/100;
 
 // ---------- durum ----------
-function stockS(){let T=S.stock;if(!T||!T.b){T=S.stock={b:{},pend:[],arr:[],seq:0};for(const k of STOCK_BASES)T.b[k]=[{n:CONFIG.stock.start,q:CONFIG.stock.startQ,c:STOCK_COST[k]}]}
-  for(const k of STOCK_BASES)if(!Array.isArray(T.b[k]))T.b[k]=[];if(!T.pend)T.pend=[];if(!T.arr)T.arr=[];return T}
-const stockN=k=>stockS().b[k].reduce((a,l)=>a+l.n,0);
-const pendN=k=>{const T=stockS();let n=0;for(const p of T.pend.concat(T.arr))n+=p.items[k]||0;return n};
+// S.stock = {g:[{n,q,c}…] (toplu malzeme lotları), pend:[yoldaki koliler {id,sup,n,unit,q,total,eta}], arr:[kapıya gelmiş koliler], seq, sup:'seçili toptancı'}
+function lotAdd(n,q,c){if(!(n>0))return;const L=stockS().g,l=L[L.length-1];if(l&&l.q===q&&l.c===c)l.n+=n;else L.push({n,q,c})}
+// eski kayıt (malzeme başına stok, V143 ve öncesi) → toplu malzeme: bütün malzemeler tek depoda toplanır (kalitesine göre lotlanır),
+// yoldaki siparişler toplam adede çevrilir, otomatik tedarikte en çok seçilmiş toptancı (yoksa stoğun kalitesine en yakın olan) seçili gelir.
+function stockMigrate(T){const by={};let tn=0,tq=0;
+  for(const k in T.b||{})for(const l of T.b[k]||[]){if(!l||!(l.n>0))continue;const q=l.q||CONFIG.stock.startQ,key=Math.round(q*10),e=by[key]||(by[key]={n:0,q,cs:0});e.n+=l.n;e.cs+=l.n*(l.c||0);tn+=l.n;tq+=l.n*q}
+  T.g=Object.values(by).map(e=>({n:e.n,q:e.q,c:r2(e.cs/e.n)}));
+  const conv=p=>{if(p&&p.n==null){let n=0;for(const k in p.items||{})n+=p.items[k]||0;p.n=n;p.unit=p.total&&n?r2(p.total/n):CONFIG.stock.unit;delete p.items}return p};
+  T.pend=(T.pend||[]).map(conv).filter(p=>p&&p.n>0);T.arr=(T.arr||[]).map(conv).filter(p=>p&&p.n>0);
+  const cnt={};for(const k in T.auto||{}){const a=T.auto[k];if(a&&a.on&&SUP(a.sup))cnt[a.sup]=(cnt[a.sup]||0)+1}
+  let best=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+  if(!best&&tn){const aq=tq/tn;best=SUPPLIERS.slice().sort((a,b)=>Math.abs(a.q-aq)-Math.abs(b.q-aq)||b.q-a.q)[0].id}
+  T.sup=best||SUP_DEF;delete T.b;delete T.auto}
+function stockS(){let T=S.stock;if(!T||(!T.g&&!T.b))T=S.stock={g:[{n:CONFIG.stock.start,q:CONFIG.stock.startQ,c:CONFIG.stock.unit}],pend:[],arr:[],seq:0,sup:SUP_DEF};
+  if(!Array.isArray(T.g))stockMigrate(T);if(!T.pend)T.pend=[];if(!T.arr)T.arr=[];if(!SUP(T.sup))T.sup=SUP_DEF;return T}
+const stockN=()=>stockS().g.reduce((a,l)=>a+l.n,0);
+const pendN=()=>{const T=stockS();let n=0;for(const p of T.pend.concat(T.arr))n+=p.n||0;return n};
 const NEEDS={};
 function needsOf(r){return NEEDS[r.id]||(NEEDS[r.id]=r.needs?r.needs.slice():[...baseNeeds(r.disc)].map(id=>ITEMS[id].chain).filter(k=>STOCK_BASES.includes(k)))}
-const headLot=k=>stockS().b[k].find(l=>l.n>0);
+const needN=r=>needsOf(r).length;   // bir ürünün depodan düşürdüğü malzeme sayısı
+const headLot=()=>stockS().g.find(l=>l.n>0);
+const stockQAvg=()=>{let n=0,q=0;for(const l of stockS().g){n+=l.n;q+=l.n*l.q}return n?q/n:CONFIG.stock.startQ};
 // öğretici bitene kadar stok satışları engellemez (yeni oyuncu takılmasın)
-function stockOk(r){if(S.tut!=='done')return true;return needsOf(r).every(k=>stockN(k)>=1)}
-// birden çok ürün için yeterlilik (paket siparişi): eksik malzemenin adı ya da null
-function stockShort(items){if(S.tut!=='done')return null;const need={};for(const r of items)for(const k of needsOf(r))need[k]=(need[k]||0)+1;
-  for(const k in need)if(stockN(k)<need[k])return STOCK_NAME[k];return null}
-function stockQ(r){const ks=needsOf(r);if(!ks.length)return 3;let s=0;for(const k of ks){const l=headLot(k);s+=l?l.q:CONFIG.stock.startQ}return s/ks.length}
-function recipeCost(r){let c=0;for(const k of needsOf(r)){const l=headLot(k);c+=l?l.c:STOCK_COST[k]}return c}
-const menuBases=()=>{const s=new Set();for(const r of RECIPES)if(S.unlocked[r.id]&&S.menu[r.id])for(const k of needsOf(r))s.add(k);return s};
-// 1 ürün = tarifindeki her malzemeden 1 birim (en eski lot önce)
-function stockUse(r){const ks=needsOf(r);let q=0,c=0;const mb=menuBases();
-  for(const k of ks){const L=stockS().b[k];const l=L.find(x=>x.n>0);if(l){l.n--;q+=l.q;c+=l.c}else{q+=CONFIG.stock.startQ;c+=STOCK_COST[k]}
-    while(L.length&&L[0].n<=0)L.shift();
-    if(l&&stockN(k)===0&&mb.has(k)&&S.tut==='done')toast(`<b>${STOCK_NAME[k]} bitti!</b><br>Menü › Stok’tan toptancıya sipariş ver`,itemArt(k+'1'),3000)}
-  if(ks.length)ledger('cogs',c);markDirty();return {q:ks.length?q/ks.length:3,c}}
+function stockOk(r){if(S.tut!=='done')return true;return stockN()>=needN(r)}
+// birden çok ürün için yeterlilik (paket siparişi): yetmiyorsa 'Malzeme', yetiyorsa null
+function stockShort(items){if(S.tut!=='done')return null;let need=0;for(const r of items)need+=needN(r);return stockN()<need?'Malzeme':null}
+function stockQ(r){const l=headLot();return l?l.q:CONFIG.stock.startQ}
+function recipeCost(r){const l=headLot();return needN(r)*(l?l.c:CONFIG.stock.unit)}
+// menüdeki ürünlerin ürün başına ortalama malzeme sayısı (Stok ekranındaki bilgi)
+function menuNeedAvg(){const rs=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]);if(!rs.length)return 0;return rs.reduce((a,r)=>a+needN(r),0)/rs.length}
+// son 3 dakikadaki kullanım hızı (malzeme/sn): otomatik sipariş eşiği buna göre büyür (kalabalık kafede koli daha erken istenir)
+const USE_LOG=[];
+function useLog(n){const t=nowT();USE_LOG.push([t,n]);while(USE_LOG.length&&t-USE_LOG[0][0]>180000)USE_LOG.shift()}
+function useRate(){const t=nowT();let s=0,t0=t;for(const [a,n] of USE_LOG)if(t-a<=180000){s+=n;t0=Math.min(t0,a)}return s/Math.max(60,(t-t0)/1000)}
+// 1 ürün = tarifindeki malzeme sayısı kadar toplu malzeme (en eski lot önce). quiet: sen yokken yapılan satış hesabı (kayıt/uyarı yok)
+function stockUse(r,quiet){const k=needN(r),L=stockS().g;let q=0,c=0,left=k,took=0;
+  while(left>0){const l=L.find(x=>x.n>0);if(!l){q+=CONFIG.stock.startQ*left;c+=CONFIG.stock.unit*left;break}const m=Math.min(left,l.n);l.n-=m;q+=l.q*m;c+=l.c*m;left-=m;took+=m;while(L.length&&L[0].n<=0)L.shift()}
+  if(k){c=r2(c);ledger('cogs',c);if(!quiet){useLog(k);if(took&&stockN()===0&&S.tut==='done')toast(`<b>Malzeme bitti!</b><br>${pendN()?'Toptancının kolisi yolda':'Otomatik tedarik yeni koli istiyor'}`,ic('box'),3000)}}
+  markDirty();return {q:k?q/k:3,c}}
 // stok bittiği için siparişi verilemeyen müşteriler kibarca kalkar (puan biraz düşer)
 function stockOut(g,list){for(const m of list){m.angry='stock';m.gone=true;m.orderQueued=true;if(m.menu){scene.remove(m.menu);m.menu=null}if(m._taken)m._taken()}
   if(g.leader&&g.leader.gone){const nl=g.members.find(m=>!m.gone);if(nl)g.leader=nl}if(g.members.every(m=>m.gone))g.gaveUp=true;
   const n=list.length;repState().lost+=n;bump('lost',n);finEv('lost',n);finEv('oos',n);sfx('nope');
   addReview({s:2,w:n,who:list[0].look.name+(n>1?` ve ${n-1} arkadaşı`:''),txt:'İstediğimiz ürün kalmamıştı.',kind:'lost'});
-  toast(`<b>${n>1?n+' müşteri':list[0].look.name} sipariş veremedi</b><br>Menüdeki ürünlerin stoğu bitti`,ic('box'),2800)}
+  toast(`<b>${n>1?n+' müşteri':list[0].look.name} sipariş veremedi</b><br>Depoda malzeme kalmadı`,ic('box'),2800)}
 
 // ---------- gelir / gider defteri (saatlik; Aşama 9 analiz ekranı bunu kullanacak) ----------
 function ledger(k,v){if(!v)return;const L=S.led||(S.led={});const h=Math.floor(nowT()/3600000);const e=L[h]||(L[h]={rev:0,buy:0,cogs:0});e[k]=Math.round(((e[k]||0)+v)*100)/100;
   const ks=Object.keys(L);if(ks.length>48)for(const x of ks.sort((a,b)=>a-b).slice(0,ks.length-48))delete L[x];markDirty()}
 
-// ---------- toptancı siparişi ----------
-let packPrice=(sp,k,pi)=>{const P=PACKS[pi];return Math.max(1,Math.round(STOCK_COST[k]*sp.mul*P.n*(1-P.d)))};
-function cartTotal(sp,cart){let t=0;for(const k in cart)t+=packPrice(sp,k,cart[k]);return t}
-function placeSupOrder(sp,cart,auto=false){const ks=Object.keys(cart);if(!ks.length)return false;const tot=cartTotal(sp,cart);
-  if(S.coins<tot){sfx('nope');toast('Yeterli altının yok',ic('coin'),2000);return false}
-  for(const k of ks)if(stockN(k)+pendN(k)+PACKS[cart[k]].n>CONFIG.stock.cap){sfx('nope');toast(`${STOCK_NAME[k]} deposu dolu (en fazla ${CONFIG.stock.cap})`,ic('box'),2200);return false}
-  const T=stockS();const items={},unit={};for(const k of ks){items[k]=PACKS[cart[k]].n;unit[k]=Math.round(packPrice(sp,k,cart[k])/PACKS[cart[k]].n*100)/100}
-  addCoins(-tot,'stock');bump('buys',1);T.pend.push({id:++T.seq,sup:sp.id,items,unit,q:sp.q,total:tot,eta:nowT()+sp.eta*1000});saveNow();sfx('coin');
-  toast(auto?`<b>Otomatik sipariş · ${sp.name}</b><br>${ks.map(k=>STOCK_NAME[k]).join(', ')} · ${tot} altın · ${fmtT(sp.eta)} sonra kapıda`:`<b>${sp.name}</b><br>Sipariş verildi · ${fmtT(sp.eta)} sonra kapıda`,ic('box'),2600);return true}
-// teslim alınan koliler stoğa lot olarak eklenir
+// ---------- otomatik tedarik ----------
+// koli fiyatı: birim maliyet × toptancı çarpanı × toplu alım indirimi (%10)
+const unitPrice=sp=>CONFIG.stock.unit*sp.mul*(1-CONFIG.stock.packDisc);
+const packPrice=(sp,n=CONFIG.stock.pack)=>Math.max(1,Math.round(unitPrice(sp)*n));
+// sipariş eşiği: depo + yoldaki bu sayının altına inince koli istenir. Teslim süresince (+yarım dakika pay) harcanacak malzemeden az olamaz.
+function reorderAt(sp){sp=sp||SUP(stockS().sup);return Math.min(CONFIG.stock.pack*2,Math.max(CONFIG.stock.autoAt,Math.ceil(useRate()*(sp.eta+30)*1.25)))}
+function placeAutoOrder(sp,n,tot,credit){const T=stockS();if(tot>0)addCoins(-tot,'stock');bump('buys',1);
+  T.pend.push({id:++T.seq,sup:sp.id,n,unit:r2(tot/n),q:sp.q,total:tot,eta:nowT()+sp.eta*1000});saveNow();sfxSafe('coin');
+  toast(credit?`<b>Toptancı veresiye koli yolladı</b><br>${sp.name} · ${n} malzeme · ${fmtT(sp.eta)} sonra kapıda`:`<b>Otomatik tedarik · ${sp.name}</b><br>${n} malzeme · ${tot} altın · ${fmtT(sp.eta)} sonra kapıda`,ic('box'),2600);
+  if(UI.mode==='menu'&&menuTab==='stock')renderMenu();return true}
+let autoWarnT=0,autoT=0;
+function supAutoTick(dt){if(!S.created||S.tut!=='done')return;autoT+=dt;if(autoT<2)return;autoT=0;const T=stockS(),C=CONFIG.stock,sp=SUP(T.sup),have=stockN()+pendN();
+  if(have>=reorderAt(sp))return;let n=Math.min(C.pack,C.cap-have);if(n<C.minPack)return;const up=unitPrice(sp);let tot=packPrice(sp,n);
+  if(S.coins<tot){const m=Math.floor(S.coins/up);
+    if(m>=C.minPack){n=m;tot=packPrice(sp,n)}                                                   // kasadaki altın tam koliye yetmiyor: yettiği kadarı
+    else if(have<=0){placeAutoOrder(sp,C.minPack,Math.max(0,Math.min(S.coins,packPrice(sp,C.minPack))),true);return}   // depo boş, altın yok: kafe kilitlenmesin diye küçük veresiye koli
+    else{if(nowT()-autoWarnT>60000){autoWarnT=nowT();toast(`<b>Otomatik tedarik bekliyor</b><br>${sp.name} kolisi için en az ${packPrice(sp,C.minPack)} altın gerekli`,ic('coin'),2600)}return}}
+  placeAutoOrder(sp,n,tot,false)}
+// toptancı seçimi (5 seçenek): bundan sonraki koliler seçilen toptancıdan gelir; yoldakiler değişmez
+function setSupplier(id){const T=stockS(),sp=SUP(id);if(!sp||T.sup===id)return false;T.sup=id;markDirty();saveNow();
+  toast(`<b>Toptancın: ${sp.name}</b><br>Sıradaki koliler buradan gelecek · ${CONFIG.stock.pack}’lik koli ${packPrice(sp)} altın`,ic('box'),2400);return true}
+// teslim alınan koliler depoya lot olarak eklenir
 function collectBoxes(who){const T=stockS();if(!T.arr.length)return 0;let n=0;
-  for(const p of T.arr){for(const k in p.items){T.b[k].push({n:p.items[k],q:p.q,c:p.unit[k]});n+=p.items[k]}}T.arr=[];saveNow();sfxSafe('place');
-  toast(`<b>Koliler depoya kondu</b><br>${who?who+' taşıdı · ':''}+${n} malzeme stoğa eklendi`,ic('box'),2200);supBoxes();if(UI.mode==='menu'&&menuTab==='stock')renderMenu();return n}
+  for(const p of T.arr){lotAdd(p.n,p.q,p.unit);n+=p.n}T.arr=[];saveNow();sfxSafe('place');
+  toast(`<b>Koliler depoya kondu</b><br>${who?who+' taşıdı · ':''}+${n} malzeme`,ic('box'),2200);supBoxes();if(UI.mode==='menu'&&menuTab==='stock')renderMenu();return n}
 const sfxSafe=k=>{try{sfx(k)}catch(e){}};
 
 // ---------- toptancı kedisi: koliyi kapının önüne bırakır ----------
@@ -4801,7 +4833,7 @@ function boxMesh(s=1){const bx=new THREE.Group();const T=c=>new THREE.MeshToonMa
   const body=new THREE.Mesh(new RoundedBoxGeometry(0.34*s,0.24*s,0.28*s,2,0.02),T(0xc9a06a));body.position.y=0.12*s;body.castShadow=true;bx.add(body);
   const tape=new THREE.Mesh(new THREE.BoxGeometry(0.345*s,0.025*s,0.06*s),T(0xe8d7b5));tape.position.y=0.24*s;bx.add(tape);
   const lab=new THREE.Mesh(new THREE.BoxGeometry(0.1*s,0.07*s,0.005),T(0xffffff));lab.position.set(0.06*s,0.13*s,0.141*s);bx.add(lab);return bx}
-function supBoxes(){const n=FETCH.picked?0:Math.min(3,stockS().arr.length?1+Math.min(2,stockS().arr.length):0);
+function supBoxes(){const n=FETCH.picked?0:(stockS().arr.length?3:0);
   if(!SUPBOX){SUPBOX=new THREE.Group();SUPBOX.position.set(SUP_DROP.x,0,SUP_DROP.z);scene.add(SUPBOX)}
   if(SUPBOX.children.length===n)return;while(SUPBOX.children.length)SUPBOX.remove(SUPBOX.children[0]);
   const P=[[0,0,0,0.1],[0.36,0,0.05,-0.15],[0.16,0.25,0.02,0.3]];for(let i=0;i<n;i++){const b=boxMesh();b.position.set(P[i][0],P[i][1],P[i][2]);b.rotation.y=P[i][3];SUPBOX.add(b)}}
@@ -4838,14 +4870,19 @@ function stockTick(dt){if(!S.created)return;const T=stockS(),now=nowT();if(SUPC)
     if(now-p.eta>CONFIG.stock.skipAnimAfter*1000){T.pend.splice(T.pend.indexOf(p),1);T.arr.push(p);supBoxes();markDirty();continue}
     if(!SUPC){supArrive(p);break}}
   if(!SUPBOX||(SUPBOX.children.length>0)!==(T.arr.length>0&&!FETCH.picked))supBoxes();lowStockWarn();supAutoTick(dt);fetchTick(dt)}
-let lowWarned={};
-function lowStockWarn(){if(S.tut!=='done')return;const mb=menuBases();for(const k of mb){const n=stockN(k);if(n>0&&n<=CONFIG.stock.low&&!lowWarned[k]&&!pendN(k)){lowWarned[k]=1;toast(`<b>${STOCK_NAME[k]} azalıyor</b> · ${n} kaldı`,itemArt(k+'1'),2200)}if(n>CONFIG.stock.low)lowWarned[k]=0}}
-// AFK: sen yokken satılabilecek müşteri sayısı stokla sınırlıdır (yoldaki koliler önce depoya girer)
-function afkStockLimit(served){const T=stockS();for(const p of T.pend.slice())if(p.eta<=nowT()){T.pend.splice(T.pend.indexOf(p),1);T.arr.push(p)}
-  if(T.arr.length){for(const p of T.arr)for(const k in p.items)T.b[k].push({n:p.items[k],q:p.q,c:p.unit[k]});T.arr=[];supBoxes()}
-  let n=0,i=0;const av0=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]);if(!av0.length)return 0;
-  while(n<served){let ok=false;for(let j=0;j<av0.length;j++){const r=av0[(i+j)%av0.length];if(stockOk(r)){finEv('cogs',stockUse(r).c);ok=true;i=(i+j+1);break}}if(!ok)break;n++}
-  return n}
+let lowWarned=0;
+function lowStockWarn(){if(S.tut!=='done')return;const n=stockN();if(n>0&&n<=CONFIG.stock.low&&!lowWarned&&!pendN()){lowWarned=1;toast(`<b>Malzeme azalıyor</b> · ${n} kaldı`,ic('box'),2200)}if(n>CONFIG.stock.low)lowWarned=0}
+// AFK: sen yokken de otomatik tedarik çalışır. Yoldaki koliler önce depoya girer; depo bitince kasadaki + o ana dek kazanılan altınla
+// seçili toptancıdan koli alınır (per: müşteri başına hasılat). Dönen: {n: ağırlanabilen müşteri, spent: alınan kolilerin parası}. Para burada
+// kasadan düşülmez: dönüş penceresinde hasılatın yanında gösterilir ve hasılat toplanırken düşülür (p23 offlineCheck).
+function afkStockLimit(served,per=0){const T=stockS(),C=CONFIG.stock;for(const p of T.pend.slice())if(p.eta<=nowT()){T.pend.splice(T.pend.indexOf(p),1);T.arr.push(p)}
+  if(T.arr.length){for(const p of T.arr)lotAdd(p.n,p.q,p.unit);T.arr=[];supBoxes()}
+  const av0=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]);if(!av0.length)return {n:0,spent:0};
+  const sp=SUP(T.sup),up=unitPrice(sp);let n=0,i=0,wallet=Math.max(0,S.coins),spent=0,guard=0;
+  while(n<served&&guard++<100000){let ok=false;for(let j=0;j<av0.length;j++){const r=av0[(i+j)%av0.length];if(stockOk(r)){finEv('cogs',stockUse(r,true).c);ok=true;i=(i+j+1);break}}
+    if(!ok){const m=Math.min(C.pack,Math.floor(wallet/up));if(m<C.minPack)break;const tot=packPrice(sp,m);wallet-=tot;spent+=tot;lotAdd(m,sp.q,r2(tot/m));continue}
+    n++;wallet+=per}
+  return {n,spent}}
 
 // ---------- kolileri içeri taşıma: kurye (boştaysa) ya da bir garson alır, tezgaha götürür ----------
 const FETCH={on:false,picked:false,who:'',t:0};
@@ -4856,7 +4893,7 @@ function fetchTick(dt){const T=stockS();if(!T.arr.length||FETCH.on||SUPC){FETCH.
 async function fetchRun(ch){const T=stockS();let stack=null;try{
   await ch.walkTo(DOOR_IN.x,DOOR_IN.z);await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(SUP_STAND.x,SUP_STAND.z,{direct:true});await ch.faceTo(SUP_DROP.x,SUP_DROP.z);
   // eğilip kolileri tepsiye alır
-  const n=Math.min(2,T.arr.length);stack=new THREE.Group();for(let i=0;i<n;i++){const b=boxMesh(1.25-i*0.2);b.position.set(0,-0.16+i*0.3,0);b.rotation.y=(i%2?0.2:0);stack.add(b)}
+  const n=2;stack=new THREE.Group();for(let i=0;i<n;i++){const b=boxMesh(1.25-i*0.2);b.position.set(0,-0.16+i*0.3,0);b.rotation.y=(i%2?0.2:0);stack.add(b)}
   await bend(ch,1.1,()=>{FETCH.picked=true;supBoxes();if(ch.tray)ch.tray.visible=false;stack.position.set(SUP_DROP.x,0.14,SUP_DROP.z);stack.userData.from=stack.position.clone();stack.userData.lt=0;holdBox(ch,stack);sfxSafe('place')});
   await ch.walkTo(OUTSIDE.x,OUTSIDE.z,{direct:true});await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});
   await ch.walkTo(BOX_COUNTER.stand.x,BOX_COUNTER.stand.z);await ch.faceTo(BOX_COUNTER.top.x,BOX_COUNTER.top.z);
@@ -4867,57 +4904,28 @@ async function fetchRun(ch){const T=stockS();let stack=null;try{
 
 // ---------- arayüz ----------
 function mtabsHTML(){const t=[['menu','Menü'],['price','Fiyatlar'],['stock','Stok']];
-  const low=[...menuBases()].some(k=>stockN(k)<=CONFIG.stock.low)||stockS().arr.length>0;
+  const low=stockN()<=CONFIG.stock.low||stockS().arr.length>0;
   return `<div class="mtabs">${t.map(([id,n])=>`<button type="button" data-mt="${id}" aria-pressed="${menuTab===id}">${n}${id==='stock'&&low?'<i class="mdot"></i>':''}</button>`).join('')}</div>`}
-function stockTag(r){if(S.tut!=='done')return '';const miss=needsOf(r).filter(k=>stockN(k)<1);if(miss.length)return ` · <b class="stkout">Stok yok: ${miss.map(k=>STOCK_NAME[k]).join(', ')}</b>`;
-  const lo=Math.min(...needsOf(r).map(stockN));return lo<=CONFIG.stock.low?` · <b class="stklow">Az stok (${lo})</b>`:''}
-function renderStock(L){const T=stockS(),mb=menuBases(),now=nowT();
-  const rows=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a))||(stockN(a)-stockN(b))).map(k=>{const n=stockN(k),l=headLot(k),used=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]&&needsOf(r).includes(k)).length,pn=pendN(k);
-    const cls=!mb.has(k)?'off':n<1?'out':n<=CONFIG.stock.low?'low':'';const w=Math.min(100,n/60*100);
-    return `<div class="sk ${cls}"><span class="ii">${itemArt(k+'1')}</span><div class="tx"><b>${STOCK_NAME[k]}${(autoS()[k]||{}).on?`<i class="oto">OTO · ${'★'.repeat(Math.round(SUP(autoS()[k].sup).q))}</i>`:''}<em>${n}</em></b><i class="sbar" style="--w:${w}%"></i>
-      <span>${l?`Kalite ${stars(l.q)} · birim ${l.c}`:'Stok yok'}${pn?` · <b class="pn">+${pn} yolda</b>`:''}</span><span>${used?`Menüde ${used} üründe kullanılıyor`:'Menüdeki ürünlerde kullanılmıyor'}</span></div></div>`}).join('');
-  const pend=T.pend.map(p=>`<div class="spend">${ic('box')}<span><b>${SUP(p.sup).name}</b> · ${Object.keys(p.items).length} çeşit</span><em data-eta="${p.eta}">${p.eta<=now?'Geliyor…':fmtT(Math.ceil((p.eta-now)/1000))}</em></div>`).join('');
-  L.innerHTML=`${mtabsHTML()}<div class="mhead">Her ürün tarifindeki malzemelerden <b>1’er birim</b> harcar. Malzeme bitince o ürün satılamaz. Kaliteyi toptancı belirler; kalite müşteri puanını etkiler.</div>
-    ${T.arr.length?`<div class="spend">${ic('box')}<span><b>Koliler geldi</b> · ${FETCH.on?FETCH.who+' tezgaha taşıyor':'birazdan alınacak'}</span></div>`:''}
-    <div class="sbtns"><button class="btn sgo alt" type="button" data-sup>${ic('market')}Sipariş ver</button><button class="btn sgo alt" type="button" data-auto>${ic('box')}Otomatik tedarik</button></div>${pend?`<div class="spends">${pend}</div>`:''}<div class="sks">${rows}</div>
-    <p class="mfoot">Depo sınırı malzeme başına ${CONFIG.stock.cap}. Önce eski stok kullanılır.</p>`;
-  L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return}
-    if(e.target.closest('[data-sup]')){openSup();return}if(e.target.closest('[data-auto]')){openAuto();return}}}
-// pencere açıkken geri sayımları güncelle
-setInterval(()=>{if(UI.mode!=='menu'||menuTab!=='stock')return;const now=nowT();let ref=false;document.querySelectorAll('#menuList [data-eta]').forEach(e=>{const t=+e.dataset.eta;if(t<=now){e.textContent='Geliyor…'}else e.textContent=fmtT(Math.ceil((t-now)/1000))});
-},1000);
-
-function openSup(){if($('supModal'))return;UI.modal=true;let sp=null,cart={};const md=document.createElement('div');md.className='modal';md.id='supModal';$('game').appendChild(md);sfx('tap');
-  const close=()=>{md.remove();UI.modal=false;if(UI.mode==='menu')renderMenu()};
-  let drawn=0;const draw=()=>{const na=drawn++?' noanim':'';const sc=md.querySelector('.supcard'),st=sc?sc.scrollTop:0;if(!sp){md.innerHTML=`<div class="lvcard supcard${na}" role="dialog" aria-label="Toptancılar"><h3>Toptancılar</h3><p class="rnote">Ucuz toptancı kârı artırır ama kalite düşer; kaliteli toptancı pahalıdır ama müşteriyi mutlu eder.</p>
-        <div class="sups">${SUPPLIERS.map(s=>`<button type="button" class="sup" data-sp="${s.id}" style="--c:${s.col}"><b>${s.name}</b><span>${s.tag}</span>
-          <span class="row">${stars(s.q)}<em>${ic('coin')}%${Math.round(s.mul*100)} fiyat</em><em>${ic('clock')}${fmtT(s.eta)}</em></span>${s.miss.length?`<span class="miss">Bulunmaz: ${s.miss.map(k=>STOCK_NAME[k]).join(', ')}</span>`:''}</button>`).join('')}</div>
-        <button class="btn alt" id="supX" type="button">Kapat</button></div>`;}
-    else{const tot=cartTotal(sp,cart),ks=STOCK_BASES.filter(k=>!sp.miss.includes(k)),mb=menuBases();ks.sort((a,b)=>(mb.has(b)-mb.has(a))||(stockN(a)-stockN(b)));
-      md.innerHTML=`<div class="lvcard supcard${na}" role="dialog" aria-label="${sp.name}"><h3>${sp.name}</h3><p class="rnote">${stars(sp.q)} kalite · teslimat ${fmtT(sp.eta)} · 25’li pakette %5, 50’li pakette %10 indirim</p>
-        <div class="sitems">${ks.map(k=>{const n=stockN(k),room=CONFIG.stock.cap-n-pendN(k);return `<div class="si${mb.has(k)?'':' off'}"><span class="ii">${itemArt(k+'1')}</span><div class="tx"><b>${STOCK_NAME[k]}</b><span>Depoda ${n}${mb.has(k)?'':' · menüde yok'}</span></div>
-          <div class="pk">${PACKS.map((P,i)=>`<button type="button" data-k="${k}" data-pi="${i}" aria-pressed="${cart[k]===i}" ${P.n>room?'disabled':''}><b>${P.n}</b><span>${ic('coin')}${packPrice(sp,k,i)}</span></button>`).join('')}</div></div>`}).join('')}</div>
-        <div class="stot"><span>Toplam</span><b>${ic('coin')}${tot}</b><span class="${S.coins<tot?'no':''}">Kasada ${S.coins}</span></div>
-        <div class="sbtns"><button class="btn alt" id="supBack" type="button">Geri</button><button class="btn" id="supOk" type="button" ${!tot||S.coins<tot?'disabled':''}>${ic('box')}Sipariş ver</button></div></div>`;if(md._sp===sp)md.querySelector('.supcard').scrollTop=st}
-    md._sp=sp;bind()};
-  const bind=()=>{md.onclick=e=>{const s=e.target.closest('[data-sp]');if(s){sp=SUP(s.dataset.sp);cart={};sfx('tap');draw();return}
-      const b=e.target.closest('[data-pi]');if(b&&!b.disabled){const k=b.dataset.k,i=+b.dataset.pi;if(cart[k]===i)delete cart[k];else cart[k]=i;sfx('tap');draw();return}
-      if(e.target.closest('#supX')){close();return}if(e.target.closest('#supBack')){sp=null;draw();return}
-      if(e.target.closest('#supOk')){if(placeSupOrder(sp,cart))close()}}};
-  draw()}
+function stockTag(r){if(S.tut!=='done')return '';return stockN()<needN(r)?` · <b class="stkout">Malzeme yok</b>`:''}
+function renderStock(L){}   // Stok ekranı: p53_stock.js (kartlar) + p73_yatay.js (yatay yerleşim)
+// pencere açıkken geri sayımları güncelle; depo/teslimat değişince ekranı yenile
+let stockSig='';
+setInterval(()=>{if(UI.mode!=='menu'||menuTab!=='stock'){stockSig='';return}const now=nowT(),T=stockS();
+  const sig=[stockN(),pendN(),T.pend.length,T.arr.length,T.sup,FETCH.on?1:0,FETCH.picked?1:0,SUPC?1:0,reorderAt()].join('|');
+  if(stockSig&&sig!==stockSig&&!UI.modal){stockSig=sig;try{renderMenu()}catch(e){}return}stockSig=sig;
+  document.querySelectorAll('#menuList [data-eta]').forEach(e=>{const t=+e.dataset.eta;e.textContent=t<=now?'Geliyor…':fmtT(Math.ceil((t-now)/1000))})},1000);
 
 // HUD: stok uyarısı / toptancı durumu / kapıdaki koliler
 {const r=document.createElement('div');r.className='goal stkchip';r.id='stkChip';r.hidden=true;r.setAttribute('role','button');r.tabIndex=0;($('dlvChip')||$('req')).after(r);
   r.onclick=()=>{menuTab='stock';setMode('menu')}}
 function stockUI(){const e=$('stkChip');if(!e||!S.created)return;const T=stockS();let h='';
-  if(S.tut!=='done'){e.hidden=true;return}
+  if(S.tut!=='done'){e.hidden=true;return}const n=stockN();
   if(T.arr.length)h=`${ic('box')}<span><b>Koliler geldi</b> · ${FETCH.on?(FETCH.picked?FETCH.who+' tezgaha taşıyor':FETCH.who+' almaya gidiyor'):'birazdan alınacak'}</span>`;
-  else if(SUPC)h=`${ic('box')}<span>Toptancı geliyor…</span>`;
-  else if(T.pend.length){const p=T.pend.reduce((a,b)=>a.eta<b.eta?a:b);h=`${ic('box')}<span>Toptancı yolda · ${SUP(p.sup).name.split(' ')[0]}</span><em>${fmtT(Math.max(0,Math.ceil((p.eta-nowT())/1000)))}</em>`}
-  else{const mb=[...menuBases()];const out=mb.filter(k=>stockN(k)<1),low=mb.filter(k=>stockN(k)>=1&&stockN(k)<=CONFIG.stock.low);
-    if(out.length)h=`${ic('box')}<span><b>Stok bitti:</b> ${out.slice(0,2).map(k=>STOCK_NAME[k]).join(', ')}</span><em>Sipariş ver</em>`;
-    else if(low.length)h=`${ic('box')}<span>Stok azaldı: ${low.slice(0,2).map(k=>STOCK_NAME[k]).join(', ')}</span>`}
-  e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',T.arr.length>0||[...menuBases()].some(k=>stockN(k)<1))}
+  else if(SUPC)h=`${ic('box')}<span>${n<1?'<b>Malzeme bitti</b> · ':''}Toptancı geliyor…</span>`;
+  else if(T.pend.length){const p=T.pend.reduce((a,b)=>a.eta<b.eta?a:b);h=`${ic('box')}<span>${n<1?'<b>Malzeme bitti</b> · ':''}Toptancı yolda${n<1?'':' · '+SUP(p.sup).name.split(' ')[0]}</span><em>${fmtT(Math.max(0,Math.ceil((p.eta-nowT())/1000)))}</em>`}
+  else if(n<1)h=`${ic('box')}<span><b>Malzeme bitti</b></span><em>${S.coins<packPrice(SUP(T.sup),CONFIG.stock.minPack)?'Altın yetmiyor':'Koli isteniyor'}</em>`;
+  else if(n<=CONFIG.stock.low)h=`${ic('box')}<span>Malzeme azaldı · ${n} kaldı</span>`;
+  e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',T.arr.length>0||n<1)}
 
 {const st=document.createElement('style');st.textContent=`
 .mtabs .mdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e2574c;border:2px solid var(--ink);margin-left:4px;vertical-align:middle}
@@ -5152,30 +5160,7 @@ function nightSkip(reopen){const ov=document.createElement('div');ov.className='
     S.dayN=(S.dayN||1)+1;S.dayStart=nowT();S.dayFlags={n:S.dayN};if(reopen)S.closed=false;hudShop();dayTick(true);saveNow();nextArrival()},900);
   setTimeout(()=>{ov.classList.add('out')},1900);setTimeout(()=>{ov.remove();UI.modal=false;dayRepOpen=false;toast(`<b>${S.dayN}. gün başladı</b><br>${S.closed?'Dükkan kapalı; açmak için üstteki tabelaya dokun.':'Dükkan açık, müşteriler gelmeye başlıyor!'}`,UI_IC.sun,2600)},2500)}
 
-// ---------- otomatik tedarik: oyuncunun seçtiği malzemeler seçtiği toptancıdan kendiliğinden alınır ----------
-Object.assign(CONFIG.stock,{autoAt:14,autoPack:1});   // stok+yoldaki 14'ün altına düşünce 25'lik paket
-const autoS=()=>{const T=stockS();if(!T.auto)T.auto={};return T.auto};
-let autoWarnT=0,autoT=0;
-function supAutoTick(dt){if(!S.created||S.tut!=="done")return;autoT+=dt;if(autoT<2)return;autoT=0;const A=autoS(),carts={};
-  for(const k in A){const a=A[k];if(!a||!a.on)continue;const sp=SUP(a.sup);if(!sp||sp.miss.includes(k))continue;
-    if(stockN(k)+pendN(k)>=CONFIG.stock.autoAt)continue;if(stockN(k)+pendN(k)+PACKS[CONFIG.stock.autoPack].n>CONFIG.stock.cap)continue;(carts[sp.id]=carts[sp.id]||{})[k]=CONFIG.stock.autoPack}
-  for(const id in carts){const sp=SUP(id),cart=carts[id],tot=cartTotal(sp,cart);
-    if(S.coins<tot){if(nowT()-autoWarnT>60000){autoWarnT=nowT();toast(`<b>Otomatik tedarik bekliyor</b><br>${sp.name} siparişi için ${tot} altın gerekli`,ic('coin'),2600)}continue}
-    placeSupOrder(sp,cart,true)}}
-function openAuto(){if($('autoModal'))return;UI.modal=true;const md=document.createElement('div');md.className='modal';md.id='autoModal';$('game').appendChild(md);sfx('tap');
-  const draw=()=>{const A=autoS(),mb=menuBases();const ks=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a)));const sc=md.querySelector('.supcard'),st=sc?sc.scrollTop:0;
-    md.innerHTML=`<div class="lvcard supcard${draw.n++?' noanim':''}" role="dialog" aria-label="Otomatik tedarik"><h3>Otomatik tedarik</h3>
-      <p class="rnote">Seçtiğin malzeme ${CONFIG.stock.autoAt}’ün altına düşünce seçtiğin toptancıdan ${PACKS[CONFIG.stock.autoPack].n}’lik paket kendiliğinden sipariş edilir. Toptancıyı (kaliteyi) istediğin zaman değiştirebilirsin.</p>
-      <div class="sitems">${ks.map(k=>{const a=A[k]||{};const on=!!a.on;const cur=a.sup||'bereket';const ok=SUPPLIERS.filter(s=>!s.miss.includes(k));const sel=ok.some(s=>s.id===cur)?cur:ok[0].id;
-        return `<div class="si au${mb.has(k)?'':' off'}"><span class="ii">${itemArt(k+'1')}</span><div class="tx"><b>${STOCK_NAME[k]}</b><span>Depoda ${stockN(k)}${mb.has(k)?'':' · menüde yok'}</span></div>
-          <select data-as="${k}" aria-label="${STOCK_NAME[k]} toptancısı">${ok.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${'★'.repeat(Math.round(s.q))} ${s.name.split(' ')[0]} · %${Math.round(s.mul*100)}</option>`).join('')}</select>
-          <button type="button" class="tgl" data-at="${k}" aria-pressed="${on}" aria-label="${STOCK_NAME[k]} otomatik"><i></i></button></div>`}).join('')}</div>
-      <div class="sbtns"><button class="btn alt" type="button" id="autoAll">Menüdekilerin hepsi</button><button class="btn" type="button" id="autoOk">${ic('check')}Tamam</button></div></div>`;
-    const c=md.querySelector('.supcard');if(c)c.scrollTop=st};draw.n=0;draw();
-  md.onchange=e=>{const s=e.target.closest('[data-as]');if(!s)return;const A=autoS(),k=s.dataset.as;A[k]={...(A[k]||{}),sup:s.value};markDirty();sfx('tap')};
-  md.onclick=e=>{const b=e.target.closest('[data-at]');if(b){const A=autoS(),k=b.dataset.at;const sel=md.querySelector(`[data-as="${k}"]`);A[k]={...(A[k]||{}),sup:sel?sel.value:'bereket',on:!(A[k]&&A[k].on)};markDirty();sfx('tap');draw();return}
-    if(e.target.closest('#autoAll')){const A=autoS();for(const k of menuBases()){const sel=md.querySelector(`[data-as="${k}"]`);A[k]={...(A[k]||{}),sup:sel?sel.value:'bereket',on:true}}markDirty();sfx('tap');draw();return}
-    if(e.target.closest('#autoOk')){md.remove();UI.modal=false;saveNow();if(UI.mode==='menu')renderMenu()}}}
+// (V144) otomatik tedarik p24_stock.js'e taşındı: toplu malzeme, tek toptancı seçimi (supAutoTick, setSupplier). Eski malzeme başına ayar penceresi kaldırıldı.
 
 // ---------- eğilme (koli bırakma / alma): animasyonun üstüne omurgayı öne büker ----------
 // öne eğilme (koli bırakma/alma): omurga kemikleri, karakterin SAĞ ekseni etrafında dünya uzayında öne döner
@@ -7739,50 +7724,59 @@ xmTip=function(){const id=XM.sel||'';if(id[0]!=='g')return _xmTipBase();const si
 #rbList .rcAct .rbact small{text-align:center;line-height:1.15}
 `;document.head.appendChild(st)}
 
-// ================= STOK: düzenli, görselsiz =================
-// Malzemeler iki sütunlu kartlar: ad + adet (büyük sayı), doluluk çubuğu, kalite yıldızı · birim maliyet, menüde kullanım.
-// Renk durumu: yeşil yeterli, sarı azaldı, kırmızı bitti, gri menüde kullanılmıyor. Toptancı penceresinde de görseller kaldırıldı.
-renderStock=function(L){const T=stockS(),mb=menuBases(),now=nowT(),cap=CONFIG.stock.cap;
-  const rows=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a))||(stockN(a)-stockN(b))).map(k=>{const n=stockN(k),l=headLot(k),used=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]&&needsOf(r).includes(k)).length,pn=pendN(k);
-    const cls=!mb.has(k)?'off':n<1?'out':n<=CONFIG.stock.low?'low':'ok';const w=Math.min(100,n/cap*100);const au=(autoS()[k]||{}).on;
-    const tag=cls==='out'?'Bitti':cls==='low'?'Azaldı':cls==='off'?'Menüde yok':'Yeterli';
-    return `<div class="sk2 ${cls}"><div class="r1"><b>${STOCK_NAME[k]}</b>${au?'<i class="oto">OTO</i>':''}<span class="tg">${tag}</span><em>${n}<small>/${cap}</small></em></div>
-      <i class="bar"><i style="width:${w}%"></i></i>
-      <div class="r2"><span>${l?`${stars(l.q)}<span class="c">birim ${l.c}</span>`:'<span class="c">Depoda yok</span>'}</span>${pn?`<b class="pn">+${pn} yolda</b>`:''}<span class="u">${used?`${used} üründe`:'kullanılmıyor'}</span></div></div>`}).join('');
-  const pend=T.pend.map(p=>`<div class="spend2"><b>${SUP(p.sup).name}</b><span>${Object.keys(p.items).length} çeşit</span><em data-eta="${p.eta}">${p.eta<=now?'Geliyor…':fmtT(Math.ceil((p.eta-now)/1000))}</em></div>`).join('');
-  const outN=[...mb].filter(k=>stockN(k)<1).length,lowN=[...mb].filter(k=>stockN(k)>=1&&stockN(k)<=CONFIG.stock.low).length;
-  L.innerHTML=`${mtabsHTML()}<div class="skTop"><div class="skSum"><span class="d ok"></span>${[...mb].length-outN-lowN} yeterli<span class="d low"></span>${lowN} azaldı<span class="d out"></span>${outN} bitti</div>
-      <button class="btn sgo2" type="button" data-sup>${ic('market')}Sipariş ver</button><button class="btn alt sgo2" type="button" data-auto>${ic('box')}Otomatik tedarik</button></div>
-    ${T.arr.length?`<div class="spend2 hi"><b>Koliler geldi</b><span>${FETCH.on?FETCH.who+' tezgaha taşıyor':'birazdan alınacak'}</span></div>`:''}${pend?`<div class="spends2">${pend}</div>`:''}
-    <div class="sks2">${rows}</div><p class="mfoot">Her ürün tarifindeki malzemelerden 1’er birim harcar · malzeme başına depo sınırı ${cap} · önce eski stok kullanılır.</p>`;
-  L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return}
-    if(e.target.closest('[data-sup]')){openSup();return}if(e.target.closest('[data-auto]')){openAuto();return}}};
+// ================= STOK EKRANI (V144): toplu malzeme deposu + toptancı seçimi =================
+// Sol: depo kartı (kalan malzeme, doluluk, kalite, birim maliyet, otomatik sipariş kuralı). Sağ: 5 toptancı kartı (biri seçili; dokununca değişir)
+// ve teslimat durumu. Sipariş düğmesi yoktur: tedarik yalnız otomatiktir (p24_stock.js). Yatay yerleşim: p73_yatay.js (mnStock).
+function stockTopHTML(){const a=menuNeedAvg();
+  return `<div class="skTop"><div class="skSum">${ic('box')}<span><b>Tedarik otomatik.</b> Toptancını seç; depo azalınca koli kendiliğinden gelir.</span></div>${a?`<div class="skSum alt">Ürün başı ort. <b>${a.toFixed(1).replace('.',',')}</b> malzeme</div>`:''}</div>`}
+function stockCardsHTML(){const T=stockS(),C=CONFIG.stock,n=stockN(),now=nowT(),sp=SUP(T.sup),at=reorderAt(sp),l=headLot();
+  const cls=n<1?'out':n<=C.low?'low':'ok',tag=cls==='out'?'Bitti':cls==='low'?'Azaldı':'Yeterli',w=Math.min(100,n/C.cap*100);
+  const depo=`<div class="depo ${cls}"><div class="dh">${ic('box')}<b>Malzeme</b><span class="tg">${tag}</span></div>
+     <div class="dn"><em>${n}</em><small>/${C.cap}</small></div><i class="bar"><i style="width:${w}%"></i></i>
+     <div class="dq">${l?`${stars(l.q)}<span>birim ${l.c}</span>`:'<span>Depo boş</span>'}</div>
+     <p>Depo <b>${at} malzemenin</b> altına inince seçili toptancıdan <b>${C.pack}’lik koli</b> kendiliğinden istenir.</p></div>`;
+  const sups=SUPPLIERS.map(s=>{const on=s.id===T.sup;return `<button type="button" class="supc" data-sp="${s.id}" aria-pressed="${on}" aria-label="${s.name} · ${s.tag}${on?' (seçili)':''}" style="--c:${s.col}"><span class="n"><b>${s.name}</b>${on?`<i class="sel" aria-hidden="true">${ic('check')}</i>`:''}</span>
+     <span class="q">${stars(s.q)}<em>${ic('clock')}${fmtT(s.eta)}</em></span><span class="p"><small>${C.pack}’lik koli</small><em>${ic('coin')}${packPrice(s)}</em></span></button>`}).join('');
+  let stat;
+  if(T.arr.length)stat=`<div class="supstat hi"><b>Koliler geldi</b><span>${FETCH.on?FETCH.who+' tezgâha taşıyor':'birazdan alınacak'}</span></div>`;
+  else if(T.pend.length){const p=T.pend.reduce((a,b)=>a.eta<b.eta?a:b),tn=T.pend.reduce((a,b)=>a+(b.n||0),0);
+    stat=`<div class="supstat go"><b>Koli yolda</b><span>+${tn} malzeme · ${SUP(p.sup).name.split(' ')[0]}</span><em data-eta="${p.eta}">${p.eta<=now?'Geliyor…':fmtT(Math.ceil((p.eta-now)/1000))}</em></div>`}
+  else stat=`<div class="supstat"><b>Teslimat</b><span>Yolda koli yok</span><span>Depo azalınca istenir</span></div>`;
+  return depo+sups+stat}
+const STOCK_FOOT='Satılan her ürün, tarifindeki malzeme sayısı kadar depodan düşer (ör. kurabiye = un + şeker = 2 malzeme) · kalite müşteri puanını, koli fiyatı kârını belirler · önce eski stok kullanılır.';
+function stockClick(e){const b=e.target.closest('[data-sp]');if(!b)return false;if(setSupplier(b.dataset.sp)){sfx('tap');renderMenu()}return true}
+renderStock=function(L){L.innerHTML=`${mtabsHTML()}${stockTopHTML()}<div class="supgrid">${stockCardsHTML()}</div><p class="mfoot">${STOCK_FOOT}</p>`;
+  L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return}stockClick(e)}};
 {const st=document.createElement('style');st.textContent=`
 .skTop{display:flex;align-items:center;gap:6px;margin:0 0 8px;flex-wrap:nowrap}
-.skSum{flex:1;min-width:0;white-space:nowrap;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:900;font-family:var(--font-display);color:#4a2a14;background:#fff6e0;border:2.5px solid var(--ink);border-radius:12px;padding:7px 10px}
-.skSum .d{flex:none;width:11px;height:11px;border-radius:50%;border:2px solid var(--ink);margin-left:6px}.skSum .d:first-child{margin-left:0}
-.d.ok,.sk2.ok .bar>i{background:#7cc35a}.d.low,.sk2.low .bar>i{background:#f2b33d}.d.out{background:#e2574c}
-.sgo2{flex:none;width:auto!important;margin:0!important;height:38px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:13px;white-space:nowrap}.sgo2 svg,.sgo2 .ic{width:20px;height:20px}
-.spends2{display:flex;flex-direction:column;gap:5px;margin:0 0 8px}
-.spend2{display:flex;align-items:center;gap:8px;background:#fff6e0;border:2.5px solid var(--ink);border-radius:12px;padding:6px 10px;font-size:13px;font-weight:800}
-.spend2.hi{background:#e7f6d8;margin:0 0 8px}.spend2 span{flex:1;opacity:.8}.spend2 em{font-style:normal;font-family:var(--font-display);font-weight:900}
-.sks2{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
-.sk2{background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:8px 11px 7px;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 0 var(--ink)}
-.sk2 .r1{display:flex;align-items:center;gap:6px}
-.sk2 .r1 b{font-family:var(--font-display);font-weight:900;font-size:15px}
-.sk2 .r1 .oto{font-style:normal;font-size:9.5px;font-weight:900;padding:1px 6px;border-radius:999px;background:#d8ecff;border:1.5px solid #4a7ab0;color:#2c5585}
-.sk2 .r1 .tg{font-size:10px;font-weight:900;padding:2px 7px;border-radius:999px;border:1.5px solid var(--ink);background:#e7f6d8}
-.sk2.low .tg{background:#fde9b8}.sk2.out .tg{background:#f8d2cc;color:#9e2f26}.sk2.off .tg{background:#eee4d4;color:#7a6650}
-.sk2 .r1 em{margin-left:auto;font-style:normal;font-family:var(--font-display);font-weight:900;font-size:20px;line-height:1}
-.sk2 .r1 em small{font-size:11px;opacity:.55;margin-left:1px}
-.sk2.out .r1 em{color:#c8443a}
-.sk2 .bar{display:block;height:9px;border-radius:999px;background:#efe2c8;border:2px solid var(--ink);overflow:hidden}
-.sk2 .bar>i{display:block;height:100%;border-radius:999px;background:#c9b9a0}
-.sk2 .r2{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;color:#6e4a2c}
-.sk2 .r2>span:first-child{display:flex;align-items:center;gap:5px}.sk2 .r2 .stars{transform:scale(.85);transform-origin:left center}
-.sk2 .r2 .u{margin-left:auto;opacity:.75}.sk2 .r2 .pn{color:#2f7a2a}
-.sk2.off{opacity:.62}
-#supModal .ii{display:none!important}
+.skSum{flex:1;min-width:0;display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;line-height:1.2;color:#4a2a14;background:#fff6e0;border:2.5px solid var(--ink);border-radius:12px;padding:7px 10px}
+.skSum svg,.skSum .ic{width:20px;height:20px;flex:none}.skSum b{font-family:var(--font-display);font-weight:900}
+.skSum.alt{flex:none;white-space:nowrap;display:block}
+.supgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.depo,.supc,.supstat{box-sizing:border-box;min-width:0;display:flex;flex-direction:column;gap:5px;text-align:left;padding:8px 11px;border:2.5px solid var(--ink);border-radius:14px;box-shadow:0 2px 0 var(--ink);background:var(--paper);color:var(--ink)}
+.depo{justify-content:center;gap:6px}
+.depo .dh{display:flex;align-items:center;gap:6px}.depo .dh svg,.depo .dh .ic{width:20px;height:20px;flex:none}.depo .dh b{flex:1;font-family:var(--font-display);font-weight:900;font-size:15px}
+.depo .tg{font-size:10px;font-weight:900;padding:2px 7px;border-radius:999px;border:1.5px solid var(--ink);background:#e7f6d8}
+.depo.low .tg{background:#fde9b8}.depo.out .tg{background:#f8d2cc;color:#9e2f26}
+.depo .dn{display:flex;align-items:baseline;gap:2px;font-family:var(--font-display);font-weight:900;line-height:1}.depo .dn em{font-style:normal;font-size:34px}.depo .dn small{font-size:13px;opacity:.55}
+.depo.out .dn em{color:#c8443a}
+.depo .bar{display:block;flex:none;height:10px;border-radius:999px;background:#efe2c8;border:2px solid var(--ink);overflow:hidden}.depo .bar>i{display:block;height:100%;border-radius:999px;background:#7cc35a}
+.depo.low .bar>i{background:#f2b33d}.depo.out .bar>i{background:#e2574c}
+.depo .dq{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:#6e4a2c}
+.depo p{margin:0;font-size:11px;font-weight:700;line-height:1.3;color:#6e4a2c}.depo p b{color:var(--ink)}
+.supc{font:inherit;cursor:pointer;justify-content:center;padding-left:16px;background:linear-gradient(90deg,var(--c) 0 8px,var(--paper) 8px)}
+.supc:active{transform:scale(.98)}
+.supc[aria-pressed="true"]{background:linear-gradient(90deg,var(--c) 0 8px,#ffe9a8 8px);box-shadow:0 2px 0 var(--ink),inset 0 0 0 2px #f6b93a}
+.supc .n{display:flex;align-items:center;gap:5px;min-width:0}.supc .n b{flex:1;min-width:0;font-family:var(--font-display);font-weight:900;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.supc .sel{flex:none;width:18px;height:18px;box-sizing:border-box;display:grid;place-items:center;border-radius:50%;background:#93cf52;border:2px solid var(--ink)}
+.supc .sel svg,.supc .sel .ic{width:10px;height:10px;display:block}
+.supc .q,.supc .p{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+.supc em{font-style:normal;display:inline-flex;align-items:center;gap:2px;font-family:var(--font-display);font-weight:900;font-size:13.5px;white-space:nowrap}
+.supc em svg,.supc em .ic{width:14px;height:14px}.supc .q em{font-size:12.5px;opacity:.85}.supc .p small{font-size:11px;font-weight:800;opacity:.75;white-space:nowrap}
+.supc .stars,.depo .stars{flex:none}
+.supstat{justify-content:center;gap:2px;background:#fff6e0;font-size:12px;font-weight:800}.supstat b{font-family:var(--font-display);font-weight:900;font-size:14px}.supstat span{opacity:.8}
+.supstat em{font-style:normal;font-family:var(--font-display);font-weight:900;font-size:16px}
+.supstat.hi{background:#e7f6d8}.supstat.go{background:#e4f0fb}
 `;document.head.appendChild(st)}
 
 // ================= KEŞFET (Kafeler Dünyası ilk sekmesi) =================
@@ -9306,6 +9300,11 @@ ${G} #menuList #mnCards.skgrid .sk2{justify-content:center;gap:5px!important;pad
 ${G} #menuList #mnCards.skgrid .sk2 .r2{flex-wrap:wrap;gap:2px 8px!important}
 ${G} #menuList #mnCards.skgrid .spend2{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px!important;margin:0!important}
 ${G} #menuList #mnCards.skgrid .spend2 span{flex:none}
+${G} #menuList #mnCards.supgrid{display:grid!important;grid-auto-flow:column!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;grid-template-columns:minmax(178px,1.12fr) repeat(3,minmax(170px,1fr))!important;gap:8px!important;justify-content:stretch!important}
+${G} #menuList #mnCards.supgrid>*{margin:0!important;min-width:0;box-sizing:border-box}
+${G} #menuList #mnCards.supgrid .depo{grid-row:1 / span 2!important}
+${G} #menuList #mnCards.supgrid .supc,${G} #menuList #mnCards.supgrid .supstat{padding-top:5px!important;padding-bottom:5px!important;gap:4px!important}
+${G} #menuList .skTop .skSum{min-height:44px;box-sizing:border-box}
 
 /* ---- EKİBİM: büyük karakterli kartlar ---- */
 ${G} #team .skwin{width:min(820px,calc(100*var(--vw) - 24px))!important}
@@ -9401,18 +9400,9 @@ ${G} #team .tmbtn .skbtn .uic{width:16px!important;height:16px!important}
        <div class="pst"><button class="iconbtn" type="button" data-pd="-1" aria-label="${r.name} fiyatını düşür" ${p<=R.min?'disabled':''}>−</button><b>${ic('coin')}${p}</b><button class="iconbtn" type="button" data-pd="1" aria-label="${r.name} fiyatını artır" ${p>=R.max?'disabled':''}>+</button></div></div>`}).join(''):`<div class="mempty2">${C.name} bölümünde henüz açılmış ürün yok.</div>`}</div>
     <p class="mfoot">Ucuz menü daha çok müşteri çeker ama ürün başı kâr düşer; pahalı menüde müşteri azalır, gelenler hızlı servis ve yüksek kalite bekler. Maliyet, sıradaki stoğun alış fiyatıdır.</p>`;
    L.onclick=e=>{if(common(e))return;const b=e.target.closest('[data-pd]');if(!b)return;const id=b.closest('[data-pi]').dataset.pi;if(setPrice(id,priceOf(RECIPE[id])+(+b.dataset.pd))){sfx('tap');renderMenu()}else sfx('nope')}}
- function mnStock(L){const T=stockS(),mb=menuBases(),now=nowT(),cap=CONFIG.stock.cap;
-   const rows=[...STOCK_BASES].sort((a,b)=>(mb.has(b)-mb.has(a))||(stockN(a)-stockN(b))).map(k=>{const n=stockN(k),l=headLot(k),used=RECIPES.filter(r=>S.unlocked[r.id]&&S.menu[r.id]&&needsOf(r).includes(k)).length,pn=pendN(k);
-     const cls=!mb.has(k)?'off':n<1?'out':n<=CONFIG.stock.low?'low':'ok';const w=Math.min(100,n/cap*100);const au=(autoS()[k]||{}).on;const tag=cls==='out'?'Bitti':cls==='low'?'Azaldı':cls==='off'?'Menüde yok':'Yeterli';
-     return `<div class="sk2 ${cls}"><div class="r1"><b>${STOCK_NAME[k]}</b>${au?'<i class="oto">OTO</i>':''}<span class="tg">${tag}</span><em>${n}<small>/${cap}</small></em></div><i class="bar"><i style="width:${w}%"></i></i>
-      <div class="r2"><span>${l?`${stars(l.q)}<span class="c">birim ${l.c}</span>`:'<span class="c">Depoda yok</span>'}</span>${pn?`<b class="pn">+${pn} yolda</b>`:''}<span class="u">${used?`${used} üründe`:'kullanılmıyor'}</span></div></div>`}).join('');
-   const pend=T.pend.map(p=>`<div class="spend2"><b>${SUP(p.sup).name}</b><span>${Object.keys(p.items).length} çeşit yolda</span><em data-eta="${p.eta}">${p.eta<=now?'Geliyor…':fmtT(Math.ceil((p.eta-now)/1000))}</em></div>`).join('');
-   const outN=[...mb].filter(k=>stockN(k)<1).length,lowN=[...mb].filter(k=>stockN(k)>=1&&stockN(k)<=CONFIG.stock.low).length;
-   L.innerHTML=`${mtabsHTML()}<div class="skTop"><div class="skSum"><span class="d ok"></span>${[...mb].length-outN-lowN} yeterli<span class="d low"></span>${lowN} azaldı<span class="d out"></span>${outN} bitti</div>
-      <button class="btn sgo2" type="button" data-sup>${ic('market')}Sipariş ver</button><button class="btn alt sgo2" type="button" data-auto>${ic('box')}Otomatik tedarik</button></div>
-    <div id="mnCards" class="sks2 skgrid">${T.arr.length?`<div class="spend2 hi"><b>Koliler geldi</b><span>${FETCH.on?FETCH.who+' tezgâha taşıyor':'birazdan alınacak'}</span></div>`:''}${pend}${rows}</div>
-    <p class="mfoot">Her ürün tarifindeki malzemelerden 1’er birim harcar · malzeme başına depo sınırı ${cap} · önce eski stok kullanılır.</p>`;
-   L.onclick=e=>{if(common(e))return;if(e.target.closest('[data-sup]')){openSup();return}if(e.target.closest('[data-auto]')){openAuto();return}}}
+ function mnStock(L){   // (V144) toplu malzeme: solda depo kartı (iki satır boyu), sağda 5 toptancı + teslimat durumu
+   L.innerHTML=`${mtabsHTML()}${stockTopHTML()}<div id="mnCards" class="supgrid">${stockCardsHTML()}</div><p class="mfoot">${STOCK_FOOT}</p>`;
+   L.onclick=e=>{if(common(e))return;stockClick(e)}}
  try{const _rm=renderMenu;renderMenu=function(){const L=$('menuList');if(!L)return _rm.apply(this,arguments);const old=$('mnCards'),sx=old?old.scrollLeft:0,k0=L._hk;
    try{if(menuTab==='price')mnPrices(L);else if(menuTab==='stock')mnStock(L);else mnMenu(L)}catch(e){console.warn('yatay menü',e);return _rm.apply(this,arguments)}
    const k1=menuTab+':'+(menuTab==='stock'?'':UI.mnCat);L._hk=k1;const n=$('mnCards');if(n){hxAttach(n);n.scrollLeft=k0===k1?sx:0;hxUpd(n)}}}catch(e){console.warn('yatay: menü',e)}
@@ -9798,7 +9788,7 @@ window.__editTip=1;   // "dükkânı kapatırsan…" ipucu artık gereksiz
 
 // ---- müşteriyi cezasız uğurla ----
 // Hazırlanmasına başlanmamış siparişin malzemesi depoya geri konur (oyuncunun malı yanmaz).
-function edRefund(o){if(!o||o.edRef)return;o.edRef=1;try{const ks=needsOf(o.item);for(const k of ks){const L=stockS().b[k];if(L.length)L[0].n++;else L.push({n:1,q:CONFIG.stock.startQ,c:STOCK_COST[k]})}if(ks.length&&o.cost)ledger('cogs',-o.cost)}catch(e){}}
+function edRefund(o){if(!o||o.edRef)return;o.edRef=1;try{const k=needN(o.item);if(k){const L=stockS().g;if(L.length)L[0].n+=k;else L.push({n:k,q:CONFIG.stock.startQ,c:CONFIG.stock.unit});if(o.cost)ledger('cogs',-o.cost)}}catch(e){}}
 function edSend(c,force){if(c.edOut)return;
   if(c.state==='WAITING_TO_ORDER'&&c._taken){c.edOut=1;c.angry='edit';c.gone=true;c.orderQueued=true;if(c.menu){scene.remove(c.menu);c.menu=null}c._taken()}
   else if(force&&c.state==='WAITING_FOR_FOOD'&&c._served){c.edOut=1;c.angry='edit';c.gone=true;const o=c.order;if(o){if(o.state==='TAKEN'||o.state==='WAITING_FOR_PREPARATION')edRefund(o);o.cancel=true;if(o.state==='READY')o.pickupQueued=true}c._served()}
