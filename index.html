@@ -10959,6 +10959,499 @@ function rpChair(parent,f,id){
     if(id==='kristal'){const g=A(new THREE.OctahedronGeometry(0.02),rpGlass(0xe4f6ff,0.9),ax,d.armY+0.015,d.zf+0.02);g.castShadow=false}}
   L.userData.rpChair=id;return L}
 
+// =====================================================================
+// TabbyChef · İTALYA ZEMİN, DUVAR BOYASI & HALI (4 tema: toscana, venezia, amalfi, pompei)
+// GEREKSİNİM: italya_koleksiyonu.js önce eklenmiş olmalı (itc, itMajTex vb.).
+//
+// OYUNA EKLEME (index.html):
+// 1) Bu dosyayı italya_koleksiyonu.js'in ALTINA yapıştır.
+// 2) Duvar: applyWall(id) içinde, katalog kaydında tex:'<tema>' varsa:
+//      const t=itWallTex(tema);t.repeat.set(1/2,1/3.4);t.offset.set(0,0.2/3.4);t.wrapT=THREE.ClampToEdgeWrapping;
+//      M.wall.map=t;M.wall.color.setHex(0xffffff);M.wall.needsUpdate=true;   (düz renkli boyalarda M.wall.map=null yapılmalı)
+// 3) Zemin: applyFloor(id) içinde tex:'<tema>' varsa  M.floor.map=itFloorTex(tema)  (repeat ROOM_W/1.2, ROOM_D/1.2), şeritler gizlenir.
+// 4) Halı: oyunda masaların altında sabit bir halı var (rug + rugIn). Halıyı Market'ten seçilebilir yapmak için
+//    itRugMesh(tema) aynı yere (1.35, 0, 1.35) konur ve rug/rugIn gizlenir. itApplySurfaces(tema,[rug,rugIn]) üçünü birden uygular.
+// 5) Katalog önerisi: w_it_<tema> (kind:'wall'), f_it_<tema> (kind:'floor'), r_it_<tema> (yeni kind:'rug').
+// =====================================================================
+// ================= İTALYA ZEMİN, DUVAR & HALI =================
+// 4 tema: toscana, venezia, amalfi, pompei
+// Duvar dokusu 2 m genişlik × 3.4 m yükseklik (zemin altı 0.2 m dahil) çizilir; zemin dokusu 1.2 m kare (oyundaki floorTex ile aynı ölçek).
+const IT_SURF_STYLES=['toscana','venezia','amalfi','pompei'];
+const IT_SURF_TEX={};
+function itRand(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function itCanvasTex(key,w,h,draw){if(IT_SURF_TEX[key])return IT_SURF_TEX[key];const cv=document.createElement('canvas');cv.width=w;cv.height=h;draw(cv.getContext('2d'),w,h);
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;IT_SURF_TEX[key]=t;return t}
+function itMottle(c,w,h,base,cols,n,rmin,rmax,seed){const R=itRand(seed);c.fillStyle=base;c.fillRect(0,0,w,h);
+  for(let i=0;i<n;i++){const x=R()*w,y=R()*h,r=rmin+R()*(rmax-rmin);const g=c.createRadialGradient(x,y,0,x,y,r);const col=cols[Math.floor(R()*cols.length)];g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;
+    for(const dx of [-w,0,w])for(const dy of [-h,0,h]){c.save();c.translate(dx,dy);c.beginPath();c.arc(x,y,r,0,6.283);c.fill();c.restore()}}}
+function itMajTile(c,x,y,s){c.fillStyle='#fbf7ec';c.fillRect(x,y,s,s);c.strokeStyle='#1f5aa6';c.lineWidth=s*0.03;c.strokeRect(x+s*0.04,y+s*0.04,s*0.92,s*0.92);
+  c.fillStyle='#1f5aa6';for(const [px,py] of [[0,0],[1,0],[0,1],[1,1]]){c.beginPath();c.arc(x+px*s,y+py*s,s*0.17,0,6.283);c.fill()}
+  c.save();c.beginPath();c.rect(x,y,s,s);c.clip();c.fillStyle='#f5c518';for(const [px,py] of [[0,0],[1,0],[0,1],[1,1]]){c.beginPath();c.arc(x+px*s,y+py*s,s*0.08,0,6.283);c.fill()}c.restore();
+  c.save();c.translate(x+s/2,y+s/2);c.fillStyle='#4f8a3a';for(const r of [-1,1]){c.beginPath();c.ellipse(r*s*0.15,-s*0.12,s*0.09,s*0.04,r*0.7,0,6.283);c.fill()}
+  c.fillStyle='#f5c518';c.beginPath();c.ellipse(0,s*0.04,s*0.19,s*0.13,0,0,6.283);c.fill();c.fillStyle='#e0a800';c.beginPath();c.ellipse(s*0.16,s*0.04,s*0.04,s*0.03,0,0,6.283);c.fill();c.restore()}
+function itDamask(c,x,y,s,col){c.save();c.translate(x,y);c.fillStyle=col;c.strokeStyle=col;c.lineWidth=s*0.035;
+  c.beginPath();c.ellipse(0,0,s*0.09,s*0.22,0,0,6.283);c.fill();
+  for(const k of [-1,1]){c.beginPath();c.moveTo(0,s*0.18);c.bezierCurveTo(k*s*0.35,s*0.1,k*s*0.35,-s*0.25,k*s*0.12,-s*0.3);c.stroke();
+    c.beginPath();c.ellipse(k*s*0.24,-s*0.02,s*0.07,s*0.12,k*0.4,0,6.283);c.fill();
+    c.beginPath();c.arc(k*s*0.14,-s*0.36,s*0.05,0,6.283);c.fill();
+    c.beginPath();c.moveTo(0,s*0.22);c.quadraticCurveTo(k*s*0.2,s*0.4,k*s*0.28,s*0.3);c.stroke()}
+  c.beginPath();c.moveTo(0,-s*0.22);c.lineTo(s*0.06,-s*0.42);c.lineTo(0,-s*0.5);c.lineTo(-s*0.06,-s*0.42);c.closePath();c.fill();c.restore()}
+function itMeander(c,x0,y0,len,u,col,lw){c.save();c.strokeStyle=col;c.lineWidth=lw;c.lineCap='square';c.beginPath();let x=x0;c.moveTo(x,y0+u*2);
+  while(x<x0+len-u*4){c.lineTo(x,y0);c.lineTo(x+u*3,y0);c.lineTo(x+u*3,y0+u*2);c.lineTo(x+u,y0+u*2);c.lineTo(x+u,y0+u);c.lineTo(x+u*2,y0+u);c.moveTo(x+u*3,y0+u*2);c.lineTo(x+u*4,y0+u*2);x+=u*4}c.stroke();c.restore()}
+
+// ---------------- DUVAR ----------------
+function itWallTex(st){return itCanvasTex('wall_'+st,512,872,(c,w,h)=>{const ym=m=>h-(m+0.2)/3.4*h;   // metre → piksel (alttan)
+  if(st==='toscana'){itMottle(c,w,h,'#e9be7b',['rgba(214,160,90,.35)','rgba(246,214,150,.35)','rgba(200,140,80,.22)'],140,20,70,11);
+    // tuğla alt bölüm (0–0.9 m)
+    const y0=ym(0.9);c.fillStyle='#b9673f';c.fillRect(0,y0,w,h-y0);const bh=22,bw=64;const R=itRand(5);
+    for(let r=0;r*bh<h-y0;r++)for(let k=-1;k<=w/bw;k++){const x=k*bw+(r%2?bw/2:0);c.fillStyle=['#c4704a','#b05e3a','#cf7e55','#a85634'][Math.floor(R()*4)];c.fillRect(x+2,y0+r*bh+2,bw-4,bh-4)}
+    c.fillStyle='#d9c7a1';c.fillRect(0,y0-10,w,12);c.fillStyle='rgba(74,46,28,.25)';c.fillRect(0,y0+1,w,3);
+    // zeytin dalı frizi (2.55 m)
+    const fy=ym(2.55);c.strokeStyle='#6f7a3a';c.lineWidth=3;c.beginPath();for(let x=0;x<=w;x+=4)c.lineTo(x,fy+Math.sin(x/w*Math.PI*4)*8);c.stroke();
+    for(let i=0;i<24;i++){const x=i*w/24+10,y=fy+Math.sin(x/w*Math.PI*4)*8;c.fillStyle='#7d8a45';c.save();c.translate(x,y);c.rotate(i%2?0.7:-0.7);c.beginPath();c.ellipse(0,-9,4,10,0,0,6.283);c.fill();c.restore();if(i%3===0){c.fillStyle='#3f4a2a';c.beginPath();c.arc(x+5,y+8,4,0,6.283);c.fill()}}}
+  else if(st==='venezia'){c.fillStyle='#7d2a2a';c.fillRect(0,0,w,h);itMottle(c,w,h,'#7d2a2a',['rgba(150,60,55,.35)','rgba(90,25,25,.35)'],90,20,60,23);
+    for(let r=0;r<9;r++)for(let k=0;k<3;k++)itDamask(c,k*w/2+(r%2?w/4:0),ym(0.95)-40-r*82,70,'rgba(214,170,90,.55)');
+    for(let r=0;r<9;r++)itDamask(c,(r%2?w/4:0)+w,ym(0.95)-40-r*82,70,'rgba(214,170,90,.55)');
+    // ceviz lambri (0–0.95 m) + altın çıta
+    const y0=ym(0.95);c.fillStyle='#4a2a1a';c.fillRect(0,y0,w,h-y0);for(let k=0;k<2;k++){c.fillStyle='#5e3622';c.fillRect(k*w/2+20,y0+24,w/2-40,h-y0-60);c.strokeStyle='#3a2014';c.lineWidth=4;c.strokeRect(k*w/2+30,y0+34,w/2-60,h-y0-80)}
+    c.fillStyle='#d9a53a';c.fillRect(0,y0-6,w,8);c.fillRect(0,ym(2.75),w,6)}
+  else if(st==='amalfi'){itMottle(c,w,h,'#fdfbf6',['rgba(240,234,222,.35)','rgba(255,255,255,.5)'],60,30,80,31);
+    // mayolika çini alt bölüm (0–1.2 m), 15 cm çiniler
+    const y0=ym(1.2),s=w/(2/0.15);for(let r=0;y0+r*s<h;r++)for(let k=0;k*s<w;k++)itMajTile(c,k*s,y0+r*s,s);
+    c.fillStyle='#1f5aa6';c.fillRect(0,y0-10,w,10);c.fillStyle='#f5c518';c.fillRect(0,y0-16,w,6);
+    // tepede mavi çizgi
+    c.fillStyle='#1f5aa6';c.fillRect(0,ym(2.9),w,6)}
+  else{// pompei: kırmızı paneller, siyah alt bant, sarı çerçeveler, beyaz meander frizi
+    c.fillStyle='#a8322a';c.fillRect(0,0,w,h);itMottle(c,w,h,'#a8322a',['rgba(190,70,55,.3)','rgba(130,30,25,.3)'],70,20,60,41);
+    const y0=ym(0.7),yT=ym(2.55);c.fillStyle='#1e1a18';c.fillRect(0,y0,w,h-y0);
+    for(let k=0;k<2;k++){const x=k*w/2;c.fillStyle='#1e1a18';c.fillRect(x+w/2-14,yT,28,y0-yT);c.strokeStyle='#e0b13a';c.lineWidth=4;c.strokeRect(x+26,yT+26,w/2-66,y0-yT-52);
+      c.strokeStyle='#f4efe6';c.lineWidth=2;c.strokeRect(x+36,yT+36,w/2-86,y0-yT-72);
+      // panel ortasında küçük kuş/vazo süsü
+      const cx=x+w/4-7,cy=(yT+y0)/2;c.fillStyle='#e0b13a';c.beginPath();c.ellipse(cx,cy,10,16,0,0,6.283);c.fill();c.fillRect(cx-3,cy-28,6,14);c.fillStyle='#2f6b4a';c.beginPath();c.ellipse(cx-18,cy-20,6,12,-0.6,0,6.283);c.fill();c.beginPath();c.ellipse(cx+18,cy-20,6,12,0.6,0,6.283);c.fill()}
+    c.fillStyle='#f0e7d6';c.fillRect(0,yT-46,w,46);itMeander(c,4,yT-38,w,7,'#a8322a',4);
+    for(let k=0;k<8;k++){c.fillStyle='#2f6b4a';c.beginPath();c.ellipse(k*w/8+32,y0+40,8,16,0.5,0,6.283);c.fill()}}})}
+
+// ---------------- ZEMİN ----------------
+function itFloorTex(st){return itCanvasTex('floor_'+st,512,512,(c,w,h)=>{
+  if(st==='toscana'){// cotto: sekizgen terrakota + köşelerde küçük yeşil karolar
+    const n=4,s=w/n,k=s*0.29;c.fillStyle='#e9dcc4';c.fillRect(0,0,w,h);const R=itRand(7);
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){const x=i*s,y=j*s;c.fillStyle=['#c96a3e','#b95c34','#d27a4c','#c4653a','#ad5530'][Math.floor(R()*5)];
+      c.beginPath();c.moveTo(x+k,y+3);c.lineTo(x+s-k,y+3);c.lineTo(x+s-3,y+k);c.lineTo(x+s-3,y+s-k);c.lineTo(x+s-k,y+s-3);c.lineTo(x+k,y+s-3);c.lineTo(x+3,y+s-k);c.lineTo(x+3,y+k);c.closePath();c.fill();
+      c.fillStyle='rgba(255,255,255,.08)';c.beginPath();c.ellipse(x+s*0.4,y+s*0.35,s*0.2,s*0.12,0.5,0,6.283);c.fill()}
+    for(let i=0;i<=n;i++)for(let j=0;j<=n;j++){c.save();c.translate(i*s,j*s);c.rotate(Math.PI/4);c.fillStyle='#4f6b3a';c.fillRect(-k*0.62,-k*0.62,k*1.24,k*1.24);c.restore()}}
+  else if(st==='venezia'){// terrazzo alla veneziana
+    c.fillStyle='#e8ddcb';c.fillRect(0,0,w,h);const R=itRand(19);const cols=['#a8322a','#7d2a2a','#f4efe6','#2b2b2b','#c9a24a','#b9a58a','#8c867b','#d98c6a'];
+    for(let i=0;i<1400;i++){const x=R()*w,y=R()*h,r=2+R()*(R()<0.12?11:5);c.fillStyle=cols[Math.floor(R()*cols.length)];
+      for(const dx of [-w,0,w])for(const dy of [-h,0,h]){c.beginPath();const sides=4+Math.floor(R()*3);for(let k=0;k<sides;k++){const a=k/sides*6.283+R()*0.6,rr=r*(0.6+R()*0.5);c.lineTo(x+dx+Math.cos(a)*rr,y+dy+Math.sin(a)*rr)}c.closePath();c.fill()}}}
+  else if(st==='amalfi'){const n=4,s=w/n;for(let i=0;i<n;i++)for(let j=0;j<n;j++)itMajTile(c,i*s,j*s,s);c.strokeStyle='rgba(74,46,28,.25)';c.lineWidth=2;for(let k=0;k<=n;k++){c.beginPath();c.moveTo(k*s,0);c.lineTo(k*s,h);c.stroke();c.beginPath();c.moveTo(0,k*s);c.lineTo(w,k*s);c.stroke()}}
+  else{// pompei: opus sectile — beyaz/gri mermer dama, köşelerde rosso eşkenar dörtgen
+    const n=4,s=w/n;const R=itRand(29);
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){c.fillStyle=(i+j)%2?'#d9d4ca':'#f4f1ea';c.fillRect(i*s,j*s,s,s);c.strokeStyle='rgba(120,115,108,.25)';c.lineWidth=1.2;
+      for(let v=0;v<3;v++){c.beginPath();let x=i*s+R()*s,y=j*s;c.moveTo(x,y);while(y<j*s+s){x+=(R()-0.5)*16;y+=8;c.lineTo(Math.min(Math.max(x,i*s),i*s+s),y)}c.stroke()}}
+    for(let i=0;i<=n;i++)for(let j=0;j<=n;j++){c.save();c.translate(i*s,j*s);c.rotate(Math.PI/4);c.fillStyle='#9e2f26';c.fillRect(-s*0.13,-s*0.13,s*0.26,s*0.26);c.fillStyle='#2b2b2b';c.fillRect(-s*0.05,-s*0.05,s*0.1,s*0.1);c.restore()}
+    c.strokeStyle='rgba(60,50,40,.35)';c.lineWidth=2;for(let k=0;k<=n;k++){c.beginPath();c.moveTo(k*s,0);c.lineTo(k*s,h);c.stroke();c.beginPath();c.moveTo(0,k*s);c.lineTo(w,k*s);c.stroke()}}})}
+
+// ---------------- HALI (4.3 × 3.3 m) ----------------
+function itRugTex(st){const t=itCanvasTex('rug_'+st,860,660,(c,w,h)=>{const B=(m,col)=>{c.fillStyle=col;c.fillRect(m,m,w-2*m,h-2*m)};
+  if(st==='toscana'){B(0,'#c9a24a');B(14,'#6f7a3a');B(46,'#e9d9b0');B(60,'#7d8a45');
+    // köşe ve kenar zeytin dalları
+    const leaf=(x,y,a,col)=>{c.save();c.translate(x,y);c.rotate(a);c.fillStyle=col;c.beginPath();c.ellipse(0,-10,5,12,0,0,6.283);c.fill();c.restore()};
+    for(let i=0;i<40;i++){const x=70+i*(w-140)/39;leaf(x,32,i%2?0.8:-0.8,'#e9d9b0');leaf(x,h-32,i%2?0.8:-0.8,'#e9d9b0')}
+    for(let i=0;i<30;i++){const y=70+i*(h-140)/29;leaf(32,y,i%2?2.3:0.8,'#e9d9b0');leaf(w-32,y,i%2?2.3:0.8,'#e9d9b0')}
+    // orta madalyon: oval zeytin çelengi + limonlar
+    c.strokeStyle='#e9d9b0';c.lineWidth=6;c.beginPath();c.ellipse(w/2,h/2,190,140,0,0,6.283);c.stroke();
+    for(let i=0;i<48;i++){const a=i/48*6.283;leaf(w/2+Math.cos(a)*190,h/2+Math.sin(a)*140,a+(i%2?0.6:-0.6),'#c9d18a')}
+    c.fillStyle='#e9d9b0';c.beginPath();c.ellipse(w/2,h/2,120,80,0,0,6.283);c.fill();
+    for(const [dx,dy] of [[-30,0],[25,-10],[5,25]]){c.fillStyle='#f5c518';c.beginPath();c.ellipse(w/2+dx,h/2+dy,26,19,0.3,0,6.283);c.fill()}
+    for(const [dx,dy,a] of [[-60,-20,-0.6],[60,10,0.7],[0,-40,0]])leaf(w/2+dx,h/2+dy,a,'#4f6b3a')}
+  else if(st==='venezia'){B(0,'#c9a24a');B(10,'#5a1a1a');B(30,'#d9a53a');B(40,'#8c2f2a');
+    for(let r=0;r<6;r++)for(let k=0;k<8;k++)itDamask(c,90+k*97+(r%2?48:0),110+r*92,78,'rgba(214,170,90,.6)');
+    c.fillStyle='#5a1a1a';c.beginPath();c.ellipse(w/2,h/2,130,100,0,0,6.283);c.fill();c.strokeStyle='#d9a53a';c.lineWidth=6;c.stroke();
+    // altın Venedik rozeti: sekiz kollu yıldız + halka
+    c.save();c.translate(w/2,h/2);c.fillStyle='#d9a53a';c.beginPath();for(let i=0;i<16;i++){const r=i%2?34:88,a=i/16*6.283-Math.PI/2;c.lineTo(Math.cos(a)*r,Math.sin(a)*r*0.8)}c.closePath();c.fill();
+    c.fillStyle='#8c2f2a';c.beginPath();c.ellipse(0,0,30,24,0,0,6.283);c.fill();c.fillStyle='#d9a53a';c.beginPath();c.ellipse(0,0,14,11,0,0,6.283);c.fill();c.restore()}
+  else if(st==='amalfi'){c.fillStyle='#fbf7ec';c.fillRect(0,0,w,h);B(0,'#1f5aa6');B(18,'#fbf7ec');B(28,'#f5c518');B(38,'#fbf7ec');
+    for(let i=0;i<16;i++){c.fillStyle=i%2?'#1f5aa6':'#fbf7ec';c.fillRect(38+i*(w-76)/16,38,(w-76)/16,30);c.fillRect(38+i*(w-76)/16,h-68,(w-76)/16,30)}
+    const R=itRand(3);for(let r=0;r<4;r++)for(let k=0;k<7;k++){const x=120+k*104+(r%2?52:0),y=150+r*110;if(x>w-90)continue;
+      c.save();c.translate(x,y);c.rotate((R()-0.5)*1.2);c.fillStyle='#4f8a3a';c.beginPath();c.ellipse(-22,-18,16,7,0.6,0,6.283);c.fill();c.beginPath();c.ellipse(20,-20,14,6,-0.6,0,6.283);c.fill();
+      c.fillStyle='#f5c518';c.beginPath();c.ellipse(0,0,30,21,0,0,6.283);c.fill();c.fillStyle='#e0a800';c.beginPath();c.ellipse(27,0,6,5,0,0,6.283);c.fill();c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.ellipse(-8,-7,10,5,-0.3,0,6.283);c.fill();c.restore()}}
+  else{// pompei mozaiği: krem zemin, siyah meander bordür, ortada ışınsal yuvarlak
+    c.fillStyle='#efe6d4';c.fillRect(0,0,w,h);c.fillStyle='#1e1a18';c.fillRect(0,0,w,14);c.fillRect(0,h-14,w,14);c.fillRect(0,0,14,h);c.fillRect(w-14,0,14,h);
+    itMeander(c,30,30,w-40,10,'#1e1a18',6);itMeander(c,30,h-60,w-40,10,'#1e1a18',6);
+    c.save();c.translate(0,h);c.rotate(-Math.PI/2);itMeander(c,90,30,h-170,10,'#1e1a18',6);itMeander(c,90,w-60,h-170,10,'#1e1a18',6);c.restore();
+    const cx=w/2,cy=h/2;for(let i=0;i<24;i++){c.fillStyle=i%2?'#a8322a':'#e0b13a';c.beginPath();c.moveTo(cx,cy);c.arc(cx,cy,170,i/24*6.283,(i+1)/24*6.283);c.closePath();c.fill()}
+    c.fillStyle='#efe6d4';c.beginPath();c.arc(cx,cy,110,0,6.283);c.fill();c.strokeStyle='#1e1a18';c.lineWidth=8;c.beginPath();c.arc(cx,cy,170,0,6.283);c.stroke();c.beginPath();c.arc(cx,cy,110,0,6.283);c.stroke();
+    for(let i=0;i<8;i++){c.save();c.translate(cx,cy);c.rotate(i/8*6.283);c.fillStyle='#2f6b4a';c.beginPath();c.ellipse(0,-60,14,34,0,0,6.283);c.fill();c.restore()}c.fillStyle='#a8322a';c.beginPath();c.arc(cx,cy,22,0,6.283);c.fill();
+    // mozaik derzleri
+    c.strokeStyle='rgba(60,50,40,.12)';c.lineWidth=1;for(let x=0;x<w;x+=8){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}for(let y=0;y<h;y+=8){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}}});
+  t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;return t}
+// halı nesnesi: 4.3 × 3.3 m, kısa kenarlarda püsküller (oyundaki halının yerinde)
+function itRugMesh(st){const G=new THREE.Group();const mat=new THREE.MeshToonMaterial({map:itRugTex(st),gradientMap:grad});
+  const top=new THREE.Mesh(new THREE.BoxGeometry(4.3,0.026,3.3),[itc(0xd9cbb0),itc(0xd9cbb0),mat,itc(0xd9cbb0),itc(0xd9cbb0),itc(0xd9cbb0)]);top.position.y=0.013;top.receiveShadow=true;G.add(top);
+  const fr=itc(st==='venezia'?0xd9a53a:st==='pompei'?0x1e1a18:0xf3ead7);
+  for(const s of [-1,1])for(let i=0;i<40;i++){const t=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.008,0.025),fr);t.position.set(s*(2.15+0.035),0.006,-1.6+i*(3.2/39));G.add(t)}
+  return G}
+// önizleme / uygulama: duvar boyası, zemin ve halı
+function itApplySurfaces(st,rugObjs){const wt=itWallTex(st);wt.repeat.set(1/2,1/3.4);wt.offset.set(0,0.2/3.4);wt.wrapT=THREE.ClampToEdgeWrapping;
+  M.wall.map=wt;M.wall.color.setHex(0xffffff);M.wall.needsUpdate=true;
+  const ft=itFloorTex(st);ft.repeat.set(ROOM_W/1.2,ROOM_D/1.2);M.floor.map=ft;M.floor.color.setHex(0xffffff);floorStrips.forEach(s=>s.visible=false);SHELL.strips=false;M.floor.needsUpdate=true;
+  if(rugObjs)for(const o of rugObjs)o.visible=false;
+  if(window.__itRug){window.__itRug.parent&&window.__itRug.parent.remove(window.__itRug)}const R=itRugMesh(st);R.position.set(1.35,0,1.35);scene.add(R);window.__itRug=R;return R}
+
+// =====================================================================
+// TabbyChef · TÜRKİYE ZEMİN, DUVAR BOYASI & HALI (4 tema: osmanli, kapadokya, bodrum, selcuklu)
+// GEREKSİNİM: italya_koleksiyonu.js, italya_zemin_duvar_hali.js ve turkiye_koleksiyonu.js önce eklenmiş olmalı.
+// Ekleme yöntemi italya_zemin_duvar_hali.js ile aynıdır, fonksiyon adları:
+//   trWallTex(tema) · trFloorTex(tema) · trRugMesh(tema) · trApplySurfaces(tema,[rug,rugIn])
+// Katalog önerisi: w_tr_<tema>, f_tr_<tema>, r_tr_<tema>.
+// =====================================================================
+// ================= TÜRKİYE ZEMİN, DUVAR & HALI =================
+// 4 tema: osmanli, kapadokya, bodrum, selcuklu
+// GEREKSİNİM: italya_koleksiyonu.js, italya_zemin_duvar_hali.js (itCanvasTex, itMottle, itRand, itApplySurfaces düzeni) ve turkiye_koleksiyonu.js (trIznikDraw).
+const TR_SURF_STYLES=['osmanli','kapadokya','bodrum','selcuklu'];
+function trStar8(c,x,y,r,fill,stroke){c.save();c.translate(x,y);c.beginPath();for(let i=0;i<16;i++){const rr=i%2?r*0.62:r,a=i/16*Math.PI*2;c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}c.closePath();if(fill){c.fillStyle=fill;c.fill()}if(stroke){c.strokeStyle=stroke;c.lineWidth=r*0.08;c.stroke()}c.restore()}
+// ---------------- DUVAR (2 m × 3.4 m) ----------------
+function trWallTex(st){return itCanvasTex('trwall_'+st,512,872,(c,w,h)=>{const ym=m=>h-(m+0.2)/3.4*h;
+  if(st==='osmanli'){// krem kalem işi sıva + İznik çini lambri + kırmızı rumi bordür
+    itMottle(c,w,h,'#f6ecda',['rgba(236,222,196,.18)','rgba(252,246,232,.3)'],40,25,70,51);
+    const y0=ym(1.3),s=w/(2/0.2);for(let r=0;y0+r*s<h;r++)for(let k=0;k*s<w;k++)trIznikDraw(c,k*s,y0+r*s,s);
+    c.fillStyle='#1f3f8f';c.fillRect(0,y0-14,w,14);c.fillStyle='#c8443a';c.fillRect(0,y0-22,w,8);
+    // tavan altı kalem işi bordür
+    const yb=ym(2.75);c.fillStyle='#1f3f8f';c.fillRect(0,yb-34,w,34);for(let i=0;i<8;i++){c.fillStyle='#c9a24a';c.beginPath();c.ellipse(i*w/8+32,yb-17,22,10,0,0,6.283);c.fill();c.fillStyle='#c8443a';c.beginPath();c.arc(i*w/8+32,yb-17,6,0,6.283);c.fill()}
+    c.fillStyle='#c9a24a';c.fillRect(0,yb-38,w,4);c.fillRect(0,yb,w,4)}
+  else if(st==='kapadokya'){// tüf taşı örgü
+    c.fillStyle='#d9bd94';c.fillRect(0,0,w,h);const R=itRand(61);const bh=46;
+    for(let r=0;r*bh<h;r++){let x=-(r%2?40:0);while(x<w){const bw=70+R()*60;c.fillStyle=['#e8cfa8','#e2c69c','#ddbe92','#efd8b4','#d2b083'][Math.floor(R()*5)];c.beginPath();c.roundRect(x+3,r*bh+3,bw-6,bh-6,8);c.fill();
+      c.fillStyle='rgba(120,90,60,.12)';for(let k=0;k<4;k++){c.beginPath();c.arc(x+R()*bw,r*bh+R()*bh,2+R()*3,0,6.283);c.fill()}x+=bw}}
+    // ortada oyma niş sırası
+    const yn=ym(2.2);for(let k=0;k<2;k++){const x=k*w/2+w/4;c.fillStyle='#8a6a4a';c.beginPath();c.moveTo(x-34,yn+60);c.lineTo(x-34,yn);c.arc(x,yn,34,Math.PI,0);c.lineTo(x+34,yn+60);c.closePath();c.fill()}}
+  else if(st==='bodrum'){// beyaz badana, alt kısım mavi, ortada ince mavi şerit
+    itMottle(c,w,h,'#fefdf9',['rgba(244,240,232,.15)','rgba(255,255,255,.4)'],30,30,80,71);
+    const y0=ym(0.9);c.fillStyle='#2f6ea8';c.fillRect(0,y0,w,h-y0);c.fillStyle='#fdfbf6';c.fillRect(0,y0-8,w,8);c.fillStyle='#2f6ea8';c.fillRect(0,y0-16,w,4);
+    c.fillStyle='#7fc4ec';c.fillRect(0,ym(2.9),w,8);
+    // tek tük asılı nazar boncukları
+    for(const x of [w*0.25,w*0.75]){const y=ym(2.55);c.strokeStyle='#c8443a';c.lineWidth=2;c.beginPath();c.moveTo(x,ym(2.9));c.lineTo(x,y-14);c.stroke();
+      for(const [r,col] of [[16,'#1d4fa3'],[10,'#ffffff'],[7,'#7fc4ec'],[3.5,'#111418']]){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.283);c.fill()}}}
+  else{// selçuklu: tuğla zemin üstünde turkuaz sekiz kollu yıldız çinileri
+    c.fillStyle='#b8643e';c.fillRect(0,0,w,h);const R=itRand(81);for(let r=0;r*26<h;r++)for(let k=-1;k*64<w;k++){c.fillStyle=['#c4704a','#b05e3a','#bf6942'][Math.floor(R()*3)];c.fillRect(k*64+(r%2?32:0)+2,r*26+2,60,22)}
+    const y0=ym(2.4),y1=ym(0.9);c.fillStyle='#e9e1cf';c.fillRect(0,y0,w,y1-y0);const s=64;
+    for(let r=0;y0+r*s<y1;r++)for(let k=0;k*s<w;k++){const x=k*s+s/2,y=y0+r*s+s/2;trStar8(c,x,y,s*0.42,'#2a8a8f','#1f3f8f');trStar8(c,x,y,s*0.2,'#e9e1cf');
+      c.fillStyle='#1f3f8f';c.save();c.translate(k*s,y0+r*s);c.rotate(Math.PI/4);c.fillRect(-s*0.12,-s*0.12,s*0.24,s*0.24);c.restore()}
+    c.fillStyle='#1f3f8f';c.fillRect(0,y0-10,w,10);c.fillRect(0,y1,w,10)}})}
+// ---------------- ZEMİN (1.2 m) ----------------
+function trFloorTex(st){return itCanvasTex('trfloor_'+st,512,512,(c,w,h)=>{
+  if(st==='osmanli'){// beyaz mermer üstünde selçuklu yıldızı kakma
+    const n=4,s=w/n;const R=itRand(33);for(let i=0;i<n;i++)for(let j=0;j<n;j++){c.fillStyle=(i+j)%2?'#e8e2d6':'#f4f1ea';c.fillRect(i*s,j*s,s,s);
+      c.strokeStyle='rgba(120,115,108,.22)';c.lineWidth=1.2;for(let v=0;v<2;v++){c.beginPath();let x=i*s+R()*s,y=j*s;c.moveTo(x,y);while(y<j*s+s){x+=(R()-0.5)*14;y+=8;c.lineTo(x,y)}c.stroke()}}
+    for(let i=0;i<=n;i++)for(let j=0;j<=n;j++){trStar8(c,i*s,j*s,s*0.24,'#8c2f2a');trStar8(c,i*s,j*s,s*0.11,'#c9a24a')}
+    c.strokeStyle='rgba(60,50,40,.3)';c.lineWidth=2;for(let k=0;k<=n;k++){c.beginPath();c.moveTo(k*s,0);c.lineTo(k*s,h);c.stroke();c.beginPath();c.moveTo(0,k*s);c.lineTo(w,k*s);c.stroke()}}
+  else if(st==='kapadokya'){// düzensiz tüf taşı plakalar
+    c.fillStyle='#9c8466';c.fillRect(0,0,w,h);const R=itRand(43);const n=4,s=w/n;
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){const sp=i%2===j%2;const x=i*s,y=j*s;c.fillStyle=['#d9bd94','#cfb088','#e2c69c','#c9a77a'][Math.floor(R()*4)];c.beginPath();c.roundRect(x+4,y+4,s-8,s-8,14);c.fill();
+      c.fillStyle='rgba(110,80,50,.12)';for(let k=0;k<6;k++){c.beginPath();c.arc(x+R()*s,y+R()*s,2+R()*4,0,6.283);c.fill()}}}
+  else if(st==='bodrum'){// deniz çakılı mozaiği (siyah-beyaz çakıl, dalga deseni)
+    c.fillStyle='#d9d2c3';c.fillRect(0,0,w,h);const R=itRand(13);
+    for(let y=6;y<h;y+=11)for(let x=6;x<w;x+=11){const jx=x+(R()-0.5)*4,jy=y+(R()-0.5)*4;const wave=Math.sin(x/w*Math.PI*4+y/h*Math.PI*2)>0.35||((Math.hypot(x-w/2,y-h/2)%120)<24);
+      c.fillStyle=wave?['#2b2b2b','#3a3a3a','#1e2a33'][Math.floor(R()*3)]:['#f4f1ea','#e8e2d6','#fbf8f1'][Math.floor(R()*3)];c.beginPath();c.ellipse(jx,jy,4.8,3.2,R()*3,0,6.283);c.fill()}}
+  else{// selçuklu: balıksırtı tuğla
+    c.fillStyle='#8a5a3a';c.fillRect(0,0,w,h);const R=itRand(91);const bw=64,bh=21;
+    for(let i=-2;i<12;i++)for(let j=-2;j<14;j++){c.save();const x=i*bw*0.7+(j%2)*bw*0.35,y=j*bh*1.5;c.translate(x,y);c.rotate(j%2?Math.PI/4:-Math.PI/4);c.fillStyle=['#c4704a','#b05e3a','#cf7e55','#a85634'][Math.floor(R()*4)];c.fillRect(-bw/2+2,-bh/2+2,bw-4,bh-4);c.restore()}}})}
+// ---------------- HALI (4.3 × 3.3 m) ----------------
+function trRugTex(st){const t=itCanvasTex('trrug_'+st,860,660,(c,w,h)=>{const B=(m,col)=>{c.fillStyle=col;c.fillRect(m,m,w-2*m,h-2*m)};
+  if(st==='osmanli'){// Uşak madalyonlu halı: kırmızı zemin, lacivert madalyon, sarı çiçekler
+    B(0,'#23395b');B(16,'#c9a24a');B(26,'#23395b');B(56,'#c9a24a');B(64,'#9a2a24');
+    for(let i=0;i<26;i++){const x=40+i*(w-80)/25;trStar8(c,x,40,10,'#f1e3c6');trStar8(c,x,h-40,10,'#f1e3c6')}for(let i=0;i<19;i++){const y=40+i*(h-80)/18;trStar8(c,40,y,10,'#f1e3c6');trStar8(c,w-40,y,10,'#f1e3c6')}
+    c.fillStyle='#23395b';c.beginPath();c.ellipse(w/2,h/2,200,150,0,0,6.283);c.fill();c.strokeStyle='#c9a24a';c.lineWidth=8;c.stroke();
+    for(let i=0;i<16;i++){const a=i/16*6.283;c.fillStyle='#c9a24a';c.beginPath();c.ellipse(w/2+Math.cos(a)*200,h/2+Math.sin(a)*150,18,10,a,0,6.283);c.fill()}
+    c.fillStyle='#9a2a24';c.beginPath();c.ellipse(w/2,h/2,110,80,0,0,6.283);c.fill();trStar8(c,w/2,h/2,58,'#f1e3c6','#c9a24a');trStar8(c,w/2,h/2,26,'#2a8a8f');
+    for(const [x,y] of [[110,110],[w-110,110],[110,h-110],[w-110,h-110]]){c.fillStyle='#23395b';c.beginPath();c.arc(x,y,44,0,6.283);c.fill();trStar8(c,x,y,26,'#c9a24a')}
+    for(let i=0;i<20;i++){const x=150+((i*137)%560),y=110+((i*89)%440);if(Math.hypot((x-w/2)/220,(y-h/2)/170)<1)continue;c.fillStyle='#e0b13a';c.beginPath();c.arc(x,y,7,0,6.283);c.fill();c.fillStyle='#2a8a8f';c.beginPath();c.ellipse(x+10,y+4,7,3,0.6,0,6.283);c.fill()}}
+  else if(st==='kapadokya'){// kilim: göz alıcı zikzak bantlar
+    c.fillStyle='#a8322a';c.fillRect(0,0,w,h);const bands=7,bh=h/bands;
+    for(let b=0;b<bands;b++){const y=b*bh;c.fillStyle=['#a8322a','#23395b','#e0892f','#f1e3c6','#a8322a','#2a8a8f','#23395b'][b];c.fillRect(0,y,w,bh);
+      const col=['#f1e3c6','#e0892f','#23395b','#a8322a','#f1e3c6','#f1e3c6','#e0892f'][b];c.fillStyle=col;const n=10,s=w/n;
+      for(let i=0;i<n;i++){const x=i*s;if(b%2){c.beginPath();c.moveTo(x+s/2,y+6);c.lineTo(x+s-8,y+bh/2);c.lineTo(x+s/2,y+bh-6);c.lineTo(x+8,y+bh/2);c.closePath();c.fill();c.fillStyle=['#a8322a','#23395b'][i%2];c.beginPath();c.arc(x+s/2,y+bh/2,9,0,6.283);c.fill();c.fillStyle=col}
+        else{c.beginPath();c.moveTo(x,y+bh*0.7);c.lineTo(x+s/2,y+bh*0.3);c.lineTo(x+s,y+bh*0.7);c.lineTo(x+s,y+bh*0.85);c.lineTo(x+s/2,y+bh*0.45);c.lineTo(x,y+bh*0.85);c.closePath();c.fill()}}}
+    c.strokeStyle='#2b1a10';c.lineWidth=12;c.strokeRect(6,6,w-12,h-12)}
+  else if(st==='bodrum'){// beyaz-mavi çizgili halı, ortada nazar
+    for(let i=0;i<16;i++){c.fillStyle=i%2?'#2f6ea8':'#fbf7ec';c.fillRect(0,i*h/16,w,h/16)}c.fillStyle='#fbf7ec';c.fillRect(w/2-200,h/2-150,400,300);c.strokeStyle='#2f6ea8';c.lineWidth=10;c.strokeRect(w/2-200,h/2-150,400,300);
+    for(const [r,col] of [[120,'#1d4fa3'],[72,'#ffffff'],[50,'#7fc4ec'],[26,'#111418']]){c.fillStyle=col;c.beginPath();c.arc(w/2,h/2,r,0,6.283);c.fill()}
+    for(const [x,y] of [[w/2-150,h/2-100],[w/2+150,h/2-100],[w/2-150,h/2+100],[w/2+150,h/2+100]])for(const [r,col] of [[22,'#1d4fa3'],[13,'#ffffff'],[9,'#7fc4ec'],[4,'#111418']]){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.283);c.fill()}}
+  else{// Hereke: krem zemin, ipek görünümlü çiçek dalları, bordo bordür
+    B(0,'#6e1f24');B(30,'#c9a24a');B(38,'#f1e6cf');c.fillStyle='#6e1f24';for(let i=0;i<30;i++){const x=50+i*(w-100)/29;c.beginPath();c.arc(x,19,6,0,6.283);c.fill();c.beginPath();c.arc(x,h-19,6,0,6.283);c.fill()}
+    const flower=(x,y,s,col)=>{for(let k=0;k<6;k++){const a=k/6*6.283;c.fillStyle=col;c.beginPath();c.ellipse(x+Math.cos(a)*s*0.6,y+Math.sin(a)*s*0.6,s*0.5,s*0.28,a,0,6.283);c.fill()}c.fillStyle='#c9a24a';c.beginPath();c.arc(x,y,s*0.3,0,6.283);c.fill()};
+    c.strokeStyle='#4f7a3a';c.lineWidth=4;for(let k=0;k<6;k++){c.beginPath();c.moveTo(80,80+k*95);c.bezierCurveTo(w*0.3,k*95,w*0.6,180+k*95,w-80,80+k*95);c.stroke()}
+    const R=itRand(7);for(let i=0;i<34;i++){const x=90+R()*(w-180),y=80+R()*(h-160);flower(x,y,14+R()*10,['#9a2a24','#c8443a','#23395b','#e0892f'][i%4]);c.fillStyle='#4f7a3a';c.beginPath();c.ellipse(x+18,y+10,10,4,0.6,0,6.283);c.fill()}
+    trStar8(c,w/2,h/2,70,'#6e1f24','#c9a24a');trStar8(c,w/2,h/2,34,'#c9a24a')}});
+  t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;return t}
+function trRugMesh(st){const G=new THREE.Group();const mat=new THREE.MeshToonMaterial({map:trRugTex(st),gradientMap:grad});
+  const top=new THREE.Mesh(new THREE.BoxGeometry(4.3,0.026,3.3),[itc(0xd9cbb0),itc(0xd9cbb0),mat,itc(0xd9cbb0),itc(0xd9cbb0),itc(0xd9cbb0)]);top.position.y=0.013;top.receiveShadow=true;G.add(top);
+  const fr=itc(st==='osmanli'?0xf1e3c6:st==='kapadokya'?0xa8322a:st==='bodrum'?0xfbf7ec:0xf1e6cf);
+  for(const s of [-1,1])for(let i=0;i<40;i++){const t=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.008,0.025),fr);t.position.set(s*(2.15+0.035),0.006,-1.6+i*(3.2/39));G.add(t)}return G}
+function trApplySurfaces(st,rugObjs){const wt=trWallTex(st);wt.repeat.set(1/2,1/3.4);wt.offset.set(0,0.2/3.4);wt.wrapT=THREE.ClampToEdgeWrapping;M.wall.map=wt;M.wall.color.setHex(0xffffff);M.wall.needsUpdate=true;
+  const ft=trFloorTex(st);ft.repeat.set(ROOM_W/1.2,ROOM_D/1.2);M.floor.map=ft;M.floor.color.setHex(0xffffff);floorStrips.forEach(s=>s.visible=false);SHELL.strips=false;M.floor.needsUpdate=true;
+  if(rugObjs)for(const o of rugObjs)o.visible=false;if(window.__itRug){window.__itRug.parent&&window.__itRug.parent.remove(window.__itRug)}const R=trRugMesh(st);R.position.set(1.35,0,1.35);scene.add(R);window.__itRug=R;return R}
+
+// =====================================================================
+// TabbyChef · JAPONYA ZEMİN, DUVAR BOYASI & HALI (4 tema: washitsu, sakura, umi, bambu)
+// GEREKSİNİM: italya_koleksiyonu.js, italya_zemin_duvar_hali.js ve japonya_koleksiyonu.js önce eklenmiş olmalı.
+// Ekleme yöntemi italya_zemin_duvar_hali.js ile aynıdır, fonksiyon adları:
+//   jpWallTex(tema) · jpFloorTex(tema) · jpRugMesh(tema) · jpApplySurfaces(tema,[rug,rugIn])
+// Katalog önerisi: w_jp_<tema>, f_jp_<tema>, r_jp_<tema>.
+// =====================================================================
+// ================= JAPONYA ZEMİN, DUVAR & HALI =================
+// 4 tema: washitsu (tatami odası), sakura (bahar çay evi), umi (deniz ve Fuji), bambu (bambu korusu)
+// GEREKSİNİM: italya_koleksiyonu.js, italya_zemin_duvar_hali.js (itCanvasTex, itMottle, itRand) ve japonya_koleksiyonu.js (jpSeigaiha, jpSakuraDraw) önce eklenmiş olmalı.
+const JP_SURF_STYLES=['washitsu','sakura','umi','bambu'];
+function jpAsanoha(c,x0,y0,w,h,s,col,lw=2){// kenevir yaprağı (asanoha) deseni
+  c.save();c.beginPath();c.rect(x0,y0,w,h);c.clip();c.strokeStyle=col;c.lineWidth=lw;const th=s*Math.sqrt(3)/2;
+  for(let r=-1;r*th<h+th;r++)for(let k=-1;k*s<w+s;k++){const ox=x0+k*s+(r%2?s/2:0),oy=y0+r*th;
+    for(const up of [true,false]){const A=up?[ox,oy+th]:[ox,oy],B=up?[ox+s,oy+th]:[ox+s,oy],C=up?[ox+s/2,oy]:[ox+s/2,oy+th];const g=[(A[0]+B[0]+C[0])/3,(A[1]+B[1]+C[1])/3];
+      c.beginPath();c.moveTo(A[0],A[1]);c.lineTo(B[0],B[1]);c.lineTo(C[0],C[1]);c.closePath();c.stroke();for(const P of [A,B,C]){c.beginPath();c.moveTo(g[0],g[1]);c.lineTo(P[0],P[1]);c.stroke()}}}
+  c.restore()}
+function jpBamboo(c,x,y0,y1,wd,col,dark){c.fillStyle=col;c.fillRect(x-wd/2,y1,wd,y0-y1);c.fillStyle='rgba(255,255,255,.18)';c.fillRect(x-wd/2+2,y1,wd*0.25,y0-y1);
+  c.fillStyle=dark;for(let y=y0-30;y>y1;y-=70+((x*7)%30)){c.fillRect(x-wd/2-2,y,wd+4,4)}}
+function jpWallTex(st){return itCanvasTex('jpwall_'+st,512,872,(c,w,h)=>{const ym=m=>h-(m+0.2)/3.4*h;
+  if(st==='washitsu'){// toprak sıva + ahşap direk/kiriş + alt kafes lambri
+    itMottle(c,w,h,'#d9c49c',['rgba(200,176,130,.25)','rgba(236,222,190,.3)'],60,30,60,17);
+    const wd='#5a3a22';c.fillStyle=wd;c.fillRect(0,0,22,h);c.fillRect(w-22,0,22,h);const yn=ym(2.25);c.fillRect(0,yn,w,22);c.fillRect(0,ym(3.0),w,14);
+    const y0=ym(0.85);c.fillStyle='#8a6040';c.fillRect(0,y0,w,h-y0);c.fillStyle='#5a3a22';for(let x=6;x<w;x+=18)c.fillRect(x,y0+10,8,h-y0-10);c.fillRect(0,y0,w,12);
+    // ranma (havalandırma) bordürü: kiriş üstünde ahşap kafes
+    c.fillStyle='#e8d9b8';c.fillRect(22,ym(2.9),w-44,yn-ym(2.9));jpAsanoha(c,22,ym(2.9),w-44,yn-ym(2.9),40,'#6b4a32',2.5)}
+  else if(st==='sakura'){// pembe sıva, üstte kiraz dalı freski, hinoki lambri
+    itMottle(c,w,h,'#f8e6e6',['rgba(240,206,214,.25)','rgba(255,248,248,.35)'],40,25,70,23);
+    c.strokeStyle='#5a3a2a';c.lineWidth=12;c.lineCap='round';c.beginPath();c.moveTo(-20,ym(2.4));c.quadraticCurveTo(w*0.3,ym(2.9),w*0.55,ym(2.6));c.quadraticCurveTo(w*0.8,ym(2.35),w+20,ym(2.75));c.stroke();
+    c.lineWidth=6;for(const [x,a] of [[w*0.2,1],[w*0.45,-1],[w*0.7,1],[w*0.9,-1]]){c.beginPath();c.moveTo(x,ym(2.6));c.quadraticCurveTo(x+30,ym(2.6)+a*60,x+70,ym(2.6)+a*40);c.stroke()}
+    const R=itRand(5);for(let i=0;i<40;i++){const x=R()*w,y=ym(2.3+R()*0.75);jpSakuraDraw(c,x,y,10+R()*10,R()<0.5?'#f7b6c8':'#fbd3de')}
+    for(let i=0;i<14;i++)jpSakuraDraw(c,R()*w,ym(1.2+R()*1.0),5+R()*4,'#f7b6c8');
+    const y0=ym(0.85);c.fillStyle='#e6c48e';c.fillRect(0,y0,w,h-y0);c.fillStyle='rgba(170,120,60,.25)';for(let x=0;x<w;x+=64)c.fillRect(x,y0,3,h-y0);c.fillStyle='#c49a5a';c.fillRect(0,y0,w,10)}
+  else if(st==='umi'){// krem sıva, Fuji siluetli friz, dalgalı (seigaiha) lambri
+    itMottle(c,w,h,'#f4ecdc',['rgba(230,218,196,.2)','rgba(252,248,238,.3)'],40,25,70,29);
+    const yf=ym(2.85),yb=ym(2.35);c.fillStyle='#fbe2c6';c.fillRect(0,yf,w,yb-yf);c.fillStyle='#d9473a';c.beginPath();c.arc(w*0.78,yf+30,18,0,6.283);c.fill();
+    for(const [x,s] of [[w*0.3,1],[w*0.8+0,0.6],[-w*0.1,0.6]]){c.fillStyle='#3d5d8a';c.beginPath();c.moveTo(x-130*s,yb);c.lineTo(x-34*s,yb-80*s);c.lineTo(x+34*s,yb-80*s);c.lineTo(x+130*s,yb);c.fill();
+      c.fillStyle='#fbfaf5';c.beginPath();c.moveTo(x-34*s,yb-80*s);c.lineTo(x+34*s,yb-80*s);c.lineTo(x+52*s,yb-56*s);c.lineTo(x+20*s,yb-64*s);c.lineTo(x,yb-52*s);c.lineTo(x-20*s,yb-64*s);c.lineTo(x-52*s,yb-56*s);c.fill()}
+    c.fillStyle='#2d4f7c';c.fillRect(0,yf-8,w,8);c.fillRect(0,yb,w,8);
+    const y0=ym(1.0);c.save();c.translate(0,y0);jpSeigaiha(c,w,h-y0,64,'#2d4f7c','#f4efe3',null);c.restore();c.fillStyle='#1e2f4a';c.fillRect(0,y0-10,w,12)}
+  else{// bambu korusu: açık yeşil sıva üstünde bambu sapları, koyu ahşap lambri
+    const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#e6efd2');g.addColorStop(1,'#cfe0b4');c.fillStyle=g;c.fillRect(0,0,w,h);
+    const R=itRand(9);const yb=ym(0.85);for(let i=0;i<9;i++){const x=20+i*58+R()*20;jpBamboo(c,x,yb,0,14+R()*8,['#7fa64a','#6b9a3e','#8bb04a'][i%3],'#4f7a2e');
+      for(let k=0;k<3;k++){const y=ym(1.6+R()*1.6),d=R()<0.5?-1:1;c.fillStyle='#5e8a3a';c.save();c.translate(x,y);c.rotate(d*(0.5+R()*0.4));c.beginPath();c.ellipse(d*26,0,30,6,0,0,6.283);c.fill();c.restore()}}
+    c.fillStyle='#3a2a1e';c.fillRect(0,yb,w,h-yb);c.fillStyle='#5a4030';for(let x=4;x<w;x+=32)c.fillRect(x,yb+8,26,h-yb-8);c.fillStyle='#2a1e14';c.fillRect(0,yb,w,8)}})}
+// ---------------- ZEMİN (1.2 m) ----------------
+function jpFloorTex(st){return itCanvasTex('jpfloor_'+st,512,512,(c,w,h)=>{
+  if(st==='washitsu'){// tatami: yatay ve dikey hasırlar, siyah kenar şeritli
+    const mat=(x,y,mw,mh,hor)=>{c.fillStyle='#cbc27e';c.fillRect(x,y,mw,mh);c.fillStyle='rgba(120,110,40,.16)';if(hor){for(let k=x;k<x+mw;k+=4)c.fillRect(k,y,1.5,mh)}else{for(let k=y;k<y+mh;k+=4)c.fillRect(x,k,mw,1.5)}
+      c.fillStyle='#2f3b2a';if(hor){c.fillRect(x,y,mw,9);c.fillRect(x,y+mh-9,mw,9)}else{c.fillRect(x,y,9,mh);c.fillRect(x+mw-9,y,9,mh)}c.strokeStyle='rgba(60,50,20,.5)';c.lineWidth=2;c.strokeRect(x,y,mw,mh)};
+    mat(0,0,w,h/2,true);mat(0,h/2,w/2,h/2,false);mat(w/2,h/2,w/2,h/2,false)}
+  else if(st==='sakura'){// açık hinoki tahtalar
+    const R=itRand(21);const n=6,bh=h/n;for(let j=0;j<n;j++){let x=-(j%2?R()*200:R()*80);while(x<w){const bw=200+R()*140;c.fillStyle=['#ead0a0','#e2c492','#efd8ac','#dcbd88'][Math.floor(R()*4)];c.fillRect(x+1,j*bh+1,bw-2,bh-2);
+      c.strokeStyle='rgba(170,120,60,.25)';c.lineWidth=1;for(let k=0;k<3;k++){c.beginPath();const y=j*bh+6+R()*(bh-12);c.moveTo(x,y);c.bezierCurveTo(x+bw/3,y+(R()-0.5)*8,x+bw*2/3,y+(R()-0.5)*8,x+bw,y);c.stroke()}x+=bw}}
+    c.fillStyle='rgba(247,182,200,.8)';for(let i=0;i<5;i++)jpSakuraDraw(c,R()*w,R()*h,6+R()*4,'#f7b6c8')}
+  else if(st==='umi'){// koyu arduvaz taş döşeme (ishidatami)
+    c.fillStyle='#3a3d42';c.fillRect(0,0,w,h);const R=itRand(37);const n=4,s=w/n;
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){const x=i*s,y=j*s;c.fillStyle=['#6a6e74','#5e6268','#74787e','#585c62'][Math.floor(R()*4)];c.beginPath();c.moveTo(x+4+R()*8,y+4+R()*8);c.lineTo(x+s-4-R()*8,y+4+R()*8);c.lineTo(x+s-4-R()*8,y+s-4-R()*8);c.lineTo(x+4+R()*8,y+s-4-R()*8);c.closePath();c.fill();
+      c.fillStyle='rgba(255,255,255,.06)';for(let k=0;k<20;k++)c.fillRect(x+R()*s,y+R()*s,3,3)}}
+  else{// bambu parke: balıksırtı açık bambu şeritleri
+    c.fillStyle='#b89a5a';c.fillRect(0,0,w,h);const R=itRand(47);const bw=128,bh=32;
+    for(let i=-1;i<6;i++)for(let j=-1;j<18;j++){c.save();c.translate(i*bw+(j%2)*bw/2,j*bh);c.fillStyle=['#d8bf7e','#cfb470','#e0c88a'][Math.floor(R()*3)];c.fillRect(2,2,bw-4,bh-4);c.fillStyle='rgba(120,90,40,.35)';
+      for(let k=1;k<4;k++)c.fillRect(k*bw/4,4,3,bh-8);c.restore()}}})}
+// ---------------- HALI (4.3 × 3.3 m) ----------------
+function jpRugTex(st){const t=itCanvasTex('jprug_'+st,860,660,(c,w,h)=>{const B=(m,col)=>{c.fillStyle=col;c.fillRect(m,m,w-2*m,h-2*m)};
+  if(st==='washitsu'){// çivit mavisi sashiko kilim: asanoha deseni
+    B(0,'#1e2f4a');B(18,'#f4efe3');B(26,'#24365a');jpAsanoha(c,26,26,w-52,h-52,52,'rgba(244,239,227,.85)',2.2);
+    c.fillStyle='#24365a';c.fillRect(w/2-150,h/2-110,300,220);c.strokeStyle='#f4efe3';c.lineWidth=4;c.strokeRect(w/2-140,h/2-100,280,200);
+    c.fillStyle='#f4efe3';c.beginPath();c.arc(w/2,h/2,64,0,6.283);c.fill();c.fillStyle='#24365a';c.beginPath();c.arc(w/2,h/2,52,0,6.283);c.fill();
+    c.strokeStyle='#f4efe3';c.lineWidth=3;for(let i=0;i<5;i++){c.save();c.translate(w/2,h/2);c.rotate(i*Math.PI*2/5);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(-26,-26,0,-46);c.quadraticCurveTo(26,-26,0,0);c.stroke();c.restore()}}
+  else if(st==='sakura'){B(0,'#f4efe3');B(14,'#d9577a');B(24,'#fbe7ec');const R=itRand(3);
+    for(let i=0;i<70;i++)jpSakuraDraw(c,40+R()*(w-80),40+R()*(h-80),10+R()*18,R()<0.4?'#f39ab2':'#f7b6c8');
+    c.fillStyle='#fbf3e6';c.beginPath();c.ellipse(w/2,h/2,170,120,0,0,6.283);c.fill();c.strokeStyle='#d9577a';c.lineWidth=6;c.stroke();
+    c.strokeStyle='#5a3a2a';c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(w/2-140,h/2+60);c.quadraticCurveTo(w/2-20,h/2+10,w/2+20,h/2-40);c.quadraticCurveTo(w/2+60,h/2-80,w/2+140,h/2-70);c.stroke();
+    for(const [x,y,r] of [[-60,30,26],[10,-30,30],[80,-60,24],[120,-70,18],[-120,50,18]])jpSakuraDraw(c,w/2+x,h/2+y,r,'#f39ab2')}
+  else if(st==='umi'){B(0,'#f4efe3');c.save();c.beginPath();c.rect(14,14,w-28,h-28);c.clip();jpSeigaiha(c,w,h+60,72,'#2d4f7c','#f4efe3',null);c.restore();
+    c.fillStyle='#f4efe3';c.fillRect(110,110,w-220,h-220);c.strokeStyle='#2d4f7c';c.lineWidth=8;c.strokeRect(118,118,w-236,h-236);
+    const cx=w/2,by=h-150;c.fillStyle='#d9473a';c.beginPath();c.arc(cx+130,by-210,40,0,6.283);c.fill();
+    c.fillStyle='#3d5d8a';c.beginPath();c.moveTo(cx-230,by);c.lineTo(cx-60,by-190);c.lineTo(cx+60,by-190);c.lineTo(cx+230,by);c.fill();
+    c.fillStyle='#fbfaf5';c.beginPath();c.moveTo(cx-60,by-190);c.lineTo(cx+60,by-190);c.lineTo(cx+92,by-150);c.lineTo(cx+40,by-162);c.lineTo(cx,by-140);c.lineTo(cx-40,by-162);c.lineTo(cx-92,by-150);c.fill();
+    c.save();c.beginPath();c.rect(122,by-30,w-244,32);c.clip();c.translate(0,by-30);jpSeigaiha(c,w,60,36,'#2d4f7c','#f4efe3',null);c.restore()}
+  else{B(0,'#2f4a22');B(16,'#d8bf7e');B(24,'#4f7a2e');jpAsanoha(c,24,24,w-48,h-48,60,'rgba(216,191,126,.55)',2);
+    c.fillStyle='#e8efd6';c.fillRect(w/2-200,h/2-130,400,260);c.strokeStyle='#d8bf7e';c.lineWidth=8;c.strokeRect(w/2-200,h/2-130,400,260);
+    for(let i=0;i<5;i++)jpBamboo(c,w/2-150+i*75,h/2+126,h/2-126,16,['#7fa64a','#6b9a3e'][i%2],'#3f6a2a');
+    for(let i=0;i<10;i++){c.fillStyle='#4f7a2e';c.save();c.translate(w/2-150+(i%5)*75,h/2-80+Math.floor(i/5)*90);c.rotate(i%2?0.6:-0.6);c.beginPath();c.ellipse(24,0,28,6,0,0,6.283);c.fill();c.restore()}}
+  });return t}
+function jpRugMesh(st){const G=new THREE.Group();const mat=new THREE.MeshToonMaterial({map:jpRugTex(st),gradientMap:grad});
+  const top=new THREE.Mesh(new THREE.BoxGeometry(4.3,0.026,3.3),[itc(0xd9cbb0),itc(0xd9cbb0),mat,itc(0xd9cbb0),itc(0xd9cbb0),itc(0xd9cbb0)]);top.position.y=0.013;top.receiveShadow=true;G.add(top);
+  const fr=itc(st==='washitsu'?0xf4efe3:st==='sakura'?0xf4efe3:st==='umi'?0x2d4f7c:0xd8bf7e);
+  for(const s of [-1,1])for(let i=0;i<40;i++){const t=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.008,0.025),fr);t.position.set(s*(2.15+0.035),0.006,-1.6+i*(3.2/39));G.add(t)}return G}
+function jpApplySurfaces(st,rugObjs){const wt=jpWallTex(st);wt.repeat.set(1/2,1/3.4);wt.offset.set(0,0.2/3.4);wt.wrapT=THREE.ClampToEdgeWrapping;M.wall.map=wt;M.wall.color.setHex(0xffffff);M.wall.needsUpdate=true;
+  const ft=jpFloorTex(st);ft.repeat.set(ROOM_W/1.2,ROOM_D/1.2);M.floor.map=ft;M.floor.color.setHex(0xffffff);floorStrips.forEach(s=>s.visible=false);SHELL.strips=false;M.floor.needsUpdate=true;
+  if(rugObjs)for(const o of rugObjs)o.visible=false;if(window.__itRug){window.__itRug.parent&&window.__itRug.parent.remove(window.__itRug)}const R=jpRugMesh(st);R.position.set(1.35,0,1.35);scene.add(R);window.__itRug=R;return R}
+
+// =====================================================================
+// TabbyChef · FRANSA ZEMİN, DUVAR BOYASI & HALI (4 tema: haussmann, bistro, provence, versailles)
+// GEREKSİNİM: italya_koleksiyonu.js ve italya_zemin_duvar_hali.js önce eklenmiş olmalı.
+// Ekleme yöntemi italya_zemin_duvar_hali.js ile aynıdır, fonksiyon adları:
+//   frWallTex(tema) · frFloorTex(tema) · frRugMesh(tema) · frApplySurfaces(tema,[rug,rugIn])
+// Katalog önerisi: w_fr_<tema>, f_fr_<tema>, r_fr_<tema>.
+// =====================================================================
+// ================= FRANSA ZEMİN, DUVAR & HALI =================
+// 4 tema: haussmann (Paris dairesi), bistro (Paris bistrosu), provence (Provence evi), versailles (Versay sarayı)
+// GEREKSİNİM: italya_koleksiyonu.js, italya_zemin_duvar_hali.js (itCanvasTex, itMottle, itRand) önce eklenmiş olmalı.
+const FR_SURF_STYLES=['haussmann','bistro','provence','versailles'];
+function frMoldPanel(c,x,y,w,h,col,lw=4,inner=true){c.strokeStyle=col;c.lineWidth=lw;c.strokeRect(x,y,w,h);if(inner){c.lineWidth=lw*0.5;c.strokeRect(x+10,y+10,w-20,h-20)}
+  for(const [px,py] of [[x,y],[x+w,y],[x,y+h],[x+w,y+h]]){c.beginPath();c.arc(px,py,lw*1.2,0,6.283);c.fillStyle=col;c.fill()}}
+function frRosette(c,x,y,r,petal,center){for(let i=0;i<8;i++){c.save();c.translate(x,y);c.rotate(i*Math.PI/4);c.fillStyle=petal;c.beginPath();c.ellipse(0,-r*0.55,r*0.28,r*0.5,0,0,6.283);c.fill();c.restore()}c.fillStyle=center;c.beginPath();c.arc(x,y,r*0.3,0,6.283);c.fill()}
+function frWallTex(st){return itCanvasTex('frwall_'+st,512,872,(c,w,h)=>{const ym=m=>h-(m+0.2)/3.4*h;
+  if(st==='haussmann'){// kırık beyaz boiserie: kalıplı paneller, korniş, lambri
+    itMottle(c,w,h,'#f4efe6',['rgba(230,222,206,.18)','rgba(252,250,244,.3)'],30,25,60,11);
+    const mc='#d8ccb4';const y0=ym(0.9),y1=ym(2.75);c.fillStyle='#ece5d6';c.fillRect(0,y0,w,h-y0);c.fillStyle=mc;c.fillRect(0,y0-10,w,10);
+    for(let i=0;i<2;i++)frMoldPanel(c,i*w/2+22,y0+18,w/2-44,h-y0-36,mc,4,false);
+    for(let i=0;i<2;i++)frMoldPanel(c,i*w/2+30,y1+20,w/2-60,y0-y1-50,mc,5,true);
+    c.fillStyle='#e6dcc8';c.fillRect(0,ym(3.0),w,ym(2.78)-ym(3.0));c.fillStyle=mc;for(let i=0;i<w;i+=16)c.fillRect(i,ym(2.78)-8,10,8);c.fillRect(0,ym(3.0),w,6);
+    for(let i=0;i<2;i++)frRosette(c,i*w/2+w/4,(y1+20+y0-30)/2,18,'rgba(200,184,150,.7)','#c9a24a')}
+  else if(st==='bistro'){// bordo sıva, pirinç ray, koyu ahşap lambri, çerçeveli afişler
+    itMottle(c,w,h,'#7a1e24',['rgba(100,20,26,.3)','rgba(140,40,44,.25)'],40,25,70,21);
+    const y0=ym(1.1);c.fillStyle='#3a2216';c.fillRect(0,y0,w,h-y0);for(let i=0;i<4;i++)frMoldPanel(c,i*w/4+10,y0+16,w/4-20,h-y0-30,'#5a3420',4,false);c.fillStyle='#c9a24a';c.fillRect(0,y0-10,w,10);
+    c.fillStyle='#c9a24a';c.fillRect(0,ym(2.95),w,6);
+    const poster=(x,y,pw,ph,draw)=>{c.fillStyle='#2b1a10';c.fillRect(x-8,y-8,pw+16,ph+16);c.fillStyle='#c9a24a';c.fillRect(x-4,y-4,pw+8,ph+8);c.save();c.beginPath();c.rect(x,y,pw,ph);c.clip();draw(x,y,pw,ph);c.restore()};
+    poster(60,ym(2.6),150,200,(x,y,pw,ph)=>{c.fillStyle='#f2d38a';c.fillRect(x,y,pw,ph);c.fillStyle='#3a5a8a';c.beginPath();c.moveTo(x+pw/2,y+24);c.lineTo(x+pw/2+40,y+ph-50);c.lineTo(x+pw/2-40,y+ph-50);c.fill();c.fillStyle='#f2d38a';c.beginPath();c.arc(x+pw/2,y+ph-50,22,Math.PI,0);c.fill();
+      c.fillStyle='#a8202a';c.font='bold 26px serif';c.textAlign='center';c.fillText('PARIS',x+pw/2,y+ph-16)});
+    poster(300,ym(2.6),150,200,(x,y,pw,ph)=>{c.fillStyle='#1f4a3a';c.fillRect(x,y,pw,ph);c.fillStyle='#f4efe3';c.beginPath();c.ellipse(x+pw/2,y+70,34,40,0,0,Math.PI);c.fill();c.fillRect(x+pw/2-4,y+108,8,40);c.fillRect(x+pw/2-26,y+146,52,6);
+      c.fillStyle='#a8202a';c.beginPath();c.ellipse(x+pw/2,y+78,28,26,0,0,Math.PI);c.fill();c.fillStyle='#e8b23a';c.font='italic bold 24px serif';c.textAlign='center';c.fillText('Le Vin',x+pw/2,y+ph-16)})}
+  else if(st==='provence'){// sıcak hardal kireç sıva, lavanta şablon bordür, mavi lambri
+    itMottle(c,w,h,'#ecc878',['rgba(220,180,90,.25)','rgba(250,220,150,.3)'],50,30,70,31);
+    const yb=ym(2.55);c.fillStyle='rgba(255,255,255,.35)';c.fillRect(0,yb-50,w,70);for(let i=0;i<8;i++){const x=i*w/8+w/16;c.strokeStyle='#6b8a4a';c.lineWidth=3;for(const k of [-1,0,1]){c.beginPath();c.moveTo(x,yb+10);c.quadraticCurveTo(x+k*8,yb-20,x+k*14,yb-40);c.stroke();
+      c.fillStyle='#8a6ac8';for(let j=0;j<5;j++){c.beginPath();c.ellipse(x+k*(10+j*1.2),yb-24-j*5,3.5,5,0,0,6.283);c.fill()}}}
+    const y0=ym(0.9);c.fillStyle='#8aa4b8';c.fillRect(0,y0,w,h-y0);c.fillStyle='#6f8aa0';for(let x=0;x<w;x+=42)c.fillRect(x,y0,4,h-y0);c.fillStyle='#f4efe3';c.fillRect(0,y0-8,w,8)}
+  else{// versay: açık mavi-gri paneller, altın kalıplar
+    c.fillStyle='#dfe6ec';c.fillRect(0,0,w,h);const gd='#c9a24a';const y0=ym(0.85),y1=ym(2.8);
+    c.fillStyle='#cfd8e0';c.fillRect(0,y0,w,h-y0);for(let i=0;i<2;i++)frMoldPanel(c,i*w/2+20,y0+16,w/2-40,h-y0-30,gd,4,false);c.fillStyle=gd;c.fillRect(0,y0-12,w,12);
+    for(let i=0;i<2;i++){const x=i*w/2+34,pw=w/2-68,top=y1+24,ph=y0-top-40;c.strokeStyle=gd;c.lineWidth=6;c.beginPath();c.moveTo(x,top+ph);c.lineTo(x,top+40);c.quadraticCurveTo(x,top,x+40,top);c.lineTo(x+pw-40,top);c.quadraticCurveTo(x+pw,top,x+pw,top+40);c.lineTo(x+pw,top+ph);c.closePath();c.stroke();
+      c.lineWidth=2.5;c.strokeRect(x+14,top+50,pw-28,ph-64);frRosette(c,x+pw/2,top+24,14,gd,'#fbf3e6')}
+    c.fillStyle='#e9eef2';c.fillRect(0,0,w,y1+6);c.fillStyle=gd;c.fillRect(0,y1,w,8);for(let i=0;i<w;i+=24){c.beginPath();c.arc(i+12,y1-8,6,0,6.283);c.fill()}}})}
+// ---------------- ZEMİN (1.2 m) ----------------
+function frFloorTex(st){return itCanvasTex('frfloor_'+st,512,512,(c,w,h)=>{
+  if(st==='haussmann'){// macar balıksırtı (point de Hongrie) meşe parke
+    c.fillStyle='#8a5a32';c.fillRect(0,0,w,h);const R=itRand(7);const cols=['#c48a52','#b87c46','#cf9660','#b0763e'];const s=64,bh=24;
+    for(let col=0;col<w/s;col++)for(let j=-2;j<h/bh+2;j++){const x=col*s,y=j*bh;const left=col%2===0;c.fillStyle=cols[Math.floor(R()*4)];c.beginPath();
+      if(left){c.moveTo(x,y);c.lineTo(x+s,y+s*0.6);c.lineTo(x+s,y+s*0.6+bh);c.lineTo(x,y+bh)}else{c.moveTo(x,y+s*0.6);c.lineTo(x+s,y);c.lineTo(x+s,y+bh);c.lineTo(x,y+s*0.6+bh)}c.closePath();c.fill();c.strokeStyle='rgba(60,35,15,.45)';c.lineWidth=1.5;c.stroke()}}
+  else if(st==='bistro'){// beyaz altıgen mozaik, siyah çiçek motifleri
+    c.fillStyle='#3a3a3a';c.fillRect(0,0,w,h);const r=9,dx=r*Math.sqrt(3),dy=r*1.5;
+    for(let j=-1;j*dy<h+r;j++)for(let i=-1;i*dx<w+dx;i++){const x=i*dx+(j%2?dx/2:0),y=j*dy;const gi=Math.round(x/(dx*6)),gj=Math.round(y/(dy*6));const cx2=gi*dx*6,cy2=gj*dy*6;const d=Math.hypot(x-cx2,y-cy2);
+      c.fillStyle=d<dx*1.6?'#1e1e1e':'#f4f1ea';c.beginPath();for(let k=0;k<6;k++){const a=Math.PI/6+k*Math.PI/3;c.lineTo(x+Math.cos(a)*(r-1),y+Math.sin(a)*(r-1))}c.closePath();c.fill()}}
+  else if(st==='provence'){// altıgen terracotta tomette
+    c.fillStyle='#7a4a30';c.fillRect(0,0,w,h);const R=itRand(19);const r=42,dx=r*Math.sqrt(3),dy=r*1.5;
+    for(let j=-1;j*dy<h+r;j++)for(let i=-1;i*dx<w+dx;i++){const x=i*dx+(j%2?dx/2:0),y=j*dy;c.fillStyle=['#c0643c','#b45a34','#c8704a','#a85030'][Math.floor(R()*4)];c.beginPath();for(let k=0;k<6;k++){const a=Math.PI/6+k*Math.PI/3;c.lineTo(x+Math.cos(a)*(r-3),y+Math.sin(a)*(r-3))}c.closePath();c.fill();
+      c.fillStyle='rgba(255,220,180,.08)';c.beginPath();c.arc(x-8,y-8,14,0,6.283);c.fill()}}
+  else{// siyah-beyaz çapraz mermer dama
+    const n=4,s=w/n;c.save();c.translate(w/2,h/2);c.rotate(Math.PI/4);const R=itRand(29);for(let i=-6;i<6;i++)for(let j=-6;j<6;j++){c.fillStyle=(i+j)%2?'#f2efe8':'#2a2a2e';c.fillRect(i*s*0.7071*1.0,j*s*0.7071,s*0.7071,s*0.7071);
+      c.strokeStyle=(i+j)%2?'rgba(150,145,138,.3)':'rgba(255,255,255,.12)';c.lineWidth=1.2;c.beginPath();c.moveTo(i*s*0.7071+R()*20,j*s*0.7071);c.lineTo(i*s*0.7071+R()*40,j*s*0.7071+s*0.7071);c.stroke()}c.restore()}})}
+// ---------------- HALI (4.3 × 3.3 m) ----------------
+function frRugTex(st){const t=itCanvasTex('frrug_'+st,860,660,(c,w,h)=>{const B=(m,col)=>{c.fillStyle=col;c.fillRect(m,m,w-2*m,h-2*m)};
+  if(st==='haussmann'){// Aubusson: krem zemin, gül kurusu bordür, pastel çiçek madalyon
+    B(0,'#c78a8a');B(14,'#f4ead8');B(48,'#c78a8a');B(58,'#f6efe2');
+    for(let i=0;i<22;i++){frRosette(c,40+i*(w-80)/21,31,10,'#e6b0a8','#8aa86a');frRosette(c,40+i*(w-80)/21,h-31,10,'#e6b0a8','#8aa86a')}for(let i=0;i<16;i++){frRosette(c,31,40+i*(h-80)/15,10,'#e6b0a8','#8aa86a');frRosette(c,w-31,40+i*(h-80)/15,10,'#e6b0a8','#8aa86a')}
+    c.strokeStyle='#c78a8a';c.lineWidth=6;c.beginPath();c.ellipse(w/2,h/2,200,150,0,0,6.283);c.stroke();c.lineWidth=2;c.beginPath();c.ellipse(w/2,h/2,180,132,0,0,6.283);c.stroke();
+    frRosette(c,w/2,h/2,70,'#e6a0a0','#c9a24a');for(let i=0;i<8;i++){const a=i*Math.PI/4;frRosette(c,w/2+Math.cos(a)*120,h/2+Math.sin(a)*86,22,['#9ab6d8','#e6b0a8','#b8d4a0'][i%3],'#f6efe2')}
+    for(const [x,y] of [[120,110],[w-120,110],[120,h-110],[w-120,h-110]])frRosette(c,x,y,36,'#e6b0a8','#8aa86a')}
+  else if(st==='bistro'){B(0,'#1e1e1e');B(14,'#c9a24a');B(22,'#8a1e24');B(70,'#c9a24a');B(76,'#7a1a20');
+    for(let i=0;i<12;i++)for(let j=0;j<9;j++){const x=100+i*60,y=100+j*52;if(x>w-90||y>h-90)continue;c.fillStyle='rgba(201,162,74,.35)';c.beginPath();c.moveTo(x,y-14);c.lineTo(x+14,y);c.lineTo(x,y+14);c.lineTo(x-14,y);c.closePath();c.fill()}
+    for(let i=0;i<30;i++){c.fillStyle='#c9a24a';c.fillRect(46+i*(w-92)/29-4,44,8,8);c.fillRect(46+i*(w-92)/29-4,h-52,8,8)}}
+  else if(st==='provence'){// Provence basması: sarı zemin, mavi motif, lacivert bordür
+    B(0,'#2c4a7a');B(16,'#f2c84a');B(30,'#2c4a7a');B(70,'#f4d268');
+    for(let i=0;i<14;i++)for(let j=0;j<10;j++){const x=100+i*52+(j%2?26:0),y=96+j*50;if(x>w-90||y>h-90)continue;c.fillStyle='#2c4a7a';for(let k=0;k<4;k++){c.save();c.translate(x,y);c.rotate(k*Math.PI/2);c.beginPath();c.ellipse(0,-8,4,8,0,0,6.283);c.fill();c.restore()}c.fillStyle='#c8443a';c.beginPath();c.arc(x,y,3.5,0,6.283);c.fill()}
+    for(let i=0;i<34;i++){const x=40+i*(w-80)/33;c.fillStyle='#f4d268';c.beginPath();c.arc(x,50,8,0,6.283);c.arc(x,h-50,8,0,6.283);c.fill()}}
+  else{// Savonnerie: lacivert zemin, altın bordür, çiçekli madalyon
+    B(0,'#c9a24a');B(10,'#1e2a4a');B(40,'#c9a24a');B(48,'#24345a');
+    for(let i=0;i<20;i++){frRosette(c,60+i*(w-120)/19,26,9,'#c9a24a','#8a2a3a');frRosette(c,60+i*(w-120)/19,h-26,9,'#c9a24a','#8a2a3a')}
+    c.fillStyle='#2e406a';c.beginPath();c.ellipse(w/2,h/2,240,170,0,0,6.283);c.fill();c.strokeStyle='#c9a24a';c.lineWidth=5;c.stroke();
+    frRosette(c,w/2,h/2,80,'#c97a8a','#c9a24a');for(let i=0;i<12;i++){const a=i*Math.PI/6;frRosette(c,w/2+Math.cos(a)*170,h/2+Math.sin(a)*118,20,['#e6b0a8','#c9a24a','#9ab6d8'][i%3],'#24345a')}
+    for(const [x,y] of [[130,120],[w-130,120],[130,h-120],[w-130,h-120]]){frRosette(c,x,y,34,'#c9a24a','#c97a8a')}}
+  });return t}
+function frRugMesh(st){const G=new THREE.Group();const mat=new THREE.MeshToonMaterial({map:frRugTex(st),gradientMap:grad});
+  const top=new THREE.Mesh(new THREE.BoxGeometry(4.3,0.026,3.3),[itc(0xd9cbb0),itc(0xd9cbb0),mat,itc(0xd9cbb0),itc(0xd9cbb0),itc(0xd9cbb0)]);top.position.y=0.013;top.receiveShadow=true;G.add(top);
+  const fr=itc(st==='haussmann'?0xf4ead8:st==='bistro'?0xc9a24a:st==='provence'?0xf2c84a:0xc9a24a);
+  for(const s of [-1,1])for(let i=0;i<40;i++){const t=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.008,0.025),fr);t.position.set(s*(2.15+0.035),0.006,-1.6+i*(3.2/39));G.add(t)}return G}
+function frApplySurfaces(st,rugObjs){const wt=frWallTex(st);wt.repeat.set(1/2,1/3.4);wt.offset.set(0,0.2/3.4);wt.wrapT=THREE.ClampToEdgeWrapping;M.wall.map=wt;M.wall.color.setHex(0xffffff);M.wall.needsUpdate=true;
+  const ft=frFloorTex(st);ft.repeat.set(ROOM_W/1.2,ROOM_D/1.2);M.floor.map=ft;M.floor.color.setHex(0xffffff);floorStrips.forEach(s=>s.visible=false);SHELL.strips=false;M.floor.needsUpdate=true;
+  if(rugObjs)for(const o of rugObjs)o.visible=false;if(window.__itRug){window.__itRug.parent&&window.__itRug.parent.remove(window.__itRug)}const R=frRugMesh(st);R.position.set(1.35,0,1.35);scene.add(R);window.__itRug=R;return R}
+
+// =====================================================================
+// TabbyChef · ROYAL PASS · ZEMİN, DUVAR BOYASI & HALI (3 tema: kraliyet, kristal, galaksi)
+// GEREKSİNİM: italya_koleksiyonu.js ve italya_zemin_duvar_hali.js önce eklenmiş olmalı.
+// Ekleme yöntemi italya_zemin_duvar_hali.js ile aynıdır, fonksiyon adları:
+//   rpWallTex(tema) · rpFloorTex(tema) · rpRugMesh(tema) · rpApplySurfaces(tema,[rug,rugIn])
+// Katalog önerisi: w_rp_<tema>, f_rp_<tema>, r_rp_<tema>.
+// =====================================================================
+// ================= ROYAL PASS · ZEMİN, DUVAR & HALI =================
+// 3 seçkin tema: kraliyet, kristal, galaksi
+// GEREKSİNİM: italya_koleksiyonu.js ve italya_zemin_duvar_hali.js (itCanvasTex, itMottle, itRand) önce eklenmiş olmalı.
+const RP_SURF_STYLES=['kraliyet','kristal','galaksi'];
+function rpMold(c,x,y,w,h,col,lw=4,inner=true){c.strokeStyle=col;c.lineWidth=lw;c.strokeRect(x,y,w,h);if(inner){c.lineWidth=lw*0.5;c.strokeRect(x+10,y+10,w-20,h-20)}for(const [px,py] of [[x,y],[x+w,y],[x,y+h],[x+w,y+h]]){c.fillStyle=col;c.beginPath();c.arc(px,py,lw*1.3,0,6.283);c.fill()}}
+function rpDamaskDraw(c,x0,y0,w,h,bg,fg,s=64){c.fillStyle=bg;c.fillRect(x0,y0,w,h);c.save();c.beginPath();c.rect(x0,y0,w,h);c.clip();c.fillStyle=fg;
+  for(let j=-1;j*s<h+s;j++)for(let i=-1;i*s<w+s;i++){const x=x0+i*s+(j%2?s/2:0),y=y0+j*s;c.save();c.translate(x,y);c.beginPath();c.moveTo(0,-s*0.38);c.bezierCurveTo(s*0.2,-s*0.28,s*0.24,-s*0.06,0,s*0.1);c.bezierCurveTo(-s*0.24,-s*0.06,-s*0.2,-s*0.28,0,-s*0.38);c.fill();
+    c.beginPath();c.moveTo(0,s*0.08);c.bezierCurveTo(s*0.16,s*0.14,s*0.26,s*0.28,0,s*0.4);c.bezierCurveTo(-s*0.26,s*0.28,-s*0.16,s*0.14,0,s*0.08);c.fill();for(const k of [-1,1]){c.beginPath();c.ellipse(k*s*0.24,0,s*0.07,s*0.15,k*0.6,0,6.283);c.fill()}c.restore()}c.restore()}
+function rpStarsDraw(c,x0,y0,w,h,seed,n){let a=seed;const R=()=>{a=(a*9301+49297)%233280;return a/233280};
+  for(let i=0;i<5;i++){const x=x0+R()*w,y=y0+R()*h,r=80+R()*120;const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,['rgba(200,90,200,.35)','rgba(80,160,230,.3)','rgba(120,80,220,.32)'][i%3]);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(x0,y0,w,h)}
+  for(let i=0;i<n;i++){const x=x0+R()*w,y=y0+R()*h,s=R();c.globalAlpha=0.35+s*0.65;c.fillStyle=s>0.92?'#fff3b0':'#ffffff';c.beginPath();c.arc(x,y,s>0.96?2.6:s>0.75?1.5:0.8,0,6.283);c.fill()}c.globalAlpha=1}
+function rpStar5(c,x,y,r,col){c.fillStyle=col;c.beginPath();for(let i=0;i<10;i++){const rr=i%2?r*0.42:r,a=i*Math.PI/5-Math.PI/2;c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}c.closePath();c.fill()}
+function rpFlake(c,x,y,r,col,lw=3){c.strokeStyle=col;c.lineWidth=lw;for(let k=0;k<6;k++){const a=k*Math.PI/3;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);c.stroke();for(const t of [0.45,0.72]){const bx=x+Math.cos(a)*r*t,by=y+Math.sin(a)*r*t;for(const s of [-1,1]){c.beginPath();c.moveTo(bx,by);c.lineTo(bx+Math.cos(a+s*0.8)*r*0.24,by+Math.sin(a+s*0.8)*r*0.24);c.stroke()}}}}
+function rpWallTex(st){return itCanvasTex('rpwall_'+st,512,872,(c,w,h)=>{const ym=m=>h-(m+0.2)/3.4*h;const gd='#d6aa5a';
+  if(st==='kraliyet'){const y0=ym(0.95),y1=ym(2.8);rpDamaskDraw(c,0,0,w,y0,'#6a1020','rgba(214,170,90,.38)',72);
+    for(let i=0;i<2;i++)rpMold(c,i*w/2+26,y1+24,w/2-52,y0-y1-48,gd,6,true);
+    c.fillStyle='#2a0a10';c.fillRect(0,y0,w,h-y0);for(let i=0;i<2;i++)rpMold(c,i*w/2+20,y0+18,w/2-40,h-y0-34,gd,4,false);c.fillStyle=gd;c.fillRect(0,y0-12,w,12);
+    c.fillStyle='#3a0c16';c.fillRect(0,0,w,y1);c.fillStyle=gd;c.fillRect(0,y1-6,w,10);for(let i=0;i<8;i++){const x=i*w/8+w/16,y=y1-44;c.beginPath();c.moveTo(x-18,y+16);c.lineTo(x-20,y-6);c.lineTo(x-8,y+4);c.lineTo(x,y-12);c.lineTo(x+8,y+4);c.lineTo(x+20,y-6);c.lineTo(x+18,y+16);c.closePath();c.fill()}}
+  else if(st==='kristal'){const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#d4ecfa');g.addColorStop(1,'#a8d2ee');c.fillStyle=g;c.fillRect(0,0,w,h);const sv='#6f94c0';const y0=ym(0.95),y1=ym(2.8);
+    for(let i=0;i<2;i++){rpMold(c,i*w/2+26,y1+24,w/2-52,y0-y1-48,sv,5,true);rpFlake(c,i*w/2+w/4,(y1+y0)/2,70,'rgba(255,255,255,.98)',7);rpFlake(c,i*w/2+w/4,(y1+y0)/2,70,'rgba(100,150,200,.6)',2)}
+    let a=7;const R=()=>{a=(a*9301+49297)%233280;return a/233280};for(let i=0;i<26;i++)rpFlake(c,R()*w,R()*y1,6+R()*8,'rgba(255,255,255,.8)',1.5);
+    c.fillStyle='#7fb0d8';c.fillRect(0,y0,w,h-y0);for(let i=0;i<4;i++)rpMold(c,i*w/4+12,y0+16,w/4-24,h-y0-30,'#eaf6fd',4,false);c.fillStyle='#f6fbff';c.fillRect(0,y0-10,w,10);
+    c.fillStyle=sv;c.fillRect(0,y1-4,w,8);for(let i=0;i<w;i+=22){c.beginPath();c.moveTo(i,y1+4);c.lineTo(i+11,y1+4);c.lineTo(i+5.5,y1+22+((i*7)%10));c.closePath();c.fillStyle='rgba(200,230,250,.95)';c.fill()}}
+  else{c.fillStyle='#0c0e26';c.fillRect(0,0,w,h);rpStarsDraw(c,0,0,w,h,11,420);const y0=ym(0.9);
+    for(let i=0;i<5;i++){let a=i*91+3;const R=()=>{a=(a*9301+49297)%233280;return a/233280};const pts=[];for(let k=0;k<5;k++)pts.push([R()*w,ym(1.2+R()*1.9)]);c.strokeStyle='rgba(120,220,255,.45)';c.lineWidth=1.5;c.beginPath();pts.forEach((p,k)=>k?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.stroke();pts.forEach(p=>rpStar5(c,p[0],p[1],5,'#fff3b0'))}
+    c.fillStyle='#b070ff';c.beginPath();c.arc(w*0.25,ym(2.5),26,0,6.283);c.fill();c.strokeStyle='#5ae0ff';c.lineWidth=4;c.beginPath();c.ellipse(w*0.25,ym(2.5),46,12,-0.3,0,6.283);c.stroke();
+    c.fillStyle='#f3e6b0';c.beginPath();c.arc(w*0.78,ym(2.75),22,0,6.283);c.fill();c.fillStyle='#0c0e26';c.beginPath();c.arc(w*0.78+10,ym(2.75)-6,20,0,6.283);c.fill();
+    c.fillStyle='#14163a';c.fillRect(0,y0,w,h-y0);c.fillStyle='#5ae0ff';c.fillRect(0,y0,w,5);c.fillStyle='#b070ff';c.fillRect(0,y0+14,w,3);for(let i=0;i<4;i++){c.strokeStyle='rgba(90,224,255,.5)';c.lineWidth=2;c.strokeRect(i*w/4+14,y0+34,w/4-28,h-y0-50)}}})}
+function rpFloorTex(st){return itCanvasTex('rpfloor_'+st,512,512,(c,w,h)=>{
+  if(st==='kraliyet'){// siyah-beyaz değil: siyah ve krem mermer dama, köşelerde altın kakma
+    const n=4,s=w/n;let a=3;const R=()=>{a=(a*9301+49297)%233280;return a/233280};for(let i=0;i<n;i++)for(let j=0;j<n;j++){c.fillStyle=(i+j)%2?'#1a1418':'#efe6d2';c.fillRect(i*s,j*s,s,s);
+      c.strokeStyle=(i+j)%2?'rgba(214,170,90,.45)':'rgba(150,130,100,.25)';c.lineWidth=1.4;c.beginPath();let x=i*s+R()*s,y=j*s;c.moveTo(x,y);while(y<j*s+s){x+=(R()-0.5)*14;y+=8;c.lineTo(x,y)}c.stroke()}
+    for(let i=0;i<=n;i++)for(let j=0;j<=n;j++){c.fillStyle='#d6aa5a';c.beginPath();c.moveTo(i*s,j*s-16);c.lineTo(i*s+16,j*s);c.lineTo(i*s,j*s+16);c.lineTo(i*s-16,j*s);c.closePath();c.fill();c.fillStyle='#7a1424';c.beginPath();c.arc(i*s,j*s,5,0,6.283);c.fill()}}
+  else if(st==='kristal'){c.fillStyle='#e2eef8';c.fillRect(0,0,w,h);let a=5;const R=()=>{a=(a*9301+49297)%233280;return a/233280};const n=2,s=w/n;
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){c.fillStyle=(i+j)%2?'#d0e4f4':'#f2f8fc';c.fillRect(i*s,j*s,s,s);c.strokeStyle='rgba(140,170,200,.3)';c.lineWidth=1.2;for(let v=0;v<3;v++){c.beginPath();let x=i*s+R()*s,y=j*s;c.moveTo(x,y);while(y<j*s+s){x+=(R()-0.5)*16;y+=10;c.lineTo(x,y)}c.stroke()}
+      c.strokeStyle='#6f94c0';c.lineWidth=4;c.beginPath();c.moveTo(i*s+s/2,j*s+18);c.lineTo(i*s+s-18,j*s+s/2);c.lineTo(i*s+s/2,j*s+s-18);c.lineTo(i*s+18,j*s+s/2);c.closePath();c.stroke();rpFlake(c,i*s+s/2,j*s+s/2,40,'#5f9ccc',3.5)}
+    c.strokeStyle='rgba(120,150,190,.45)';c.lineWidth=2;for(let k=0;k<=n;k++){c.beginPath();c.moveTo(k*s,0);c.lineTo(k*s,h);c.stroke();c.beginPath();c.moveTo(0,k*s);c.lineTo(w,k*s);c.stroke()}}
+  else{// galaksi taşı: cilalı lacivert-mor "galaxy" granit levhalar; yumuşak bulutsu damarlar, ince ışıltı, seyrek altın yıldız kakma (ızgara ve neon yok)
+    let a=29;const R=()=>{a=(a*9301+49297)%233280;return a/233280};c.fillStyle='#464c92';c.fillRect(0,0,w,h);
+    const soft=(x,y,r,col)=>{for(const dx of [-w,0,w])for(const dy of [-h,0,h]){const g=c.createRadialGradient(x+dx,y+dy,0,x+dx,y+dy,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(0,0,w,h)}};
+    soft(120,140,220,'rgba(140,128,214,.55)');soft(390,360,240,'rgba(100,140,200,.5)');soft(360,110,160,'rgba(170,140,214,.4)');soft(110,410,170,'rgba(120,120,200,.45)');
+    for(let v=0;v<7;v++){c.strokeStyle=`rgba(${v%2?'200,190,240':'170,200,235'},${0.12+R()*0.14})`;c.lineWidth=1+R()*2.2;c.beginPath();let x=R()*w,y=-20;c.moveTo(x,y);while(y<h+20){x+=(R()-0.5)*40;y+=10+R()*16;c.lineTo(x,y)}c.stroke()}
+    for(let i=0;i<1400;i++){const x=R()*w,y=R()*h,z=R();c.globalAlpha=z>0.985?0.95:0.18+z*0.3;c.fillStyle=z>0.985?'#fff2c8':z>0.6?'#dfe4ff':'#9aa2d8';c.fillRect(x,y,z>0.985?2.2:1.1,z>0.985?2.2:1.1)}c.globalAlpha=1;
+    const n=2,s=w/n;c.strokeStyle='rgba(20,22,60,.55)';c.lineWidth=2;for(let k=0;k<=n;k++){c.beginPath();c.moveTo(k*s,0);c.lineTo(k*s,h);c.stroke();c.beginPath();c.moveTo(0,k*s);c.lineTo(w,k*s);c.stroke()}
+    c.strokeStyle='rgba(255,255,255,.08)';c.lineWidth=1;for(let k=0;k<=n;k++){c.beginPath();c.moveTo(k*s+2,0);c.lineTo(k*s+2,h);c.stroke();c.beginPath();c.moveTo(0,k*s+2);c.lineTo(w,k*s+2);c.stroke()}
+    for(let i=0;i<=n;i++)for(let j=0;j<=n;j++){const x=i*s,y=j*s;c.fillStyle='#c9a24a';c.beginPath();for(let k=0;k<8;k++){const r=k%2?4:11,an=k*Math.PI/4;c.lineTo(x+Math.cos(an)*r,y+Math.sin(an)*r)}c.closePath();c.fill()}}})}
+function rpRugTex(st){const t=itCanvasTex('rprug_'+st,860,660,(c,w,h)=>{const B=(m,col)=>{c.fillStyle=col;c.fillRect(m,m,w-2*m,h-2*m)};const gd='#d6aa5a';
+  if(st==='kraliyet'){B(0,gd);B(12,'#3a0c16');B(30,gd);B(38,'#7a1424');rpDamaskDraw(c,38,38,w-76,h-76,'#7a1424','rgba(214,170,90,.25)',80);
+    for(let i=0;i<24;i++){const x=48+i*(w-96)/23;rpStar5(c,x,21,7,gd);rpStar5(c,x,h-21,7,gd)}
+    c.fillStyle='#5a0e1a';c.beginPath();c.ellipse(w/2,h/2,190,150,0,0,6.283);c.fill();c.strokeStyle=gd;c.lineWidth=8;c.stroke();c.lineWidth=3;c.beginPath();c.ellipse(w/2,h/2,170,132,0,0,6.283);c.stroke();
+    const o={x:w/2,y:h/2+10};c.fillStyle='#e8c060';c.beginPath();c.moveTo(o.x-90,o.y+30);c.lineTo(o.x-100,o.y-50);c.lineTo(o.x-50,o.y-8);c.lineTo(o.x,o.y-75);c.lineTo(o.x+50,o.y-8);c.lineTo(o.x+100,o.y-50);c.lineTo(o.x+90,o.y+30);c.closePath();c.fill();c.fillStyle='#c9993a';c.fillRect(o.x-92,o.y+22,184,26);
+    for(const [x,col] of [[-50,'#2a5ab0'],[0,'#c8203a'],[50,'#2a8a5a']]){c.fillStyle=col;c.beginPath();c.arc(o.x+x,o.y+35,8,0,6.283);c.fill()}for(const [x,y] of [[-100,-50],[0,-75],[100,-50]]){c.fillStyle='#fbf3e6';c.beginPath();c.arc(o.x+x,o.y+y,9,0,6.283);c.fill()}
+    for(const [x,y] of [[110,100],[w-110,100],[110,h-100],[w-110,h-100]]){c.fillStyle=gd;c.beginPath();c.arc(x,y,26,0,6.283);c.fill();c.fillStyle='#7a1424';c.beginPath();c.arc(x,y,14,0,6.283);c.fill()}}
+  else if(st==='kristal'){B(0,'#4f7fb0');B(10,'#f6fbff');B(26,'#6f94c0');B(32,'#9fcbea');let a=17;const R=()=>{a=(a*9301+49297)%233280;return a/233280};
+    for(let i=0;i<900;i++){c.strokeStyle=`rgba(230,244,252,${0.25+R()*0.35})`;c.lineWidth=1;const x=40+R()*(w-80),y=40+R()*(h-80);c.beginPath();c.moveTo(x,y);c.lineTo(x+(R()-0.5)*6,y+6);c.stroke()}
+    c.fillStyle='#d8ecf8';c.beginPath();c.ellipse(w/2,h/2,200,160,0,0,6.283);c.fill();c.strokeStyle='#ffffff';c.lineWidth=8;c.stroke();rpFlake(c,w/2,h/2,120,'#4f7fb0',9);rpFlake(c,w/2,h/2,120,'#ffffff',3);
+    for(let i=0;i<10;i++){const an=i/10*Math.PI*2;rpFlake(c,w/2+Math.cos(an)*290,h/2+Math.sin(an)*215,24,'#ffffff',4)}
+    for(let i=0;i<30;i++){const x=40+i*(w-80)/29;c.fillStyle='#bfe2f6';c.beginPath();c.moveTo(x,18);c.lineTo(x+6,26);c.lineTo(x,34);c.lineTo(x-6,26);c.closePath();c.fill();c.beginPath();c.moveTo(x,h-34);c.lineTo(x+6,h-26);c.lineTo(x,h-18);c.lineTo(x-6,h-26);c.closePath();c.fill()}}
+  else{B(0,'#5ae0ff');B(8,'#0c0e26');B(18,'#b070ff');B(24,'#14163a');rpStarsDraw(c,24,24,w-48,h-48,31,500);
+    c.save();c.translate(w/2,h/2);for(let arm=0;arm<3;arm++){for(let i=0;i<220;i++){const t=i/220;const ang=arm*Math.PI*2/3+t*4.2;const r=10+t*230;const x=Math.cos(ang)*r*1.25,y=Math.sin(ang)*r*0.9;c.globalAlpha=0.5*(1-t)+0.15;
+      c.fillStyle=['#b070ff','#5ae0ff','#f2a6e8'][arm];c.beginPath();c.arc(x+(Math.sin(i*7)*8),y+(Math.cos(i*5)*8),3+(1-t)*7,0,6.283);c.fill()}}c.globalAlpha=1;const g=c.createRadialGradient(0,0,0,0,0,60);g.addColorStop(0,'#fffbe0');g.addColorStop(1,'rgba(255,240,180,0)');c.fillStyle=g;c.beginPath();c.arc(0,0,60,0,6.283);c.fill();c.restore();
+    for(const [x,y] of [[90,80],[w-90,80],[90,h-80],[w-90,h-80]])rpStar5(c,x,y,16,'#fff3b0')}
+  });return t}
+function rpRugMesh(st){const G=new THREE.Group();const mat=st==='galaksi'?new THREE.MeshBasicMaterial({map:rpRugTex(st)}):new THREE.MeshToonMaterial({map:rpRugTex(st),gradientMap:grad});
+  const side=itc(st==='kraliyet'?0xd6aa5a:st==='kristal'?0xa8c0dc:0x5ae0ff);const top=new THREE.Mesh(new THREE.BoxGeometry(4.3,0.026,3.3),[side,side,mat,side,side,side]);top.position.y=0.013;top.receiveShadow=true;G.add(top);
+  const fr=itc(st==='kraliyet'?0xd6aa5a:st==='kristal'?0xf6fbff:0x5ae0ff);for(const s of [-1,1])for(let i=0;i<40;i++){const t=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.008,0.025),fr);t.position.set(s*(2.15+0.035),0.006,-1.6+i*(3.2/39));G.add(t)}return G}
+function rpApplySurfaces(st,rugObjs){const wt=rpWallTex(st);wt.repeat.set(1/2,1/3.4);wt.offset.set(0,0.2/3.4);wt.wrapT=THREE.ClampToEdgeWrapping;M.wall.map=wt;M.wall.color.setHex(0xffffff);M.wall.needsUpdate=true;
+  const ft=rpFloorTex(st);ft.repeat.set(ROOM_W/1.2,ROOM_D/1.2);M.floor.map=ft;M.floor.color.setHex(0xffffff);floorStrips.forEach(s=>s.visible=false);SHELL.strips=false;M.floor.needsUpdate=true;
+  if(rugObjs)for(const o of rugObjs)o.visible=false;if(window.__itRug){window.__itRug.parent&&window.__itRug.parent.remove(window.__itRug)}const R=rpRugMesh(st);R.position.set(1.35,0,1.35);scene.add(R);window.__itRug=R;return R}
+
 // ================= TASARIM PAKETİ BAĞLANTISI (V145) =================
 // Paket dosyaları (t01…t25_*.js) oyuncunun hazırladığı "TabbyChef Tasarım Paketi"nden DEĞİŞTİRİLMEDEN alınır: İtalya, Türkiye, Japonya, Fransa
 // ülke paketleri ve Royal Pass setleri (Kraliyet, Kristal, Galaksi). Yeni paket sürümü gelince t*.js dosyaları aynen değiştirilir.
@@ -11021,6 +11514,37 @@ for(const [k,N,td,cd] of PK_RP){const ch='c_rp_'+k;
   pkAdd({id:'t_rp_'+k,kind:'table',chair:ch,name:N+' masası',price:0,rp:k,desc:td+' Royal Pass ödülü.'});
   pkAdd({id:'t_four_rp_'+k,kind:'table',seats:4,chair:ch,name:'Dört kişilik '+N+' masası',price:0,rp:k,desc:td+' Royal Pass ödülü.'});
   pkAdd({id:ch,kind:'chair',name:N+' koltuğu',price:0,rp:k,desc:cd+' Royal Pass ödülü.'})}
+
+// ---------- 2) ZEMİN, DUVAR, HALI ----------
+// Duvar/zemin: katalog kaydında tex:'<tema>' varsa doku paketten gelir (duvar 2 m × 3,4 m, zemin 1,2 m kare); düz boyalar eskisi gibi
+// oyunun kendi duvar dokusunu renklendirir. Halı: oyundaki sabit halı kaldırıldığı için paket halıları yerleştirilebilir düz dekor
+// ("Desenli kilim" gibi: masaların altına serilir, taşınır, döndürülür; 4,3 × 3,3 m).
+const PK_SURF={it:{wall:itWallTex,floor:itFloorTex,rug:itRugMesh},tr:{wall:trWallTex,floor:trFloorTex,rug:trRugMesh},jp:{wall:jpWallTex,floor:jpFloorTex,rug:jpRugMesh},
+  fr:{wall:frWallTex,floor:frFloorTex,rug:frRugMesh},rp:{wall:rpWallTex,floor:rpFloorTex,rug:rpRugMesh}};
+const WALL_BASE_MAP=M.wall.map;
+{const _aw=applyWall;applyWall=function(id){const c=CAT[id];
+    if(c&&c.tex&&PK_SURF[c.pk]){const t=PK_SURF[c.pk].wall(c.tex);t.repeat.set(1/2,1/3.4);t.offset.set(0,0.2/3.4);t.wrapS=THREE.RepeatWrapping;t.wrapT=THREE.ClampToEdgeWrapping;t.needsUpdate=true;
+      if(M.wall.map!==t){M.wall.map=t;M.wall.needsUpdate=true}M.wall.color.setHex(0xffffff);return}
+    if(M.wall.map!==WALL_BASE_MAP){M.wall.map=WALL_BASE_MAP;M.wall.needsUpdate=true}return _aw.apply(this,arguments)}}
+{const _af=applyFloor;applyFloor=function(id){const c=CAT[id];if(c&&c.tex&&PK_SURF[c.pk]&&!FLOOR_TEX[id]){const t=PK_SURF[c.pk].floor(c.tex);t.repeat.set(ROOM_W/1.2,ROOM_D/1.2);FLOOR_TEX[id]=t}return _af.apply(this,arguments)}}
+// market karosu: dokunun kendisinden küçük resim (duvarda yerden 2 m'lik bölüm)
+{const _sw=swatch;swatch=function(id){const c=CAT[id];if(!c||!c.tex||!PK_SURF[c.pk])return _sw.apply(this,arguments);const key='s:'+id;if(TH.cache.has(key))return TH.cache.get(key);let u='';
+    try{const cv=document.createElement('canvas');cv.width=cv.height=128;const x=cv.getContext('2d'),img=(c.kind==='wall'?PK_SURF[c.pk].wall(c.tex):PK_SURF[c.pk].floor(c.tex)).image,w=img.width,h=img.height;
+      if(c.kind==='wall')x.drawImage(img,0,Math.max(0,h-w-h*0.2/3.4),w,w,0,0,128,128);else x.drawImage(img,0,0,w,h,0,0,128,128);u=cv.toDataURL()}catch(e){console.warn('paket karo',id,e)}
+    TH.cache.set(key,u);return u}}
+// temalar: [kod, görünen ad]; sıra = açılma sırası
+const PK_THEMES={it:[['toscana','Toskana'],['amalfi','Amalfi'],['venezia','Venedik'],['pompei','Pompei']],tr:[['bodrum','Bodrum'],['kapadokya','Kapadokya'],['selcuklu','Selçuklu'],['osmanli','Osmanlı']],
+  jp:[['bambu','Bambu'],['washitsu','Tatami odası'],['umi','Deniz dalgası'],['sakura','Kiraz çiçeği']],fr:[['provence','Provence'],['bistro','Bistro'],['haussmann','Haussmann'],['versailles','Versay']]};
+const PK_SURF_PRICE={wall:[60,80,100,120],floor:[90,110,130,150],rug:[120,150,180,210]},PK_SURF_LVL={wall:[2,4,6,8],floor:[3,5,7,9],rug:[2,4,6,8]};
+const pkRug=(ev,k)=>{DECOR_BUILD['r_'+ev+'_'+k]=()=>PK_SURF[ev].rug(k)};
+for(const ev in PK_THEMES)PK_THEMES[ev].forEach(([k,N],i)=>{
+  pkAdd({id:'w_'+ev+'_'+k,kind:'wall',tex:k,color:0xffffff,name:N+' duvarı',price:PK_SURF_PRICE.wall[i],ev,evLvl:PK_SURF_LVL.wall[i],desc:PK_COUNTRY[ev]+' paketinden desenli duvar.'});
+  pkAdd({id:'f_'+ev+'_'+k,kind:'floor',tex:k,name:N+' zemini',price:PK_SURF_PRICE.floor[i],ev,evLvl:PK_SURF_LVL.floor[i],desc:PK_COUNTRY[ev]+' paketinden desenli zemin.'});
+  pkRug(ev,k);pkAdd({id:'r_'+ev+'_'+k,kind:'decor',flat:true,rot:true,half:[2.15,1.65],name:N+' halısı',price:PK_SURF_PRICE.rug[i],ev,evLvl:PK_SURF_LVL.rug[i],desc:'Büyük salon halısı (4,3 × 3,3 m). Üzerinden yürünür; masaların altına serilir.'})});
+for(const [k,N] of PK_RP){
+  pkAdd({id:'w_rp_'+k,kind:'wall',tex:k,color:0xffffff,name:N+' duvarı',price:0,rp:k,desc:'Royal Pass ödülü.'});
+  pkAdd({id:'f_rp_'+k,kind:'floor',tex:k,name:N+' zemini',price:0,rp:k,desc:'Royal Pass ödülü.'});
+  pkRug('rp',k);pkAdd({id:'r_rp_'+k,kind:'decor',flat:true,rot:true,half:[2.15,1.65],name:N+' halısı',price:0,rp:k,desc:'Büyük salon halısı (4,3 × 3,3 m). Royal Pass ödülü.'})}
 
 // ---------- kayıt: getirilen / ödül verilen eşyalar markette açık ----------
 {const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{if(!S.rpGot)S.rpGot={};for(const id in S.rpGot)if(S.rpGot[id]&&CAT[id])CAT[id].lvl=1;
