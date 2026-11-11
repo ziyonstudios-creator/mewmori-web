@@ -707,9 +707,7 @@ function buildKitchenParts(){const {bx,bw,bz,bd,bh,cx,cz,cw,cd,ch}=KIT;
  cyl(0.15,0.15,0.32,M.glass,cx+0.05,ch+0.18,cz+0.06,16);cyl(0.14,0.14,0.26,M.wood,cx+0.05,ch+0.15,cz+0.06,12);cyl(0.16,0.16,0.04,M.wood,cx+0.05,ch+0.36,cz+0.06,12);
  // TESLİM bölümü (sağ uç): ahşap teslim pedi + zil
  box(0.5,0.02,0.5,M.woodDark,cx+1.35,ch+0.03,cz-0.02);cyl(0.035,0.045,0.03,M.gold,cx+1.55,ch+0.055,cz+0.18,12);sph(0.012,M.gold,cx+1.55,ch+0.08,cz+0.18);
- // menü tahtası (tezgahın sağ ucunda, ayaklı)
- box(0.6,0.45,0.04,M.dark,cx+cw/2+0.55,0.72,cz+0.3,{ry:-0.4});box(0.66,0.51,0.02,M.wood,cx+cw/2+0.55,0.72,cz+0.32,{ry:-0.4});{const mx=cx+cw/2+0.55,mz=cz+0.3,ca=Math.cos(-0.4),sa=Math.sin(-0.4);for(const e of [-0.27,0.27]){cyl(0.02,0.02,0.52,M.woodDark,mx+ca*e+sa*-0.03,0.26,mz-sa*e+ca*-0.03,6)}}
- obst(cx+cw/2+0.25,cx+cw/2+0.85,cz+0.05,cz+0.55);
+ // (V138) tezgâhın sağ ucundaki ayaklı menü tahtası kaldırıldı (kullanıcı isteği); orası artık boş zemin
 }
 // --- değiştirilebilir ekipman görselleri (seviye 1 = mevcut görünüm) ---
 const EQUIP_BUILD={
@@ -3141,7 +3139,8 @@ function scheduleBar(i,t0){const fi=Math.floor(i/8)%4,sec=FORM[fi],b=i%8;if(i%32
   if(b===7&&fi===3){kal(72,at8(t0,6),0.05)}}
 function musicTick(){if(!AU.playing||!AU.gen)return;const ctx=AU.ctx;while(AU.next<ctx.currentTime+0.4){scheduleBar(AU.bar,AU.next);AU.bar++;AU.next+=4*BEAT}}
 // ---- fon müziği: oyuncunun gönderdiği parça (kesintisiz döngü); yüklenemezse üretilen müzik yedek olarak çalar ----
-const TRACK={url:'music/meow_brew.mp3',buf:null,src:null,gain:null,state:'none',vol:0.4};
+const TRACK={url:'music/sunny_morning.mp3',   // V138: yeni fon müziği ("Sunny Morning at the Cat Cafe", oyuncunun gönderdiği .m4a → mp3 128k)
+  buf:null,src:null,gain:null,state:'none',vol:0.4};
 function loadTrack(){if(TRACK.state!=='none')return;TRACK.state='loading';
   fetch(TRACK.url).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(ab=>new Promise((res,rej)=>AU.ctx.decodeAudioData(ab,res,rej))).then(buf=>{
     // kodlayıcının başa/sona eklediği sessiz dolguyu bul → döngü sınırları
@@ -5332,7 +5331,7 @@ function staffIdleTick(dt){if(!IDLE.on||!S.created)return;if(!CASH_CHAIR)cashCha
 
 // ================= KARE ZEMİN (V137) =================
 // Kafenin zemini (bahçe dahil) 50 cm'lik KARELERE bölünür. Her eşya belli sayıda kare kaplar (iki kişilik masa 1×3, dört kişilik 3×3,
-// saksı 1×1, kasa 3×3, tezgâh 9×5 …) ve yalnızca karelere oturur; bir karede tek eşya durur.
+// saksı 1×1, kasa 3×3, tezgâh 8×5 …) ve yalnızca karelere oturur; bir karede tek eşya durur.
 // Kareler yalnız Düzenle ve yerleştirme (satın alma) modunda görünür (setMode → gridShow).
 // Konumlar hâlâ 25 cm'nin katıdır: tek sayıda kare kaplayan eşyanın ortası kare ortasına, çift sayıda kaplayanınki kare çizgisine gelir;
 // bu yüzden eski kayıtlar bozulmaz (kareye oturmayan eski eşyalar açılışta en yakın kareye alınır: p74 tileAlignAll).
@@ -5932,6 +5931,9 @@ function layoutCheck(k,c,boot){k=k||KP;c=c||CP;const L=layBase();
   const kz=L.B.filter(b=>b.b==='k').map(b=>boxW(b,k,K_PIV)),cz=noC?[]:L.B.filter(b=>b.b==='c').map(b=>boxW(b,c,C_PIV));
   for(const b of kb)if(b.minX<RM.x0-0.02||b.maxX>RM.x1+0.02||b.minZ<RM.z0-0.02||b.maxZ>RM.z1+0.02)return 'Tezgâh odanın dışına taşıyor';
   for(const b of cb)if(b.minX<RM.x0-0.02||b.maxX>RM.x1+0.02||b.minZ<RM.z0-0.02||b.maxZ>RM.z1+0.02)return 'Kasa odanın dışına taşıyor';
+  // V138: tezgâh yalnızca sırtı bir duvara (arka ya da sol) yaslıyken kurulabilir. Eski kayıtlar açılışta bozulmasın diye yalnız tezgâh
+  // taşınırken/denetlenirken uygulanır (kasa ya da kapı taşınırken eski serbest duran tezgâh engel olmaz; açılışta kWallFix düzeltir).
+  if(!boot&&(LAY.on==='k'||k!==KP)&&!shelfWall(k))return 'Tezgâhın sırtı bir duvara yaslanmalı';
   for(const a of kb)for(const b of cb)if(boxOv(a,b,-0.1))return 'Tezgâh ile kasa üst üste geliyor';
   for(const a of kb)for(const b of cz)if(boxOv(a,b,-0.2))return 'Tezgâh kasanın önünü kapatıyor';
   for(const a of cb)for(const b of kz)if(boxOv(a,b,-0.2))return 'Kasa tezgâhın önünü kapatıyor';
@@ -9420,8 +9422,17 @@ function vmFurn(){if(!PL||!PL.rec||CAT[PL.rec.id].kind==='walldecor'){vmHide();r
 // ---- tezgâh / kasa: kare adımıyla, bloğun sol-arka köşesi kare çizgisine oturur (duvara tam yaslanabilsin) ----
 const blkBase=b=>b==='k'?KOBST_BASE.concat([K_LANE]):COBST_BASE.slice();
 function blkBB(b,r){const piv=b==='k'?K_PIV:C_PIV;let a=1e9,c=-1e9,d=1e9,e=-1e9;for(const q of (b==='k'?KOBST_BASE:COBST_BASE)){const w=boxW(q,{x:0,z:0,r},piv);a=Math.min(a,w.minX);c=Math.max(c,w.maxX);d=Math.min(d,w.minZ);e=Math.max(e,w.maxZ)}return {minX:a,maxX:c,minZ:d,maxZ:e}}
+// V138: tezgâh yalnız duvara yaslı durur. Sırtı arka duvara (r=0) ya da sol duvara (r=90°) bakan iki yön geçerlidir; öbür ikisinde sırt açık kenara bakar.
+function kWallOf(r){try{const s=boxW(layBase().shelf,{x:0,z:0,r},K_PIV),B=blkBB('k',r);if(s.maxX-s.minX>s.maxZ-s.minZ)return Math.abs(s.minZ-B.minZ)<0.2?'back':null;return Math.abs(s.minX-B.minX)<0.2?'left':null}catch(e){return null}}
 function blkSnap(b,x,z,r){const B=blkBB(b,r),ax=RM.x0-B.minX,az=RM.z0-B.minZ,mi=Math.max(0,Math.floor((RM.x1-RM.x0-(B.maxX-B.minX))/TILE+0.07)),mk=Math.max(0,Math.floor((RM.z1-RM.z0-(B.maxZ-B.minZ))/TILE+0.07));
-  return {x:tR2(ax+TILE*Math.max(0,Math.min(mi,Math.round((x-ax)/TILE)))),z:tR2(az+TILE*Math.max(0,Math.min(mk,Math.round((z-az)/TILE))))}}   // oda içinde kalır
+  const q={x:tR2(ax+TILE*Math.max(0,Math.min(mi,Math.round((x-ax)/TILE)))),z:tR2(az+TILE*Math.max(0,Math.min(mk,Math.round((z-az)/TILE))))};   // oda içinde kalır
+  if(b==='k'){const w=kWallOf(r);if(w==='back')q.z=tR2(az);else if(w==='left')q.x=tR2(ax)}   // tezgâh duvar boyunca kayar
+  return q}
+// eski kayıtlarda serbest duran tezgâh: en yakın uygun duvar yerine alınır (bulunamazsa olduğu yerde kalır; taşınınca kural uygulanır)
+function kWallFix(){try{if(shelfWall(KP)||(typeof buildOn==='function'&&buildOn()))return false;const P0={...KP};let best=null;
+    for(const r of [0,1.570796]){const w=kWallOf(r);if(!w)continue;const B=blkBB('k',r),ax=RM.x0-B.minX,az=RM.z0-B.minZ,len=w==='back'?RM.x1-RM.x0-(B.maxX-B.minX):RM.z1-RM.z0-(B.maxZ-B.minZ);
+      for(let i=0;i*TILE<=len+0.03;i++){const T=w==='back'?{x:tR2(ax+i*TILE),z:tR2(az),r}:{x:tR2(ax),z:tR2(az+i*TILE),r};if(layoutCheck(T,CP))continue;const d=Math.hypot(T.x-P0.x,T.z-P0.z)+(Math.abs(r-P0.r)<0.01?0:2);if(!best||d<best.d)best={T,d}}}
+    if(!best)return false;Object.assign(KP,best.T);kPose();kObstSync();kShelfVis();layApplyLive();S.layout={k:{...KP},c:{...CP},w:OP.win.wall==='back'?OP.win.t:WIN.x,op:JSON.parse(JSON.stringify(OP))};TOCC.bv='';markDirty();saveNow();return true}catch(e){console.warn('tezgâh duvara',e);return false}}
 function vmBlock(b){vmEnsure();const piv=b==='k'?K_PIV:C_PIV,P0={...(b==='k'?KP:CP)},B=blkBB(b,P0.r),ax=RM.x0-B.minX,az=RM.z0-B.minZ,w=B.maxX-B.minX,d=B.maxZ-B.minZ,base=blkBase(b),items=[];
   for(let i=0;i*TILE+w<=RM.x1-RM.x0+0.03;i++)for(let k=0;k*TILE+d<=RM.z1-RM.z0+0.03;k++){const T={x:tR2(ax+i*TILE),z:tR2(az+k*TILE),r:P0.r};
     items.push({x:piv.x+T.x,z:piv.z+T.z,t:()=>!layoutCheck(b==='k'?T:KP,b==='c'?T:CP),cells:()=>tileCells(base.map(q=>boxW(q,T,piv)))})}
@@ -9455,13 +9466,17 @@ const tsMsg=(t,bad)=>{const m=$('placeMsg');if(m){m.className='msg'+(bad?' bad':
 // ---- tezgâh / kasa / kapı / pencere: seç → Taşı → sürükle → Yerleştir ----
 const MV={b:null,d:null};
 const lyName=b=>b==='k'?'Tezgâh':b==='c'?'Kasa':(OP_NAME[b]||'');
-const mvHint=b=>isOp(b)?`${lyName(b)} · duvar boyunca sürükle`:`${lyName(b)} · sürükle, yeşil karelere bırak`;
+const mvHint=b=>isOp(b)||b==='k'?`${lyName(b)} · duvar boyunca sürükle`:`${lyName(b)} · sürükle, yeşil karelere bırak`;
 function mvStart(){const b=LAY.on;if(!b)return;MV.b=b;MV.d=null;controls.enabled=false;try{sfx('tap')}catch(e){}try{if(isOp(b))vmOpening(b);else vmBlock(b)}catch(e){console.warn('uygunluk haritası',e)}layBar()}
 function mvStop(){MV.b=null;MV.d=null;vmHide();if(UI.mode==='edit')controls.enabled=true}
 function mvCancel(){layCancel();mvStop();drawEditBar()}
 function mvRefresh(){LAY.why=layoutCheck();const ok=$('lyOk2');if(ok)ok.disabled=!!LAY.why;tsMsg(LAY.why||mvHint(MV.b),!!LAY.why);try{gridFoot()}catch(e){}}
-function mvRotate(){const b=MV.b;if(!b)return;layRotate();   // blok 90° döner / açıklık öbür duvara geçer
-  if(!isOp(b)){const P=b==='k'?KP:CP,q=blkSnap(b,P.x,P.z,P.r);if(q.x!==P.x||q.z!==P.z){P.x=q.x;P.z=q.z;layPoseMeshes(b);layMark()}try{vmBlock(b)}catch(e){}}
+const QR=[0,1.570796,3.141593,4.712389];   // çeyrek dönüşler (2π'ye yuvarlanıp birikmesin)
+function mvRotate(){const b=MV.b;if(!b)return;
+  if(b==='k'){const P=KP;for(let n=0;n<4;n++){P.r=QR[(Math.round(P.r/(Math.PI/2))+1)%4];if(kWallOf(P.r))break}   // tezgâh: arka duvar ↔ sol duvar
+    const q=blkSnap(b,P.x,P.z,P.r);P.x=q.x;P.z=q.z;layPoseMeshes(b);layMark();try{sfx('tap')}catch(e){}try{vmBlock(b)}catch(e){}layBar();return}
+  layRotate();   // kasa 90° döner / açıklık öbür duvara geçer
+  if(!isOp(b)){const P=b==='k'?KP:CP;P.r=QR[Math.round(P.r/(Math.PI/2))%4];const q=blkSnap(b,P.x,P.z,P.r);if(q.x!==P.x||q.z!==P.z){P.x=q.x;P.z=q.z;layPoseMeshes(b);layMark()}try{vmBlock(b)}catch(e){}}
   layBar()}
 function mvCommit(){const why=layoutCheck();if(why){toast(why,ic('close'),2200);return}
   if(!layMoved()){layCancel();mvStop();drawEditBar();return}
@@ -9495,7 +9510,7 @@ function mvMove(e){const D=MV.d,b=MV.b;if(!D||!b||D.id!==e.pointerId)return;
      $('placeRow').innerHTML=`<button class="btn light" type="button" id="lyMove">${ic('move')}Taşı</button><button class="btn green" type="button" id="lyDone">${ic('check')}Bitti</button>`;
      $('lyMove').onclick=mvStart;$('lyDone').onclick=()=>{layCancel();drawEditBar()}}
    else{tsMsg(LAY.why||mvHint(b),!!LAY.why);
-     $('placeRow').innerHTML=`<button class="btn light" type="button" id="lyRot2">${ic('rotate')}${op?'Öbür duvar':'Döndür'}</button><button class="btn red" type="button" id="lyNo2">${ic('close')}Vazgeç</button><button class="btn green" type="button" id="lyOk2" ${LAY.why?'disabled':''}>${ic('check')}Yerleştir</button>`;
+     $('placeRow').innerHTML=`<button class="btn light" type="button" id="lyRot2">${ic('rotate')}${op||b==='k'?'Öbür duvar':'Döndür'}</button><button class="btn red" type="button" id="lyNo2">${ic('close')}Vazgeç</button><button class="btn green" type="button" id="lyOk2" ${LAY.why?'disabled':''}>${ic('check')}Yerleştir</button>`;
      $('lyRot2').onclick=mvRotate;$('lyNo2').onclick=mvCancel;$('lyOk2').onclick=mvCommit}
    gridFoot()}catch(e){console.warn('taşıma çubuğu',e)}return r}}
 // eşya çubuğu: adın yanında kare ölçüsü; seçim değişince kareler yenilenir
@@ -9677,7 +9692,7 @@ ${G}.edmode #y2 .k3mini${NX},${G}.edmode #y2 .k3chips${NX}{visibility:hidden!imp
 `;document.head.appendChild(st)}
 
 // ---- açılışta: eski kayıtlardaki eşyalar karelere oturtulur (bir kez denenir; uymayan olduğu yerde kalır) ----
-{let n=0;const iv=setInterval(()=>{if(++n>120){clearInterval(iv);return}try{if(!started)return;clearInterval(iv);if(S.created&&S.tut==='done'&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!customers.length)tileAlignAll()}catch(e){console.warn('kareye oturtma',e)}},400)}
+{let n=0;const iv=setInterval(()=>{if(++n>120){clearInterval(iv);return}try{if(!started)return;clearInterval(iv);if(S.created&&S.tut==='done'&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!customers.length){kWallFix();tileAlignAll()}}catch(e){console.warn('kareye oturtma',e)}},400)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
