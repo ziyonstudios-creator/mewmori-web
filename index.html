@@ -1012,7 +1012,7 @@ function buildCash(){if(CG){scene.remove(CG);disposeTree(CG)}for(const o of COBS
     obst(x-w/2-0.06,x+w/2+0.06,z-d/2-0.06,z+d/2+0.06);obst(x-0.6,x+0.6,CASH.stand.z-0.3,CASH.stand.z+0.25)}finally{PARENT=P0}
   COBST_BASE=OBST.splice(n0);cObstSync()}
 buildCash();
-const NO_BUILD=[{minX:-ROOM_W/2,maxX:-2.9,minZ:0.95,maxZ:2.65},{minX:-ROOM_W/2,maxX:-0.85,minZ:-1.7,maxZ:-0.6},{minX:-ROOM_W/2,maxX:-2.6,minZ:-1.7,maxZ:0.15},
+const NO_BUILD=[{minX:-ROOM_W/2,maxX:-2.9,minZ:0.95,maxZ:2.65},{minX:-ROOM_W/2,maxX:-0.85,minZ:-1.7,maxZ:-0.6},   // kapı girişi · tezgâh önü (V141: garson köşesi yasağı kaldırıldı)
   {minX:-0.45,maxX:2.6,minZ:-3.7,maxZ:-1.15}];   // kasa + ödeme sırası
 
 // ---------- SABİT DEKOR ----------
@@ -1797,7 +1797,7 @@ function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
     for(const o of OBST.concat(furnBoxes(exUid)))if(inside(p,o,0.12))return 'Sandalyenin yanında yürüme payı kalmalı'}
   // erişim: kapıdan tüm masalara, garson köşesine ve tezgaha yol kalmalı
   const g=makeGrid(OBST.concat(furnBoxes(exUid),boxes));const seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
-  const need=[staffSeat.A,PREP_SPOT,PICKUP_SPOT,...points];for(const [u,R] of FURN)if(u!==exUid&&R.table)for(const s of R.table.seats)need.push(s.A,s.serve);
+  const need=[PREP_SPOT,PICKUP_SPOT,...points];for(const [u,R] of FURN)if(u!==exUid&&R.table)for(const s of R.table.seats)need.push(s.A,s.serve);
   for(const p of need)if(!pointReachable(g,seen,p))return 'Bu konum bir yolu kapatıyor';
   return null}
 
@@ -1914,13 +1914,16 @@ async function waitSpotClear(w,p){const near=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z)<
   while(n++<60&&WSTAFF.some(o=>o!==w&&(near(o.ch.pos,p)||(o.ch.path.length&&o.ch.goal&&near(o.ch.goal,p)))))await sleep(0.2)}
 const atSpot=(ch,p,e=0.05)=>!ch.path.length&&Math.hypot(ch.pos.x-p.x,ch.pos.z-p.z)<e;
 async function waiterLoop(w){let idle=0;const ch=w.ch;
-  while(true){if(w.edIn){w.edAck=1;await sleep(0.2);continue}   // V137 düzenleme oturumu: bekler, sonra kapıdan girer (p75)
-    const P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);
-    if(stTired(w)){await staffRest(w,P,yaw);continue}   // yorgun: molaya çıkar, işleri diğer garsonlar alır
-    if(w.i===0&&!jobs.length&&idle>16&&atSpot(ch,P)&&await idleChat(w)){idle=0;continue}
-    if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w);stDrain(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w)}   // bir iş hata verse de garson çalışmaya devam eder
-    else if(!atSpot(ch,P)){const ok=await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(ok&&!jobs.length)await ch.face(yaw)}
-    else{await sleep(0.1);idle+=0.1;if(idle>(w.wanderAt||(w.wanderAt=7+Math.random()*7))&&!jobs.length){idle=0;w.wanderAt=0;if(Math.random()<0.7)await waiterWander(w,P,yaw);else{await ch.doFor('IDLE_LOOK',1.2);if(!jobs.length)await ch.face(yaw)}}}}}
+  while(true){if(w.edIn){w.edAck=1;w.spot=null;await sleep(0.2);continue}   // V137 düzenleme oturumu: bekler, sonra kapıdan girer (p75)
+    // V141: sabit garson köşesi yok. Boşken yerleşimden hesaplanan boş bir yerde durur, ara ara başka bir boş yere yürür (p76).
+    if(stTired(w)){const P=wSpot(w);await staffRest(w,P,wYaw(P));continue}   // yorgun: bulunduğu boş yerde molaya çıkar, işleri diğer garsonlar alır
+    if(w.i===0&&!jobs.length&&idle>16&&w.spot&&atSpot(ch,w.spot,0.1)&&await idleChat(w)){idle=0;continue}
+    if(jobs.length){idle=0;const j=jobs.shift();await ch.standUp();try{await j.run(w);stDrain(w)}catch(err){console.error('garson işi',err);const t=ch.tray;if(t){t.visible=false}ch.carry=null}freeSpot('prep',w);freeSpot('pick',w);
+      w.spot=null;w.spotFree=false}   // iş bitti: en yakın boş yere çekilir (bir iş hata verse de garson çalışmaya devam eder)
+    else{const P=wSpot(w);
+      if(!atSpot(ch,P,0.08)){const ok=await ch.walkTo(P.x,P.z,{interrupt:()=>jobs.length>0});if(ok&&!jobs.length)await ch.face(wYaw(P));else if(!jobs.length)await sleep(0.2)}
+      else{await sleep(0.1);idle+=0.1;if(idle>(w.wanderAt||(w.wanderAt=7+Math.random()*8))&&!jobs.length){idle=0;w.wanderAt=0;
+          if(Math.random()<0.7){const q=wPick(w,true);if(q){w.spot=q;w.spotFree=false}}else{await ch.doFor('IDLE_LOOK',1.2);if(!jobs.length)await ch.face(wYaw(P))}}}}}}
 const yosunLoop=()=>{};   // eski ad (artık her garson kendi döngüsünde)
 function enqueue(name,run){jobs.push({name,run})}
 
@@ -3584,7 +3587,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
   const th=r=>{try{return `<img src="${charThumb(r)}" alt="">`}catch(e){return ic('paw')}};
   return [
    {t:'Hoş geldin!',art:`<div style="width:min(78%,320px)">${logoSVG('still')}</div>`,body:`<p class="lead">TabbyChef, kedi şeflerin dünyası! Bu sıcacık dünyada kedilerin yaşar, çalışır ve misafir ağırlar. Sen de onların kafesini işletiyorsun: müşterilere servis yap, para kazan, kafeni büyüt ve yeni tarifler keşfet. Acele yok; kedilerin dünyasında her şey kendi hızında akar.</p>`},
-   {t:'Ekibin',art:`${th('waiter')}${th('barista')}${th('cashier')}`,body:`<ul class="gsteps"><li>${ic('tray')}<span><b>${w}</b> garsondur: siparişleri alır, tepsiyle servis yapar. Boşken köşesinde ayakta bekler.</span></li>
+   {t:'Ekibin',art:`${th('waiter')}${th('barista')}${th('cashier')}`,body:`<ul class="gsteps"><li>${ic('tray')}<span><b>${w}</b> garsondur: siparişleri alır, tepsiyle servis yapar. Boşken kafenin boş bir yerinde bekler, ara ara dolaşır.</span></li>
      <li>${ic('chef')}<span><b>${b}</b> baristadır: tezgah arkasında kahve, çay, tatlı ve yemekleri hazırlar.</span></li><li>${ic('coin')}<span><b>${c}</b> kasiyerdir: yemeğini bitiren müşteriler kasaya gelip ona öder.</span></li></ul>`},
    {t:'Servis nasıl yapılır?',art:`${ic('menu')}<span class="ar">→</span>${ic('chef')}<span class="ar">→</span>${ic('tray')}<span class="ar">→</span>${ic('coin')}`,body:`<ul class="gsteps">
      <li><span class="n">1</span><span>Müşteri kapıdan girer ve boş bir masaya oturur.</span></li>
@@ -4020,7 +4023,8 @@ function custTag(c){if(c.vip){c.tag=`${ic('star')}VIP gurme`;toast('<b>VIP gurme
 
 // ---------- Poşa ile Yosun boşta muhabbet eder ----------
 async function idleChat(w){const b=BSTAFF[0];if(!b||b.busy||b.job||baristaQ.length||!b.idleAt||!atSpot(b.ch,b.idleAt,0.1)||customers.some(c=>PENDING.has(c.state))||Math.random()<0.5)return false;
-  const ch=w.ch,P=W_WAIT[w.i],yaw=Math.atan2(1.2-P.x,0.4-P.z);await ch.faceTo(b.ch.pos.x,b.ch.pos.z);if(jobs.length)return true;
+  const ch=w.ch,P=w.spot||ch.pos,yaw=wYaw(P);if(Math.hypot(b.ch.pos.x-ch.pos.x,b.ch.pos.z-ch.pos.z)>5)return false;   // V141: garson nerede duruyorsa oradan (yakınsa) selamlaşır
+  await ch.faceTo(b.ch.pos.x,b.ch.pos.z);if(jobs.length)return true;
   b.ch.faceTo(ch.pos.x,ch.pos.z);staffBubble(ch,'heart',2.4);staffBubble(b.ch,'heart',2.2,0.6);
   await Promise.all([ch.doFor('Wave_One_Hand',1.2),(async()=>{await sleep(0.5);if(!b.busy&&!b.job)await b.ch.doFor('IDLE_TALK',1.4);if(!b.busy&&!b.job)b.ch.face(KP.r)})()]);
   if(!jobs.length)await ch.doFor('IDLE_LOOK',1.6);if(!jobs.length)await ch.face(yaw);return true}
@@ -5951,9 +5955,9 @@ const poseEq=(a,b)=>a.x===b.x&&a.z===b.z&&((a.r-b.r)%(2*Math.PI)+2*Math.PI)%(2*M
 // temel (dönüşümsüz) değerlerin kopyası: ilk kullanımda bir kez alınır
 function layBase(){if(LAY.base)return LAY.base;const P=[],B=[];const seen=new Set();const pt=(o,b)=>{if(!o||seen.has(o))return;seen.add(o);P.push({o,b,x:o.x,z:o.z,yaw:o.yaw})};
   for(const k in PST)pt(PST[k],'k');pt(POSA_HOME,'k');for(const k in PLATE_SPOT)pt(PLATE_SPOT[k],'k');pt(PREP_SPOT,'k');pt(PICKUP_SPOT,'k');pt(PREP_ANCHOR,'k');pt(PICKUP_ANCHOR,'k');
-  PICKUP_SLOTS.forEach(v=>pt(v,'k'));PREP_SPOTS.forEach(v=>pt(v,'k'));PICK_SPOTS.forEach(v=>pt(v,'k'));B_HOME.forEach(v=>pt(v,'k'));W_WAIT.slice(1).forEach(v=>pt(v,'k'));pt(BOX_COUNTER.stand,'k');pt(BOX_COUNTER.top,'k');
+  PICKUP_SLOTS.forEach(v=>pt(v,'k'));PREP_SPOTS.forEach(v=>pt(v,'k'));PICK_SPOTS.forEach(v=>pt(v,'k'));B_HOME.forEach(v=>pt(v,'k'));pt(BOX_COUNTER.stand,'k');pt(BOX_COUNTER.top,'k');
   QLINE.forEach(v=>pt(v,'c'));QSPOTS.forEach(v=>pt(v,'c'));pt(COURIER_IDLE,'c');
-  for(const [i,b] of [[1,'k'],[2,'k'],[3,'c']])B.push({o:NO_BUILD[i],b,minX:NO_BUILD[i].minX,maxX:NO_BUILD[i].maxX,minZ:NO_BUILD[i].minZ,maxZ:NO_BUILD[i].maxZ});
+  for(const [i,b] of [[1,'k'],[2,'c']])B.push({o:NO_BUILD[i],b,minX:NO_BUILD[i].minX,maxX:NO_BUILD[i].maxX,minZ:NO_BUILD[i].minZ,maxZ:NO_BUILD[i].maxZ});
   return LAY.base={P,B,shelf:{minX:KIT0.bx-KIT.bw/2-0.05,maxX:KIT0.bx+KIT.bw/2+0.05,minZ:-4.05,maxZ:-3.9}}}
 // bir pozu mantığa uygula (aynı pozla tekrar çağrılabilir)
 function layApply(){const L=layBase();for(const p of L.P){const P=p.b==='k'?KP:CP,piv=p.b==='k'?K_PIV:C_PIV;const w=blkW(P,piv,p.x,p.z);p.o.x=w.x;p.o.z=w.z;if(p.yaw!=null)p.o.yaw=p.yaw+P.r}
@@ -6001,8 +6005,8 @@ function layoutCheck(k,c,boot){k=k||KP;c=c||CP;const L=layBase();
   // erişim: kapıdan tezgâh önüne, teslim noktalarına, kasa sırasına ve garson köşesine yol kalmalı
   const g=makeGrid(fixed.concat(kb,cb,furnBoxes()));const seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
   const P=pt=>blkW(k,K_PIV,pt.x,pt.z),Q=pt=>blkW(c,C_PIV,pt.x,pt.z),Lb=L.P;
-  const need=[staffSeat.A,...Lb.filter(p=>p.b==='k'&&(PREP_SPOTS.includes(p.o)||PICK_SPOTS.includes(p.o))).map(P),...(noC?[]:[...Lb.filter(p=>p.b==='c'&&QLINE.includes(p.o)).map(Q),Q({x:CASH.x,z:-1.98})])];
-  for(const p of need)if(!pointReachable(g,seen,p))return 'Bu yerleşim bir yolu kapatıyor (tezgâh önü, kasa sırası ya da garson köşesi)';
+  const need=[...Lb.filter(p=>p.b==='k'&&(PREP_SPOTS.includes(p.o)||PICK_SPOTS.includes(p.o))).map(P),...(noC?[]:[...Lb.filter(p=>p.b==='c'&&QLINE.includes(p.o)).map(Q),Q({x:CASH.x,z:-1.98})])];
+  for(const p of need)if(!pointReachable(g,seen,p))return 'Bu yerleşim bir yolu kapatıyor (tezgâh önü ya da kasa sırası)';
   // çalışanların arkaya geçtiği yer de açık olmalı
   // (çalışanlar dar aralıktan da geçer: bu denetim daha ince bir payla yapılır)
   if(!noC){const sh=b=>({minX:b.minX+0.16,maxX:b.maxX-0.16,minZ:b.minZ+0.16,maxZ:b.maxZ-0.16});const g2=makeGrid(fixed.concat(kb,cb,furnBoxes()).map(sh));
@@ -6233,7 +6237,7 @@ function warpCh(ch,x,z,yaw){const r=ch.arrive;ch.arrive=null;ch.path=[];ch.vel=0
 function layApplyLive(){layBase();buildCash();layApply();S.layout={k:{...KP},c:{...CP},w:WIN.x};
   for(const b of BSTAFF){const h=B_HOME[b.i]||B_HOME[0];warpCh(b.ch,h.x,h.z,KP.r);b.idleAt=null}
   for(const k of CSTAFF){const R=REGS[k.i]||REGS[0];warpCh(k.ch,R.stand.x,R.stand.z,CP.r)}
-  for(const w of WSTAFF){const P=W_WAIT[w.i]||W_WAIT[0];warpCh(w.ch,P.x,P.z)}markDirty();saveNow()}
+  for(const w of WSTAFF){w.spot=null;w.spotFree=false;const P=wPick(w,false)||W_WAIT[w.i]||W_WAIT[0];w.spot=P;warpCh(w.ch,P.x,P.z)}markDirty();saveNow()}
 function buildTable(){const T=START_TABLES[0];const rec={uid:++S.uid,id:T[2],x:T[0],z:T[1],rot:T[3],chair:'c_cushion',col:0};S.owned[T[2]]=true;
   setMode('cafe');startPlacement({rec,isNew:true,price:0})}
 // aday seçimi: iki ücretsiz 1★ aday; seçince görünüm düzenleyicisi açılır
@@ -9698,7 +9702,7 @@ function edCurtainText(){const t=ED.el&&ED.el.querySelector('i');if(!t)return;co
 async function edWalkIn(o,role,p,yaw,i){const ch=o.ch;ED.entering++;try{
     warpCh(ch,p.x,p.z,yaw);await sleep(0.05+0.15*i);
     await ch.walkTo(DOOR_IN.x,DOOR_IN.z,{direct:true});if(i===0)try{sfx('door')}catch(e){}
-    if(role==='w'){o.edIn=false;return}   // garson: kendi döngüsü köşesine yürütür
+    if(role==='w'){try{const q=wPick(o,false,PREP_SPOTS[o.i%PREP_SPOTS.length]);if(q){o.spot=q;o.spotFree=false}}catch(e){}o.edIn=false;return}   // garson: tezgâh önüne yakın boş bir yere yürür (kendi döngüsüyle)
     if(role==='b'){const h=B_HOME[o.i]||B_HOME[0],g1=kW(-0.72,-2.12),g2=kW(-0.72,PZ);   // tezgâhın açık ucundan arkaya
       let ok=false;try{ok=astar(DOOR_IN.x,DOOR_IN.z,g1.x,g1.z).length>0}catch(e){}
       if(ok){await ch.walkTo(g1.x,g1.z);await ch.walkTo(g2.x,g2.z,{direct:true});await bGo(o,{x:h.x,z:h.z})}else warpCh(ch,h.x,h.z,KP.r);
@@ -9759,6 +9763,44 @@ ${G}.edmode #y2 .k3mini${NX},${G}.edmode #y2 .k3chips${NX}{visibility:hidden!imp
 
 // ---- açılışta: eski kayıtlardaki eşyalar karelere oturtulur (bir kez denenir; uymayan olduğu yerde kalır) ----
 {let n=0;const iv=setInterval(()=>{if(++n>120){clearInterval(iv);return}try{if(!started)return;clearInterval(iv);if(S.created&&S.tut==='done'&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!customers.length){kWallFix();tileAlignAll()}}catch(e){console.warn('kareye oturtma',e)}},400)}
+
+// ================= GARSON: SABİT KÖŞE YOK, SERBEST DOLAŞIM (V141) =================
+// Kullanıcı isteği: "garson köşesi" olmasın; garson kafede rahatça dolaşsın, boşken boş alanlarda dursun; ekip ve müşteriler
+// tamamen oyuncunun yerleşimine göre hareket etsin.
+//  · Eski sabit bekleme noktaları (W_WAIT / staffSeat) ve o köşeyi koruyan yapı yasağı (NO_BUILD) kaldırıldı.
+//  · Boşta durulabilecek yerler yerleşimden hesaplanır (wsCells): kare ortaları; yürünebilir, kapıdan ulaşılır, çevresi açık,
+//    kapı girişi / tezgâh önü / kasa sırası dışında, sandalyelere yaklaşma ve servis noktalarından uzak. Yerleşim değişince yeniden hesaplanır.
+//  · Garson işi bitince en yakın boş yere çekilir (servis noktasında dikilip kalmaz), orada yüzü masalara dönük bekler; ara ara
+//    birkaç metre ötedeki başka bir boş yere yürür ya da etrafına bakar (waiterLoop, p10). Mola da bulunduğu boş yerde verilir.
+const WSP={key:'',cells:[],set:new Set(),focus:{x:1.2,z:0.4}};
+function wsKey(){return [FVER,KP.x,KP.z,KP.r,CP.x,CP.z,CP.r,RM.x0,RM.x1,RM.z0,RM.z1,GDN.r,GDN.f,JSON.stringify(OP),OBST.length,REGS.length,TABLES.length].join('|')}
+function wsCells(){const key=wsKey();if(WSP.key===key)return WSP.cells;WSP.key=key;const out=[];WSP.set=new Set();
+  try{const g=grid,seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z),N=tileN(),keep=[];
+    for(const t of TABLES)for(const s of t.seats)keep.push(s.A,s.serve,s.O);
+    for(const p of PREP_SPOTS.concat(PICK_SPOTS,QLINE))keep.push(p);for(const R of REGS)keep.push(R.pay);
+    try{keep.push(COURIER_IDLE,BOX_COUNTER.stand)}catch(e){}
+    for(let i=0;i<N.nx;i++)for(let k=0;k<N.nz;k++){const x=tR2(RM.x0+(i+0.5)*TILE),z=tR2(RM.z0+(k+0.5)*TILE);
+      if(x<ROOM.minX+0.1||x>ROOM.maxX-0.1||z<ROOM.minZ+0.1||z>ROOM.maxZ-0.1)continue;
+      const [ci,ck]=cellOf(x,z);if(g[ck*GX+ci]===1||seen[ck*GX+ci]!==1)continue;
+      if([[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>blockedIn(g,ci+a,ck+b)))continue;          // dar aralıkta durmasın
+      if(NO_BUILD.some(b=>x>b.minX-0.15&&x<b.maxX+0.15&&z>b.minZ-0.15&&z<b.maxZ+0.15))continue;   // kapı girişi, tezgâh önü, kasa sırası
+      if(keep.some(p=>p&&Math.hypot(p.x-x,p.z-z)<0.62))continue;
+      if(Math.hypot(DOOR_IN.x-x,DOOR_IN.z-z)<1.3)continue;
+      out.push({x,z});WSP.set.add(x+'|'+z)}
+    const T=TABLES.map(t=>t.center);WSP.focus=T.length?{x:T.reduce((a,p)=>a+p.x,0)/T.length,z:T.reduce((a,p)=>a+p.z,0)/T.length}:{x:(RM.x0+RM.x1)/2,z:(RM.z0+RM.z1)/2}}catch(e){console.warn('garson noktaları',e)}
+  WSP.cells=out;return out}
+const wYaw=P=>Math.atan2(WSP.focus.x-P.x,WSP.focus.z-P.z);   // yüzü masalara (masa yoksa odanın ortasına) dönük
+// stroll=true: birkaç metre ötedeki başka bir boş yer (gezinti); false: en yakın boş yer (iş bitince kenara çekilme, açılış)
+function wPick(w,stroll,ref){const C=wsCells();if(!C.length)return null;const ch=w.ch,P=ref||ch.pos;let best=null,bs=1e9;   // ref: uzaklığın ölçüleceği nokta (verilmezse garsonun yeri)
+  for(const p of C){const d=Math.hypot(p.x-P.x,p.z-P.z);if(stroll&&(d<1.2||d>7))continue;
+    if(WSTAFF.some(o=>o!==w&&((o.spot&&Math.hypot(o.spot.x-p.x,o.spot.z-p.z)<1.05)||Math.hypot(o.ch.pos.x-p.x,o.ch.pos.z-p.z)<0.8)))continue;
+    if(customers.some(c=>Math.hypot(c.char.pos.x-p.x,c.char.pos.z-p.z)<0.6))continue;
+    const s=(stroll?Math.abs(d-3):d)+Math.random()*(stroll?2.2:0.6);if(s<bs){bs=s;best=p}}
+  return best}
+function wSpot(w){wsCells();if(w.spotFree&&WSP.cells.length){w.spot=null;w.spotFree=false}if(w.spot&&(w.spotFree||WSP.set.has(w.spot.x+'|'+w.spot.z)))return w.spot;
+  const p=wPick(w,false);w.spotFree=!p;w.spot=p||{x:w.ch.pos.x,z:w.ch.pos.z};return w.spot}   // hiç boş yer yoksa olduğu yerde bekler
+// açılışta garsonlar boş bir yerde başlar (eski köşe artık eşya konabilen bir alan)
+{const _ss=startStaffLoops;startStaffLoops=function(){try{for(const w of WSTAFF){w.spot=null;w.spotFree=false;const p=wPick(w,false);if(p){w.spot=p;w.ch.pos.set(p.x,0,p.z);w.ch.o.rotation.y=wYaw(p)}}}catch(e){console.warn('garson yeri',e)}return _ss.apply(this,arguments)}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
