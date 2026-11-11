@@ -319,6 +319,13 @@ function capStart(){return {n:scene.children.length,o:OBST.length}}
 function capEnd(key,c){OPCAP[key].objs.push(...scene.children.slice(c.n));OPCAP[key].obst.push(...OBST.slice(c.o))}
 function openingHole(path,k,t){const D=OP_DIM()[k];if(k==='door'){path.moveTo(t-D.w/2,0);path.lineTo(t+D.w/2,0);path.lineTo(t+D.w/2,D.h);path.absarc(t,D.h,D.w/2,0,Math.PI,false);path.lineTo(t-D.w/2,0);return path}
   return archHole(path,t,D.y,D.w,D.h)}
+// klasik pencere: cam (ilk çocuk) + denizlik, kemer, dikmeler, kayıtlar. PARENT=WG iken çağrılır (buildShell ve market küçük resmi, p84)
+function winClassic(WG){const {y:wy,w:ww,h:wh}=WIN;
+   const gl=new THREE.Mesh(new THREE.ShapeGeometry(archHole(new THREE.Shape(),0,wy,ww,wh),24),M.glass);gl.position.z=-0.1;WG.add(gl);
+   box(ww+0.3,0.1,0.34,M.woodDark,0,wy-wh/2-0.038,0.07);
+   const archF=new THREE.Mesh(new THREE.TorusGeometry(ww/2+0.05,0.06,8,32,Math.PI),M.green);archF.position.set(0,wy+wh/2,0.02);archF.castShadow=true;WG.add(archF);
+   box(0.12,wh,0.12,M.green,-ww/2-0.05,wy,0.02);box(0.12,wh,0.12,M.green,ww/2+0.05,wy,0.02);
+   box(0.06,wh+ww/2,0.06,M.green,0,wy-wh/2+(wh+ww/2)/2,-0.1);box(ww,0.06,0.06,M.green,0,wy+wh/2,-0.1)}
 function buildShell(){if(SHELL.g){scene.remove(SHELL.g);disposeTree(SHELL.g)}
   const G=new THREE.Group();G.name='roomShell';scene.add(G);SHELL.g=G;const P0=PARENT;PARENT=G;floorStrips.length=0;
   const x0=RM.x0,x1=RM.x1,z0=RM.z0,z1=RM.z1,W=x1-x0,D=z1-z0,cx=(x0+x1)/2,cz=(z0+z1)/2;
@@ -336,12 +343,7 @@ function buildShell(){if(SHELL.g){scene.remove(SHELL.g);disposeTree(SHELL.g)}
     PARENT=WG;const segs=[[a,b]];if(OP.door.wall===wall){const d0=OP.door.t-DOOR.w/2,d1=OP.door.t+DOOR.w/2;segs.length=0;segs.push([a,d0],[d1,b])}
     for(const [p,q] of segs){if(q-p<0.05)continue;if(wall==='back')box(q-p,0.18,0.06,M.green,(p+q)/2,0.09,z0+0.03);else box(0.06,0.18,q-p,M.green,x0+0.03,0.09,(p+q)/2)}PARENT=G}
   // büyük pencere: cam + doğrama (pervaz, kemer, kayıtlar) yerel olarak kurulur, duvarına oturtulur
-  {const WG=new THREE.Group();WG.userData.wall=OP.win.wall;WG.userData.opening='win';G.add(WG);SHELL.win=WG;const P1=PARENT;PARENT=WG;try{const {y:wy,w:ww,h:wh}=WIN;
-   const gl=new THREE.Mesh(new THREE.ShapeGeometry(archHole(new THREE.Shape(),0,wy,ww,wh),24),M.glass);gl.position.z=-0.1;WG.add(gl);
-   box(ww+0.3,0.1,0.34,M.woodDark,0,wy-wh/2-0.038,0.07);
-   const archF=new THREE.Mesh(new THREE.TorusGeometry(ww/2+0.05,0.06,8,32,Math.PI),M.green);archF.position.set(0,wy+wh/2,0.02);archF.castShadow=true;WG.add(archF);
-   box(0.12,wh,0.12,M.green,-ww/2-0.05,wy,0.02);box(0.12,wh,0.12,M.green,ww/2+0.05,wy,0.02);
-   box(0.06,wh+ww/2,0.06,M.green,0,wy-wh/2+(wh+ww/2)/2,-0.1);box(ww,0.06,0.06,M.green,0,wy+wh/2,-0.1)}finally{PARENT=P1}
+  {const WG=new THREE.Group();WG.userData.wall=OP.win.wall;WG.userData.opening='win';G.add(WG);SHELL.win=WG;const P1=PARENT;PARENT=WG;try{winClassic(WG)}finally{PARENT=P1}
    const p=wallPt(OP.win.wall,OP.win.t);WG.position.set(p.x,0,p.z);WG.rotation.y=OP.win.wall==='left'?Math.PI/2:0}
   }finally{PARENT=P0}
   if(OP.win.wall==='back')WIN.x=OP.win.t;
@@ -14517,6 +14519,78 @@ html.land #coach.rht .cbub:not(.center){top:calc(max(8px,var(--sat,0px)))!import
 #evBtn .rhlk{position:absolute;right:-4px;top:-5px;z-index:3;display:inline-flex;align-items:center;gap:2px;padding:1px 5px 1px 3px;border:2px solid var(--ink,#4a2a14);border-radius:999px;background:#fff6e0;font:800 9px/1.2 var(--font-display,inherit);color:#4a2a14;white-space:nowrap;filter:none}
 #evBtn .rhlk .ic{width:10px!important;height:10px!important;display:inline-grid}#evBtn .rhlk .ic svg{width:100%;height:100%}
 `;document.head.appendChild(st)}
+
+// ================= MARKET › KAPI ve PENCERE (V161) =================
+// Kullanıcı isteği: "markette menü olarak pencere kapı alt menüleri de ekle".
+// Eskiden kapı ve pencere TEK öğeydi ("… kapısı ve penceresi", kind 'ostyle', S.oStyle) ve Market › Duvar sekmesinin içinde duruyordu.
+// Artık iki ayrı sekme var: Market › Kapı (kind 'odoor', S.oDoor) ve Market › Pencere (kind 'owin', S.oWin); kapı ve pencere ayrı ayrı seçilir.
+//  • Klasik (od_default / ow_default): oyunun ilk kapısı ve penceresi, hep oyuncuda.
+//  • Boyalı modeller (pk 'gen', OG_TONES): klasik kemerli doğramanın boyalı hâlleri. Ayrı model kodu yok: yeşil parçalar boyanır (ogPaint).
+//  • Paket stilleri (ülke paketleri + Royal Pass): eski 'ostyle' kayıtları VERİLİŞ birimi olarak durur (Pass ödülü S.rpGot, etkinlikten
+//    getirme S.evGot hep o kimlikle çalışır) ama markette görünmez; her birinin bir kapı ve bir pencere çocuğu vardır (par: eski kimlik).
+//    Çocuk, ebeveyni görünüyorsa görünür; ebeveyni oyuncudaysa oyuncuda sayılır (oMirror); seviyesi ebeveyninden okunur.
+//  • Eski kayıt: S.oStyle → S.oDoor + S.oWin (oMigrate, bir kez).
+//  • Uygulama yolu p77'deki gibi: kayıt yüklenirken kurulur; oyun sırasında değişince sayfa kısa açılışla yeniden yüklenir.
+{const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.oDoor=null;s.oWin=null;return s}}
+UI_IC.window=SV(`<rect x="13" y="9" width="38" height="44" rx="5" fill="#bfe3f2"/><path d="M32 9 V53 M13 31 H51"/><path d="M8 55 H56" stroke-width="5"/>`);
+const OG_TONES={mese:{n:'Meşe',f:0x9c6b3c,p:0x7b4f27,lv:2,d:120,w:90},turkuaz:{n:'Turkuaz',f:0x2f9a94,p:0x237570,lv:3,d:150,w:110},lacivert:{n:'Lacivert',f:0x34508a,p:0x263c6a,lv:4,d:180,w:130},
+  bordo:{n:'Bordo',f:0x8e3140,p:0x6e2431,lv:5,d:210,w:150},krem:{n:'Krem',f:0xf3e8d2,p:0xdcc9a6,lv:6,d:240,w:170},siyah:{n:'Siyah demir',f:0x33333a,p:0x232328,lv:8,d:300,w:210}};
+const OG_MAT={};
+function ogMats(k){if(OG_MAT[k])return OG_MAT[k];const T=OG_TONES[k];return OG_MAT[k]={f:new THREE.MeshToonMaterial({color:T.f,gradientMap:grad}),p:new THREE.MeshToonMaterial({color:T.p,gradientMap:grad})}}
+// klasik doğramanın yeşil parçalarını (çerçeve) ve koyu yeşil tablasını boyar; cam, pirinç kol, taş pervaz ve ahşap denizlik aynı kalır
+function ogPaint(root,k){const mt=ogMats(k),gH=M.green.color.getHex();root.traverse(m=>{if(!m.isMesh||!m.material||Array.isArray(m.material)||!m.material.color)return;const h=m.material.color.getHex();if(h===gH)m.material=mt.f;else if(h===0x4f7a30)m.material=mt.p})}
+// ---- katalog ----
+function ogAdd(c){if(CAT[c.id])return;CATALOG.push(c);CAT[c.id]=c}
+ogAdd({id:'od_default',kind:'odoor',pk:null,name:'Klasik kapı',price:0,lvl:1,own:true,desc:'Yeşil doğramalı, kemerli ilk kapın.'});
+ogAdd({id:'ow_default',kind:'owin',pk:null,name:'Klasik pencere',price:0,lvl:1,own:true,desc:'Yeşil doğramalı, kemerli ilk penceren.'});
+for(const k in OG_TONES){const T=OG_TONES[k],lo=T.n.toLocaleLowerCase('tr');
+  ogAdd({id:'od_g_'+k,kind:'odoor',pk:'gen',tema:k,name:T.n+' kapı',price:T.d,lvl:T.lv,desc:`Kemerli çift kanatlı kapının ${lo} boyalı modeli.`});
+  ogAdd({id:'ow_g_'+k,kind:'owin',pk:'gen',tema:k,name:T.n+' pencere',price:T.w,lvl:T.lv,desc:`Kemerli büyük pencerenin ${lo} boyalı modeli.`})}
+for(const p of CATALOG.filter(c=>c.kind==='ostyle'&&c.tema)){const base=p.name.replace(/ kapısı ve penceresi$/,''),r=p.id.slice(2),src=p.rp?'Royal Pass ödülü':(PK_COUNTRY[p.ev]||'Ülke')+' paketinden';
+  for(const [pre,kind,nm,fr,what] of [['od_','odoor',' kapısı',0.6,'kapı kanatları ve kapı çevresi'],['ow_','owin',' penceresi',0.4,'pencere doğraması']]){
+    const c={id:pre+r,kind,pk:p.pk,tema:p.tema,par:p.id,name:base+nm,price:Math.round(p.price*fr/10)*10,desc:p.rp?`${what[0].toLocaleUpperCase('tr')+what.slice(1)}. ${src}.`:`${src} ${what}.`};
+    Object.defineProperty(c,'lvl',{get:()=>p.lvl,set:()=>{},enumerable:true});ogAdd(c)}}
+{const _ct=catTab;catTab=function(c){return c.kind==='odoor'?'door':c.kind==='owin'?'window':c.kind==='ostyle'?'-':_ct(c)}}
+{const _cs=catShown;catShown=function(c){if(c.par){const p=CAT[c.par];return !!p&&_cs(p)}return _cs(c)}}
+// market sekmeleri: Duvar'dan hemen sonra Kapı ve Pencere
+{const i=MK_ALL.findIndex(t=>t.id==='wall');MK_ALL.splice(i+1,0,{id:'door',name:'Kapı',icon:'door'},{id:'window',name:'Pencere',icon:'window'});
+ const j=MK_SECS.decor.indexOf('wall');MK_SECS.decor.splice(j+1,0,'door','window')}
+PK_RP_WHERE.ostyle='Market › Kapı ve Pencere';
+// ---- seçim, eski kayıt, sahiplik ----
+const oDoorOf=()=>{let c=null;try{c=CAT[S.oDoor]}catch(e){}return c&&c.kind==='odoor'&&c.tema&&(c.pk==='gen'?OG_TONES[c.tema]:PK_OPEN[c.pk])?c:null};
+const oWinOf=()=>{let c=null;try{c=CAT[S.oWin]}catch(e){}return c&&c.kind==='owin'&&c.tema&&(c.pk==='gen'?OG_TONES[c.tema]:PK_OPEN[c.pk])?c:null};
+function oMigrate(){try{const o=S.oStyle;if(o&&CAT[o]&&CAT[o].kind==='ostyle'){const r=o.slice(2);if(S.oDoor==null&&CAT['od_'+r])S.oDoor='od_'+r;if(S.oWin==null&&CAT['ow_'+r])S.oWin='ow_'+r}if(o)S.oStyle=null}catch(e){console.warn('kapı/pencere kaydı',e)}}
+function oMirror(){try{for(const c of CATALOG)if(c.par&&S.owned[c.par]&&!S.owned[c.id])S.owned[c.id]=true}catch(e){}}
+function setOpening(key,def,id,label){const c=CAT[id];if(!c)return;if((S[key]||def)===id)return;S[key]=id===def?null:id;try{clearTimeout(saveTimer)}catch(e){}saveNow();RESETTING=true;
+  const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div><b>${label} yenileniyor…</b></div>`;document.body.appendChild(o);setTimeout(()=>gameReload(),500)}
+PK_SEL.odoor={cur:()=>S.oDoor||'od_default',def:'od_default',set:id=>setOpening('oDoor','od_default',id,'Kapı')};
+PK_SEL.owin={cur:()=>S.oWin||'ow_default',def:'ow_default',set:id=>setOpening('oWin','ow_default',id,'Pencere')};
+// ---- kurulum (p77'deki işlevlerin kapı ve pencereyi ayrı ayrı okuyan hâlleri) ----
+oStyleOf=function(){return oDoorOf()||oWinOf()};
+pkDoorApply=function(){const c=oDoorOf();if(!c||PKO.door||!DOORA.leaves.length)return;const C=OPCAP.door;
+  if(c.pk==='gen'){for(const L of DOORA.leaves)ogPaint(L.p,c.tema);for(const o of C.objs)if(o.isMesh)ogPaint(o,c.tema);PKO.door=true;return}
+  const F=PK_OPEN[c.pk];let par=null;
+  for(const o of C.objs.slice())if(o.isMesh||o===PKO.sur){if(o.parent)o.parent.remove(o);C.objs.splice(C.objs.indexOf(o),1);try{disposeTree(o)}catch(e){}}   // klasik pervaz, kemer, tepe camı, çan; kanatlar grup: yenilenir
+  const W=DOOR.w/2-0.005;
+  for(const L of DOORA.leaves){const old=L.p,np=F.leaf(W,DOOR.h-0.01,L.side,c.tema);np.position.copy(old.position);np.rotation.copy(old.rotation);np.userData.wallKeep=true;par=old.parent||scene;par.remove(old);par.add(np);
+    const i=C.objs.indexOf(old);if(i>=0)C.objs[i]=np;else C.objs.push(np);L.p=np;try{disposeTree(old)}catch(e){}try{mergeStatic(np.children[0]||np)}catch(e){}}
+  const G=F.sur(c.tema);G.position.set(OPB.door.x0,0,OPB.door.t);G.rotation.y=-Math.PI/2;G.userData.wallKeep=true;(par||scene).add(G);C.objs.push(G);try{mergeStatic(G)}catch(e){}
+  G.traverse(m=>{if(m.isMesh)m.receiveShadow=true});PKO.sur=G;PKO.door=true};
+pkWindowApply=function(){const c=oWinOf(),WG=SHELL.win;if(!c||!WG||WG.userData.pkWin)return;
+  if(c.pk==='gen'){ogPaint(WG,c.tema);WG.userData.pkWin=true;return}
+  for(const o of WG.children.slice(1)){WG.remove(o);try{disposeTree(o)}catch(e){}}
+  const Wg=PK_OPEN[c.pk].win(c.tema);Wg.rotation.y=Math.PI;WG.add(Wg);try{mergeStatic(Wg)}catch(e){}WG.userData.pkWin=true};
+pkBootOpen=function(){oMigrate();oMirror();if(!oDoorOf()&&!oWinOf())return;try{pkDoorApply();pkWindowApply();ENV.hide={back:null,left:null};renderer.shadowMap.needsUpdate=true}catch(e){console.warn('kapı/pencere',e)}};
+{const _g=pkRpGrant;pkRpGrant=function(){const r=_g.apply(this,arguments);oMirror();return r}}
+{const _rm=renderMarket;renderMarket=function(){oMirror();return _rm.apply(this,arguments)}}
+// ---- küçük resimler ----
+function oDoorGroup(c){const pack=c.tema&&c.pk!=='gen',g=oStyleGroup(pack?c:{});if(c.pk==='gen')ogPaint(g,c.tema);return g}
+function oWinGroup(c){const g=new THREE.Group();
+  if(c.tema&&c.pk!=='gen'){const {y:wy,w:ww,h:wh}=WIN,gl=new THREE.Mesh(new THREE.ShapeGeometry(archHole(new THREE.Shape(),0,wy,ww,wh),24),M.glass);gl.position.z=-0.1;g.add(gl);const Wg=PK_OPEN[c.pk].win(c.tema);Wg.rotation.y=Math.PI;g.add(Wg)}
+  else{inGroup(g,()=>winClassic(g));if(c.pk==='gen')ogPaint(g,c.tema)}
+  return g}
+{const _ft=furnThumb;furnThumb=function(id){const c=CAT[id];if(c&&c.kind==='odoor')return thumb('f:'+id,()=>oDoorGroup(c),{dir:[-1,0.3,0.55],pad:1.0});
+  if(c&&c.kind==='owin')return thumb('f:'+id,()=>oWinGroup(c),{dir:c.tema&&c.pk!=='gen'?[-0.5,0.22,-1]:[0.5,0.22,1],pad:1.0});return _ft.apply(this,arguments)}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
