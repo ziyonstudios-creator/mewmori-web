@@ -798,7 +798,10 @@ const CHAIR_STYLE={
   c_bistro:{seat:toon(0x3a2a22),wood:M.dark,leg:M.dark,legs:'bent',back:'hoop'},
   // V139 kasiyer sandalyesi (satılmaz; p30 cashChair): kasa tezgâhının dili — yeşil gövde, kabartma pano, ahşap başlık, dalgalı saçak, altın madalyon
   c_cash:{seat:toon(0xfff3df),wood:M.wood,leg:M.green,back:'cash',accent:M.gold,body:M.green,coin:toon(0xd99a1e)}};
-function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,parent),S=CHAIR_STYLE[styleId]||CHAIR_STYLE.c_cushion;const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+// (V145) tasarım paketi kancaları: p77_paket.js buraya kurucu ekler; kurucu kendi masasını/sandalyesini çizdiyse grubu döndürür
+const TABLE_EXT=[],CHAIR_EXT=[];
+function chairMeshes(parent,f,styleId,colIdx=0){for(const h of CHAIR_EXT){const r=h(parent,f,styleId,colIdx);if(r)return r}
+  const d=SEAT_D,L=frameGroup(f,parent),S=CHAIR_STYLE[styleId]||CHAIR_STYLE.c_cushion;const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
   const cush=S.seat||toon(CUSH_COLS[colIdx%CUSH_COLS.length]);
   // oturma yüzeyi (doğrulanmış profil)
   const sh=new THREE.Shape();sh.moveTo(d.zb,d.cushBot);sh.lineTo(d.zf,d.cushBot);for(let k=d.zs.length-1;k>=0;k--)sh.lineTo(d.zs[k],d.top[k]);sh.lineTo(d.zb,d.cushBot);
@@ -853,8 +856,8 @@ function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,pa
     if(BK==='tufted')for(let r=0;r<2;r++)for(let c=0;c<3;c++)A(new THREE.SphereGeometry(0.014,8,6),S.accent,d.x0+0.12+c*(bw-0.24)/2,d.boardBot+bh*0.42+r*bh*0.24,d.backZ-0.016);
     if(S.accent)A(new THREE.BoxGeometry(bw+0.05,0.025,0.055),S.accent,bx,d.boardBot+bh*(BK==='arch'?0.88:0.97)-0.02,bz);
     posts(d.backTop-(BK==='arch'||BK==='pad'?0.1:0))}
-  // kol dayanağı (oturma tarafının tersinde)
-  const ax=d.x0-0.045;A(new RoundedBoxGeometry(0.056,0.032,d.zf-d.zb+0.05,2,0.014),S.accent||S.wood,ax,d.armY-0.015,(d.zb+d.zf)/2);A(new THREE.CylinderGeometry(0.013,0.019,d.armY-0.03-d.footY,8),S.leg,ax,(d.footY+d.armY-0.03)/2,d.zf);
+  // kol dayanakları (iki yanda) — (V145) tasarım paketinin yaması: oyundaki bütün sandalyeler iki kolçaklı
+  for(const ax of [d.x0-0.045,d.x1+0.045]){A(new RoundedBoxGeometry(0.056,0.032,d.zf-d.zb+0.05,2,0.014),S.accent||S.wood,ax,d.armY-0.015,(d.zb+d.zf)/2);A(new THREE.CylinderGeometry(0.013,0.019,d.armY-0.03-d.footY,8),S.leg,ax,(d.footY+d.armY-0.03)/2,d.zf)}
   return L}
 // ---- masa tipleri (hepsi doğrulanmış masa dairesinin içinde) ----
 // masa tarzları: tabla biçimi (top) + ayak tipi (base) + üstündeki süs (deco) birbirinden bağımsız
@@ -882,7 +885,8 @@ const CLOTH_TEX={};function clothMat(kind){if(CLOTH_TEX[kind])return CLOTH_TEX[k
   else{c.fillStyle='#fffaf0';c.fillRect(0,0,128,128);c.strokeStyle='#e9dcc6';c.lineWidth=3;for(let i=0;i<6;i++){c.beginPath();c.arc(64,64,10+i*10,0,Math.PI*2);c.stroke()}for(let a=0;a<16;a++){c.beginPath();c.arc(64+60*Math.cos(a/16*6.283),64+60*Math.sin(a/16*6.283),5,0,6.283);c.stroke()}}
   const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;if(kind==='gingham')t.repeat.set(2,2);const m=new THREE.MeshToonMaterial({map:t,gradientMap:grad});CLOTH_TEX[kind]=m;return m}
 const GLASS_TOP=new THREE.MeshPhysicalMaterial({color:0xcfe8ee,transparent:true,opacity:0.38,roughness:0.05,metalness:0,depthWrite:false});
-function tableMeshes(parent,f,typeId,vase=true){const d=SEAT_D,L=frameGroup(f,parent),T=TABLE_STYLE[typeId]||TABLE_STYLE.t_round;
+function tableMeshes(parent,f,typeId,vase=true){for(const h of TABLE_EXT){const r=h(parent,f,typeId,vase);if(r)return r}
+  const d=SEAT_D,L=frameGroup(f,parent),T=TABLE_STYLE[typeId]||TABLE_STYLE.t_round;
   const cx=d.tCx,cz=d.tCz,R=d.tR*(T.r||1),tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
   let surf=top;   // süslerin oturduğu yükseklik
   // ---- tabla ----
@@ -2741,7 +2745,7 @@ function renderThumb(obj,{dir=[1,0.85,1.2],pad=1.08}={}){const {r,sc,cam}=TH;sc.
 function thumb(key,build,opt){const C=TH.cache;if(C.has(key))return C.get(key);let url='';try{url=renderThumb(build(),opt)}catch(e){console.warn('thumb',key,e)}C.set(key,url);return url}
 const productThumb=id=>thumb('p:'+id,()=>makeProduct(RECIPE[id]),{dir:[1,1.1,1.3],pad:1.0});
 function furnThumb(id){const c=CAT[id];return thumb('f:'+id,()=>{
-  if(c.kind==='table')return (c.seats===4?buildSet4Group:buildSetGroup)(id,'c_cushion',0,false);
+  if(c.kind==='table')return (c.seats===4?buildSet4Group:buildSetGroup)(id,c.pk&&c.chair?c.chair:'c_cushion',0,false);
   if(c.kind==='chair'){const g=new THREE.Group();chairMeshes(g,frame(0,0,0),id,0);return g}
   if(c.kind==='decor')return DECOR_BUILD[id]();
   if(c.kind==='walldecor')return WALL_BUILD[id]();
@@ -2877,7 +2881,7 @@ function renderMarket(){const tabs=$('mkTabs');tabs.innerHTML=MK_TABS.map(t=>`<b
   if(UI.tab==='upg'){renderUpg(g);return}
   if(UI.tab==='expand'){renderExpand(g);return}
   if(UI.tab==='store'){const st=S.furniture.filter(f=>f.stored);g.innerHTML=st.length?st.map(f=>`<button class="card" type="button" data-uid="${f.uid}" aria-current="${UI.sel==='u'+f.uid}"><div class="th"><img src="${itemThumb(f.id)}" alt=""></div><b>${CAT[f.id].name}</b><span class="price">Ücretsiz yerleştir</span></button>`).join(''):'<div class="empty">Depon boş. Düzenle modunda eşyaları depoya kaldırabilirsin.</div>'}
-  else{items=CATALOG.filter(c=>(UI.tab==='counter'?c.cat==='counter':(c.kind===UI.tab&&c.cat!=='counter')||(UI.tab==='decor'&&c.kind==='walldecor'))&&(!c.ev||(EVMODE?c.ev===EVMODE:S.evGot&&S.evGot[c.id]))&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
+  else{items=CATALOG.filter(c=>(UI.tab==='counter'?c.cat==='counter':(c.kind===UI.tab&&c.cat!=='counter')||(UI.tab==='decor'&&c.kind==='walldecor'))&&catShown(c)&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
     g.innerHTML=items.map(c=>{const lock=S.lvl<c.lvl;const owned=S.owned[c.id];const using=(c.kind==='wall'&&S.wall===c.id)||(c.kind==='floor'&&S.floor===c.id)||(c.kind==='equip'&&owned);
       return `<button class="card${lock?' locked':''}" type="button" data-id="${c.id}" aria-current="${UI.sel===c.id}"><div class="th"><img src="${itemThumb(c.id)}" alt=""></div>${lock?`<span class="tag">${ic('lock')}Sv ${c.lvl}</span>`:''}${using?'<span class="own">Kullanımda</span>':owned&&c.kind!=='table'&&c.kind!=='decor'&&c.kind!=='walldecor'?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${c.price?ic('coin')+c.price:'Ücretsiz'}</span></button>`}).join('')}
   g.onclick=e=>{const b=e.target.closest('.card');if(!b)return;if(b.dataset.uid){UI.sel='u'+b.dataset.uid}else{UI.sel=b.dataset.id;previewSurface(UI.sel)}renderMarket()};
@@ -9941,6 +9945,1096 @@ function wSpot(w){wsCells();if(w.spotFree&&WSP.cells.length){w.spot=null;w.spotF
   const p=wPick(w,false);w.spotFree=!p;w.spot=p||{x:w.ch.pos.x,z:w.ch.pos.z};return w.spot}   // hiç boş yer yoksa olduğu yerde bekler
 // açılışta garsonlar boş bir yerde başlar (eski köşe artık eşya konabilen bir alan)
 {const _ss=startStaffLoops;startStaffLoops=function(){try{for(const w of WSTAFF){w.spot=null;w.spotFree=false;const p=wPick(w,false);if(p){w.spot=p;w.ch.pos.set(p.x,0,p.z);w.ch.o.rotation.y=wYaw(p)}}}catch(e){console.warn('garson yeri',e)}return _ss.apply(this,arguments)}}
+
+// =====================================================================
+// TabbyChef · İTALYA MASA & SANDALYE KOLEKSİYONU
+// 7 masa + 7 uyumlu sandalye: colosseo, pisa, colonna, trattoria, venezia, amalfi, gelato
+//
+// OYUNA EKLEME (index.html):
+// 1) Bu dosyanın tamamını `function tableMeshes(` satırının hemen ÜSTÜNE yapıştır.
+//    (THREE, M, toon, grad, SEAT_D, frameGroup, addTo, RoundedBoxGeometry kullanır; hepsi oyunda var.)
+// 2) tableMeshes fonksiyonunun ilk satırına ekle:
+//      if(IT_TABLE[typeId])return italiaTable(parent,f,IT_TABLE[typeId],vase);
+// 3) chairMeshes fonksiyonunun ilk satırına ekle:
+//      if(IT_CHAIR[styleId])return italiaChair(parent,f,IT_CHAIR[styleId]);
+// 4) Market kataloğuna (CAT/CATALOG) masa ve sandalye kayıtlarını ekle:
+//      masalar : t_it_<ad> (2 kişilik) ve t_four_it_<ad> (4 kişilik), kind:'table'
+//      sandalye: c_it_<ad>, kind:'chair'
+//    Fiyat, seviye kilidi ve isimler oyunun ekonomisine göre belirlenmeli.
+// Sandalyelerin oturak profili, sırt yeri ve kol dayanağı oyundaki SEAT_D ile birebir aynıdır;
+// oturma animasyonları değişmeden çalışır.
+// =====================================================================
+const IT_NAMES=['colosseo','pisa','colonna','trattoria','venezia','amalfi','gelato'];
+const IT_TABLE={},IT_CHAIR={};for(const n of IT_NAMES){IT_TABLE['t_it_'+n]=n;IT_TABLE['t_four_it_'+n]=n;IT_CHAIR['c_it_'+n]=n}
+// ================= İTALYA MASA KOLEKSİYONU (önizleme) =================
+const ITX={};
+function itTex(key,w,h,draw,rep=[1,1]){if(ITX[key])return ITX[key];const cv=document.createElement('canvas');cv.width=w;cv.height=h;draw(cv.getContext('2d'),w,h);
+  const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1]);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;
+  const m=new THREE.MeshToonMaterial({map:t,gradientMap:grad});ITX[key]=m;return m}
+const IT_COL={};
+function itMajTex(){return itTex('maiolica',256,256,(c,w,h)=>{const n=2,s=w/n;
+      for(let i=0;i<n;i++)for(let j=0;j<n;j++){const x=i*s,y=j*s;c.fillStyle='#fbf7ec';c.fillRect(x,y,s,s);c.strokeStyle='#1f5aa6';c.lineWidth=6;c.strokeRect(x+5,y+5,s-10,s-10);
+        c.fillStyle='#1f5aa6';for(const [px,py] of [[0,0],[1,0],[0,1],[1,1]]){c.beginPath();c.arc(x+px*s,y+py*s,s*0.16,0,6.283);c.fill()}
+        c.save();c.translate(x+s/2,y+s/2);c.rotate(((i+j)%2?1:-1)*0.5);
+        c.fillStyle='#4f8a3a';for(const r of [-1,1]){c.beginPath();c.ellipse(r*s*0.17,-s*0.12,s*0.1,s*0.045,r*0.7,0,6.283);c.fill()}
+        c.fillStyle='#f5c518';c.beginPath();c.ellipse(0,s*0.04,s*0.2,s*0.14,0,0,6.283);c.fill();c.fillStyle='#e0a800';c.beginPath();c.ellipse(s*0.17,s*0.04,s*0.04,s*0.03,0,0,6.283);c.fill();c.restore()}},[2,2])}
+function itGingTex(){return itTex('ging_it',128,128,(c,w,h)=>{c.fillStyle='#fffaf2';c.fillRect(0,0,w,h);c.fillStyle='rgba(200,40,40,.55)';for(let i=0;i<8;i++){c.fillRect(i*16,0,8,h);c.fillRect(0,i*16,w,8)}},[3,3])}
+function itc(c){return IT_COL[c]||(IT_COL[c]=toon(c))}
+function italiaTable(parent,f,typeId,vase=true){
+  const d=SEAT_D,L=frameGroup(f,parent),cx=d.tCx,cz=d.tCz,R=d.tR,tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;
+  const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+  const G=(par,g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;par.add(o);return o};
+  const tang=(o,a)=>{o.rotation.y=Math.PI/2-a;return o};
+  const flame=(x,y,z)=>{const fl=A(new THREE.SphereGeometry(0.013,8,6),new THREE.MeshBasicMaterial({color:0xffc861}),x,y,z);fl.scale.y=1.7;fl.castShadow=false};
+  let surf=top;
+
+  if(typeId==='colosseo'){
+    const trav=itc(0xe6d6b2),travD=itc(0xcdb98e),core=itc(0x7d6a4c);
+    A(new THREE.CylinderGeometry(R,R,tk,40),trav,cx,yT,cz);
+    const rim=A(new THREE.TorusGeometry(R-0.004,0.011,6,48),travD,cx,yT,cz);rim.rotation.x=Math.PI/2;
+    const rb=R*0.62,N=12;
+    A(new THREE.CylinderGeometry(rb*0.84,rb*0.84,H,24),core,cx,fy+H/2,cz);                 // karanlık iç avlu
+    A(new THREE.CylinderGeometry(rb*1.08,rb*1.12,0.035,32),travD,cx,fy+0.0175,cz);           // kaide
+    const tiers=[[0.035,0.34],[0.375,0.30],[0.675,0.28]];
+    tiers.forEach(([y0,h],ti)=>{const Y0=fy+H*y0,Hh=H*h;
+      for(let i=0;i<N;i++){const a=i/N*Math.PI*2,am=(i+0.5)/N*Math.PI*2;
+        // yıkık taraf: üst katta bazı payeler yok, bazıları kısa
+        const ruin=ti===2&&(i>=7&&i<=10);const short=ti===2&&(i===6||i===11);
+        if(ruin)continue;
+        const ph=short?Hh*0.55:Hh;
+        const p=A(new THREE.BoxGeometry(0.03,ph,0.034),trav,cx+rb*Math.cos(a),Y0+ph/2,cz+rb*Math.sin(a));tang(p,a);
+        const full=j=>!(ti===2&&((j%N)>=6&&(j%N)<=11));if(full(i)&&full(i+1)){
+          const span=2*rb*Math.sin(Math.PI/N),ar=span/2-0.012;
+          const t=A(new THREE.TorusGeometry(ar,0.011,5,12,Math.PI),trav,cx+rb*Math.cos(am),Y0+Hh-ar-0.012,cz+rb*Math.sin(am));tang(t,am);
+          const sp=A(new THREE.BoxGeometry(span*0.9,0.018,0.03),trav,cx+rb*Math.cos(am),Y0+Hh-0.009,cz+rb*Math.sin(am));tang(sp,am)}}
+      if(ti<2){const c=A(new THREE.CylinderGeometry(rb+0.022,rb+0.022,0.02,36),travD,cx,Y0+Hh+0.01,cz)}});
+    // üst kornişin sağlam yarısı tablayı taşır
+    A(new THREE.CylinderGeometry(rb*0.5,rb*0.5,0.04,16),travD,cx,top-tk-0.02,cz);
+    // yerde birkaç düşmüş taş
+    for(const [ax,s] of [[2.3,1],[2.75,0.7],[2.05,0.6]]){const b=A(new RoundedBoxGeometry(0.05*s,0.03*s,0.04*s,1,0.006),trav,cx+Math.cos(ax)*rb*1.35,fy+0.015*s,cz+Math.sin(ax)*rb*1.35);b.rotation.y=ax*1.7}
+    if(vase){// zeytin dalı & küçük amfora
+      const amph=new THREE.LatheGeometry([[0,0],[0.018,0],[0.028,0.02],[0.032,0.05],[0.024,0.08],[0.012,0.095],[0.013,0.11],[0.0,0.11]].map(p=>new THREE.Vector2(p[0],p[1])),16);
+      A(amph,itc(0xc4683a),cx,surf,cz);for(const s of [-1,1]){const h=A(new THREE.TorusGeometry(0.014,0.003,5,10,Math.PI),itc(0xc4683a),cx+s*0.024,surf+0.085,cz);h.rotation.z=s*Math.PI/2}
+      for(let k=0;k<6;k++){const l=A(new THREE.SphereGeometry(0.012,8,6),itc(0x7a8f4a),cx+0.01+Math.cos(k)*0.02,surf+0.12+k*0.01,cz+Math.sin(k*1.7)*0.015);l.scale.set(0.5,1.4,0.5);l.rotation.z=0.6*(k%2?1:-1);l.castShadow=false}}
+  }
+
+  else if(typeId==='pisa'){
+    const marb=itc(0xf7f3ea),marbD=itc(0xddd6c6),core=itc(0x8c867b),band=itc(0xb7bfb3);
+    // tabla: beyaz mermer, kenarında cosmati kakma şeridi
+    A(new THREE.CylinderGeometry(R,R,tk,48),marb,cx,yT,cz);
+    const inl=itTex('cosmati',512,512,(c,w,h)=>{c.fillStyle='#f7f3ea';c.fillRect(0,0,w,h);const o=w/2;
+      c.fillStyle='#e9e3d6';c.beginPath();c.arc(o,o,o*0.97,0,6.283);c.fill();c.fillStyle='#f7f3ea';c.beginPath();c.arc(o,o,o*0.8,0,6.283);c.fill();
+      const N=40;for(let i=0;i<N;i++){const a0=i/N*6.283,a1=(i+1)/N*6.283,am=(a0+a1)/2;c.fillStyle=['#3f7a52','#b8443a','#c9a24a'][i%3];
+        c.beginPath();c.moveTo(o+Math.cos(a0)*o*0.82,o+Math.sin(a0)*o*0.82);c.lineTo(o+Math.cos(a1)*o*0.82,o+Math.sin(a1)*o*0.82);c.lineTo(o+Math.cos(am)*o*0.95,o+Math.sin(am)*o*0.95);c.closePath();c.fill()}
+      c.strokeStyle='#3f7a52';c.lineWidth=6;c.beginPath();c.arc(o,o,o*0.8,0,6.283);c.stroke();c.beginPath();c.arc(o,o,o*0.97,0,6.283);c.stroke()});
+    const disc=A(new THREE.CircleGeometry(R*0.995,64),inl,cx,top+0.0015,cz);disc.rotation.x=-Math.PI/2;disc.castShadow=false;
+    const rr=A(new THREE.TorusGeometry(R-0.003,0.01,6,56),band,cx,yT,cz);rr.rotation.x=Math.PI/2;
+    // zemin: Mucizeler Meydanı çimeni ve mermer yol
+    A(new THREE.CylinderGeometry(R*0.82,R*0.86,0.025,40),itc(0x8dbb5a),cx,fy+0.0125,cz);
+    const pth=A(new THREE.TorusGeometry(R*0.6,0.018,4,40),marb,cx,fy+0.026,cz);pth.rotation.x=Math.PI/2;pth.scale.z=0.25;
+    // eğik kule
+    const T=new THREE.Group();T.position.set(cx-0.03,fy+0.025,cz);L.add(T);const lean=0.17,rt=R*0.4;T.rotation.z=-lean;
+    const Ht=(top-tk-0.03-fy-0.025)/Math.cos(lean)-0.01;
+    G(T,new THREE.CylinderGeometry(rt*1.18,rt*1.25,0.03,32),marbD,0,0.015,0);
+    const lv=[1.45,1,1,1,1,1,1,0.9],tot=lv.reduce((a,b)=>a+b,0),u=(Ht-0.03)/tot;let y=0.03;
+    lv.forEach((m,k)=>{const h=u*m,last=k===lv.length-1,r=last?rt*0.7:rt;
+      if(k===0){G(T,new THREE.CylinderGeometry(r,r,h,32),marb,0,y+h/2,0);const n=12;
+        for(let i=0;i<n;i++){const a=i/n*Math.PI*2,am=(i+0.5)/n*Math.PI*2;G(T,new THREE.CylinderGeometry(0.006,0.006,h*0.72,6),marbD,Math.cos(a)*(r+0.003),y+h*0.36,Math.sin(a)*(r+0.003));
+          const ar=r*Math.sin(Math.PI/n)*0.95;const t=G(T,new THREE.TorusGeometry(ar,0.005,4,10,Math.PI),marbD,Math.cos(am)*(r+0.003),y+h*0.72,Math.sin(am)*(r+0.003));t.rotation.y=Math.PI/2-am;
+          const dn=G(T,new THREE.BoxGeometry(ar*1.5,h*0.36,0.004),band,Math.cos(am)*(r+0.001),y+h*0.5,Math.sin(am)*(r+0.001));dn.rotation.y=Math.PI/2-am}}
+      else{G(T,new THREE.CylinderGeometry(r*0.76,r*0.76,h,24),core,0,y+h/2,0);const n=last?10:16;
+        for(let i=0;i<n;i++){const a=i/n*Math.PI*2,am=(i+0.5)/n*Math.PI*2;G(T,new THREE.CylinderGeometry(0.0055,0.0055,h*0.8,6),marb,Math.cos(a)*r,y+h*0.42,Math.sin(a)*r);
+          const ar=r*Math.sin(Math.PI/n);const t=G(T,new THREE.TorusGeometry(ar,0.006,4,10,Math.PI),marb,Math.cos(am)*r,y+h*0.83-ar*0.15,Math.sin(am)*r);t.rotation.y=Math.PI/2-am}
+        G(T,new THREE.CylinderGeometry(r+0.004,r+0.004,h*0.14,28,1,true),marb,0,y+h*0.93,0)}
+      G(T,new THREE.CylinderGeometry(r+0.012,r+0.012,0.01,30),marbD,0,y+h+0.005,0);
+      const bl=G(T,new THREE.TorusGeometry(r+0.006,0.003,4,30),band,0,y+0.01,0);bl.rotation.x=Math.PI/2;y+=h+0.01});
+    G(T,new THREE.CylinderGeometry(rt*0.55,rt*0.72,0.025,24),marbD,0,y+0.012,0);
+    // kuleden düz tablaya altın bağlantı
+    const tx=cx-0.03+Math.sin(lean)*(y+0.025);A(new THREE.CylinderGeometry(R*0.32,R*0.24,0.035,24),marbD,(tx+cx)/2,top-tk-0.0175,cz);
+    if(vase){// hatıra: minik Pisa kulesi biblosu + çiçek
+      const s=new THREE.Group();s.position.set(cx+0.05,surf,cz-0.03);s.rotation.z=-0.2;L.add(s);
+      for(let k=0;k<5;k++){const m=G(s,new THREE.CylinderGeometry(0.014,0.014,0.016,12),k%2?itc(0xe9e3d6):marb,0,0.008+k*0.017,0)}
+      A(new THREE.CylinderGeometry(0.022,0.019,0.06,12),itc(0x3f7a52),cx-0.04,surf+0.03,cz+0.02);
+      for(let k=0;k<3;k++){const fl=A(new THREE.SphereGeometry(0.022,10,8),itc([0xf2d14e,0xffffff,0xf2a6a0][k]),cx-0.04+Math.cos(k*2.1)*0.018,surf+0.08,cz+0.02+Math.sin(k*2.1)*0.018);fl.castShadow=false}}
+  }
+
+  else if(typeId==='colonna'){
+    const marb=itc(0xf3eee6),veinTop=itTex('marble',256,256,(c,w,h)=>{c.fillStyle='#f4f0e8';c.fillRect(0,0,w,h);c.strokeStyle='rgba(150,140,130,.35)';c.lineWidth=1.4;
+      for(let i=0;i<9;i++){c.beginPath();let x=Math.random()*w,y=0;c.moveTo(x,y);while(y<h){x+=(Math.random()-0.5)*30;y+=12+Math.random()*12;c.lineTo(x,y)}c.stroke()}});
+    A(new THREE.CylinderGeometry(R,R,tk,44),veinTop,cx,yT,cz);
+    const g1=A(new THREE.TorusGeometry(R-0.002,0.009,6,56),M.gold,cx,yT,cz);g1.rotation.x=Math.PI/2;
+    // kaide: kare plint + torus
+    A(new RoundedBoxGeometry(0.2,0.04,0.2,2,0.006),marb,cx,fy+0.02,cz);
+    const tr=A(new THREE.TorusGeometry(0.068,0.014,8,28),marb,cx,fy+0.052,cz);tr.rotation.x=Math.PI/2;
+    // yivli gövde
+    const sh=H-0.15,g=new THREE.CylinderGeometry(0.056,0.066,sh,64,1);const P=g.attributes.position;
+    for(let i=0;i<P.count;i++){const x=P.getX(i),z=P.getZ(i),a=Math.atan2(z,x),fl=Math.max(0,Math.cos(a*18))**2,w=1-0.11*fl;P.setX(i,x*w);P.setZ(i,z*w)}g.computeVertexNormals();
+    A(g,marb,cx,fy+0.066+sh/2,cz);
+    // iyon başlığı: ekinus + volütler + abakus
+    const yc=fy+0.066+sh;
+    A(new THREE.CylinderGeometry(0.078,0.058,0.03,28),marb,cx,yc+0.015,cz);
+    for(const s of [-1,1]){const v=A(new THREE.TorusGeometry(0.022,0.009,6,20),marb,cx+s*0.072,yc+0.022,cz);const v2=A(new THREE.CylinderGeometry(0.013,0.013,0.11,10),marb,cx+s*0.072,yc+0.022,cz);v2.rotation.x=Math.PI/2;
+      const sp=A(new THREE.SphereGeometry(0.006,6,4),M.gold,cx+s*0.072,yc+0.022,cz+0.056)}
+    A(new RoundedBoxGeometry(0.18,0.025,0.15,2,0.005),marb,cx,yc+0.045,cz);
+    A(new THREE.CylinderGeometry(R*0.5,R*0.5,top-tk-(yc+0.0575),20),marb,cx,(yc+0.0575+top-tk)/2,cz);
+    if(vase){// defne çelengi ve üzüm kâsesi
+      A(new THREE.CylinderGeometry(0.05,0.03,0.025,16),M.gold,cx,surf+0.0125,cz);
+      for(let k=0;k<9;k++){const b=A(new THREE.SphereGeometry(0.014,8,6),itc(0x7b4a8c),cx+Math.cos(k*0.7)*0.022*(k<6?1:0.4),surf+0.035+(k>=6?0.015:0),cz+Math.sin(k*0.7)*0.022*(k<6?1:0.4));b.castShadow=false}
+      const lf=A(new THREE.SphereGeometry(0.02,8,6),itc(0x6f8a3a),cx+0.025,surf+0.05,cz-0.01);lf.scale.set(1.3,0.3,0.9)}
+  }
+
+  else if(typeId==='trattoria'){
+    const walnut=itc(0x6e4326),S=R*1.42;
+    A(new RoundedBoxGeometry(S,tk,S,2,0.02),walnut,cx,yT,cz);
+    const ging=itGingTex();
+    A(new THREE.BoxGeometry(S+0.02,0.006,S+0.02),ging,cx,top+0.003,cz);
+    const sk=0.11;for(const [dx,dz,rw] of [[0,1,0],[0,-1,0],[1,0,1],[-1,0,1]]){const b=A(new THREE.BoxGeometry(rw?0.006:S+0.032,sk,rw?S+0.032:0.006),ging,cx+dx*(S/2+0.013),top-sk/2+0.004,cz+dz*(S/2+0.013))}
+    const q=S*0.4;for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]]){const x=cx+a*q,z=cz+b*q;A(new THREE.CylinderGeometry(0.02,0.014,H,10),walnut,x,fy+H/2,z);for(const t of [0.3,0.62]){const k=A(new THREE.SphereGeometry(0.027,10,8),walnut,x,fy+H*t,z);k.scale.y=0.6}}
+    surf=top+0.006;
+    if(vase){// Chianti şişesi (hasır örgülü) + mum
+      const straw=itTex('straw',64,64,(c,w,h)=>{c.fillStyle='#d8b062';c.fillRect(0,0,w,h);c.strokeStyle='rgba(140,95,35,.55)';c.lineWidth=2;for(let i=-w;i<w*2;i+=6){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i,h);c.lineTo(i+h,0);c.stroke()}},[3,2]);
+      const bot=A(new THREE.SphereGeometry(0.045,16,12),straw,cx,surf+0.045,cz);bot.scale.y=0.95;
+      A(new THREE.CylinderGeometry(0.012,0.022,0.06,12),itc(0x3d6b3c),cx,surf+0.11,cz);
+      A(new THREE.CylinderGeometry(0.013,0.013,0.008,12),itc(0xb03a2e),cx,surf+0.142,cz);
+      A(new THREE.CylinderGeometry(0.011,0.011,0.06,10),itc(0xfff3df),cx,surf+0.175,cz);
+      for(let k=0;k<4;k++){const dr=A(new THREE.SphereGeometry(0.006,6,4),itc(0xfff3df),cx+Math.cos(k*1.6)*0.012,surf+0.15+(k%2)*0.008,cz+Math.sin(k*1.6)*0.012);dr.scale.y=1.8}
+      flame(cx,surf+0.215,cz);
+      // ekmek sepeti
+      const bk=A(new THREE.CylinderGeometry(0.05,0.04,0.025,14,1,true),straw,cx+0.11,surf+0.0125,cz+0.07);
+      for(let k=0;k<3;k++){const br=A(new THREE.CapsuleGeometry(0.01,0.05,4,8),itc(0xe0a85a),cx+0.11+(k-1)*0.016,surf+0.03,cz+0.07);br.rotation.z=Math.PI/2+0.3*(k-1);br.rotation.y=0.4}}
+  }
+
+  else if(typeId==='venezia'){
+    const navy=itc(0x24507a);
+    A(new THREE.CylinderGeometry(R,R,tk,40),navy,cx,yT,cz);
+    const r1=A(new THREE.TorusGeometry(R-0.002,0.011,6,48),M.gold,cx,yT,cz);r1.rotation.x=Math.PI/2;
+    const r2=A(new THREE.TorusGeometry(R*0.72,0.004,4,48),M.gold,cx,top+0.001,cz);r2.rotation.x=Math.PI/2;
+    // su: tabanda dalgalı mavi kaide
+    A(new THREE.CylinderGeometry(R*0.7,R*0.74,0.03,32),itc(0x5fa3c9),cx,fy+0.015,cz);
+    for(const rr of [0.5,0.62]){const w=A(new THREE.TorusGeometry(R*rr,0.005,4,40),itc(0xe8f6ff),cx,fy+0.031,cz);w.rotation.x=Math.PI/2}
+    // gondol direkleri (paline): spiral çizgili
+    const pal=itTex('paline',64,256,(c,w,h)=>{c.fillStyle='#fdfaf3';c.fillRect(0,0,w,h);c.fillStyle='#2a5d93';for(let y=-h;y<h*2;y+=48){c.beginPath();c.moveTo(0,y);c.lineTo(w,y+40);c.lineTo(w,y+62);c.lineTo(0,y+22);c.closePath();c.fill()}},[1,1]);
+    for(let k=0;k<3;k++){const a=k/3*Math.PI*2+0.5,x=cx+Math.cos(a)*R*0.45,z=cz+Math.sin(a)*R*0.45;
+      A(new THREE.CylinderGeometry(0.018,0.02,H-0.02,14),pal,x,fy+0.03+(H-0.04)/2,z);
+      A(new THREE.SphereGeometry(0.026,12,8),M.gold,x,top-tk-0.026,z)}
+    const ring=A(new THREE.TorusGeometry(R*0.45,0.007,6,30),M.gold,cx,fy+H*0.42,cz);ring.rotation.x=Math.PI/2;
+    if(vase){// minik gondol
+      const gd=new THREE.Group();gd.position.set(cx,surf+0.012,cz);gd.rotation.y=0.6;L.add(gd);
+      const hull=G(gd,new THREE.SphereGeometry(0.05,16,10),itc(0x1e1a1a),0,0,0);hull.scale.set(2.2,0.35,0.55);
+      const fer=G(gd,new THREE.BoxGeometry(0.006,0.05,0.02),itc(0xd9d9d9),0.105,0.03,0);fer.rotation.z=-0.35;
+      const tail=G(gd,new THREE.TorusGeometry(0.02,0.004,4,10,Math.PI*0.8),itc(0x1e1a1a),-0.1,0.018,0);tail.rotation.z=2.2;
+      const seat=G(gd,new RoundedBoxGeometry(0.04,0.012,0.03,1,0.004),itc(0xb03a2e),-0.01,0.018,0);
+      const lan=G(gd,new THREE.CylinderGeometry(0.008,0.008,0.012,8),M.gold,0.07,0.03,0)}
+  }
+
+  else if(typeId==='amalfi'){
+    const tile=itMajTex();
+    A(new THREE.CylinderGeometry(R,R,tk,40),itc(0x1f5aa6),cx,yT,cz);
+    const tt=A(new THREE.CylinderGeometry(R*0.97,R*0.97,0.004,40),tile,cx,top+0.002,cz);surf=top+0.004;
+    const rr=A(new THREE.TorusGeometry(R-0.003,0.01,6,48),itc(0xf5c518),cx,yT,cz);rr.rotation.x=Math.PI/2;
+    // ferforje ayak: S kıvrımlı üç bacak
+    for(let k=0;k<3;k++){const a=k/3*Math.PI*2+0.3,sx=Math.cos(a),sz=Math.sin(a),lx=cx+sx*R*0.4,lz=cz+sz*R*0.4;
+      A(new THREE.CylinderGeometry(0.009,0.009,H-0.05,8),M.dark,lx,fy+0.05+(H-0.05)/2,lz);
+      const cu=A(new THREE.TorusGeometry(0.028,0.007,6,18,Math.PI*1.6),M.dark,lx+sx*0.026,fy+0.03,lz+sz*0.026);cu.rotation.y=-a;cu.rotation.z=Math.PI*0.9;
+      const cu2=A(new THREE.TorusGeometry(0.035,0.006,6,18,Math.PI),M.dark,lx-sx*0.035,top-tk-0.035,lz-sz*0.035);cu2.rotation.y=-a;cu2.rotation.z=Math.PI;
+      const bl=A(new THREE.SphereGeometry(0.012,8,6),M.dark,lx+sx*0.03,fy+0.012,lz+sz*0.03)}
+    const hb=A(new THREE.TorusGeometry(R*0.22,0.007,6,24),M.dark,cx,fy+H*0.45,cz);hb.rotation.x=Math.PI/2;
+    if(vase){// mavi seramik kâsede limonlar
+      A(new THREE.SphereGeometry(0.055,16,10,0,Math.PI*2,Math.PI/2,Math.PI/2),itc(0x1f5aa6),cx,surf+0.045,cz).scale.y=0.8;
+      for(const [dx,dz,ry] of [[0,0,0],[0.03,0.02,1],[-0.028,0.018,2],[0.005,-0.03,0.5]]){const l=A(new THREE.SphereGeometry(0.024,12,8),itc(0xf5c518),cx+dx,surf+0.06+(dx===0&&dz===0?0.02:0),cz+dz);l.scale.set(1.3,1,1);l.rotation.y=ry}
+      const lf=A(new THREE.SphereGeometry(0.02,8,6),itc(0x4f8a3a),cx+0.02,surf+0.09,cz-0.02);lf.scale.set(1.4,0.25,0.7);lf.rotation.y=0.6}
+  }
+
+  else if(typeId==='gelato'){
+    const pink=itc(0xf6b6c8),pist=itc(0xbfdc9a),cone=itTex('waffle',128,128,(c,w,h)=>{c.fillStyle='#e2ad62';c.fillRect(0,0,w,h);c.strokeStyle='#b97b34';c.lineWidth=5;
+      for(let i=-w;i<w*2;i+=22){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i,h);c.lineTo(i+h,0);c.stroke()}},[4,2]);
+    // tabla: çilekli dondurma topu, kenarından damlayan
+    A(new THREE.CylinderGeometry(R,R,tk,40),pink,cx,yT,cz);
+    const dg=new THREE.CylinderGeometry(R+0.006,R+0.006,0.07,48,4,true);const P=dg.attributes.position;
+    for(let i=0;i<P.count;i++){const y=P.getY(i);if(y<0){const a=Math.atan2(P.getZ(i),P.getX(i));const drip=Math.max(0,Math.sin(a*7))**3*0.06+Math.max(0,Math.sin(a*11+1))**4*0.03;P.setY(i,y-drip)}}
+    dg.computeVertexNormals();A(dg,pink,cx,top-0.035,cz);
+    // kenarda renkli şekerlemeler
+    const sc=[0xffffff,0x7ecbe0,0xf2d14e,0x9fd48a,0xe85d75];for(let k=0;k<36;k++){const a=k/36*Math.PI*2+Math.sin(k*3)*0.05,rr=R*(0.86+0.08*((k*7)%3)/2);
+      const sp=A(new THREE.CapsuleGeometry(0.004,0.012,2,4),itc(sc[k%sc.length]),cx+Math.cos(a)*rr,top+0.004,cz+Math.sin(a)*rr);sp.rotation.set(Math.PI/2,0,a*3);sp.castShadow=false}
+    // gövde: ters külah + fıstıklı top
+    const ch=H-0.06;A(new THREE.ConeGeometry(R*0.42,ch,28,1,true),cone,cx,fy+0.05+ch/2,cz).rotation.x=Math.PI;
+    const sc2=A(new THREE.SphereGeometry(R*0.44,24,14),pist,cx,top-tk-0.04,cz);sc2.scale.y=0.55;
+    A(new THREE.CylinderGeometry(0.07,0.085,0.05,20),itc(0xf3d9a8),cx,fy+0.025,cz);
+    if(vase){// minik dondurma kupası + kiraz
+      A(new THREE.CylinderGeometry(0.03,0.015,0.04,14),itc(0xffffff),cx,surf+0.04,cz);A(new THREE.CylinderGeometry(0.018,0.022,0.006,12),itc(0xffffff),cx,surf+0.003,cz);A(new THREE.CylinderGeometry(0.004,0.004,0.02,6),itc(0xffffff),cx,surf+0.015,cz);
+      for(const [dy,c] of [[0.07,0xfff3df],[0.1,0x8b5a3c]]){const s=A(new THREE.SphereGeometry(0.03,12,10),itc(c),cx,surf+dy,cz);s.scale.y=0.8;s.castShadow=false}
+      A(new THREE.SphereGeometry(0.012,8,6),itc(0xd9343e),cx,surf+0.135,cz);const st=A(new THREE.CylinderGeometry(0.0015,0.0015,0.03,4),itc(0x4f7a2a),cx+0.006,surf+0.155,cz);st.rotation.z=-0.4}
+  }
+  L.userData.itTable=typeId;return L}
+
+// ================= İTALYA SANDALYELERİ (oturak profili, sırt yeri ve kol dayanağı oyundakiyle aynı) =================
+function itShapeArch(w,h,r){const s=new THREE.Shape();s.moveTo(-w/2,0);s.lineTo(w/2,0);s.lineTo(w/2,h-r);s.absarc(0,h-r,w/2,0,Math.PI,false);s.lineTo(-w/2,0);return s}
+function italiaChair(parent,f,id){
+  const d=SEAT_D,L=frameGroup(f,parent);const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+  const LH=d.boardBot-d.footY,mx=(d.x0+d.x1)/2,mz=(d.zb+d.zf)/2,bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=mx,bz=d.backZ-0.03;
+  const P={
+    colosseo:{seat:itc(0xc4683a),board:itc(0xe6d6b2),leg:itc(0xe6d6b2),arm:itc(0xcdb98e)},
+    pisa:{seat:itc(0x9fb59a),board:itc(0xf6f2e9),leg:itc(0xf6f2e9),arm:itc(0xd9d2c3)},
+    colonna:{seat:itc(0xa8322d),board:itc(0xf3eee6),leg:itc(0xf3eee6),arm:M.gold},
+    trattoria:{seat:null,board:itc(0x6e4326),leg:itc(0x6e4326),arm:itc(0x6e4326)},
+    venezia:{seat:itc(0x24507a),board:M.gold,leg:null,arm:M.gold},
+    amalfi:{seat:null,board:M.dark,leg:M.dark,arm:M.dark},
+    gelato:{seat:itc(0xf6b6c8),board:itc(0xfff3df),leg:null,arm:itc(0xbfdc9a)}}[id];
+  const straw=()=>itTex('straw',64,64,(c,w,h)=>{c.fillStyle='#d8b062';c.fillRect(0,0,w,h);c.strokeStyle='rgba(140,95,35,.55)';c.lineWidth=2;for(let i=-w;i<w*2;i+=6){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i,h);c.lineTo(i+h,0);c.stroke()}},[3,2]);
+  const maj=()=>itMajTex();   // masa ile aynı doku (önce masa üretilir)
+  const pal=()=>itTex('paline',64,256,(c,w,h)=>{c.fillStyle='#fdfaf3';c.fillRect(0,0,w,h);c.fillStyle='#2a5d93';for(let y=-h;y<h*2;y+=48){c.beginPath();c.moveTo(0,y);c.lineTo(w,y+40);c.lineTo(w,y+62);c.lineTo(0,y+22);c.closePath();c.fill()}});
+  const waffle=()=>itTex('waffle',128,128,(c,w,h)=>{c.fillStyle='#e2ad62';c.fillRect(0,0,w,h);c.strokeStyle='#b97b34';c.lineWidth=5;for(let i=-w;i<w*2;i+=22){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i,h);c.lineTo(i+h,0);c.stroke()}},[4,2]);
+  let seatMat=P.seat;if(id==='trattoria')seatMat=straw();if(id==='amalfi')seatMat=maj();
+  // ---- oturak (oyundaki doğrulanmış profil) ----
+  const sh=new THREE.Shape();sh.moveTo(d.zb,d.cushBot);sh.lineTo(d.zf,d.cushBot);for(let k=d.zs.length-1;k>=0;k--)sh.lineTo(d.zs[k],d.top[k]);sh.lineTo(d.zb,d.cushBot);
+  const cg=new THREE.ExtrudeGeometry(sh,{depth:bw,bevelEnabled:false});cg.rotateY(-Math.PI/2);cg.translate(d.x1,0,0);A(cg,seatMat,0,0,0);
+  A(new THREE.BoxGeometry(bw+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),P.board,mx,(d.boardBot+d.cushBot)/2,mz);
+  if(id==='trattoria'){const p=A(new RoundedBoxGeometry(bw-0.08,0.03,0.2,2,0.012),itGingTex(),mx,d.top[d.top.length-1]+0.016,mz+0.03)}
+  const LX=[d.x0+0.03,d.x1-0.03],LZ=[d.zb+0.03,d.zf-0.03];
+  // ---- ayaklar ----
+  if(id==='colosseo'){for(const x of LX)for(const z of LZ)A(new THREE.BoxGeometry(0.045,LH,0.045),P.leg,x,d.footY+LH/2,z);
+    for(const x of LX)A(new THREE.BoxGeometry(0.05,0.02,d.zf-d.zb),itc(0xcdb98e),x,d.footY+0.01,mz)}
+  else if(id==='pisa'||id==='colonna'){for(const x of LX)for(const z of LZ){const g=new THREE.CylinderGeometry(0.019,0.022,LH-0.04,24);if(id==='colonna'){const Q=g.attributes.position;for(let i=0;i<Q.count;i++){const a=Math.atan2(Q.getZ(i),Q.getX(i)),w=1-0.14*Math.max(0,Math.cos(a*8))**2;Q.setX(i,Q.getX(i)*w);Q.setZ(i,Q.getZ(i)*w)}g.computeVertexNormals()}
+      A(g,P.leg,x,d.footY+0.02+(LH-0.04)/2,z);A(new THREE.BoxGeometry(0.05,0.02,0.05),P.leg,x,d.footY+0.01,z);A(new THREE.BoxGeometry(0.05,0.02,0.05),id==='colonna'?M.gold:P.leg,x,d.boardBot-0.01,z)}}
+  else if(id==='trattoria'){for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.016,0.012,LH,10),P.leg,x,d.footY+LH/2,z);const k=A(new THREE.SphereGeometry(0.022,10,8),P.leg,x,d.footY+LH*0.5,z);k.scale.y=0.6}
+    for(const z of LZ){const r=A(new THREE.CylinderGeometry(0.007,0.007,bw-0.06,6),P.leg,mx,d.footY+LH*0.28,z);r.rotation.z=Math.PI/2}}
+  else if(id==='venezia'){for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.014,0.016,LH,12),pal(),x,d.footY+LH/2,z);A(new THREE.SphereGeometry(0.018,10,8),M.gold,x,d.footY+0.012,z)}}
+  else if(id==='amalfi'){for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.009,0.009,LH,8),M.dark,x,d.footY+LH/2,z);const c=A(new THREE.TorusGeometry(0.02,0.005,6,14,Math.PI*1.5),M.dark,x,d.footY+0.02,z+(z>mz?0.018:-0.018));c.rotation.y=Math.PI/2}
+    const ring=A(new THREE.TorusGeometry(1,0.006,6,28),M.dark,mx,d.footY+LH*0.4,mz);ring.scale.set(bw/2-0.01,(d.zf-d.zb)/2+0.01,1);ring.rotation.x=Math.PI/2}
+  else if(id==='gelato'){for(const x of LX)for(const z of LZ){const c=A(new THREE.ConeGeometry(0.03,LH,14,1,true),waffle(),x,d.footY+LH/2,z);c.rotation.x=Math.PI;
+      const s=A(new THREE.SphereGeometry(0.032,12,8),[itc(0xf6b6c8),itc(0xbfdc9a),itc(0xfff3df),itc(0x8b5a3c)][(x>mx?1:0)+(z>mz?2:0)],x,d.boardBot-0.012,z);s.scale.y=0.6}}
+  // ---- sırt ----
+  const posts=(h,m,r=0.02)=>{for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.CylinderGeometry(r,r,h-d.footY,10),m,px,(d.footY+h)/2,bz)};
+  if(id==='colosseo'){// kemerli cephe: travertin levha + üç karanlık kemer
+    const slab=A(new THREE.BoxGeometry(bw+0.06,bh,0.06),P.board,bx,d.boardBot+bh/2,bz);
+    for(let k=0;k<3;k++){const x=d.x0+0.02+(k+0.5)*(bw-0.04)/3;const g=new THREE.ExtrudeGeometry(itShapeArch(0.09,0.24,0.045),{depth:0.004,bevelEnabled:false,curveSegments:12});A(g,itc(0x6a573d),x,d.boardBot+bh*0.38,bz+0.03);
+      for(const s of [-1,1])A(new THREE.BoxGeometry(0.014,0.26,0.012),itc(0xcdb98e),x+s*0.062,d.boardBot+bh*0.38+0.13,bz+0.034)}
+    A(new THREE.BoxGeometry(bw+0.09,0.03,0.08),itc(0xcdb98e),bx,d.backTop-0.015,bz);A(new THREE.BoxGeometry(bw+0.08,0.02,0.075),itc(0xcdb98e),bx,d.boardBot+bh*0.33,bz);
+    A(new THREE.BoxGeometry(bw-0.06,bh*0.22,0.02),seatMat,bx,d.boardBot+bh*0.17,d.backZ-0.011);posts(d.backTop,P.board,0.024)}
+  else if(id==='pisa'){// iki katlı sütunlu galeri; direklerin tepesinde minik eğik kuleler
+    A(new THREE.BoxGeometry(bw+0.04,0.035,0.06),P.board,bx,d.boardBot+0.18,bz);A(new THREE.BoxGeometry(bw+0.06,0.035,0.065),itc(0xd9d2c3),bx,d.backTop-0.02,bz);
+    A(new THREE.BoxGeometry(bw+0.02,bh-0.2,0.012),P.board,bx,d.boardBot+0.2+(bh-0.2)/2,bz-0.022);A(new THREE.BoxGeometry(bw,bh-0.22,0.004),itc(0x8c867b),bx,d.boardBot+0.2+(bh-0.2)/2,bz-0.014);
+    const mid=d.boardBot+0.2+(bh-0.24)/2;A(new THREE.BoxGeometry(bw+0.04,0.02,0.055),itc(0xd9d2c3),bx,mid,bz);
+    for(const [y0,y1] of [[d.boardBot+0.2,mid],[mid+0.01,d.backTop-0.035]]){const n=5;for(let i=0;i<n;i++){const x=d.x0+0.03+i*(bw-0.06)/(n-1);A(new THREE.CylinderGeometry(0.009,0.009,y1-y0,8),P.board,x,(y0+y1)/2,bz+0.006)}
+      for(let i=0;i<n-1;i++){const x=d.x0+0.03+(i+0.5)*(bw-0.06)/(n-1),r=(bw-0.06)/(n-1)/2-0.005;const t=A(new THREE.TorusGeometry(r,0.007,5,10,Math.PI),P.board,x,y1-r-0.004,bz+0.006)}}
+    posts(d.backTop,P.board,0.022);
+    for(const px of [d.x0-0.01,d.x1+0.01]){const tw=new THREE.Group();tw.position.set(px,d.backTop,bz);tw.rotation.z=px<mx?0.22:-0.22;L.add(tw);
+      for(let k=0;k<4;k++){const r=0.026-k*0.002;const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,0.022,14),k%2?itc(0xe9e3d6):P.board);m.position.y=0.011+k*0.024;m.castShadow=true;tw.add(m);
+        const c=new THREE.Mesh(new THREE.CylinderGeometry(r+0.004,r+0.004,0.004,14),itc(0xd9d2c3));c.position.y=0.022+k*0.024;tw.add(c)}}}
+  else if(id==='colonna'){// mermer sırt, kırmızı minder, altın defne çelengi
+    const g=new THREE.ExtrudeGeometry(itShapeArch(bw+0.04,bh,0.12),{depth:0.05,bevelEnabled:false,curveSegments:20});A(g,P.board,bx,d.boardBot,bz-0.025);
+    const pad=new THREE.ExtrudeGeometry(itShapeArch(bw-0.08,bh*0.62,0.09),{depth:0.012,bevelEnabled:false,curveSegments:20});A(pad,P.seat,bx,d.boardBot+bh*0.2,bz+0.026);
+    const wy=d.boardBot+bh*0.55;const wr=A(new THREE.TorusGeometry(0.075,0.007,6,30,Math.PI*1.6),M.gold,bx,wy,bz+0.045);wr.rotation.z=Math.PI*0.7;
+    for(let k=0;k<13;k++){const a=Math.PI*0.75+k*(Math.PI*1.5/12);const l=A(new THREE.SphereGeometry(0.014,8,6),M.gold,bx+Math.cos(a)*0.077,wy+Math.sin(a)*0.077,bz+0.048);l.scale.set(0.45,1.25,0.4);l.rotation.z=a+0.5}
+    A(new THREE.SphereGeometry(0.012,8,6),itc(0xa8322d),bx,wy+0.085,bz+0.05);
+    posts(d.backTop-0.1,P.board,0.022);for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.SphereGeometry(0.03,10,8),M.gold,px,d.backTop-0.08,bz)}
+  else if(id==='trattoria'){// kavisli üç lata, klasik İtalyan meyhane sandalyesi
+    posts(d.backTop,P.leg,0.02);for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.SphereGeometry(0.026,10,8),P.leg,px,d.backTop+0.005,bz);
+    for(let k=0;k<3;k++){const y=d.boardBot+bh*(0.45+k*0.2);const g=new THREE.CylinderGeometry(0.6,0.6,0.055,24,1,true,-0.5,1.0);const m=A(g,P.leg,bx,y,bz+0.6);m.rotation.y=Math.PI;m.scale.z=1}}
+  else if(id==='venezia'){// lacivert kadife oval sırt, altın çerçeve, karnaval maskesi
+    posts(d.backTop-0.12,M.gold,0.018);
+    const ov=new THREE.Shape();ov.absellipse(0,0,bw/2+0.01,bh*0.38,0,Math.PI*2,false);A(new THREE.ExtrudeGeometry(ov,{depth:0.04,bevelEnabled:false,curveSegments:28}),P.seat,bx,d.boardBot+bh*0.55,bz-0.02);
+    const fr=A(new THREE.TorusGeometry(1,0.011,6,40),M.gold,bx,d.boardBot+bh*0.55,bz+0.022);fr.scale.set(bw/2+0.01,bh*0.38,1);
+    for(let r=0;r<2;r++)for(let c=0;c<3;c++)if(!(r===1&&c===1))A(new THREE.SphereGeometry(0.011,8,6),M.gold,bx+(c-1)*0.12,d.boardBot+bh*(0.42+r*0.26),bz+0.024);
+    const mk=A(new THREE.SphereGeometry(0.055,16,10),itc(0xfdfaf3),bx,d.boardBot+bh*0.68,bz+0.03);mk.scale.set(1.3,0.6,0.3);
+    for(const s of [-1,1]){const e=A(new THREE.SphereGeometry(0.014,8,6),itc(0x1e1a1a),bx+s*0.028,d.boardBot+bh*0.69,bz+0.045);e.scale.set(1.4,0.8,0.3)}
+    for(let k=0;k<3;k++){const fe=A(new THREE.ConeGeometry(0.01,0.08,6),[itc(0xd9343e),M.gold,itc(0x7b4a8c)][k],bx+0.06+k*0.012,d.boardBot+bh*0.74+0.03,bz+0.03);fe.rotation.z=-0.5+k*0.25}}
+  else if(id==='amalfi'){// ferforje çerçeve içinde limonlu mayolika pano
+    posts(d.backTop-0.12,M.dark,0.012);
+    const sh2=itShapeArch(bw+0.02,bh-0.06,0.14);A(new THREE.ExtrudeGeometry(sh2,{depth:0.02,bevelEnabled:false,curveSegments:20}),itc(0x1f5aa6),bx,d.boardBot+0.04,bz-0.012);
+    const pn=new THREE.ExtrudeGeometry(itShapeArch(bw-0.04,bh-0.12,0.11),{depth:0.004,bevelEnabled:false,curveSegments:20});
+    const Q=pn.attributes.uv;for(let i=0;i<Q.count;i++){Q.setXY(i,Q.getX(i)*2.2+0.5,Q.getY(i)*2.2)}A(pn,maj(),bx,d.boardBot+0.07,bz+0.009);
+    const fr=new THREE.Shape();const W2=(bw+0.04)/2,H2=bh-0.04,r2=0.15;fr.moveTo(-W2,0);fr.lineTo(-W2,H2-r2);fr.absarc(0,H2-r2,W2,Math.PI,0,true);fr.lineTo(W2,0);
+    const tube=new THREE.TubeGeometry(new THREE.Path(fr.getPoints(40)).getPoints?new THREE.CatmullRomCurve3(fr.getPoints(40).map(p=>new THREE.Vector3(p.x,p.y,0))):null,60,0.009,6,false);A(tube,M.dark,bx,d.boardBot+0.03,bz+0.014);
+    for(const s of [-1,1]){const c1=A(new THREE.TorusGeometry(0.03,0.007,6,18,Math.PI*1.5),M.dark,bx+s*0.06,d.backTop-0.01,bz+0.012);c1.rotation.z=s>0?-0.3:Math.PI*0.8}
+    const le=A(new THREE.SphereGeometry(0.032,12,8),itc(0xf5c518),bx,d.backTop+0.02,bz+0.012);le.scale.set(1.35,1,0.7);
+    for(const s of [-1,1]){const lf=A(new THREE.SphereGeometry(0.018,8,6),itc(0x4f8a3a),bx+s*0.03,d.backTop+0.045,bz+0.012);lf.scale.set(1.4,0.6,0.4);lf.rotation.z=s*0.6}}
+  else if(id==='gelato'){// fıstıklı dondurma topu sırt, damlalar ve kiraz
+    posts(d.boardBot+bh*0.5,waffle(),0.022);
+    const ball=A(new THREE.SphereGeometry(bw/2+0.03,24,16),P.arm,bx,d.boardBot+bh*0.66,bz);ball.scale.set(1,0.95,0.25);
+    for(let k=0;k<5;k++){const x=bx+(k-2)*0.07,dr=A(new THREE.CapsuleGeometry(0.018,0.04+(k%2)*0.03,4,8),P.arm,x,d.boardBot+bh*0.66-0.2-(k%2)*0.015,bz+0.01);dr.scale.z=0.6}
+    const sc=[0xffffff,0x7ecbe0,0xf2d14e,0xe85d75];for(let k=0;k<14;k++){const a=k*2.4,r=0.05+((k*37)%9)/9*0.15;const s=A(new THREE.CapsuleGeometry(0.005,0.014,2,4),itc(sc[k%4]),bx+Math.cos(a)*r,d.boardBot+bh*0.68+Math.sin(a)*r*0.9,bz+0.075);s.rotation.z=a*1.7;s.castShadow=false}
+    A(new THREE.SphereGeometry(0.035,12,8),itc(0xd9343e),bx,d.boardBot+bh*0.66+bw/2+0.04,bz);const st=A(new THREE.CylinderGeometry(0.003,0.003,0.06,5),itc(0x4f7a2a),bx+0.012,d.boardBot+bh*0.66+bw/2+0.09,bz);st.rotation.z=-0.4}
+  // ---- kol dayanağı (oyundaki konum) ----
+  for(const ax of [d.x0-0.045,d.x1+0.045]){// iki kol dayanağı
+  if(id==='gelato'){A(new THREE.CapsuleGeometry(0.022,d.zf-d.zb-0.02,4,10),P.arm,ax,d.armY-0.015,mz).rotation.x=Math.PI/2;A(new THREE.ConeGeometry(0.018,d.armY-0.03-d.footY,10,1,true),waffle(),ax,(d.footY+d.armY-0.03)/2,d.zf).rotation.x=Math.PI}
+  else{A(new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),P.arm,ax,d.armY-0.015,mz);
+    const am=id==='venezia'?pal():id==='trattoria'?P.leg:id==='amalfi'?M.dark:P.leg||P.arm;A(new THREE.CylinderGeometry(id==='amalfi'?0.009:0.015,id==='amalfi'?0.009:0.015,d.armY-0.03-d.footY,10),am,ax,(d.footY+d.armY-0.03)/2,d.zf)}}
+  L.userData.itChair=id;return L}
+
+// =====================================================================
+// TabbyChef · TÜRKİYE MASA & SANDALYE KOLEKSİYONU
+// 7 masa + 7 uyumlu sandalye: kapadokya, galata, kapalicarsi, kahvehane, iznik, simit, nazar
+// GEREKSİNİM: italya_koleksiyonu.js önce eklenmiş olmalı (itc, itTex, itShapeArch ortak yardımcıları).
+//
+// OYUNA EKLEME (index.html):
+// 1) Bu dosyayı italya_koleksiyonu.js'in hemen ALTINA yapıştır.
+// 2) tableMeshes fonksiyonunun ilk satırına ekle:
+//      if(TR_TABLE[typeId])return trTable(parent,f,TR_TABLE[typeId],vase);
+// 3) chairMeshes fonksiyonunun ilk satırına ekle:
+//      if(TR_CHAIR[styleId])return trChair(parent,f,TR_CHAIR[styleId]);
+// 4) Market kataloğuna kayıtlar: masalar t_tr_<ad> (2 kişilik), t_four_tr_<ad> (4 kişilik); sandalye c_tr_<ad>.
+// Sandalyelerin oturak profili, sırt yeri ve kol dayanağı oyundaki SEAT_D ile birebir aynıdır.
+// =====================================================================
+// ================= TÜRKİYE MASA & SANDALYE KOLEKSİYONU =================
+// 7 takım: kapadokya, galata, kapalicarsi, kahvehane, iznik, simit, nazar
+// GEREKSİNİM: italya_koleksiyonu.js (itc, itTex, itShapeArch, ITX) önce eklenmiş olmalı.
+const TR_NAMES=['kapadokya','galata','kapalicarsi','kahvehane','iznik','simit','nazar'];
+const TR_TABLE={},TR_CHAIR={};for(const n of TR_NAMES){TR_TABLE['t_tr_'+n]=n;TR_TABLE['t_four_tr_'+n]=n;TR_CHAIR['c_tr_'+n]=n}
+// ---- ortak dokular ----
+function trKilimTex(){return itTex('tr_kilim',256,256,(c,w,h)=>{c.fillStyle='#a8322a';c.fillRect(0,0,w,h);const rows=4,rh=h/rows;
+  for(let r=0;r<rows;r++){const y=r*rh;c.fillStyle=r%2?'#23395b':'#f1e3c6';c.fillRect(0,y+rh*0.42,w,rh*0.16);
+    const n=4,s=w/n;for(let i=0;i<n;i++){const x=i*s+(r%2?s/2:0);for(const dx of [0,-w]){c.fillStyle=['#e0892f','#23395b','#f1e3c6','#e0892f'][(i+r)%4];c.beginPath();c.moveTo(x+dx+s/2,y+4);c.lineTo(x+dx+s-6,y+rh/2);c.lineTo(x+dx+s/2,y+rh-4);c.lineTo(x+dx+6,y+rh/2);c.closePath();c.fill();
+      c.fillStyle='#a8322a';c.beginPath();c.moveTo(x+dx+s/2,y+rh*0.3);c.lineTo(x+dx+s*0.68,y+rh/2);c.lineTo(x+dx+s/2,y+rh*0.7);c.lineTo(x+dx+s*0.32,y+rh/2);c.closePath();c.fill()}}}},[2,2])}
+function trIznikDraw(c,x0,y0,s){c.fillStyle='#fbf8f0';c.fillRect(x0,y0,s,s);const cx=x0+s/2,cy=y0+s/2;
+  // köşelerde çeyrek rozet (karolar yan yana gelince tam rozet olur)
+  for(const [px,py] of [[x0,y0],[x0+s,y0],[x0,y0+s],[x0+s,y0+s]]){c.save();c.beginPath();c.rect(x0,y0,s,s);c.clip();c.fillStyle='#1f3f8f';c.beginPath();c.arc(px,py,s*0.22,0,6.283);c.fill();c.fillStyle='#2a9d8f';c.beginPath();c.arc(px,py,s*0.13,0,6.283);c.fill();c.fillStyle='#c8443a';c.beginPath();c.arc(px,py,s*0.05,0,6.283);c.fill();c.restore()}
+  // ortada lale + iki saz yaprağı
+  c.save();c.translate(cx,cy);c.fillStyle='#2a9d8f';for(const k of [-1,1]){c.save();c.rotate(k*0.75);c.beginPath();c.ellipse(0,s*0.12,s*0.045,s*0.19,0,0,6.283);c.fill();c.restore()}
+  c.strokeStyle='#1f3f8f';c.lineWidth=s*0.02;c.beginPath();c.moveTo(0,s*0.28);c.lineTo(0,-s*0.02);c.stroke();
+  c.fillStyle='#c8443a';c.beginPath();c.moveTo(-s*0.1,-s*0.02);c.quadraticCurveTo(-s*0.12,-s*0.2,-s*0.05,-s*0.26);c.lineTo(0,-s*0.15);c.lineTo(s*0.05,-s*0.26);c.quadraticCurveTo(s*0.12,-s*0.2,s*0.1,-s*0.02);c.closePath();c.fill();
+  c.strokeStyle='#1f3f8f';c.lineWidth=s*0.012;c.stroke();c.restore();
+  for(const [dx,dy] of [[0.5,0.1],[0.1,0.5],[0.9,0.5],[0.5,0.9]]){c.fillStyle='#1f3f8f';c.beginPath();c.arc(x0+dx*s,y0+dy*s,s*0.025,0,6.283);c.fill()}}
+function trIznikTex(rep=[2,2]){return itTex('tr_iznik_'+rep.join('x'),256,256,(c,w,h)=>{for(let i=0;i<2;i++)for(let j=0;j<2;j++)trIznikDraw(c,i*w/2,j*h/2,w/2)},rep)}
+function trNazarDisc(key,size=256){return itTex(key,size,size,(c,w,h)=>{const o=w/2;c.fillStyle='#1d4fa3';c.fillRect(0,0,w,h);
+  for(const [r,col] of [[0.98,'#1d4fa3'],[0.56,'#ffffff'],[0.4,'#7fc4ec'],[0.2,'#111418']]){c.fillStyle=col;c.beginPath();c.arc(o,o,o*r,0,6.283);c.fill()}
+  c.fillStyle='rgba(255,255,255,.55)';c.beginPath();c.ellipse(o*0.62,o*0.55,o*0.12,o*0.06,-0.6,0,6.283);c.fill()},[1,1])}
+function trTavlaTex(){return itTex('tr_tavla',512,384,(c,w,h)=>{c.fillStyle='#6b3f22';c.fillRect(0,0,w,h);c.fillStyle='#e8d3a8';c.fillRect(20,20,w/2-34,h-40);c.fillRect(w/2+14,20,w/2-34,h-40);
+  c.fillStyle='#4a2a16';c.fillRect(w/2-14,20,28,h-40);const hw=(w/2-34)/6;
+  for(const [x0] of [[20],[w/2+14]])for(let i=0;i<6;i++){const x=x0+i*hw;for(const top of [true,false]){c.fillStyle=(i+(top?0:1))%2?'#7a1f1c':'#2b2b2b';c.beginPath();if(top){c.moveTo(x,20);c.lineTo(x+hw,20);c.lineTo(x+hw/2,20+(h-40)*0.42)}else{c.moveTo(x,h-20);c.lineTo(x+hw,h-20);c.lineTo(x+hw/2,h-20-(h-40)*0.42)}c.closePath();c.fill()}}
+  const pul=(x,y,col)=>{c.fillStyle=col;c.beginPath();c.arc(x,y,13,0,6.283);c.fill();c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=2;c.stroke()};
+  for(let k=0;k<5;k++)pul(20+hw/2,34+k*24,'#fbf7ec');for(let k=0;k<3;k++)pul(w/2+14+hw*4.5,h-34-k*24,'#fbf7ec');for(let k=0;k<5;k++)pul(w-20-hw/2,h-34-k*24,'#3a2014');for(let k=0;k<3;k++)pul(w/2-20-hw*1.5,34+k*24,'#3a2014')},[1,1])}
+function trTeaGlass(A,x,y,z,s=1){// ince belli çay bardağı + tabak + çay
+  A(new THREE.CylinderGeometry(0.035*s,0.035*s,0.006*s,16),itc(0xfbf7ec),x,y+0.003*s,z);A(new THREE.CylinderGeometry(0.03*s,0.03*s,0.004*s,16),itc(0xc8443a),x,y+0.007*s,z);
+  const g=new THREE.LatheGeometry([[0,0],[0.016,0],[0.018,0.01],[0.011,0.03],[0.016,0.05],[0.019,0.06],[0.0,0.06]].map(p=>new THREE.Vector2(p[0]*s,p[1]*s)),14);
+  A(g,new THREE.MeshToonMaterial({color:0xb4471f,gradientMap:grad,transparent:true,opacity:0.9}),x,y+0.008*s,z)}
+function trSiniTex(){return itTex('tr_sini',512,512,(c,w,h)=>{const g=c.createRadialGradient(w/2,h/2,10,w/2,h/2,w/2);g.addColorStop(0,'#e6c46a');g.addColorStop(1,'#b8892e');c.fillStyle=g;c.fillRect(0,0,w,h);
+  c.strokeStyle='rgba(110,70,20,.75)';c.lineWidth=3;for(const r of [40,62,120,150,215,240]){c.beginPath();c.arc(w/2,h/2,r,0,Math.PI*2);c.stroke()}
+  c.save();c.translate(w/2,h/2);for(let i=0;i<16;i++){c.rotate(Math.PI/8);c.beginPath();c.moveTo(0,-150);c.quadraticCurveTo(28,-180,0,-213);c.quadraticCurveTo(-28,-180,0,-150);c.stroke();c.beginPath();c.arc(0,-228,5,0,Math.PI*2);c.stroke()}
+  for(let i=0;i<8;i++){c.rotate(Math.PI/4);c.beginPath();c.moveTo(0,-62);c.quadraticCurveTo(22,-90,0,-118);c.quadraticCurveTo(-22,-90,0,-62);c.stroke()}
+  c.lineWidth=2.5;c.beginPath();for(let i=0;i<16;i++){const a=i*Math.PI/8,r=i%2?18:38;c.lineTo(Math.cos(a)*r,Math.sin(a)*r)}c.closePath();c.stroke();c.restore();
+  c.fillStyle='rgba(255,240,190,.25)';c.beginPath();c.ellipse(w*0.38,h*0.32,90,40,-0.6,0,Math.PI*2);c.fill()})}
+function trSedefTex(n=8){return itTex('tr_sedef'+n,256,384,(c,w,h)=>{c.fillStyle='#4a2a1a';c.fillRect(0,0,w,h);c.fillStyle='rgba(0,0,0,.18)';for(let i=0;i<40;i++)c.fillRect(0,i*10+Math.random()*4,w,2);
+  const P='#f3ece0';c.strokeStyle=P;c.fillStyle=P;c.lineWidth=5;c.strokeRect(14,14,w-28,h-28);c.lineWidth=2;c.strokeRect(24,24,w-48,h-48);
+  // kemer: koyu açıklık + sedef çerçeve
+  c.beginPath();c.moveTo(128,62);c.lineTo(206,h/2);c.lineTo(128,h-62);c.lineTo(50,h/2);c.closePath();c.fillStyle='#24140c';c.fill();c.lineWidth=5;c.stroke();c.lineWidth=2;c.beginPath();c.moveTo(128,86);c.lineTo(186,h/2);c.lineTo(128,h-86);c.lineTo(70,h/2);c.closePath();c.stroke();
+  c.fillStyle=P;const star=(x,y,r)=>{c.beginPath();for(let i=0;i<16;i++){const a=i*Math.PI/8,rr=i%2?r*0.45:r;c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}c.closePath();c.fill()};
+  star(128,h/2,34);c.fillStyle='#24140c';c.beginPath();c.arc(128,h/2,11,0,Math.PI*2);c.fill();c.fillStyle=P;
+  for(const k of [-1,1])for(let i=1;i<4;i++){const y=h/2+k*(40+i*18);c.beginPath();c.moveTo(128,y-6);c.lineTo(135,y);c.lineTo(128,y+6);c.lineTo(121,y);c.fill()}
+  for(const [x,y] of [[40,40],[w-40,40],[40,h-40],[w-40,h-40]])star(x,y,12);
+  for(let i=0;i<9;i++){c.beginPath();c.arc(40,70+i*30,3.5,0,Math.PI*2);c.fill();c.beginPath();c.arc(w-40,70+i*30,3.5,0,Math.PI*2);c.fill()}},[n,1])}
+function trTable(parent,f,typeId,vase=true){
+  const d=SEAT_D,L=frameGroup(f,parent),cx=d.tCx,cz=d.tCz,R=d.tR,tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;
+  const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);let surf=top;
+  if(typeId==='kapadokya'){const tuf=itc(0xe8cfa8),tufD=itc(0xd2b083),bas=itc(0x7a6250);
+    A(new THREE.CylinderGeometry(R,R*0.97,tk+0.01,40),tuf,cx,yT,cz);
+    // peri bacası: geniş tüf gövde + koyu bazalt şapka
+    const prof=[[0,0],[0.17,0],[0.16,0.06],[0.13,0.18],[0.095,0.3],[0.07,0.4],[0.055,H-0.1],[0,H-0.1]].map(p=>new THREE.Vector2(p[0],p[1]));
+    A(new THREE.LatheGeometry(prof,24),tuf,cx,fy,cz);
+    const cap=A(new THREE.SphereGeometry(0.11,18,10,0,Math.PI*2,0,Math.PI/2),bas,cx,fy+H-0.105,cz);cap.scale.y=0.9;A(new THREE.CylinderGeometry(0.11,0.11,0.02,18),bas,cx,fy+H-0.105,cz);
+    for(const [a,y,s] of [[0.4,0.1,1.2],[2.3,0.22,1],[4.1,0.15,0.9],[1.5,0.3,0.8]]){const r=0.165-y*0.33;const w=A(new THREE.SphereGeometry(0.014*s,8,6),itc(0x3a2a1c),cx+Math.cos(a)*r,fy+y,cz+Math.sin(a)*r);w.scale.set(1,1.4,0.5);w.rotation.y=-a}
+    const dr=new THREE.ExtrudeGeometry(itShapeArch(0.045,0.07,0.0225),{depth:0.004,bevelEnabled:false});const dm=A(dr,itc(0x3a2a1c),cx+0.155,fy,cz+0.02);dm.rotation.y=Math.PI/2;
+    if(vase){// minik sıcak hava balonu
+      const bx=cx,by=surf;A(new THREE.CylinderGeometry(0.02,0.017,0.025,8),itc(0xb5733a),bx,by+0.0125,cz);
+      for(const [dx,dz] of [[0.012,0.012],[-0.012,0.012],[0.012,-0.012],[-0.012,-0.012]]){const st=A(new THREE.CylinderGeometry(0.0012,0.0012,0.06,3),itc(0x4a2e1c),bx+dx*1.3,by+0.055,cz+dz*1.3)}
+      const bal=new THREE.SphereGeometry(0.05,16,12);const cols=[0xc8443a,0xf2b134,0x2a9d8f,0xf1e3c6];const C=new Float32Array(bal.attributes.position.count*3);const P=bal.attributes.position;
+      for(let i=0;i<P.count;i++){const a=Math.atan2(P.getZ(i),P.getX(i));const k=Math.floor(((a+Math.PI)/(2*Math.PI))*8)%4;const cc=new THREE.Color(cols[k]);C[i*3]=cc.r;C[i*3+1]=cc.g;C[i*3+2]=cc.b}
+      bal.setAttribute('color',new THREE.BufferAttribute(C,3));const bm=A(bal,new THREE.MeshToonMaterial({vertexColors:true,gradientMap:grad}),bx,by+0.13,cz);bm.scale.y=1.15}}
+  else if(typeId==='galata'){const st=itc(0xd8c3a0),stD=itc(0xbfa880),roof=itc(0x56677a),dark=itc(0x3a2f28);
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0xf3eee6),cx,yT,cz);const r1=A(new THREE.TorusGeometry(R-0.004,0.01,6,48),itc(0x23395b),cx,yT,cz);r1.rotation.x=Math.PI/2;
+    const rt=R*0.42,bh=H*0.62;A(new THREE.CylinderGeometry(rt*1.15,rt*1.2,0.03,28),stD,cx,fy+0.015,cz);A(new THREE.CylinderGeometry(rt,rt*1.04,bh,28),st,cx,fy+0.03+bh/2,cz);
+    for(let row=0;row<3;row++)for(let i=0;i<8;i++){const a=i/8*Math.PI*2+row*0.4;const y=fy+0.09+row*bh*0.3;const w=new THREE.ExtrudeGeometry(itShapeArch(0.018,0.035,0.009),{depth:0.004,bevelEnabled:false});
+      const m=A(w,dark,cx+Math.cos(a)*(rt+0.001),y,cz+Math.sin(a)*(rt+0.001));m.rotation.y=Math.PI/2-a}
+    const gy=fy+0.03+bh;A(new THREE.CylinderGeometry(rt*1.18,rt*1.18,0.015,28),stD,cx,gy,cz);A(new THREE.CylinderGeometry(rt*0.85,rt*0.85,0.06,24),dark,cx,gy+0.03,cz);
+    for(let i=0;i<16;i++){const a=i/16*Math.PI*2;A(new THREE.CylinderGeometry(0.004,0.004,0.055,5),st,cx+Math.cos(a)*rt*1.1,gy+0.035,cz+Math.sin(a)*rt*1.1)}
+    A(new THREE.CylinderGeometry(rt*1.15,rt*1.15,0.012,28),stD,cx,gy+0.066,cz);
+    const ch=top-tk-(gy+0.072);A(new THREE.ConeGeometry(rt*1.05,ch,28),roof,cx,gy+0.072+ch/2,cz);
+    if(vase){// minik İstanbul vapuru
+      const V=new THREE.Group();V.position.set(cx,surf,cz);V.rotation.y=0.5;L.add(V);const mk=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;V.add(o);return o};
+      const hull=mk(new THREE.BoxGeometry(0.2,0.03,0.07),itc(0x2b2b2b),0,0.015,0);mk(new THREE.BoxGeometry(0.19,0.035,0.065),itc(0xfbf7ec),0,0.047,0);mk(new THREE.BoxGeometry(0.12,0.03,0.055),itc(0xfbf7ec),0,0.08,0);
+      for(let i=0;i<5;i++)mk(new THREE.BoxGeometry(0.018,0.012,0.002),itc(0x23395b),-0.075+i*0.036,0.05,0.033);
+      mk(new THREE.CylinderGeometry(0.012,0.013,0.05,10),itc(0xfbf7ec),0.01,0.12,0);mk(new THREE.CylinderGeometry(0.0125,0.0125,0.012,10),itc(0x2b2b2b),0.01,0.14,0);mk(new THREE.CylinderGeometry(0.0128,0.0128,0.01,10),itc(0xc8443a),0.01,0.128,0)}}
+  else if(typeId==='kapalicarsi'){const brass=trSiniTex(),wal=itc(0x4a2a1a),pearl=itc(0xf3ece0);
+    // Kapalıçarşı: dövme pirinç sini tabla, sedef kakmalı sekizgen ceviz sehpa
+    A(new THREE.CylinderGeometry(R,R,tk,48),M.gold,cx,yT,cz);const tt=A(new THREE.CircleGeometry(R*0.97,48),brass,cx,top+0.0015,cz);tt.rotation.x=-Math.PI/2;tt.castShadow=false;surf=top+0.002;
+    const rr=A(new THREE.TorusGeometry(R-0.004,0.012,8,56),M.gold,cx,top+0.004,cz);rr.rotation.x=Math.PI/2;
+    const sh=H-0.02,sr=0.17;const sedef=trSedefTex();
+    const oc=A(new THREE.CylinderGeometry(sr,sr*1.08,sh,8),[sedef,wal,wal],cx,fy+0.02+sh/2,cz);oc.rotation.y=Math.PI/8;
+    A(new THREE.CylinderGeometry(sr*1.18,sr*1.22,0.02,8),wal,cx,fy+0.01,cz).rotation.y=Math.PI/8;
+    A(new THREE.CylinderGeometry(sr*1.1,sr*1.02,0.02,8),wal,cx,top-tk-0.01,cz).rotation.y=Math.PI/8;
+    for(let k=0;k<8;k++){const a=k*Math.PI/4;A(new THREE.SphereGeometry(0.009,8,6),M.gold,cx+Math.cos(a)*sr*1.2,fy+0.025,cz+Math.sin(a)*sr*1.2)}
+    if(vase){// mozaik lamba + çay
+      const lx=cx-0.05,lz=cz-0.02;A(new THREE.CylinderGeometry(0.035,0.04,0.01,12),M.gold,lx,surf+0.005,lz);A(new THREE.CylinderGeometry(0.006,0.008,0.06,8),M.gold,lx,surf+0.04,lz);
+      const gl=new THREE.SphereGeometry(0.055,16,12);const cols=[0xc8443a,0x2a9d8f,0xf2b134,0x1f3f8f,0x7a3b8f,0xe0892f];const C=new Float32Array(gl.attributes.position.count*3);const P=gl.attributes.position;
+      for(let i=0;i<P.count;i++){const a=Math.atan2(P.getZ(i),P.getX(i)),b=P.getY(i);const k=(Math.floor(((a+Math.PI)/(2*Math.PI))*10)+Math.floor((b+0.06)/0.03))%cols.length;const cc=new THREE.Color(cols[k]);C[i*3]=cc.r;C[i*3+1]=cc.g;C[i*3+2]=cc.b}
+      gl.setAttribute('color',new THREE.BufferAttribute(C,3));const gm=A(gl,new THREE.MeshToonMaterial({vertexColors:true,gradientMap:grad,emissive:0x553311}),lx,surf+0.12,lz);gm.scale.y=0.9;
+      A(new THREE.ConeGeometry(0.03,0.03,10),M.gold,lx,surf+0.18,lz);A(new THREE.SphereGeometry(0.007,6,4),M.gold,lx,surf+0.2,lz);
+      trTeaGlass(A,cx+0.12,surf,cz+0.06)}}
+  else if(typeId==='kahvehane'){const wood=itc(0x4a2a1a);
+    A(new THREE.CylinderGeometry(R,R,tk,44),wood,cx,yT,cz);const rr=A(new THREE.TorusGeometry(R-0.003,0.01,6,48),itc(0x6b3f22),cx,yT,cz);rr.rotation.x=Math.PI/2;
+    // döküm ayak (klasik kahvehane): ince gövde + dört kıvrık ayak
+    A(new THREE.CylinderGeometry(0.02,0.03,H-0.06,10),M.dark,cx,fy+0.06+(H-0.06)/2,cz);A(new THREE.CylinderGeometry(0.06,0.04,0.03,14),M.dark,cx,top-tk-0.015,cz);
+    for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;const t=A(new THREE.TorusGeometry(0.07,0.009,6,14,Math.PI/2),M.dark,cx+Math.cos(a)*0.07,fy+0.075,cz+Math.sin(a)*0.07);t.rotation.y=-a+Math.PI;t.rotation.z=0}
+    if(vase){// tavla + iki çay
+      const tb=A(new THREE.BoxGeometry(0.3,0.012,0.22),trTavlaTex(),cx-0.02,surf+0.006,cz);tb.rotation.y=0.25;
+      trTeaGlass(A,cx+0.17,surf,cz+0.1);trTeaGlass(A,cx+0.15,surf,cz-0.12);
+      for(const [dx,dz] of [[0.04,0.06],[0.06,0.03]]){const z=A(new RoundedBoxGeometry(0.018,0.018,0.018,1,0.003),itc(0xfbf7ec),cx-0.02+dx,surf+0.02,cz+dz);z.rotation.y=dx*20}
+      for(const [dx,dz] of [[0.1,0.03],[0.11,-0.02]]){const z=A(new THREE.BoxGeometry(0.012,0.012,0.012),itc(0xfbf7ec),cx+dx,surf+0.006,cz+dz)}}}
+  else if(typeId==='iznik'){const blue=itc(0x1f3f8f),tq=itc(0x2a9d8f),wh=itc(0xfbf8f0);
+    A(new THREE.CylinderGeometry(R,R,tk,44),blue,cx,yT,cz);const tt=A(new THREE.CircleGeometry(R*0.96,48),trIznikTex([2,2]),cx,top+0.0015,cz);tt.rotation.x=-Math.PI/2;tt.castShadow=false;surf=top+0.002;
+    const rr=A(new THREE.TorusGeometry(R-0.004,0.011,6,48),tq,cx,yT,cz);rr.rotation.x=Math.PI/2;
+    // çini vazo gövdeli ayak
+    const prof=[[0,0],[0.13,0],[0.13,0.03],[0.07,0.06],[0.05,0.12],[0.11,0.26],[0.12,0.33],[0.07,0.45],[0.045,H-0.02],[0.09,H],[0,H]].map(p=>new THREE.Vector2(p[0],p[1]));
+    A(new THREE.LatheGeometry(prof,28),trIznikTex([4,1]),cx,fy,cz);for(const y of [0.03,0.12,0.45])A(new THREE.TorusGeometry(y===0.03?0.13:y===0.12?0.052:0.072,0.008,6,24),blue,cx,fy+y,cz).rotation.x=Math.PI/2;
+    if(vase){// İznik vazoda lale
+      A(new THREE.LatheGeometry([[0,0],[0.025,0],[0.035,0.03],[0.02,0.07],[0.024,0.085],[0,0.085]].map(p=>new THREE.Vector2(p[0],p[1])),16),trIznikTex([2,1]),cx,surf,cz);
+      A(new THREE.CylinderGeometry(0.002,0.002,0.09,4),itc(0x4f7a2e),cx,surf+0.12,cz);const tl=A(new THREE.SphereGeometry(0.022,10,8),itc(0xc8443a),cx,surf+0.17,cz);tl.scale.y=1.4;
+      const lf=A(new THREE.SphereGeometry(0.02,8,6),itc(0x4f7a2e),cx+0.015,surf+0.12,cz);lf.scale.set(0.4,1.6,0.4);lf.rotation.z=-0.4}}
+  else if(typeId==='simit'){const wood=itc(0xa8723f),ses=itc(0xd28a3c);
+    A(new THREE.CylinderGeometry(R*0.9,R*0.9,tk,40),wood,cx,yT,cz);
+    const sim=A(new THREE.TorusGeometry(R*0.9,0.04,12,48),ses,cx,top-0.015,cz);sim.rotation.x=Math.PI/2;
+    for(let i=0;i<90;i++){const a=i*2.39996,rr=R*0.9+Math.cos(i*1.7)*0.03;const s=A(new THREE.SphereGeometry(0.004,4,3),itc(0xf6e2b0),cx+Math.cos(a)*rr,top-0.015+0.03+Math.sin(i*0.9)*0.01,cz+Math.sin(a)*rr);s.scale.set(1.6,0.6,1);s.castShadow=false}
+    // simitçi sehpası: çapraz üç ayak
+    for(let k=0;k<3;k++){const a=k*2*Math.PI/3;const lg=A(new THREE.CylinderGeometry(0.014,0.014,H*1.08,8),itc(0x6b3f22),cx+Math.cos(a)*0.09,fy+H/2,cz+Math.sin(a)*0.09);lg.rotation.set(Math.sin(a)*0.33,0,-Math.cos(a)*0.33)}
+    const ring=A(new THREE.TorusGeometry(0.09,0.01,6,20),itc(0x6b3f22),cx,fy+H*0.5,cz);ring.rotation.x=Math.PI/2;
+    if(vase){// tabakta simit + çay
+      A(new THREE.CylinderGeometry(0.08,0.07,0.008,20),itc(0xfbf7ec),cx-0.03,surf+0.004,cz);const s2=A(new THREE.TorusGeometry(0.05,0.017,10,24),ses,cx-0.03,surf+0.022,cz);s2.rotation.x=Math.PI/2;
+      for(let i=0;i<30;i++){const a=i*2.4;const s=A(new THREE.SphereGeometry(0.0035,4,3),itc(0xf6e2b0),cx-0.03+Math.cos(a)*0.05,surf+0.036,cz+Math.sin(a)*0.05);s.castShadow=false}
+      trTeaGlass(A,cx+0.1,surf,cz+0.06)}}
+  else if(typeId==='nazar'){const nb=itc(0x1d4fa3);
+    A(new THREE.CylinderGeometry(R,R,tk,44),nb,cx,yT,cz);const tt=A(new THREE.CircleGeometry(R*0.98,48),trNazarDisc('tr_nazar_big',512),cx,top+0.0015,cz);tt.rotation.x=-Math.PI/2;tt.castShadow=false;surf=top+0.002;
+    // burgulu mavi cam gövde
+    const n=9,sh=(H-0.05)/n;for(let i=0;i<n;i++){const t=A(new THREE.TorusGeometry(0.045,0.022,10,20),i%2?itc(0x7fc4ec):nb,cx,fy+0.05+sh*(i+0.5),cz);t.rotation.x=Math.PI/2;t.scale.z=1.3}
+    A(new THREE.CylinderGeometry(0.03,0.03,H-0.04,12),nb,cx,fy+0.03+(H-0.04)/2,cz);A(new THREE.CylinderGeometry(0.13,0.15,0.03,24),nb,cx,fy+0.015,cz);
+    const base=A(new THREE.CircleGeometry(0.13,24),trNazarDisc('tr_nazar_small',256),cx,fy+0.031,cz);base.rotation.x=-Math.PI/2;
+    if(vase){// asılı nazarlık
+      A(new THREE.CylinderGeometry(0.003,0.003,0.12,4),itc(0xc8443a),cx,surf+0.06,cz);A(new THREE.CylinderGeometry(0.03,0.03,0.008,16),itc(0x6b3f22),cx,surf+0.004,cz);
+      const nz=A(new THREE.CylinderGeometry(0.035,0.035,0.01,24),[itc(0x1d4fa3),trNazarDisc('tr_nazar_small',256),trNazarDisc('tr_nazar_small',256)],cx,surf+0.14,cz);nz.rotation.x=Math.PI/2}}
+  L.userData.trTable=typeId;return L}
+
+// ================= SANDALYELER (oturak profili, sırt yeri ve kol dayanağı oyundakiyle aynı) =================
+function trChair(parent,f,id){
+  const d=SEAT_D,L=frameGroup(f,parent);const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+  const LH=d.boardBot-d.footY,mx=(d.x0+d.x1)/2,mz=(d.zb+d.zf)/2,bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=mx,bz=d.backZ-0.03;
+  const P={kapadokya:{seat:trKilimTex(),board:itc(0xe8cfa8),leg:itc(0xd2b083),arm:itc(0xd2b083)},
+    galata:{seat:itc(0x23395b),board:itc(0xd8c3a0),leg:itc(0xd8c3a0),arm:itc(0xbfa880)},
+    kapalicarsi:{seat:itc(0x9b1b30),board:itc(0x4a2a1a),leg:itc(0x4a2a1a),arm:itc(0x4a2a1a)},
+    kahvehane:{seat:itTex('straw',64,64,(c,w,h)=>{c.fillStyle='#d8b062';c.fillRect(0,0,w,h);c.strokeStyle='rgba(140,95,35,.55)';c.lineWidth=2;for(let i=-w;i<w*2;i+=6){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke();c.beginPath();c.moveTo(i,h);c.lineTo(i+h,0);c.stroke()}},[3,2]),board:itc(0x4a2a1a),leg:itc(0x4a2a1a),arm:itc(0x4a2a1a)},
+    iznik:{seat:itc(0x1f3f8f),board:itc(0xfbf8f0),leg:itc(0xfbf8f0),arm:itc(0x2a9d8f)},
+    simit:{seat:itc(0xf2a6b8),board:itc(0xa8723f),leg:itc(0xa8723f),arm:itc(0xa8723f)},
+    nazar:{seat:itc(0x1d4fa3),board:itc(0xfbf7ec),leg:itc(0xfbf7ec),arm:itc(0x7fc4ec)}}[id];
+  // oturak (oyundaki doğrulanmış profil)
+  const sh=new THREE.Shape();sh.moveTo(d.zb,d.cushBot);sh.lineTo(d.zf,d.cushBot);for(let k=d.zs.length-1;k>=0;k--)sh.lineTo(d.zs[k],d.top[k]);sh.lineTo(d.zb,d.cushBot);
+  const cg=new THREE.ExtrudeGeometry(sh,{depth:bw,bevelEnabled:false});cg.rotateY(-Math.PI/2);cg.translate(d.x1,0,0);A(cg,P.seat,0,0,0);
+  A(new THREE.BoxGeometry(bw+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),P.board,mx,(d.boardBot+d.cushBot)/2,mz);
+  const LX=[d.x0+0.03,d.x1-0.03],LZ=[d.zb+0.03,d.zf-0.03];
+  const posts=(h,m,r=0.02)=>{for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.CylinderGeometry(r,r,h-d.footY,10),m,px,(d.footY+h)/2,bz)};
+  // ayaklar
+  if(id==='kapadokya'){A(new THREE.BoxGeometry(bw+0.02,LH,0.06),P.leg,mx,d.footY+LH/2,d.zb+0.04);A(new THREE.BoxGeometry(bw+0.02,LH,0.06),P.leg,mx,d.footY+LH/2,d.zf-0.04);
+    const ar=new THREE.ExtrudeGeometry(itShapeArch(0.2,LH-0.06,0.1),{depth:0.004,bevelEnabled:false});A(ar,itc(0x8a6a4a),mx,d.footY,d.zf-0.008)}
+  else if(id==='simit'){for(const x of LX)for(const z of LZ){const t=A(new THREE.TorusGeometry(0.035,0.014,8,16),itc(0xd28a3c),x,d.footY+0.035,z);A(new THREE.CylinderGeometry(0.012,0.012,LH-0.07,8),P.leg,x,d.footY+0.07+(LH-0.07)/2,z)}}
+  else if(id==='nazar'){for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.013,0.015,LH,10),P.leg,x,d.footY+LH/2,z);const b=A(new THREE.SphereGeometry(0.022,10,8),itc(0x1d4fa3),x,d.footY+LH*0.55,z);b.scale.y=0.7}}
+  else if(id==='kahvehane'){for(const x of LX)for(const z of LZ)A(new THREE.CylinderGeometry(0.014,0.011,LH,8),P.leg,x,d.footY+LH/2,z);
+    const ring=A(new THREE.TorusGeometry(1,0.007,6,28),P.leg,mx,d.footY+LH*0.35,mz);ring.scale.set(bw/2-0.02,(d.zf-d.zb)/2-0.02,1);ring.rotation.x=Math.PI/2}
+  else{for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.018,0.02,LH,12),P.leg,x,d.footY+LH/2,z);if(id==='iznik')A(new THREE.TorusGeometry(0.02,0.006,6,14),itc(0x1f3f8f),x,d.footY+LH*0.6,z).rotation.x=Math.PI/2}}
+  // sırt
+  if(id==='kapadokya'){const g=new THREE.ExtrudeGeometry(itShapeArch(bw+0.06,bh,(bw+0.06)/2),{depth:0.07,bevelEnabled:false,curveSegments:18});A(g,P.board,bx,d.boardBot,bz-0.035);
+    const ni=new THREE.ExtrudeGeometry(itShapeArch(0.16,0.3,0.08),{depth:0.004,bevelEnabled:false,curveSegments:14});A(ni,itc(0x8a6a4a),bx,d.boardBot+bh*0.25,bz+0.036);
+    A(new THREE.BoxGeometry(bw-0.04,0.1,0.012),trKilimTex(),bx,d.boardBot+0.12,bz+0.04);
+    for(let i=0;i<3;i++){const w=A(new THREE.SphereGeometry(0.012,6,4),itc(0x3a2a1c),bx-0.14+i*0.14,d.boardBot+bh*0.85,bz+0.036);w.scale.set(1,1.4,0.4)}}
+  else if(id==='galata'){A(new THREE.BoxGeometry(bw+0.04,bh,0.05),P.board,bx,d.boardBot+bh/2,bz);
+    for(let i=0;i<4;i++){const ar=new THREE.ExtrudeGeometry(itShapeArch(0.07,0.16,0.035),{depth:0.004,bevelEnabled:false});A(ar,itc(0x3a2f28),bx-0.2+i*0.133,d.boardBot+bh*0.45,bz+0.026)}
+    A(new THREE.BoxGeometry(bw+0.08,0.025,0.07),itc(0xbfa880),bx,d.boardBot+bh*0.38,bz);A(new THREE.BoxGeometry(bw+0.08,0.03,0.07),itc(0xbfa880),bx,d.backTop-0.015,bz);
+    posts(d.backTop,P.board,0.025);for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.ConeGeometry(0.035,0.09,12),itc(0x56677a),px,d.backTop+0.045,bz)}
+  else if(id==='kapalicarsi'){// sedef kakmalı Osmanlı sandalyesi
+    posts(d.backTop,P.board,0.022);for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.SphereGeometry(0.03,10,8),M.gold,px,d.backTop+0.02,bz);
+    const tr=A(new THREE.TorusGeometry(bw/2+0.01,0.022,8,28,Math.PI),P.board,bx,d.backTop-0.06,bz);tr.scale.y=0.35;
+    A(new THREE.BoxGeometry(bw+0.02,0.04,0.04),P.board,bx,d.backTop-0.06,bz);
+    const pn=new THREE.ExtrudeGeometry(itShapeArch(bw-0.04,bh-0.16,(bw-0.04)/2),{depth:0.02,bevelEnabled:false,curveSegments:18});const Q=pn.attributes.uv;for(let i=0;i<Q.count;i++)Q.setXY(i,Q.getX(i)/(bw-0.04)+0.5,Q.getY(i)/(bh-0.16));
+    A(pn,trSedefTex(1),bx,d.boardBot+0.05,bz-0.01);
+    A(new THREE.BoxGeometry(bw+0.02,0.025,0.035),M.gold,bx,d.boardBot+0.035,bz)}
+  else if(id==='kahvehane'){// Viyana tipi bükme kahvehane sandalyesi
+    posts(d.backTop-0.05,P.leg,0.014);
+    for(const [r,y] of [[bw/2+0.01,d.boardBot+bh*0.62],[bw/2-0.07,d.boardBot+bh*0.48]]){const t=A(new THREE.TorusGeometry(r,0.012,8,30,Math.PI),P.leg,bx,y,bz);t.scale.y=1.15}
+    A(new THREE.TorusGeometry(bw/2-0.13,0.01,8,24),P.leg,bx,d.boardBot+bh*0.55,bz)}
+  else if(id==='iznik'){posts(d.backTop,P.board,0.02);A(new THREE.BoxGeometry(bw+0.04,0.05,0.04),P.board,bx,d.backTop-0.025,bz);
+    const pn=A(new THREE.BoxGeometry(bw-0.02,bh*0.55,0.016),trIznikTex([2,1]),bx,d.boardBot+bh*0.55,bz);A(new THREE.BoxGeometry(bw+0.0,0.025,0.03),itc(0x1f3f8f),bx,d.boardBot+bh*0.27,bz);
+    A(new THREE.BoxGeometry(bw,0.02,0.03),itc(0x1f3f8f),bx,d.boardBot+bh*0.83,bz)}
+  else if(id==='simit'){// dev lokum sırt (pudra şekerli)
+    posts(d.boardBot+bh*0.35,P.leg,0.018);const lk=A(new RoundedBoxGeometry(bw+0.02,bh*0.6,0.1,3,0.04),itc(0xf2a6b8),bx,d.boardBot+bh*0.62,bz);
+    for(let i=0;i<40;i++){const s=A(new THREE.SphereGeometry(0.006,4,3),itc(0xffffff),bx-(bw/2)+((i*37)%41)/41*bw,d.boardBot+bh*(0.38+((i*13)%17)/17*0.5),bz+0.052);s.scale.z=0.3;s.castShadow=false}
+    for(let i=0;i<6;i++){const s=A(new THREE.SphereGeometry(0.012,6,4),itc(0x9fd48a),bx-0.18+i*0.07,d.boardBot+bh*0.62+Math.sin(i)*0.08,bz+0.05);s.scale.z=0.4}
+    A(new RoundedBoxGeometry(bw+0.04,0.035,0.11,2,0.012),itc(0xffffff),bx,d.boardBot+bh*0.93,bz)}
+  else if(id==='nazar'){posts(d.boardBot+bh*0.45,P.leg,0.018);
+    const nz=A(new THREE.CylinderGeometry(bw/2+0.03,bw/2+0.03,0.04,32),[itc(0x1d4fa3),trNazarDisc('tr_nazar_small',256),trNazarDisc('tr_nazar_small',256)],bx,d.boardBot+bh*0.64,bz);nz.rotation.x=Math.PI/2;
+    const rr=A(new THREE.TorusGeometry(bw/2+0.03,0.01,6,36),itc(0xfbf7ec),bx,d.boardBot+bh*0.64,bz);}
+  // kol dayanakları (iki yanda, oyundaki yükseklikte)
+  for(const ax of [d.x0-0.045,d.x1+0.045]){A(new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),P.arm,ax,d.armY-0.015,mz);
+    A(new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,10),P.leg||P.arm,ax,(d.footY+d.armY-0.03)/2,d.zf)}
+  L.userData.trChair=id;return L}
+
+// =====================================================================
+// TabbyChef · JAPONYA MASA & SANDALYE KOLEKSİYONU
+// 7 masa + 7 uyumlu sandalye: fuji, sakura, bambu, ramen, sushi, maneki, origami
+// GEREKSİNİM: italya_koleksiyonu.js önce eklenmiş olmalı (itc, itTex, itShapeArch ortak yardımcıları).
+//
+// OYUNA EKLEME (index.html):
+// 1) Bu dosyayı italya_koleksiyonu.js'in hemen ALTINA yapıştır.
+// 2) tableMeshes fonksiyonunun ilk satırına ekle:
+//      if(JP_TABLE[typeId])return jpTable(parent,f,JP_TABLE[typeId],vase);
+// 3) chairMeshes fonksiyonunun ilk satırına ekle:
+//      if(JP_CHAIR[styleId])return jpChair(parent,f,JP_CHAIR[styleId]);
+// 4) Market kataloğuna kayıtlar: masalar t_jp_<ad> (2 kişilik), t_four_jp_<ad> (4 kişilik); sandalye c_jp_<ad>.
+// Sandalyelerin oturak profili, sırt yeri ve kol dayanağı oyundaki SEAT_D ile birebir aynıdır.
+// =====================================================================
+// ================= JAPONYA MASA & SANDALYE KOLEKSİYONU =================
+// 7 takım: fuji, sakura, bambu, ramen, sushi, maneki, origami
+// GEREKSİNİM: italya_koleksiyonu.js (itc, itTex, itShapeArch, ITX) önce eklenmiş olmalı.
+const JP_NAMES=['fuji','sakura','bambu','ramen','sushi','maneki','origami'];
+const JP_TABLE={},JP_CHAIR={};for(const n of JP_NAMES){JP_TABLE['t_jp_'+n]=n;JP_TABLE['t_four_jp_'+n]=n;JP_CHAIR['c_jp_'+n]=n}
+// ---- ortak dokular ----
+function jpSeigaiha(c,w,h,s,bg,fg,ln){c.fillStyle=bg;c.fillRect(0,0,w,h);for(let row=-1;row*s*0.5<h+s;row++)for(let i=-1;i*s<w+s;i++){const x=i*s+(row%2?s/2:0),y=row*s*0.5;
+  for(let k=4;k>0;k--){c.fillStyle=k%2?fg:bg;c.beginPath();c.arc(x,y+s*0.5,s*0.5*k/4,Math.PI,0);c.fill()}if(ln){c.strokeStyle=ln;c.lineWidth=1.5;c.beginPath();c.arc(x,y+s*0.5,s*0.5,Math.PI,0);c.stroke()}}}
+function jpWaveTex(rep=[2,2]){return itTex('jp_wave'+rep.join('x'),256,256,(c,w,h)=>jpSeigaiha(c,w,h,64,'#f4efe3','#2d4f7c','#f4efe3'),rep)}
+function jpSakuraDraw(c,x,y,r,col='#f7b6c8',ctr='#d9577a'){c.fillStyle=col;for(let i=0;i<5;i++){c.save();c.translate(x,y);c.rotate(i*Math.PI*2/5);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(-r*0.6,-r*0.6,-r*0.18,-r);c.lineTo(0,-r*0.85);c.lineTo(r*0.18,-r);c.quadraticCurveTo(r*0.6,-r*0.6,0,0);c.fill();c.restore()}
+  c.fillStyle=ctr;c.beginPath();c.arc(x,y,r*0.16,0,6.283);c.fill()}
+function jpSakuraTex(rep=[2,2],bg='#fbe7ec'){return itTex('jp_sakura'+bg+rep.join('x'),256,256,(c,w,h)=>{c.fillStyle=bg;c.fillRect(0,0,w,h);const P=[[40,50,26],[150,30,20],[210,120,30],[90,150,22],[30,210,18],[170,210,26],[120,95,12],[230,240,14],[250,20,12]];
+  for(const [x,y,r] of P)for(const dx of [0,-w,w])for(const dy of [0,-h,h])jpSakuraDraw(c,x+dx,y+dy,r)},rep)}
+function jpTatamiTex(rep=[1,1]){return itTex('jp_tatami'+rep.join('x'),128,256,(c,w,h)=>{c.fillStyle='#c9c07a';c.fillRect(0,0,w,h);for(let y=0;y<h;y+=3){c.fillStyle=y%6?'rgba(120,110,40,.18)':'rgba(255,255,220,.15)';c.fillRect(0,y,w,1.5)}
+  c.fillStyle='#2f3b2a';c.fillRect(0,0,10,h);c.fillRect(w-10,0,10,h)},rep)}
+function jpMakiTex(){return itTex('jp_maki',256,256,(c,w,h)=>{const o=w/2;c.fillStyle='#1d2a1e';c.fillRect(0,0,w,h);c.fillStyle='#fbf8f0';c.beginPath();c.arc(o,o,o*0.9,0,6.283);c.fill();
+  c.fillStyle='rgba(220,215,200,.8)';for(let i=0;i<260;i++){const a=i*2.4,r=o*0.88*Math.sqrt((i*37%100)/100);c.beginPath();c.ellipse(o+Math.cos(a)*r,o+Math.sin(a)*r,4,2.2,a,0,6.283);c.fill()}
+  c.fillStyle='#1d2a1e';c.beginPath();c.arc(o,o,o*0.42,0,6.283);c.fill();c.fillStyle='#f08a5d';c.beginPath();c.arc(o-o*0.1,o,o*0.24,0,6.283);c.fill();c.fillStyle='#7cbf5a';c.beginPath();c.arc(o+o*0.2,o-o*0.12,o*0.12,0,6.283);c.fill();
+  c.fillStyle='#f6d35a';c.beginPath();c.arc(o+o*0.16,o+o*0.2,o*0.1,0,6.283);c.fill()},[1,1])}
+function jpPaperTex(col='#fbf6ea',key='w'){return itTex('jp_paper'+key,256,256,(c,w,h)=>{c.fillStyle=col;c.fillRect(0,0,w,h);const S=64;
+  for(let i=0;i<4;i++)for(let j=0;j<4;j++){const x=i*S,y=j*S;const t=(i+j)%2;c.fillStyle=t?'rgba(0,0,0,.06)':'rgba(255,255,255,.25)';c.beginPath();if((i*3+j)%2){c.moveTo(x,y);c.lineTo(x+S,y);c.lineTo(x,y+S)}else{c.moveTo(x+S,y);c.lineTo(x+S,y+S);c.lineTo(x,y)}c.fill()}
+  c.strokeStyle='rgba(120,100,70,.25)';c.lineWidth=1.2;for(let k=0;k<=4;k++){c.beginPath();c.moveTo(k*S,0);c.lineTo(k*S,h);c.stroke();c.beginPath();c.moveTo(0,k*S);c.lineTo(w,k*S);c.stroke()}
+  c.beginPath();for(let k=-4;k<=4;k++){c.moveTo(k*S,0);c.lineTo(k*S+h,h)}c.stroke()},[1,1])}
+function jpFujiTex(){return itTex('jp_fujiback',256,320,(c,w,h)=>{const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#f6c9a8');g.addColorStop(0.6,'#fbe9d6');c.fillStyle=g;c.fillRect(0,0,w,h);
+  c.fillStyle='#d9473a';c.beginPath();c.arc(w*0.72,h*0.24,34,0,6.283);c.fill();
+  c.fillStyle='#3d5d8a';c.beginPath();c.moveTo(-10,h*0.86);c.lineTo(w*0.36,h*0.36);c.lineTo(w*0.64,h*0.36);c.lineTo(w+10,h*0.86);c.fill();
+  c.fillStyle='#fbfaf5';c.beginPath();c.moveTo(w*0.36,h*0.36);c.lineTo(w*0.64,h*0.36);c.lineTo(w*0.74,h*0.48);c.lineTo(w*0.66,h*0.45);c.lineTo(w*0.58,h*0.5);c.lineTo(w*0.5,h*0.45);c.lineTo(w*0.42,h*0.5);c.lineTo(w*0.34,h*0.45);c.lineTo(w*0.26,h*0.48);c.fill();
+  c.save();c.beginPath();c.rect(0,h*0.82,w,h*0.18);c.clip();jpSeigaiha(c,w,h*1.2,40,'#2d4f7c','#f4efe3',null);c.restore()},[1,1])}
+function jpNorenTex(){return itTex('jp_noren',256,320,(c,w,h)=>{c.fillStyle='#b72a2a';c.fillRect(0,0,w,h);c.fillStyle='#f4efe3';c.font='bold 64px sans-serif';c.textAlign='center';c.textBaseline='middle';
+  const t=['ラ','ー','メ','ン'];t.forEach((ch,i)=>c.fillText(ch,w/2,52+i*70));c.fillStyle='rgba(0,0,0,.2)';c.fillRect(w/2-2,0,4,h)},[1,1])}
+function jpKobanTex(){return itTex('jp_koban',256,256,(c,w,h)=>{c.fillStyle='#b8302c';c.fillRect(0,0,w,h);c.fillStyle='#e6b94a';c.beginPath();c.ellipse(w/2,h/2,72,104,0,0,6.283);c.fill();
+  c.strokeStyle='#a87d22';c.lineWidth=3;for(let y=h/2-90;y<h/2+90;y+=9){const half=72*Math.sqrt(Math.max(0,1-((y-h/2)/104)**2));c.beginPath();c.moveTo(w/2-half+6,y);c.lineTo(w/2+half-6,y);c.stroke()}
+  c.fillStyle='#7a5512';c.font='bold 46px serif';c.textAlign='center';c.textBaseline='middle';c.fillText('福',w/2,h/2)},[1,1])}
+function jpMatcha(A,x,y,z,s=1){A(new THREE.LatheGeometry([[0,0],[0.03,0],[0.04,0.012],[0.045,0.04],[0,0.04]].map(p=>new THREE.Vector2(p[0]*s,p[1]*s)),16),itc(0x3b2f2a),x,y,z);
+  A(new THREE.CylinderGeometry(0.041*s,0.041*s,0.002,16),itc(0x8fb34a),x,y+0.036*s,z)}
+function jpCrane(A,x,y,z,col,s=1,ry=0){const G=new THREE.Group();G.position.set(x,y,z);G.rotation.y=ry;G.scale.setScalar(s);
+  const tri=(pts,m)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pts.flat(),3));g.computeVertexNormals();const o=new THREE.Mesh(g,new THREE.MeshToonMaterial({color:col,gradientMap:grad,side:THREE.DoubleSide}));o.castShadow=true;G.add(o)};
+  tri([[-0.03,0,0],[0.03,0,0],[0,0.035,0]]);tri([[-0.02,0.01,0],[0,0.012,-0.06],[0.02,0.01,0]]);tri([[-0.02,0.01,0],[0,0.012,0.06],[0.02,0.01,0]]);
+  tri([[0.02,0.005,0],[0.07,0.06,0],[0.025,0.02,0]]);tri([[-0.02,0.005,0],[-0.06,0.05,0],[-0.025,0.02,0]]);tri([[0.07,0.06,0],[0.08,0.05,0],[0.065,0.052,0]]);
+  const P=A.__L||null;return G}
+// ---- MASALAR ----
+function jpTable(parent,f,typeId,vase=true){
+  const d=SEAT_D,L=frameGroup(f,parent),cx=d.tCx,cz=d.tCz,R=d.tR,tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;
+  const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);let surf=top;
+  const disc=(mat,r=R*0.97)=>{const t=A(new THREE.CircleGeometry(r,48),mat,cx,top+0.0015,cz);t.rotation.x=-Math.PI/2;t.castShadow=false;surf=top+0.002};
+  const lacq=itc(0x1e1a1a),red=itc(0xb72a2a);
+  if(typeId==='fuji'){// Fuji dağı ayak, dalga desenli tabla
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0x2d4f7c),cx,yT,cz);disc(jpWaveTex([2,2]));
+    const m=[[0,0],[0.21,0],[0.19,0.05],[0.13,0.2],[0.07,0.34],[0.05,0.38],[0.045,H],[0,H]].map(p=>new THREE.Vector2(p[0],p[1]));A(new THREE.LatheGeometry(m,28),itc(0x3d5d8a),cx,fy,cz);
+    const sn=[[0.072,0.335],[0.088,0.3],[0.075,0.31],[0.06,0.4],[0.048,0.44],[0,0.44]].map(p=>new THREE.Vector2(p[0],p[1]));A(new THREE.LatheGeometry(sn,28),itc(0xfbfaf5),cx,fy,cz);
+    for(let i=0;i<9;i++){const a=i/9*Math.PI*2;const tr=A(new THREE.ConeGeometry(0.02,0.06,6),itc(0x3f6b3a),cx+Math.cos(a)*0.2,fy+0.04,cz+Math.sin(a)*0.2)}
+    if(vase){// minik bonsai
+      A(new THREE.BoxGeometry(0.1,0.03,0.06),itc(0x6b3f22),cx,surf+0.015,cz);const tr=A(new THREE.CylinderGeometry(0.006,0.01,0.07,6),itc(0x5a3a22),cx-0.01,surf+0.065,cz);tr.rotation.z=0.4;
+      for(const [dx,dy,s] of [[-0.03,0.1,0.035],[0.01,0.12,0.03],[0.035,0.095,0.025]]){const b=A(new THREE.SphereGeometry(s,10,8),itc(0x4f7a2e),cx+dx,surf+dy,cz);b.scale.y=0.55}}}
+  else if(typeId==='sakura'){// kiraz ağacı gövdesi, çiçekli tabla
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0xf3c2cf),cx,yT,cz);disc(jpSakuraTex([2,2]));
+    const tr=A(new THREE.CylinderGeometry(0.035,0.06,H,10),itc(0x5a3a2a),cx,fy+H/2,cz);tr.rotation.z=0.05;
+    for(let k=0;k<3;k++){const a=k*2.1;const r=A(new THREE.CylinderGeometry(0.02,0.035,0.16,8),itc(0x5a3a2a),cx+Math.cos(a)*0.07,fy+0.04,cz+Math.sin(a)*0.07);r.rotation.set(Math.sin(a)*1.1,0,-Math.cos(a)*1.1)}
+    for(let k=0;k<4;k++){const a=k*1.6+0.4;const b=A(new THREE.CylinderGeometry(0.012,0.02,0.22,6),itc(0x5a3a2a),cx+Math.cos(a)*0.08,fy+H*0.55,cz+Math.sin(a)*0.08);b.rotation.set(Math.sin(a)*0.9,0,-Math.cos(a)*0.9);
+      for(let j=0;j<6;j++){const p=A(new THREE.SphereGeometry(0.045,10,8),itc(j%2?0xf7b6c8:0xfbd3de),cx+Math.cos(a+j*0.25-0.6)*(0.17+(j%3)*0.03),fy+H*0.62+(j%3)*0.04,cz+Math.sin(a+j*0.25-0.6)*(0.17+(j%3)*0.03));p.scale.y=0.75}}
+    for(let i=0;i<14;i++){const a=i*2.4,r=0.05+((i*7)%10)/10*0.16;const p=A(new THREE.CircleGeometry(0.008,5),itc(0xf7b6c8),cx+Math.cos(a)*r,fy+0.002,cz+Math.sin(a)*r);p.rotation.x=-Math.PI/2;p.castShadow=false}
+    if(vase){// dalı sakura vazo
+      A(new THREE.LatheGeometry([[0,0],[0.022,0],[0.03,0.03],[0.014,0.07],[0.018,0.08],[0,0.08]].map(p=>new THREE.Vector2(p[0],p[1])),14),itc(0x2d4f7c),cx,surf,cz);
+      const br=A(new THREE.CylinderGeometry(0.003,0.004,0.16,4),itc(0x5a3a2a),cx+0.02,surf+0.14,cz);br.rotation.z=-0.3;
+      for(let j=0;j<6;j++){const p=A(new THREE.SphereGeometry(0.013,6,5),itc(0xf7b6c8),cx+0.01+j*0.009+Math.sin(j)*0.01,surf+0.1+j*0.022,cz+Math.cos(j*2)*0.012)}}}
+  else if(typeId==='bambu'){// bambu demeti ayak, hasır tabla
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0xb89a5a),cx,yT,cz);const wv=itTex('jp_weave',128,128,(c,w,h)=>{c.fillStyle='#d8bf7e';c.fillRect(0,0,w,h);c.strokeStyle='rgba(120,90,40,.55)';c.lineWidth=3;
+      for(let i=0;i<8;i++)for(let j=0;j<8;j++){c.beginPath();if((i+j)%2){c.moveTo(i*16+2,j*16+8);c.lineTo(i*16+14,j*16+8)}else{c.moveTo(i*16+8,j*16+2);c.lineTo(i*16+8,j*16+14)}c.stroke()}},[4,4]);disc(wv);
+    const rr=A(new THREE.TorusGeometry(R-0.004,0.012,6,48),itc(0x7a9a3a),cx,yT,cz);rr.rotation.x=Math.PI/2;
+    const g=itc(0x8bb04a),gd=itc(0x5e7f2a);for(let k=0;k<7;k++){const a=k/7*Math.PI*2,r=k?0.055:0;const x=cx+Math.cos(a)*r,z=cz+Math.sin(a)*r;
+      A(new THREE.CylinderGeometry(0.024,0.024,H,10),g,x,fy+H/2,z);for(const y of [0.12,0.28,0.44])A(new THREE.TorusGeometry(0.024,0.004,4,12),gd,x,fy+y+((k*0.03)%0.06),z).rotation.x=Math.PI/2}
+    const rope=A(new THREE.TorusGeometry(0.085,0.008,6,24),itc(0x8a6a3a),cx,fy+H*0.6,cz);rope.rotation.x=Math.PI/2;
+    if(vase){jpMatcha(A,cx-0.04,surf,cz);const wh=A(new THREE.ConeGeometry(0.016,0.04,10),itc(0xe8d9a8),cx+0.05,surf+0.02,cz+0.02);A(new THREE.CylinderGeometry(0.006,0.006,0.04,6),itc(0xe8d9a8),cx+0.05,surf+0.06,cz+0.02)}}
+  else if(typeId==='ramen'){// dev ramen kâsesi gövde
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0x8a5a32),cx,yT,cz);const rr=A(new THREE.TorusGeometry(R-0.004,0.01,6,48),lacq,cx,yT,cz);rr.rotation.x=Math.PI/2;
+    const bowl=[[0,0],[0.1,0],[0.11,0.03],[0.19,0.12],[0.23,0.24],[0.24,0.3],[0.225,0.3],[0.0,0.3]].map(p=>new THREE.Vector2(p[0],p[1]));
+    const bt=itTex('jp_ramenbowl',256,64,(c,w,h)=>{c.fillStyle='#b72a2a';c.fillRect(0,0,w,h);c.strokeStyle='#f4efe3';c.lineWidth=4;for(let i=0;i<8;i++){const x=i*32;c.beginPath();c.moveTo(x+4,10);c.lineTo(x+28,10);c.lineTo(x+28,54);c.lineTo(x+10,54);c.lineTo(x+10,22);c.lineTo(x+22,22);c.lineTo(x+22,42);c.stroke()}},[1,1]);
+    const bw=A(new THREE.LatheGeometry(bowl,32),bt,cx,fy+0.02,cz);A(new THREE.CylinderGeometry(0.1,0.12,0.02,24),lacq,cx,fy+0.01,cz);
+    A(new THREE.CylinderGeometry(0.23,0.23,0.004,32),itc(0xe7b35a),cx,fy+0.31,cz);
+    for(let i=0;i<10;i++){const a=i*0.63;const n=A(new THREE.TorusGeometry(0.05+(i%4)*0.035,0.006,4,16,2.4),itc(0xf3d27a),cx,fy+0.315,cz);n.rotation.set(Math.PI/2,0,a)}
+    A(new THREE.CylinderGeometry(0.035,0.04,H-0.31,12),lacq,cx,fy+0.31+(H-0.31)/2,cz);
+    for(const s of [-1,1]){const ch=A(new THREE.CylinderGeometry(0.008,0.006,0.42,6),itc(0xc8a46a),cx+s*0.03,fy+0.42,cz+0.12);ch.rotation.set(-0.35,0,s*0.25)}
+    if(vase){A(new THREE.LatheGeometry([[0,0],[0.03,0],[0.05,0.03],[0.055,0.045],[0,0.045]].map(p=>new THREE.Vector2(p[0],p[1])),18),itc(0xb72a2a),cx,surf,cz);
+      A(new THREE.CylinderGeometry(0.05,0.05,0.003,18),itc(0xe7b35a),cx,surf+0.04,cz);const eg=A(new THREE.SphereGeometry(0.016,10,8),itc(0xfbf7ec),cx+0.015,surf+0.044,cz);eg.scale.y=0.5;A(new THREE.CylinderGeometry(0.008,0.008,0.004,10),itc(0xf2a53a),cx+0.015,surf+0.052,cz);
+      const nr=A(new THREE.CylinderGeometry(0.014,0.014,0.004,12),itc(0xfbf7ec),cx-0.02,surf+0.044,cz+0.01);A(new THREE.TorusGeometry(0.007,0.002,4,10),itc(0xd9577a),cx-0.02,surf+0.047,cz+0.01).rotation.x=Math.PI/2;
+      for(const s of [-1,1]){const ch=A(new THREE.CylinderGeometry(0.003,0.002,0.15,5),itc(0xc8a46a),cx+0.03+s*0.006,surf+0.06,cz-0.02);ch.rotation.z=1.0}}}
+  else if(typeId==='sushi'){// maki dilimi tabla, geta tahtası taban
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0x1d2a1e),cx,yT,cz);disc(jpMakiTex(),R*0.99);
+    A(new THREE.BoxGeometry(0.42,0.04,0.3),itc(0xd8b47a),cx,fy+0.04,cz);for(const s of [-1,1])A(new THREE.BoxGeometry(0.06,0.04,0.28),itc(0xb08a52),cx+s*0.14,fy+0.01,cz);
+    const st=H-0.06;for(let k=0;k<3;k++){const y=fy+0.06+k*st/3;const mk=A(new THREE.CylinderGeometry(0.1,0.1,st/3-0.01,24),[itc(0x1d2a1e),jpMakiTex(),jpMakiTex()],cx,y+st/6,cz);mk.rotation.y=k}
+    if(vase){A(new THREE.BoxGeometry(0.16,0.012,0.06),itc(0xd8b47a),cx,surf+0.006,cz);
+      for(const [dx,col] of [[-0.045,0xf08a5d],[0,0xd9473a],[0.045,0xf6d35a]]){const r=A(new RoundedBoxGeometry(0.035,0.016,0.022,1,0.007),itc(0xfbf8f0),cx+dx,surf+0.02,cz);const t=A(new RoundedBoxGeometry(0.04,0.008,0.026,1,0.003),itc(col),cx+dx,surf+0.031,cz)}
+      A(new THREE.CylinderGeometry(0.025,0.022,0.008,14),itc(0xfbf8f0),cx+0.11,surf+0.004,cz+0.05);A(new THREE.CylinderGeometry(0.02,0.02,0.002,14),itc(0x3a1a0c),cx+0.11,surf+0.009,cz+0.05)}}
+  else if(typeId==='maneki'){// el sallayan şans kedisi ayak
+    A(new THREE.CylinderGeometry(R,R,tk,44),red,cx,yT,cz);disc(jpKobanTex(),R*0.92);const rr=A(new THREE.TorusGeometry(R-0.005,0.012,6,48),M.gold,cx,top+0.004,cz);rr.rotation.x=Math.PI/2;
+    {const CG=new THREE.Group();CG.position.set(cx,fy,0);const CS=Math.min(1.2,(H-0.02)/0.5);CG.scale.setScalar(CS);L.add(CG);const A=(g,m,x,y,z)=>addTo(CG,g,m,x,y,z);
+    const wh=itc(0xfbf7ec);A(new THREE.CylinderGeometry(0.17,0.18,0.06,24),red,0,0+0.03,0);A(new THREE.CylinderGeometry(0.175,0.175,0.01,24),M.gold,0,0+0.065,0);
+    const bd=A(new THREE.SphereGeometry(0.13,20,14),wh,0,0+0.19,0);bd.scale.set(1,1.15,0.9);
+    const hd=A(new THREE.SphereGeometry(0.11,20,14),wh,0,0+0.37,0);hd.scale.set(1.12,0.92,0.95);
+    for(const s of [-1,1]){const e=A(new THREE.ConeGeometry(0.04,0.06,4),wh,0+s*0.07,0+0.46,0);e.rotation.z=-s*0.35;const ei=A(new THREE.ConeGeometry(0.024,0.04,4),itc(0xf2a6b8),0+s*0.07,0+0.457,0+0.012);ei.rotation.z=-s*0.35;
+      const ey=A(new THREE.SphereGeometry(0.012,8,6),lacq,0+s*0.04,0+0.38,0+0.095);ey.scale.set(1.3,0.5,0.6);
+      for(let k=-1;k<=1;k++){const wk=A(new THREE.CylinderGeometry(0.002,0.002,0.06,3),lacq,0+s*0.09,0+0.35+k*0.01,0+0.08);wk.rotation.z=Math.PI/2+k*0.15}}
+    A(new THREE.SphereGeometry(0.008,6,4),itc(0xf2a6b8),0,0+0.355,0+0.102);
+    const col=A(new THREE.TorusGeometry(0.09,0.012,6,24),red,0,0+0.29,0);col.rotation.x=Math.PI/2;A(new THREE.SphereGeometry(0.02,10,8),M.gold,0,0+0.27,0+0.09);
+    const arm=A(new THREE.CylinderGeometry(0.03,0.035,0.14,10),wh,0+0.11,0+0.38,0+0.03);arm.rotation.z=-0.15;A(new THREE.SphereGeometry(0.038,10,8),wh,0+0.12,0+0.455,0+0.03);
+    const pw=A(new THREE.SphereGeometry(0.04,10,8),wh,-0.06,0+0.2,0+0.1);pw.scale.y=0.8;const kb=A(new THREE.CylinderGeometry(0.045,0.045,0.008,16),[M.gold,jpKobanTex(),jpKobanTex()],-0.05,0+0.22,0+0.12);kb.rotation.x=Math.PI/2;kb.scale.set(0.7,1,1);
+    for(const [dx,dy,c] of [[0.06,0.16,0xe0892f],[-0.03,0.25,0x2b2b2b],[0.04,0.36,0xe0892f]]){const sp=A(new THREE.SphereGeometry(0.03,8,6),itc(c),0+dx,0+dy+0.02,-0.06);sp.scale.z=0.4}
+    if(H-0.5*CS>0.01)addTo(L,new THREE.CylinderGeometry(0.03,0.03,H-0.5*CS,10),red,cx,fy+0.5*CS+(H-0.5*CS)/2,cz)}
+    if(vase){for(let i=0;i<3;i++){const k=A(new THREE.CylinderGeometry(0.03,0.03,0.006,16),[M.gold,jpKobanTex(),jpKobanTex()],cx-0.03+i*0.02,surf+0.004+i*0.006,cz+i*0.01);k.scale.set(0.7,1,1)}
+      const bl=A(new THREE.SphereGeometry(0.018,10,8),M.gold,cx+0.08,surf+0.018,cz-0.03)}}
+  else if(typeId==='origami'){// katlanmış kâğıt sütun, turna
+    const pp=jpPaperTex();A(new THREE.CylinderGeometry(R,R,tk,6),itc(0xf4ead6),cx,yT,cz);const t6=A(new THREE.CircleGeometry(R*0.97,6),pp,cx,top+0.0015,cz);t6.rotation.x=-Math.PI/2;t6.castShadow=false;surf=top+0.002;
+    const cols=[0xd9473a,0xe0892f,0x2d4f7c,0x3f8f7a,0xd9577a,0xf6d35a];const n=6,sh=(H-0.04)/n;
+    for(let i=0;i<n;i++){const s=A(new THREE.CylinderGeometry(0.06+(i%2)*0.04,0.1-(i%2)*0.04,sh,6),itc(cols[i]),cx,fy+0.04+sh*(i+0.5),cz);s.rotation.y=i*Math.PI/6}
+    A(new THREE.CylinderGeometry(0.17,0.19,0.04,6),itc(0xf4ead6),cx,fy+0.02,cz);
+    if(vase){L.add(jpCrane(A,cx,surf,cz,0xd9473a,1.2,0.6));L.add(jpCrane(A,cx-0.09,surf,cz+0.06,0x2d4f7c,0.8,2.2));L.add(jpCrane(A,cx+0.06,surf,cz-0.08,0xf6d35a,0.7,-0.8))}}
+  L.userData.jpTable=typeId;return L}
+// ================= SANDALYELER (oturak profili, sırt yeri ve kol dayanağı oyundakiyle aynı) =================
+function jpChair(parent,f,id){
+  const d=SEAT_D,L=frameGroup(f,parent);const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+  const LH=d.boardBot-d.footY,mx=(d.x0+d.x1)/2,mz=(d.zb+d.zf)/2,bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=mx,bz=d.backZ-0.03;
+  const lacq=itc(0x1e1a1a);
+  const P={fuji:{seat:itc(0x2d4f7c),board:itc(0x6b4a32),leg:itc(0x6b4a32),arm:itc(0x6b4a32)},
+    sakura:{seat:itc(0xf3a7bb),board:itc(0x5a3a2a),leg:itc(0x5a3a2a),arm:itc(0x5a3a2a)},
+    bambu:{seat:jpTatamiTex([1,1]),board:itc(0x8bb04a),leg:itc(0x8bb04a),arm:itc(0x7a9a3a)},
+    ramen:{seat:itc(0xb72a2a),board:lacq,leg:lacq,arm:lacq},
+    sushi:{seat:itc(0x7cbf5a),board:itc(0xd8b47a),leg:itc(0xd8b47a),arm:itc(0xb08a52)},
+    maneki:{seat:itc(0xb72a2a),board:itc(0xfbf7ec),leg:itc(0xb72a2a),arm:M.gold},
+    origami:{seat:itc(0xf2a07a),board:itc(0xf4ead6),leg:itc(0xf4ead6),arm:itc(0xd9473a)}}[id];
+  const sh=new THREE.Shape();sh.moveTo(d.zb,d.cushBot);sh.lineTo(d.zf,d.cushBot);for(let k=d.zs.length-1;k>=0;k--)sh.lineTo(d.zs[k],d.top[k]);sh.lineTo(d.zb,d.cushBot);
+  const cg=new THREE.ExtrudeGeometry(sh,{depth:bw,bevelEnabled:false});cg.rotateY(-Math.PI/2);cg.translate(d.x1,0,0);A(cg,P.seat,0,0,0);
+  A(new THREE.BoxGeometry(bw+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),P.board,mx,(d.boardBot+d.cushBot)/2,mz);
+  const LX=[d.x0+0.03,d.x1-0.03],LZ=[d.zb+0.03,d.zf-0.03];
+  const posts=(h,m,r=0.02)=>{for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.CylinderGeometry(r,r,h-d.footY,10),m,px,(d.footY+h)/2,bz)};
+  const panel=(mat,w,h,y,depth=0.02)=>A(new THREE.BoxGeometry(w,h,depth),[P.board,P.board,P.board,P.board,mat,P.board],bx,y,bz);
+  // ayaklar
+  if(id==='bambu'){for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.02,0.02,LH,10),P.leg,x,d.footY+LH/2,z);A(new THREE.TorusGeometry(0.02,0.004,4,10),itc(0x5e7f2a),x,d.footY+LH*0.5,z).rotation.x=Math.PI/2}}
+  else if(id==='sushi'){for(const z of LZ)A(new THREE.BoxGeometry(bw+0.02,LH,0.04),P.leg,mx,d.footY+LH/2,z)}
+  else if(id==='origami'){for(const x of LX)for(const z of LZ){const l=A(new THREE.CylinderGeometry(0.012,0.026,LH,4),P.leg,x,d.footY+LH/2,z);l.rotation.y=Math.PI/4}}
+  else if(id==='maneki'){for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.016,0.016,LH,10),P.leg,x,d.footY+LH/2,z);A(new THREE.SphereGeometry(0.022,8,6),wpaw(),x,d.footY+0.02,z)}}
+  else{for(const x of LX)for(const z of LZ)A(new THREE.CylinderGeometry(0.018,0.016,LH,10),P.leg,x,d.footY+LH/2,z);
+    for(const z of LZ)A(new THREE.BoxGeometry(bw-0.04,0.02,0.02),P.leg,mx,d.footY+LH*0.3,z)}
+  function wpaw(){return itc(0xfbf7ec)}
+  // sırt
+  if(id==='fuji'){posts(d.backTop,P.board,0.022);A(new RoundedBoxGeometry(bw+0.06,0.045,0.05,2,0.015),P.board,bx,d.backTop,bz);A(new THREE.BoxGeometry(bw+0.02,0.03,0.04),P.board,bx,d.boardBot+0.035,bz);
+    panel(jpFujiTex(),bw-0.02,bh-0.12,d.boardBot+0.05+(bh-0.12)/2)}
+  else if(id==='sakura'){posts(d.backTop,P.board,0.022);A(new THREE.BoxGeometry(bw+0.06,0.04,0.045),P.board,bx,d.backTop-0.02,bz);
+    const fr=A(new THREE.TorusGeometry(bw*0.36,0.02,8,36),P.board,bx,d.boardBot+bh*0.52,bz);
+    const win=A(new THREE.CircleGeometry(bw*0.36,36),itTex('jp_marumado',256,256,(c,w,h)=>{c.fillStyle='#fbf3e6';c.fillRect(0,0,w,h);c.strokeStyle='#5a3a2a';c.lineWidth=7;c.beginPath();c.moveTo(0,200);c.quadraticCurveTo(90,150,140,90);c.quadraticCurveTo(170,50,240,30);c.stroke();
+      c.lineWidth=4;c.beginPath();c.moveTo(110,120);c.quadraticCurveTo(80,80,60,60);c.stroke();for(const [x,y,r] of [[60,58,18],[140,88,20],[200,42,16],[95,140,14],[30,190,16],[180,120,13],[235,30,12]])jpSakuraDraw(c,x,y,r)},[1,1]),bx,d.boardBot+bh*0.52,bz+0.002);
+    A(new THREE.BoxGeometry(bw*0.72,bh*0.5,0.01),P.board,bx,d.boardBot+bh*0.52,bz-0.012)}
+  else if(id==='bambu'){posts(d.backTop+0.04,P.board,0.022);for(let i=0;i<7;i++){const x=bx-bw/2+0.04+i*(bw-0.08)/6;const hgt=bh-0.04-((i%2)*0.04);A(new THREE.CylinderGeometry(0.016,0.016,hgt,8),P.board,x,d.boardBot+hgt/2,bz);A(new THREE.TorusGeometry(0.016,0.003,4,10),itc(0x5e7f2a),x,d.boardBot+hgt*0.6,bz).rotation.x=Math.PI/2}
+    for(const y of [0.3,0.8]){A(new THREE.CylinderGeometry(0.013,0.013,bw+0.06,8),itc(0x7a9a3a),bx,d.boardBot+bh*y,bz+0.018).rotation.z=Math.PI/2;
+      for(const s of [-1,1])A(new THREE.TorusGeometry(0.02,0.004,4,10),itc(0x8a6a3a),bx+s*(bw/2-0.06),d.boardBot+bh*y,bz+0.018)}}
+  else if(id==='ramen'){posts(d.backTop+0.02,P.board,0.02);A(new THREE.CylinderGeometry(0.014,0.014,bw+0.08,8),itc(0xc8a46a),bx,d.backTop,bz).rotation.z=Math.PI/2;
+    for(let i=0;i<2;i++){const nr=A(new THREE.BoxGeometry(bw/2-0.01,bh-0.12,0.008),[jpNorenTex(),jpNorenTex(),jpNorenTex(),jpNorenTex(),jpNorenTex(),jpNorenTex()],bx+(i?1:-1)*bw/4,d.backTop-0.02-(bh-0.12)/2,bz+0.012);
+      const U=nr.geometry.attributes.uv;for(let k=0;k<U.count;k++)U.setX(k,U.getX(k)*0.5+(i?0.5:0))}}
+  else if(id==='sushi'){A(new THREE.BoxGeometry(bw+0.04,bh-0.06,0.04),P.board,bx,d.boardBot+(bh-0.06)/2,bz);
+    for(let i=0;i<3;i++){const m=A(new THREE.CylinderGeometry(0.075,0.075,0.03,24),[itc(0x1d2a1e),jpMakiTex(),jpMakiTex()],bx-0.17+i*0.17,d.boardBot+bh*0.62,bz+0.03);m.rotation.x=Math.PI/2}
+    A(new THREE.BoxGeometry(bw+0.1,0.03,0.07),itc(0xb08a52),bx,d.backTop-0.05,bz)}
+  else if(id==='maneki'){posts(d.boardBot+bh*0.4,P.leg,0.018);const hd=A(new THREE.SphereGeometry(bw/2,24,16),P.board,bx,d.boardBot+bh*0.58,bz);hd.scale.set(1,0.85,0.25);
+    for(const s of [-1,1]){const e=A(new THREE.ConeGeometry(0.07,0.12,4),P.board,bx+s*bw*0.3,d.boardBot+bh*0.58+bw*0.42,bz);e.rotation.z=-s*0.35;e.scale.z=0.4;
+      const ei=A(new THREE.ConeGeometry(0.04,0.07,4),itc(0xf2a6b8),bx+s*bw*0.3,d.boardBot+bh*0.58+bw*0.4,bz+0.02);ei.rotation.z=-s*0.35;ei.scale.z=0.3;
+      const ey=A(new THREE.SphereGeometry(0.025,8,6),itc(0x1e1a1a),bx+s*0.09,d.boardBot+bh*0.6,bz+0.06);ey.scale.set(1.4,0.45,0.4)}
+    A(new THREE.SphereGeometry(0.015,6,4),itc(0xf2a6b8),bx,d.boardBot+bh*0.53,bz+0.062);const cl=A(new THREE.TorusGeometry(bw*0.3,0.014,6,24,Math.PI),itc(0xb72a2a),bx,d.boardBot+bh*0.42,bz+0.03);cl.rotation.z=Math.PI;
+    A(new THREE.SphereGeometry(0.025,10,8),M.gold,bx,d.boardBot+bh*0.42-bw*0.3,bz+0.05)}
+  else if(id==='origami'){posts(d.backTop-0.06,P.board,0.016);const cols=[0xd9473a,0xf4ead6,0xe0892f,0xf4ead6,0x2d4f7c];
+    for(let i=0;i<5;i++){const w=(bw+0.02)/5;const p=A(new THREE.BoxGeometry(w,bh-0.08,0.01),itc(cols[i]),bx-bw/2+w*(i+0.5),d.boardBot+(bh-0.08)/2+0.04,bz+(i%2?0.02:-0.0));p.rotation.y=(i%2?-1:1)*0.45}
+    L.add(jpCrane(A,bx,d.backTop+0.0,bz,0xd9473a,1.3,0))}
+  // kol dayanakları (iki yanda, oyundaki yükseklikte)
+  for(const ax of [d.x0-0.045,d.x1+0.045]){A(new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),P.arm,ax,d.armY-0.015,mz);
+    A(new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,10),P.leg||P.arm,ax,(d.footY+d.armY-0.03)/2,d.zf)}
+  L.userData.jpChair=id;return L}
+
+// =====================================================================
+// TabbyChef · FRANSA MASA & SANDALYE KOLEKSİYONU
+// 7 masa + 7 uyumlu sandalye: eiffel, louvre, bistro, macaron, provence, versailles, boulangerie
+// GEREKSİNİM: italya_koleksiyonu.js önce eklenmiş olmalı (itc, itTex, itShapeArch ortak yardımcıları).
+//
+// OYUNA EKLEME (index.html):
+// 1) Bu dosyayı italya_koleksiyonu.js'in hemen ALTINA yapıştır.
+// 2) tableMeshes fonksiyonunun ilk satırına ekle:
+//      if(FR_TABLE[typeId])return frTable(parent,f,FR_TABLE[typeId],vase);
+// 3) chairMeshes fonksiyonunun ilk satırına ekle:
+//      if(FR_CHAIR[styleId])return frChair(parent,f,FR_CHAIR[styleId]);
+// 4) Market kataloğuna kayıtlar: masalar t_fr_<ad> (2 kişilik), t_four_fr_<ad> (4 kişilik); sandalye c_fr_<ad>.
+// Sandalyelerin oturak profili, sırt yeri ve kol dayanağı oyundaki SEAT_D ile birebir aynıdır; hepsi iki kolçaklıdır.
+// =====================================================================
+// ================= FRANSA MASA & SANDALYE KOLEKSİYONU =================
+// 7 takım: eiffel, louvre, bistro, macaron, provence, versailles, boulangerie
+// GEREKSİNİM: italya_koleksiyonu.js (itc, itTex, itShapeArch, ITX) önce eklenmiş olmalı.
+const FR_NAMES=['eiffel','louvre','bistro','macaron','provence','versailles','boulangerie'];
+const FR_TABLE={},FR_CHAIR={};for(const n of FR_NAMES){FR_TABLE['t_fr_'+n]=n;FR_TABLE['t_four_fr_'+n]=n;FR_CHAIR['c_fr_'+n]=n}
+// ---- ortak dokular ----
+function frMarbleTex(key='w',bg='#f4f1ea',vein='rgba(140,135,128,'){return itTex('fr_marble'+key,256,256,(c,w,h)=>{c.fillStyle=bg;c.fillRect(0,0,w,h);let a=17;const R=()=>{a=(a*9301+49297)%233280;return a/233280};
+  for(let i=0;i<9;i++){c.strokeStyle=vein+(0.15+R()*0.25)+')';c.lineWidth=0.8+R()*1.6;c.beginPath();let x=R()*w,y=0;c.moveTo(x,y);while(y<h){x+=(R()-0.5)*30;y+=8+R()*12;c.lineTo(x,y)}c.stroke()}},[1,1])}
+function frRattanTex(a='#e8c98a',b='#3a6a8a',key='bl'){return itTex('fr_rattan'+key,128,128,(c,w,h)=>{c.fillStyle=a;c.fillRect(0,0,w,h);const s=16;
+  for(let i=0;i<8;i++)for(let j=0;j<8;j++){c.fillStyle=(i+j)%2?b:a;c.fillRect(i*s+1,j*s+1,s-2,s-2);c.fillStyle='rgba(0,0,0,.12)';c.fillRect(i*s+1,j*s+s-4,s-2,3)}},[3,3])}
+function frToileTex(){return itTex('fr_toile',256,256,(c,w,h)=>{c.fillStyle='#f6f1e4';c.fillRect(0,0,w,h);c.strokeStyle='#3c5a8a';c.fillStyle='#3c5a8a';c.lineWidth=2;
+  for(const [x,y] of [[60,60],[190,180]]){c.beginPath();c.moveTo(x-30,y+20);c.quadraticCurveTo(x,y-30,x+30,y+20);c.stroke();for(let k=0;k<5;k++){c.beginPath();c.ellipse(x-20+k*10,y+6-Math.sin(k)*10,4,8,k*0.4,0,6.283);c.fill()}}
+  for(const [x,y] of [[180,50],[60,190]]){c.beginPath();c.arc(x,y,10,0,6.283);c.stroke();for(let k=0;k<6;k++){const a=k*Math.PI/3;c.beginPath();c.arc(x+Math.cos(a)*16,y+Math.sin(a)*16,5,0,6.283);c.stroke()}}},[2,2])}
+function frLavender(A,x,y,z,s=1,n=9){for(let i=0;i<n;i++){const a=i/n*Math.PI*2,r=0.012*s;const st=A(new THREE.CylinderGeometry(0.0015,0.0015,0.11*s,3),itc(0x6b8a4a),x+Math.cos(a)*r,y+0.055*s,z+Math.sin(a)*r);st.rotation.set(Math.sin(a)*0.25,0,-Math.cos(a)*0.25);
+  const fl=A(new THREE.CylinderGeometry(0.005*s,0.007*s,0.04*s,6),itc(i%2?0x8a6ac8:0x9d7ed6),x+Math.cos(a)*(r+0.014*s),y+0.12*s,z+Math.sin(a)*(r+0.014*s));fl.rotation.set(Math.sin(a)*0.25,0,-Math.cos(a)*0.25)}}
+function frMacaron(A,x,y,z,col,s=1){const sh=itc(col);const t=A(new THREE.SphereGeometry(0.03*s,14,8),sh,x,y+0.022*s,z);t.scale.y=0.45;const b=A(new THREE.SphereGeometry(0.03*s,14,8),sh,x,y+0.008*s,z);b.scale.y=0.45;
+  A(new THREE.CylinderGeometry(0.026*s,0.026*s,0.008*s,14),itc(0xfbf3e6),x,y+0.015*s,z)}
+function frCroissant(A,x,y,z,s=1,ry=0){const G=new THREE.Group();G.position.set(x,y+0.015*s,z);G.rotation.y=ry;const m=itc(0xd99a45);for(let i=0;i<5;i++){const a=(i-2)*0.4;const r=(0.03-Math.abs(i-2)*0.006)*s;
+  const p=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),m);p.position.set(Math.sin(a)*0.045*s,0,-Math.cos(a)*0.045*s+0.035*s);p.scale.set(0.9,0.7,1.1);p.castShadow=true;G.add(p)}A.__L&&0;return G}
+function frBaguette(A,x,y,z,len=0.3,ry=0){const b=A(new THREE.CapsuleGeometry(0.022,len,6,10),itc(0xd99a45),x,y+0.022,z);b.rotation.z=Math.PI/2;b.rotation.y=ry;
+  for(let i=0;i<4;i++){const c=A(new THREE.BoxGeometry(0.03,0.004,0.012),itc(0xf1d9a8),x+Math.cos(ry)*(-len/2+0.05+i*len/4.5),y+0.043,z-Math.sin(ry)*(-len/2+0.05+i*len/4.5));c.rotation.y=ry+0.6}}
+function frEspresso(A,x,y,z){A(new THREE.CylinderGeometry(0.035,0.032,0.006,16),itc(0xfbf7ec),x,y+0.003,z);A(new THREE.CylinderGeometry(0.02,0.016,0.03,14),itc(0xfbf7ec),x,y+0.021,z);A(new THREE.CylinderGeometry(0.018,0.018,0.002,14),itc(0x4a2a1a),x,y+0.035,z);
+  const h=A(new THREE.TorusGeometry(0.008,0.003,4,10),itc(0xfbf7ec),x+0.022,y+0.02,z);}
+// ---- MASALAR ----
+function frTable(parent,f,typeId,vase=true){
+  const d=SEAT_D,L=frameGroup(f,parent),cx=d.tCx,cz=d.tCz,R=d.tR,tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;
+  const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);let surf=top;
+  const disc=(mat,r=R*0.97,seg=48)=>{const t=A(new THREE.CircleGeometry(r,seg),mat,cx,top+0.0015,cz);t.rotation.x=-Math.PI/2;t.castShadow=false;surf=top+0.002};
+  const iron=itc(0x2b2b2e),gold=M.gold;
+  if(typeId==='eiffel'){// demir kafes Eiffel kulesi ayak
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0x6e5a48),cx,yT,cz);disc(frMarbleTex());const bronze=itc(0x7a5a3a);
+    const lv=[[0,0.2],[0.2*H/1,0.12],[0.42*H,0.075],[0.7*H,0.045],[H,0.03]];
+    for(let k=0;k<4;k++){const a=Math.PI/4+k*Math.PI/2;for(let j=0;j<lv.length-1;j++){const [y0,r0]=lv[j],[y1,r1]=lv[j+1];const x0=Math.cos(a)*r0,z0=Math.sin(a)*r0,x1=Math.cos(a)*r1,z1=Math.sin(a)*r1;
+      const len=Math.hypot(x1-x0,y1-y0,z1-z0);const b=A(new THREE.BoxGeometry(0.018,len,0.018),bronze,cx+(x0+x1)/2,fy+(y0+y1)/2,cz+(z0+z1)/2);b.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(x1-x0,y1-y0,z1-z0).normalize())}}
+    for(const [j,thick] of [[1,0.02],[2,0.016],[3,0.012]]){const [y,r]=lv[j];const pl=A(new THREE.BoxGeometry(r*2*0.72+0.03,thick,r*2*0.72+0.03),bronze,cx,fy+y,cz);}
+    const arch=new THREE.TorusGeometry(0.1,0.008,6,16,Math.PI);for(let k=0;k<4;k++){const a=k*Math.PI/2;const t=A(arch,bronze,cx+Math.cos(a)*0.12,fy+0.02,cz+Math.sin(a)*0.12);t.rotation.y=-a+Math.PI/2;t.scale.y=0.9}
+    for(let j=0;j<3;j++){const [y0,r0]=lv[j],[y1,r1]=lv[j+1];for(let k=0;k<4;k++){const a=k*Math.PI/2;const rm=(r0+r1)/2*0.72;const xx=A(new THREE.BoxGeometry(0.006,(y1-y0)*1.1,0.006),bronze,cx+Math.cos(a)*rm,fy+(y0+y1)/2,cz+Math.sin(a)*rm);xx.rotation.set(0,-a,0.7);
+      const xx2=A(new THREE.BoxGeometry(0.006,(y1-y0)*1.1,0.006),bronze,cx+Math.cos(a)*rm,fy+(y0+y1)/2,cz+Math.sin(a)*rm);xx2.rotation.set(0,-a,-0.7)}}
+    if(vase){frEspresso(A,cx+0.08,surf,cz+0.05);frMacaron(A,cx-0.06,surf,cz-0.02,0xf2a6b8);frMacaron(A,cx-0.02,surf,cz-0.07,0xa8d8a0)}}
+  else if(typeId==='louvre'){// cam piramit ayak
+    A(new THREE.CylinderGeometry(R,R,tk,4),itc(0xd8cfc0),cx,yT,cz).rotation.y=Math.PI/4;const sq=A(new THREE.CylinderGeometry(R*0.98,R*0.98,0.002,4),frMarbleTex('l','#ece5d8'),cx,top+0.001,cz);sq.rotation.y=Math.PI/4;surf=top+0.002;
+    const pg=new THREE.ConeGeometry(0.26,0.42,4,1);const gm=new THREE.MeshToonMaterial({color:0xa8d4e2,gradientMap:grad,transparent:true,opacity:0.6});const p=A(pg,gm,cx,fy+0.21,cz);p.rotation.y=Math.PI/4;p.castShadow=false;
+    const ed=itc(0x55606a);const corners=[];for(let k=0;k<4;k++){const a=k*Math.PI/2;corners.push([Math.cos(a)*0.26,Math.sin(a)*0.26])}
+    for(const [x,z] of corners){const len=Math.hypot(x,0.42,z);const b=A(new THREE.BoxGeometry(0.01,len,0.01),ed,cx+x/2,fy+0.21,cz+z/2);b.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-x,0.42,-z).normalize())}
+    for(let i=0;i<4;i++){const [x0,z0]=corners[i],[x1,z1]=corners[(i+1)%4];for(const t of [0.33,0.66]){const s=1-t;const b=A(new THREE.BoxGeometry(Math.hypot(x1-x0,z1-z0)*s,0.005,0.005),ed,cx+(x0+x1)/2*s,fy+0.42*t,cz+(z0+z1)/2*s);b.rotation.y=-Math.atan2(z1-z0,x1-x0)}}
+    A(new THREE.BoxGeometry(0.36,0.02,0.36),itc(0xd8cfc0),cx,fy+0.01,cz).rotation.y=Math.PI/4;A(new THREE.CylinderGeometry(0.025,0.025,H-0.42,10),ed,cx,fy+0.42+(H-0.42)/2,cz);
+    const lt=A(new THREE.SphereGeometry(0.03,10,8),new THREE.MeshBasicMaterial({color:0xfff2c4}),cx,fy+0.08,cz);lt.castShadow=false;
+    if(vase){const fr=A(new THREE.BoxGeometry(0.12,0.15,0.012),M.gold,cx,surf+0.075,cz-0.05);const pic=itTex('fr_mona',64,80,(c,w,h)=>{c.fillStyle='#4a5a3a';c.fillRect(0,0,w,h);c.fillStyle='#2a2018';c.beginPath();c.ellipse(w/2,h*0.42,14,18,0,0,6.283);c.fill();c.fillStyle='#e8c8a0';c.beginPath();c.ellipse(w/2,h*0.42,9,12,0,0,6.283);c.fill();c.fillStyle='#2a2018';c.fillRect(w/2-18,h*0.62,36,30)});
+      A(new THREE.BoxGeometry(0.1,0.13,0.004),pic,cx,surf+0.075,cz-0.042);frEspresso(A,cx+0.08,surf,cz+0.06)}}
+  else if(typeId==='bistro'){// klasik Paris bistro masası: mermer tabla, döküm demir ayak
+    A(new THREE.CylinderGeometry(R,R,tk,44),frMarbleTex(),cx,yT,cz);const rr=A(new THREE.TorusGeometry(R-0.002,0.01,6,48),itc(0x8a8a8e),cx,yT,cz);rr.rotation.x=Math.PI/2;
+    A(new THREE.CylinderGeometry(0.018,0.026,H-0.06,10),iron,cx,fy+0.06+(H-0.06)/2,cz);A(new THREE.SphereGeometry(0.035,10,8),iron,cx,fy+H*0.35,cz);A(new THREE.CylinderGeometry(0.07,0.04,0.03,14),iron,cx,top-tk-0.015,cz);
+    for(let k=0;k<3;k++){const a=k*2*Math.PI/3;const t=A(new THREE.TorusGeometry(0.075,0.011,6,14,Math.PI*0.7),iron,cx+Math.cos(a)*0.075,fy+0.07,cz+Math.sin(a)*0.075);t.rotation.y=-a+Math.PI;
+      A(new THREE.SphereGeometry(0.015,8,6),iron,cx+Math.cos(a)*0.15,fy+0.012,cz+Math.sin(a)*0.15)}
+    if(vase){frEspresso(A,cx+0.07,surf,cz+0.06);const gl=A(new THREE.CylinderGeometry(0.02,0.018,0.07,12),new THREE.MeshToonMaterial({color:0xd8f0f4,gradientMap:grad,transparent:true,opacity:0.6}),cx-0.06,surf+0.035,cz+0.04);
+      const cr=frCroissant(A,cx-0.02,surf,cz-0.08,1,0.4);L.add(cr);A(new THREE.CylinderGeometry(0.06,0.06,0.006,18),itc(0xfbf7ec),cx-0.02,surf+0.003,cz-0.08)}}
+  else if(typeId==='macaron'){// üst üste pastel makaron gövde
+    A(new THREE.CylinderGeometry(R,R,tk,44),itc(0xfbe3ea),cx,yT,cz);const rr=A(new THREE.TorusGeometry(R-0.004,0.014,8,48),itc(0xf2a6b8),cx,yT,cz);rr.rotation.x=Math.PI/2;
+    const cols=[0xf2a6b8,0xa8d8a0,0xf6e08a,0xc8b4e8,0xf8c49a,0xa8d4f0];const n=5,sh=(H-0.02)/n;for(let i=0;i<n;i++){const y=fy+0.01+i*sh;const r=0.13-Math.abs(i-2)*0.012;const m=itc(cols[i]);
+      const a=A(new THREE.SphereGeometry(r,20,10),m,cx,y+sh*0.72,cz);a.scale.y=(sh*0.32)/r;const b=A(new THREE.SphereGeometry(r,20,10),m,cx,y+sh*0.28,cz);b.scale.y=(sh*0.32)/r;
+      A(new THREE.CylinderGeometry(r*0.92,r*0.92,sh*0.22,20),itc(0xfbf3e6),cx,y+sh*0.5,cz)}
+    if(vase){const tw=[[0,0.07],[1,0.055],[2,0.04],[3,0.025]];for(const [k,r] of tw){const n2=Math.max(1,Math.round(r*120));for(let i=0;i<n2;i++){const a=i/n2*Math.PI*2;frMacaron(A,cx+Math.cos(a)*r,surf+k*0.03,cz+Math.sin(a)*r,cols[(i+k)%cols.length],0.6)}}
+      A(new THREE.CylinderGeometry(0.09,0.09,0.006,20),itc(0xfbf7ec),cx,surf+0.003,cz)}}
+  else if(typeId==='provence'){// boyalı ahşap Provence masası, lavanta
+    const bl=itc(0x9db8c8),bld=itc(0x7d9aac);A(new THREE.CylinderGeometry(R,R,tk,44),bl,cx,yT,cz);disc(frToileTex());
+    for(let k=0;k<4;k++){const a=Math.PI/4+k*Math.PI/2;const lg=A(new THREE.CylinderGeometry(0.018,0.014,H,8),bl,cx+Math.cos(a)*0.17,fy+H/2,cz+Math.sin(a)*0.17);for(const y of [0.2,0.5])A(new THREE.TorusGeometry(0.02,0.006,4,10),bld,cx+Math.cos(a)*0.17,fy+H*y,cz+Math.sin(a)*0.17).rotation.x=Math.PI/2}
+    const shelf=A(new THREE.CylinderGeometry(0.2,0.2,0.016,24),bld,cx,fy+0.14,cz);
+    for(let i=0;i<5;i++){const a=i*1.25;frLavender(A,cx+Math.cos(a)*0.1,fy+0.148,cz+Math.sin(a)*0.1,1.1,7)}
+    A(new THREE.CylinderGeometry(0.065,0.055,0.06,14),M.terracotta,cx,fy+0.178,cz);
+    if(vase){A(new THREE.CylinderGeometry(0.035,0.03,0.07,14),itc(0xf4efe3),cx,surf+0.035,cz);frLavender(A,cx,surf+0.06,cz,1.3,11);
+      for(const [dx,c] of [[0.1,0xf5c518],[0.13,0xf5c518]]){A(new THREE.SphereGeometry(0.022,10,8),itc(c),cx+dx,surf+0.022,cz-0.06)}}}
+  else if(typeId==='versailles'){// yaldızlı rokoko konsol ayak, mermer tabla
+    A(new THREE.CylinderGeometry(R,R,tk,44),frMarbleTex('v','#ece9ef','rgba(120,110,140,'),cx,yT,cz);const rr=A(new THREE.TorusGeometry(R-0.002,0.016,8,48),gold,cx,yT,cz);rr.rotation.x=Math.PI/2;
+    A(new THREE.TorusGeometry(R-0.02,0.008,6,48),gold,cx,yT-0.03,cz).rotation.x=Math.PI/2;
+    for(let k=0;k<4;k++){const a=Math.PI/4+k*Math.PI/2,ca=Math.cos(a),sa=Math.sin(a);const pts=[[0.17,H-0.005],[0.21,H*0.72],[0.12,H*0.32],[0.1,H*0.12],[0.17,0.02]].map(([r,y])=>new THREE.Vector3(cx+ca*r,fy+y,cz+sa*r));
+      const tb=A(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),24,0.017,8,false),gold,0,0,0);A(new THREE.SphereGeometry(0.024,10,8),gold,cx+ca*0.17,fy+0.022,cz+sa*0.17);
+      const sc=A(new THREE.TorusGeometry(0.028,0.008,6,14,Math.PI*1.5),gold,cx+ca*0.215,fy+H*0.72,cz+sa*0.215);sc.rotation.y=-a+Math.PI/2}
+    for(let k=0;k<4;k++){const a=Math.PI/4+k*Math.PI/2;const st=A(new THREE.CylinderGeometry(0.006,0.006,0.24,6),gold,cx+Math.cos(a)*0.06,fy+H*0.12,cz+Math.sin(a)*0.06);st.rotation.set(Math.sin(a)*1.3,0,-Math.cos(a)*1.3)}
+    const cen=A(new THREE.SphereGeometry(0.04,12,10),gold,cx,fy+H*0.12,cz);cen.scale.y=1.3;A(new THREE.ConeGeometry(0.025,0.07,10),gold,cx,fy+H*0.12-0.07,cz).rotation.x=Math.PI;
+    if(vase){A(new THREE.CylinderGeometry(0.035,0.045,0.02,14),gold,cx,surf+0.01,cz);A(new THREE.CylinderGeometry(0.008,0.008,0.07,8),gold,cx,surf+0.055,cz);A(new THREE.CylinderGeometry(0.045,0.02,0.035,14),itc(0xfbf7ec),cx,surf+0.1,cz);
+      for(let i=0;i<7;i++){const a=i/7*Math.PI*2;A(new THREE.SphereGeometry(0.014,8,6),itc([0xf2a6b8,0xa8d8a0,0xc8b4e8][i%3]),cx+Math.cos(a)*0.03,surf+0.13,cz+Math.sin(a)*0.03)}A(new THREE.SphereGeometry(0.018,8,6),itc(0xf2a6b8),cx,surf+0.15,cz)}}
+  else if(typeId==='boulangerie'){// fırın: ahşap kesme tahtası tabla, baget sepeti ayak
+    const wd=itc(0xb08050);A(new THREE.CylinderGeometry(R,R,tk+0.01,44),wd,cx,yT,cz);const rg=itTex('fr_board',256,256,(c,w,h)=>{c.fillStyle='#c89a62';c.fillRect(0,0,w,h);c.strokeStyle='rgba(120,80,40,.4)';for(let r=8;r<130;r+=9){c.beginPath();c.arc(w/2+3,h/2-2,r,0,6.283);c.stroke()}},[1,1]);disc(rg);
+    const bk=itTex('fr_wicker',128,64,(c,w,h)=>{c.fillStyle='#c49a5a';c.fillRect(0,0,w,h);c.strokeStyle='#8a6030';c.lineWidth=3;for(let y=4;y<h;y+=8){c.beginPath();for(let x=0;x<=w;x+=8)c.lineTo(x,y+((x/8+y/8)%2?2:-2));c.stroke()}},[4,2]);
+    A(new THREE.CylinderGeometry(0.15,0.12,H*0.5,20,1,true),bk,cx,fy+H*0.25,cz);A(new THREE.TorusGeometry(0.15,0.012,6,24),itc(0x8a6030),cx,fy+H*0.5,cz).rotation.x=Math.PI/2;
+    for(let i=0;i<9;i++){const a=i/9*Math.PI*2,r=0.06+(i%3)*0.025;const b=A(new THREE.CapsuleGeometry(0.022,H*0.55,6,10),itc(0xd99a45),cx+Math.cos(a)*r,fy+H*0.5,cz+Math.sin(a)*r);b.rotation.set(Math.sin(a)*0.25,0,-Math.cos(a)*0.25)}
+    A(new THREE.CylinderGeometry(0.03,0.03,H*0.4,10),wd,cx,fy+H*0.8,cz);
+    if(vase){frBaguette(A,cx-0.02,surf,cz-0.06,0.26,0.3);L.add(frCroissant(A,cx+0.08,surf,cz+0.05,1,-0.5));L.add(frCroissant(A,cx-0.07,surf,cz+0.07,0.9,1.2));
+      A(new THREE.CylinderGeometry(0.03,0.03,0.035,14),itc(0xd94a3a),cx+0.11,surf+0.018,cz-0.07);A(new THREE.CylinderGeometry(0.031,0.031,0.012,14),itc(0xfbf7ec),cx+0.11,surf+0.04,cz-0.07)}}
+  L.userData.frTable=typeId;return L}
+// ================= SANDALYELER (oturak profili, sırt yeri ve kol yüksekliği oyundakiyle aynı; iki kolçaklı) =================
+function frChair(parent,f,id){
+  const d=SEAT_D,L=frameGroup(f,parent);const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+  const LH=d.boardBot-d.footY,mx=(d.x0+d.x1)/2,mz=(d.zb+d.zf)/2,bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=mx,bz=d.backZ-0.03;
+  const iron=itc(0x2b2b2e);
+  const P={eiffel:{seat:itc(0x8a2a2a),board:itc(0x7a5a3a),leg:itc(0x7a5a3a),arm:itc(0x7a5a3a)},
+    louvre:{seat:itc(0x2d3a5a),board:itc(0xd8cfc0),leg:itc(0x55606a),arm:itc(0x55606a)},
+    bistro:{seat:frRattanTex(),board:itc(0x8a5a32),leg:itc(0x8a5a32),arm:itc(0x8a5a32)},
+    macaron:{seat:itc(0xf2a6b8),board:itc(0xfbf3e6),leg:itc(0xfbf3e6),arm:itc(0xa8d8a0)},
+    provence:{seat:frToileTex(),board:itc(0x9db8c8),leg:itc(0x9db8c8),arm:itc(0x7d9aac)},
+    versailles:{seat:itc(0x3a5a9a),board:M.gold,leg:M.gold,arm:M.gold},
+    boulangerie:{seat:itc(0xd94a3a),board:itc(0xb08050),leg:itc(0xb08050),arm:itc(0x8a6030)}}[id];
+  const sh=new THREE.Shape();sh.moveTo(d.zb,d.cushBot);sh.lineTo(d.zf,d.cushBot);for(let k=d.zs.length-1;k>=0;k--)sh.lineTo(d.zs[k],d.top[k]);sh.lineTo(d.zb,d.cushBot);
+  const cg=new THREE.ExtrudeGeometry(sh,{depth:bw,bevelEnabled:false});cg.rotateY(-Math.PI/2);cg.translate(d.x1,0,0);A(cg,P.seat,0,0,0);
+  A(new THREE.BoxGeometry(bw+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),P.board,mx,(d.boardBot+d.cushBot)/2,mz);
+  const LX=[d.x0+0.03,d.x1-0.03],LZ=[d.zb+0.03,d.zf-0.03];
+  const posts=(h,m,r=0.02)=>{for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.CylinderGeometry(r,r,h-d.footY,10),m,px,(d.footY+h)/2,bz)};
+  const panel=(mat,w,h,y,depth=0.02)=>A(new THREE.BoxGeometry(w,h,depth),[P.board,P.board,P.board,P.board,mat,P.board],bx,y,bz);
+  // ayaklar
+  if(id==='versailles'){for(const x of LX)for(const z of LZ){const l=A(new THREE.CylinderGeometry(0.022,0.012,LH,10),P.leg,x,d.footY+LH/2,z);l.rotation.x=(z>mz?-1:1)*0.12;A(new THREE.SphereGeometry(0.018,8,6),P.leg,x,d.footY+0.01,z+(z>mz?0.03:-0.03))}}
+  else if(id==='eiffel'||id==='louvre'){for(const x of LX)for(const z of LZ)A(new THREE.BoxGeometry(0.022,LH,0.022),P.leg,x,d.footY+LH/2,z);for(const z of LZ){const xb=A(new THREE.BoxGeometry(0.006,Math.hypot(bw-0.06,LH)*0.9,0.006),P.leg,mx,d.footY+LH/2,z);xb.rotation.z=Math.atan2(bw-0.06,LH);const xb2=A(new THREE.BoxGeometry(0.006,Math.hypot(bw-0.06,LH)*0.9,0.006),P.leg,mx,d.footY+LH/2,z);xb2.rotation.z=-Math.atan2(bw-0.06,LH)}}
+  else if(id==='macaron'){for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.016,0.016,LH,10),P.leg,x,d.footY+LH/2,z);const m=A(new THREE.SphereGeometry(0.028,12,8),itc(0xa8d8a0),x,d.footY+LH*0.5,z);m.scale.y=0.55}}
+  else{for(const x of LX)for(const z of LZ)A(new THREE.CylinderGeometry(0.017,0.014,LH,10),P.leg,x,d.footY+LH/2,z);
+    const ring=A(new THREE.TorusGeometry(1,0.006,6,28),P.leg,mx,d.footY+LH*0.35,mz);ring.scale.set(bw/2-0.02,(d.zf-d.zb)/2-0.02,1);ring.rotation.x=Math.PI/2}
+  // sırt
+  if(id==='eiffel'){posts(d.backTop,P.board,0.018);for(let i=0;i<2;i++){const ar=A(new THREE.TorusGeometry(bw/4-0.01,0.012,6,20,Math.PI),P.board,bx+(i?1:-1)*bw/4,d.boardBot+bh*0.35,bz);}
+    const tri=new THREE.Shape();tri.moveTo(-bw/2,0);tri.lineTo(bw/2,0);tri.lineTo(0.03,bh*0.62);tri.lineTo(-0.03,bh*0.62);tri.lineTo(-bw/2,0);const tg=new THREE.ExtrudeGeometry(tri,{depth:0.012,bevelEnabled:false});
+    const lat=itTex('fr_lattice',128,128,(c,w,h)=>{c.fillStyle='rgba(0,0,0,0)';c.clearRect(0,0,w,h);c.strokeStyle='#7a5a3a';c.lineWidth=5;c.strokeRect(2,2,w-4,h-4);c.beginPath();c.moveTo(0,0);c.lineTo(w,h);c.moveTo(w,0);c.lineTo(0,h);c.stroke()},[6,4]);lat.transparent=true;lat.alphaTest=0.5;
+    const tm=A(tg,lat,bx,d.boardBot+bh*0.35,bz-0.006);A(new THREE.BoxGeometry(0.08,0.03,0.03),P.board,bx,d.boardBot+bh*0.35+bh*0.62,bz);A(new THREE.ConeGeometry(0.015,0.06,6),P.board,bx,d.boardBot+bh*0.97+0.03,bz);
+    A(new THREE.BoxGeometry(bw+0.04,0.03,0.04),P.board,bx,d.boardBot+bh*0.35,bz)}
+  else if(id==='louvre'){posts(d.backTop,P.leg,0.016);const tri=new THREE.Shape();tri.moveTo(-bw/2,0);tri.lineTo(bw/2,0);tri.lineTo(0,bh-0.06);tri.lineTo(-bw/2,0);
+    const g=new THREE.ExtrudeGeometry(tri,{depth:0.01,bevelEnabled:false});const gm=new THREE.MeshToonMaterial({color:0xbfe0ea,gradientMap:grad,transparent:true,opacity:0.55});const p=A(g,gm,bx,d.boardBot+0.04,bz);p.castShadow=false;
+    for(const s of [-1,1]){const len=Math.hypot(bw/2,bh-0.06);const e=A(new THREE.BoxGeometry(0.014,len,0.016),P.leg,bx+s*bw/4,d.boardBot+0.04+(bh-0.06)/2,bz+0.006);e.rotation.z=s*Math.atan2(bw/2,bh-0.06)}
+    for(const t of [0.33,0.66])A(new THREE.BoxGeometry(bw*(1-t),0.008,0.012),P.leg,bx,d.boardBot+0.04+(bh-0.06)*t,bz+0.006);A(new THREE.BoxGeometry(bw+0.02,0.025,0.03),P.leg,bx,d.boardBot+0.04,bz)}
+  else if(id==='bistro'){// bükme ahşap + hasır örgü sırt (klasik Paris terası)
+    posts(d.backTop-0.06,P.board,0.016);const t=A(new THREE.TorusGeometry(bw/2+0.01,0.016,8,30,Math.PI),P.board,bx,d.backTop-0.06,bz);t.scale.y=0.5;
+    const pn=A(new THREE.BoxGeometry(bw-0.02,bh*0.42,0.016),frRattanTex(),bx,d.boardBot+bh*0.62,bz);A(new THREE.BoxGeometry(bw+0.02,0.022,0.03),P.board,bx,d.boardBot+bh*0.4,bz)}
+  else if(id==='macaron'){posts(d.boardBot+bh*0.35,P.leg,0.016);const cols=[0xf2a6b8,0xc8b4e8,0xa8d8a0];
+    for(let i=0;i<3;i++){const y=d.boardBot+bh*(0.42+i*0.2);const r=bw/2-i*0.04;const m=itc(cols[i]);const a=A(new THREE.SphereGeometry(1,24,10),m,bx,y+0.03,bz);a.scale.set(r,0.035,0.06);const b=A(new THREE.SphereGeometry(1,24,10),m,bx,y-0.03,bz);b.scale.set(r,0.035,0.06);
+      const c=A(new THREE.CylinderGeometry(1,1,0.025,24),itc(0xfbf3e6),bx,y,bz);c.scale.set(r*0.95,1,0.055)}}
+  else if(id==='provence'){posts(d.backTop,P.board,0.018);A(new RoundedBoxGeometry(bw+0.06,0.06,0.04,2,0.02),P.board,bx,d.backTop-0.02,bz);
+    for(let i=0;i<3;i++){const y=d.boardBot+bh*(0.3+i*0.2);A(new RoundedBoxGeometry(bw,0.05,0.025,2,0.01),P.board,bx,y,bz)}
+    const pn=A(new THREE.BoxGeometry(0.1,0.1,0.012),itTex('fr_lav_b',64,64,(c,w,h)=>{c.fillStyle='#f4efe3';c.fillRect(0,0,w,h);c.strokeStyle='#6b8a4a';c.lineWidth=2;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(w/2,h-6);c.lineTo(w/2+i*8,14);c.stroke();c.fillStyle='#8a6ac8';for(let k=0;k<4;k++){c.beginPath();c.arc(w/2+i*8*(1-k*0.07),14+k*6,3,0,6.283);c.fill()}}},[1,1]),bx,d.backTop-0.08,bz+0.022)}
+  else if(id==='versailles'){posts(d.backTop-0.05,P.board,0.018);const g=new THREE.ExtrudeGeometry(itShapeArch(bw-0.02,bh-0.04,(bw-0.02)/2),{depth:0.03,bevelEnabled:false,curveSegments:20});A(g,P.board,bx,d.boardBot+0.03,bz-0.015);
+    const pn=new THREE.ExtrudeGeometry(itShapeArch(bw-0.08,bh-0.1,(bw-0.08)/2),{depth:0.004,bevelEnabled:false,curveSegments:20});A(pn,itc(0x3a5a9a),bx,d.boardBot+0.06,bz+0.016);
+    for(let i=0;i<5;i++){const a=i/4*Math.PI;A(new THREE.SphereGeometry(0.02,8,6),M.gold,bx+Math.cos(a)*0.09,d.boardBot+bh*0.5+Math.sin(a)*0.07,bz+0.022)}
+    const cr=A(new THREE.TorusGeometry(0.04,0.01,6,16,Math.PI),M.gold,bx,d.backTop+0.02,bz);A(new THREE.SphereGeometry(0.02,8,6),M.gold,bx,d.backTop+0.07,bz)}
+  else if(id==='boulangerie'){posts(d.backTop,P.board,0.018);A(new THREE.BoxGeometry(bw+0.06,0.05,0.04),P.board,bx,d.backTop-0.025,bz);
+    for(let i=0;i<4;i++){const b=A(new THREE.CapsuleGeometry(0.024,bh-0.2,6,10),itc(0xd99a45),bx-0.18+i*0.12,d.boardBot+0.07+(bh-0.2)/2+0.02,bz);for(let k=0;k<3;k++){const c=A(new THREE.BoxGeometry(0.03,0.012,0.005),itc(0xf1d9a8),bx-0.18+i*0.12,d.boardBot+0.15+k*(bh-0.25)/3,bz+0.023);c.rotation.z=0.5}}
+    A(new THREE.BoxGeometry(bw+0.06,0.03,0.04),P.board,bx,d.boardBot+0.06,bz)}
+  // iki yanda kolçak (oyundaki yükseklikte)
+  for(const ax of [d.x0-0.045,d.x1+0.045]){A(new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),P.arm,ax,d.armY-0.015,mz);
+    A(new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,10),P.leg||P.arm,ax,(d.footY+d.armY-0.03)/2,d.zf)}
+  L.userData.frChair=id;return L}
+
+// =====================================================================
+// TabbyChef · ROYAL PASS · MASA & SANDALYE (3 seçkin takım)
+// 3 masa + 3 uyumlu sandalye: kraliyet, kristal, galaksi
+// GEREKSİNİM: italya_koleksiyonu.js önce eklenmiş olmalı (itc, itTex, itShapeArch ortak yardımcıları).
+//
+// OYUNA EKLEME (index.html):
+// 1) Bu dosyayı italya_koleksiyonu.js'in hemen ALTINA yapıştır.
+// 2) tableMeshes fonksiyonunun ilk satırına ekle:
+//      if(RP_TABLE[typeId])return rpTable(parent,f,RP_TABLE[typeId],vase);
+// 3) chairMeshes fonksiyonunun ilk satırına ekle:
+//      if(RP_CHAIR[styleId])return rpChair(parent,f,RP_CHAIR[styleId]);
+// 4) Market kataloğuna kayıtlar: masalar t_rp_<ad> (2 kişilik), t_four_rp_<ad> (4 kişilik); sandalye c_rp_<ad>.
+// Sandalyelerin oturak profili, sırt yeri ve kol dayanağı oyundaki SEAT_D ile birebir aynıdır; hepsi iki kolçaklıdır.
+// =====================================================================
+// ================= ROYAL PASS · MASA & SANDALYE =================
+// 3 seçkin takım: kraliyet (altın + kadife, taht), kristal (gümüş + buz camı), galaksi (gece mavisi + parlayan yıldızlar)
+// GEREKSİNİM: italya_koleksiyonu.js (itc, itTex, itShapeArch, ITX) önce eklenmiş olmalı.
+const RPD_NAMES=['kraliyet','kristal','galaksi'];
+const RP_TABLE={},RP_CHAIR={};for(const n of RPD_NAMES){RP_TABLE['t_rp_'+n]=n;RP_TABLE['t_four_rp_'+n]=n;RP_CHAIR['c_rp_'+n]=n}
+const RP_GLOW={};function rpGlow(c){return RP_GLOW[c]||(RP_GLOW[c]=new THREE.MeshBasicMaterial({color:c}))}
+const RP_GLASS={};function rpGlass(c,o=0.45){const k=c+'_'+o;return RP_GLASS[k]||(RP_GLASS[k]=new THREE.MeshToonMaterial({color:c,gradientMap:grad,transparent:true,opacity:o,depthWrite:false}))}
+function rpSilver(){return itc(0xa8c0dc)}
+// ---- dokular ----
+function rpDamaskTex(bg='#7a1424',fg='rgba(214,170,90,.55)',key='r'){return itTex('rp_damask'+key,256,256,(c,w,h)=>{c.fillStyle=bg;c.fillRect(0,0,w,h);c.fillStyle=fg;
+  const mot=(x,y,s)=>{c.save();c.translate(x,y);c.scale(s,s);c.beginPath();c.moveTo(0,-40);c.bezierCurveTo(22,-30,26,-6,0,10);c.bezierCurveTo(-26,-6,-22,-30,0,-40);c.fill();c.beginPath();c.moveTo(0,8);c.bezierCurveTo(18,14,30,30,0,44);c.bezierCurveTo(-30,30,-18,14,0,8);c.fill();
+    for(const s2 of [-1,1]){c.beginPath();c.ellipse(s2*26,4,8,16,s2*0.6,0,6.283);c.fill()}c.restore()};
+  for(const [x,y] of [[64,64],[192,192],[192,-64],[-64,192],[192,64+256],[64+256,64]])mot(x%256,y%256,1);mot(192,64,0.6);mot(64,192,0.6)},[2,2])}
+function rpCrestTex(){return itTex('rp_crest',512,512,(c,w,h)=>{const o=w/2;c.fillStyle='#7a1424';c.fillRect(0,0,w,h);
+  c.strokeStyle='#d6aa5a';c.lineWidth=10;c.beginPath();c.arc(o,o,232,0,6.283);c.stroke();c.lineWidth=3;c.beginPath();c.arc(o,o,214,0,6.283);c.stroke();
+  for(let i=0;i<24;i++){const a=i/24*Math.PI*2;c.fillStyle='#d6aa5a';c.beginPath();c.arc(o+Math.cos(a)*223,o+Math.sin(a)*223,5,0,6.283);c.fill()}
+  // taç
+  c.fillStyle='#e8c060';c.beginPath();c.moveTo(o-110,o+40);c.lineTo(o-120,o-60);c.lineTo(o-60,o-10);c.lineTo(o,o-90);c.lineTo(o+60,o-10);c.lineTo(o+120,o-60);c.lineTo(o+110,o+40);c.closePath();c.fill();
+  c.fillStyle='#c9993a';c.fillRect(o-112,o+30,224,30);for(const [x,col] of [[-60,'#2a5ab0'],[0,'#c8203a'],[60,'#2a8a5a']]){c.fillStyle=col;c.beginPath();c.arc(o+x,o+45,10,0,6.283);c.fill()}
+  for(const [x,y] of [[-120,-60],[0,-90],[120,-60]]){c.fillStyle='#fbf3e6';c.beginPath();c.arc(o+x,o+y,10,0,6.283);c.fill()}
+  // kedi kulakları ve patiler (oyunun kedi kafesi teması)
+  c.fillStyle='#e8c060';for(const s of [-1,1]){c.beginPath();c.moveTo(o+s*40,o+110);c.lineTo(o+s*70,o+150);c.lineTo(o+s*20,o+150);c.fill()}c.beginPath();c.arc(o,o+170,38,Math.PI,0);c.fill();
+  c.fillStyle='#7a1424';for(const s of [-1,1]){c.beginPath();c.arc(o+s*14,o+160,5,0,6.283);c.fill()}},[1,1])}
+function rpStarTex(key='a',dense=1){return itTex('rp_stars'+key,512,512,(c,w,h)=>{const g=c.createRadialGradient(w*0.35,h*0.4,10,w/2,h/2,w*0.75);g.addColorStop(0,'#3a2a7a');g.addColorStop(0.5,'#1a1a4a');g.addColorStop(1,'#0a0c22');c.fillStyle=g;c.fillRect(0,0,w,h);
+  let a=13;const R=()=>{a=(a*9301+49297)%233280;return a/233280};
+  for(let i=0;i<6;i++){const x=R()*w,y=R()*h,r=60+R()*90;const n=c.createRadialGradient(x,y,0,x,y,r);n.addColorStop(0,['rgba(200,90,200,.35)','rgba(80,160,230,.32)','rgba(120,80,220,.3)'][i%3]);n.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=n;c.fillRect(0,0,w,h)}
+  for(let i=0;i<260*dense;i++){const x=R()*w,y=R()*h,s=R();c.fillStyle=s>0.9?'#fff6c8':'#ffffff';c.globalAlpha=0.4+s*0.6;c.beginPath();c.arc(x,y,s>0.95?2.4:s>0.7?1.4:0.8,0,6.283);c.fill()}c.globalAlpha=1;
+  const star=(x,y,r)=>{c.fillStyle='#fff3b0';c.beginPath();for(let i=0;i<10;i++){const rr=i%2?r*0.4:r,aa=i*Math.PI/5-Math.PI/2;c.lineTo(x+Math.cos(aa)*rr,y+Math.sin(aa)*rr)}c.closePath();c.fill()};
+  for(let i=0;i<7;i++)star(R()*w,R()*h,5+R()*6)},[1,1])}
+function rpFrostTex(){return itTex('rp_frost',256,256,(c,w,h)=>{c.fillStyle='#eaf4fa';c.fillRect(0,0,w,h);c.strokeStyle='rgba(150,190,220,.6)';c.lineWidth=2;
+  const flake=(x,y,r)=>{for(let k=0;k<6;k++){const a=k*Math.PI/3;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);c.stroke();for(const t of [0.45,0.7]){const bx=x+Math.cos(a)*r*t,by=y+Math.sin(a)*r*t;for(const s of [-1,1]){c.beginPath();c.moveTo(bx,by);c.lineTo(bx+Math.cos(a+s*0.8)*r*0.22,by+Math.sin(a+s*0.8)*r*0.22);c.stroke()}}}};
+  flake(64,64,40);flake(192,192,40);flake(192,60,22);flake(60,190,22)},[2,2])}
+function rpTuftTex(bg,dot,key){return itTex('rp_tuft'+key,128,128,(c,w,h)=>{c.fillStyle=bg;c.fillRect(0,0,w,h);c.strokeStyle='rgba(0,0,0,.12)';c.lineWidth=2;for(let i=-2;i<4;i++){c.beginPath();c.moveTo(i*64,0);c.lineTo(i*64+h,h);c.stroke();c.beginPath();c.moveTo(i*64+h,0);c.lineTo(i*64,h);c.stroke()}
+  c.fillStyle=dot;for(const [x,y] of [[0,0],[64,0],[128,0],[32,32],[96,32],[0,64],[64,64],[128,64],[32,96],[96,96],[0,128],[64,128],[128,128]]){c.beginPath();c.arc(x,y,4,0,6.283);c.fill()}},[3,3])}
+function rpCrown(A,x,y,z,r,h,gold,jewels=[0xc8203a,0x2a5ab0,0x2a8a5a]){A(new THREE.CylinderGeometry(r,r*0.92,h*0.4,24),gold,x,y+h*0.2,z);A(new THREE.TorusGeometry(r,h*0.06,6,24),gold,x,y+h*0.02,z).rotation.x=Math.PI/2;
+  const n=8;for(let i=0;i<n;i++){const a=i/n*Math.PI*2;const p=A(new THREE.ConeGeometry(r*0.18,h*0.6,4),gold,x+Math.cos(a)*r*0.98,y+h*0.62,z+Math.sin(a)*r*0.98);A(new THREE.SphereGeometry(r*0.07,8,6),itc(0xfbf3e6),x+Math.cos(a)*r*0.98,y+h*0.95,z+Math.sin(a)*r*0.98);
+    if(i%2===0)A(new THREE.SphereGeometry(r*0.09,8,6),itc(jewels[(i/2)%jewels.length]),x+Math.cos(a+Math.PI/n)*r*1.0,y+h*0.2,z+Math.sin(a+Math.PI/n)*r*1.0)}}
+// ---- MASALAR ----
+function rpTable(parent,f,typeId,vase=true){
+  const d=SEAT_D,L=frameGroup(f,parent),cx=d.tCx,cz=d.tCz,R=d.tR,tk=d.tThick,top=d.tTop,yT=top-tk/2,fy=d.footY,H=top-tk-fy;
+  const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);let surf=top;const gold=M.gold;
+  const disc=(mat,r=R*0.97)=>{const t=A(new THREE.CircleGeometry(r,48),mat,cx,top+0.0015,cz);t.rotation.x=-Math.PI/2;t.castShadow=false;surf=top+0.002};
+  if(typeId==='kraliyet'){// kadife arma tabla, taç kaide, burgulu altın sütun
+    A(new THREE.CylinderGeometry(R,R,tk,48),itc(0x7a1424),cx,yT,cz);disc(rpCrestTex(),R*0.94);
+    A(new THREE.TorusGeometry(R-0.004,0.016,8,56),gold,cx,top,cz).rotation.x=Math.PI/2;A(new THREE.TorusGeometry(R+0.004,0.01,6,56),gold,cx,yT-0.016,cz).rotation.x=Math.PI/2;
+    for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const t=A(new THREE.ConeGeometry(0.014,0.04,4),gold,cx+Math.cos(a)*(R+0.004),yT-0.04,cz+Math.sin(a)*(R+0.004));t.rotation.x=Math.PI}
+    rpCrown(A,cx,fy,cz,0.17,0.2,gold);A(new THREE.CylinderGeometry(0.14,0.17,0.02,24),itc(0x7a1424),cx,fy+0.01,cz);
+    const col=H-0.22;for(let i=0;i<10;i++){const t=A(new THREE.TorusGeometry(0.04,0.012,6,14),gold,cx,fy+0.2+i*col/10+col/20,cz);t.rotation.x=Math.PI/2;t.rotation.y=i*0.4}A(new THREE.CylinderGeometry(0.035,0.035,col,12),itc(0x7a1424),cx,fy+0.2+col/2,cz);
+    const orb=A(new THREE.SphereGeometry(0.06,18,14),gold,cx,fy+0.2+col*0.45,cz);A(new THREE.TorusGeometry(0.062,0.008,6,24),itc(0xc8203a),cx,fy+0.2+col*0.45,cz).rotation.x=Math.PI/2;
+    A(new THREE.CylinderGeometry(0.1,0.04,0.04,18),gold,cx,top-tk-0.02,cz);
+    if(vase){// üç kollu altın şamdan
+      A(new THREE.CylinderGeometry(0.045,0.055,0.015,16),gold,cx,surf+0.008,cz);A(new THREE.CylinderGeometry(0.008,0.012,0.12,8),gold,cx,surf+0.07,cz);
+      for(const s of [-1,0,1]){const x=cx+s*0.06,y=surf+(s?0.12:0.15);if(s){const arm=A(new THREE.TorusGeometry(0.03,0.005,4,10,Math.PI),gold,cx+s*0.03,surf+0.11,cz);arm.rotation.z=s>0?Math.PI:0}
+        A(new THREE.CylinderGeometry(0.016,0.012,0.012,10),gold,x,y,cz);A(new THREE.CylinderGeometry(0.009,0.009,0.05,8),itc(0xfbf3e6),x,y+0.03,cz);const fl=A(new THREE.SphereGeometry(0.008,8,6),rpGlow(0xffc850),x,y+0.062,cz);fl.scale.y=1.8;fl.castShadow=false}
+      A(new THREE.SphereGeometry(0.012,8,6),itc(0xc8203a),cx,surf+0.09,cz+0.012)}}
+  else if(typeId==='kristal'){// buz camı tabla, kristal küme ayak, gümüş
+    const sv=rpSilver();A(new THREE.CylinderGeometry(R,R,tk,48),rpGlass(0x8fd0f0,0.65),cx,yT,cz).castShadow=false;disc(rpGlass(0xc8eafa,0.5),R*0.96);
+    A(new THREE.TorusGeometry(R-0.002,0.014,8,56),sv,cx,top,cz).rotation.x=Math.PI/2;A(new THREE.TorusGeometry(R,0.008,6,56),sv,cx,yT-0.02,cz).rotation.x=Math.PI/2;
+    for(let i=0;i<24;i++){const a=i/24*Math.PI*2;const pr=A(new THREE.OctahedronGeometry(0.012),rpGlass(0xdff4ff,0.85),cx+Math.cos(a)*R,yT-0.05-(i%2)*0.02,cz+Math.sin(a)*R);pr.scale.y=1.8;pr.castShadow=false}
+    A(new THREE.CylinderGeometry(0.17,0.19,0.03,6),sv,cx,fy+0.015,cz);A(new THREE.TorusGeometry(0.18,0.006,6,6),rpGlow(0xbfeaff),cx,fy+0.031,cz).rotation.x=Math.PI/2;
+    const cr=[[0,0,0.055,H*0.98],[0.08,0.03,0.035,H*0.62],[-0.07,0.05,0.04,H*0.74],[0.02,-0.09,0.032,H*0.5],[-0.05,-0.07,0.03,H*0.4],[0.1,-0.05,0.028,H*0.35],[-0.11,0,0.026,H*0.3]];
+    for(const [dx,dz,r,h] of cr){const m=A(new THREE.CylinderGeometry(r,r*1.05,h,6),rpGlass(0x7fc8ec,0.7),cx+dx,fy+0.03+h/2,cz+dz);m.castShadow=false;const tp=A(new THREE.ConeGeometry(r,r*1.6,6),rpGlass(0xb8e4fa,0.8),cx+dx,fy+0.03+h+r*0.8,cz+dz);tp.castShadow=false;
+      const core=A(new THREE.CylinderGeometry(r*0.25,r*0.25,h*0.9,6),rpGlow(0xc8ecff),cx+dx,fy+0.03+h/2,cz+dz);core.castShadow=false}
+    if(vase){// kristal gül
+      A(new THREE.CylinderGeometry(0.025,0.03,0.09,6),rpGlass(0xdff4ff,0.6),cx,surf+0.045,cz);A(new THREE.CylinderGeometry(0.003,0.003,0.1,4),rpGlass(0xa8e0c8,0.8),cx,surf+0.12,cz);
+      for(let k=0;k<3;k++)for(let i=0;i<5;i++){const a=i/5*Math.PI*2+k;const p=A(new THREE.SphereGeometry(0.014-k*0.003,8,6),rpGlass(0xf6d4e4,0.75),cx+Math.cos(a)*(0.018-k*0.006),surf+0.18+k*0.008,cz+Math.sin(a)*(0.018-k*0.006));p.scale.set(0.7,1.2,0.5);p.castShadow=false}
+      const gl=A(new THREE.SphereGeometry(0.012,8,6),rpGlow(0xfff0f6),cx,surf+0.19,cz);gl.castShadow=false}}
+  else if(typeId==='galaksi'){// yıldızlı tabla, hilal ay ve halkalı gezegen ayak, neon kenar
+    A(new THREE.CylinderGeometry(R,R,tk,48),itc(0x14163a),cx,yT,cz);disc(new THREE.MeshBasicMaterial({map:rpStarTex('t').map}),R*0.97);
+    A(new THREE.TorusGeometry(R-0.002,0.01,8,56),rpGlow(0x5ae0ff),cx,top+0.002,cz).rotation.x=Math.PI/2;A(new THREE.TorusGeometry(R+0.002,0.008,6,56),rpGlow(0xb070ff),cx,yT-0.02,cz).rotation.x=Math.PI/2;
+    A(new THREE.CylinderGeometry(0.16,0.18,0.03,24),itc(0x14163a),cx,fy+0.015,cz);A(new THREE.TorusGeometry(0.17,0.006,6,30),rpGlow(0x5ae0ff),cx,fy+0.03,cz).rotation.x=Math.PI/2;
+    // hilal: kalın yay
+    const moon=A(new THREE.TorusGeometry(0.17,0.045,14,40,Math.PI*1.25),itc(0xf3e6b0),cx,fy+0.26,cz);moon.rotation.z=-Math.PI*0.62;moon.rotation.y=0.3;
+    const glowM=A(new THREE.TorusGeometry(0.17,0.05,8,40,Math.PI*1.25),rpGlass(0xfff3c0,0.25),cx,fy+0.26,cz);glowM.rotation.copy(moon.rotation);glowM.castShadow=false;
+    const pl=A(new THREE.SphereGeometry(0.075,20,16),itc(0xb070ff),cx+0.03,fy+0.28,cz);const ring=A(new THREE.TorusGeometry(0.115,0.01,4,40),rpGlow(0x5ae0ff),cx+0.03,fy+0.28,cz);ring.rotation.set(Math.PI/2-0.4,0,0.3);ring.scale.z=0.15;
+    for(let i=0;i<3;i++){const b=A(new THREE.SphereGeometry(0.03,10,8),itc(0x8a50d0),cx+0.03,fy+0.28,cz);b.scale.set(1.02,0.3,1.02);b.position.y+=-0.035+i*0.035}
+    A(new THREE.CylinderGeometry(0.025,0.025,H-0.42,10),itc(0x14163a),cx,fy+0.42+(H-0.42)/2,cz);A(new THREE.CylinderGeometry(0.008,0.008,0.18,6),itc(0x14163a),cx,fy+0.12,cz);
+    for(let i=0;i<4;i++){const a=i/4*Math.PI*2;const s=A(new THREE.OctahedronGeometry(0.018),rpGlow(0xfff3b0),cx+Math.cos(a)*0.16,fy+0.45+(i%2)*0.06,cz+Math.sin(a)*0.16);s.castShadow=false}
+    if(vase){// minik güneş sistemi
+      A(new THREE.CylinderGeometry(0.035,0.04,0.012,16),itc(0x14163a),cx,surf+0.006,cz);A(new THREE.CylinderGeometry(0.003,0.003,0.1,4),itc(0xc8d0d8),cx,surf+0.06,cz);A(new THREE.SphereGeometry(0.025,14,10),rpGlow(0xffc850),cx,surf+0.115,cz);
+      A(new THREE.TorusGeometry(0.06,0.0015,4,32),itc(0xc8d0d8),cx,surf+0.115,cz).rotation.x=Math.PI/2-0.25;A(new THREE.TorusGeometry(0.09,0.0015,4,40),itc(0xc8d0d8),cx,surf+0.115,cz).rotation.x=Math.PI/2+0.2;
+      A(new THREE.SphereGeometry(0.01,8,6),itc(0x5ab0ff),cx+0.06,surf+0.12,cz);A(new THREE.SphereGeometry(0.013,8,6),itc(0xd0704a),cx-0.06,surf+0.1,cz+0.06);A(new THREE.SphereGeometry(0.008,8,6),itc(0xb070ff),cx,surf+0.13,cz-0.088)}}
+  L.userData.rpTable=typeId;return L}
+// ================= SANDALYELER (oturak, sırt ve kol yükseklikleri oyundakiyle aynı; iki kolçaklı) =================
+function rpChair(parent,f,id){
+  const d=SEAT_D,L=frameGroup(f,parent);const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
+  const LH=d.boardBot-d.footY,mx=(d.x0+d.x1)/2,mz=(d.zb+d.zf)/2,bw=d.x1-d.x0,bh=d.backTop-d.boardBot,bx=mx,bz=d.backZ-0.03;const gold=M.gold,sv=rpSilver();
+  const P={kraliyet:{seat:rpDamaskTex(),board:gold,leg:gold,arm:gold},
+    kristal:{seat:rpTuftTex('#dceefa','#8fb4d8','w'),board:sv,leg:rpGlass(0x8fd0f0,0.7),arm:sv},
+    galaksi:{seat:rpTuftTex('#1e2050','#5ae0ff','g'),board:itc(0x14163a),leg:itc(0x14163a),arm:itc(0x14163a)}}[id];
+  const sh=new THREE.Shape();sh.moveTo(d.zb,d.cushBot);sh.lineTo(d.zf,d.cushBot);for(let k=d.zs.length-1;k>=0;k--)sh.lineTo(d.zs[k],d.top[k]);sh.lineTo(d.zb,d.cushBot);
+  const cg=new THREE.ExtrudeGeometry(sh,{depth:bw,bevelEnabled:false});cg.rotateY(-Math.PI/2);cg.translate(d.x1,0,0);A(cg,P.seat,0,0,0);
+  A(new THREE.BoxGeometry(bw+0.02,d.cushBot-d.boardBot,d.zf-d.zb+0.02),P.board,mx,(d.boardBot+d.cushBot)/2,mz);
+  const LX=[d.x0+0.03,d.x1-0.03],LZ=[d.zb+0.03,d.zf-0.03];
+  const posts=(h,m,r=0.02)=>{for(const px of [d.x0-0.01,d.x1+0.01])A(new THREE.CylinderGeometry(r,r,h-d.footY,10),m,px,(d.footY+h)/2,bz)};
+  if(id==='kraliyet'){for(const x of LX)for(const z of LZ){const l=A(new THREE.CylinderGeometry(0.022,0.014,LH,10),gold,x,d.footY+LH/2,z);A(new THREE.SphereGeometry(0.024,10,8),gold,x,d.footY+0.02,z);A(new THREE.TorusGeometry(0.022,0.006,4,12),gold,x,d.footY+LH*0.7,z).rotation.x=Math.PI/2}
+    A(new THREE.BoxGeometry(bw+0.04,0.03,0.012),gold,mx,d.boardBot-0.01,d.zf+0.005);for(let i=0;i<7;i++){const t=A(new THREE.ConeGeometry(0.01,0.03,4),gold,d.x0+i*bw/6,d.boardBot-0.035,d.zf+0.008);t.rotation.x=Math.PI}
+    // taht sırtı: kemerli altın çerçeve, kadife pano, tepede taç
+    posts(d.backTop+0.06,gold,0.024);for(const px of [d.x0-0.01,d.x1+0.01]){A(new THREE.SphereGeometry(0.032,10,8),gold,px,d.backTop+0.08,bz);A(new THREE.ConeGeometry(0.014,0.05,6),gold,px,d.backTop+0.13,bz)}
+    const fr=new THREE.ExtrudeGeometry(itShapeArch(bw+0.04,bh+0.08,(bw+0.04)/2),{depth:0.04,bevelEnabled:false,curveSegments:24});A(fr,gold,bx,d.boardBot,bz-0.02);
+    const pn=new THREE.ExtrudeGeometry(itShapeArch(bw-0.06,bh-0.02,(bw-0.06)/2),{depth:0.006,bevelEnabled:false,curveSegments:24});const Q=pn.attributes.uv;for(let i=0;i<Q.count;i++)Q.setXY(i,Q.getX(i)*1.6+0.5,Q.getY(i)*1.6);A(pn,rpDamaskTex(),bx,d.boardBot+0.05,bz+0.021);
+    rpCrown(A,bx,d.boardBot+bh+0.06,bz,0.07,0.09,gold);
+    const em=A(new THREE.CylinderGeometry(0.05,0.05,0.008,20),[gold,rpCrestTex(),gold],bx,d.boardBot+bh*0.55,bz+0.03);em.rotation.x=Math.PI/2}
+  else if(id==='kristal'){for(const x of LX)for(const z of LZ){const l=A(new THREE.CylinderGeometry(0.016,0.016,LH,6),rpGlass(0x8fd0f0,0.7),x,d.footY+LH/2,z);l.castShadow=false;A(new THREE.SphereGeometry(0.02,10,8),sv,x,d.footY+0.012,z)}
+    posts(d.backTop,sv,0.016);const bk=new THREE.ExtrudeGeometry(itShapeArch(bw,bh,bw/2),{depth:0.025,bevelEnabled:false,curveSegments:24});const m=A(bk,rpGlass(0x9fd8f4,0.6),bx,d.boardBot,bz-0.012);m.castShadow=false;
+    const pn=A(new THREE.BoxGeometry(bw-0.1,bh*0.5,0.03),rpTuftTex('#dceefa','#8fb4d8','w'),bx,d.boardBot+bh*0.4,bz);
+    const fl=new THREE.Group();fl.position.set(bx,d.boardBot+bh*0.82,bz+0.02);L.add(fl);for(let k=0;k<6;k++){const a=k*Math.PI/3;const b=new THREE.Mesh(new THREE.BoxGeometry(0.008,0.07,0.006),rpGlow(0xffffff));b.position.set(Math.sin(a)*0.035,Math.cos(a)*0.035,0);b.rotation.z=-a;fl.add(b);
+      for(const s of [-1,1]){const t=new THREE.Mesh(new THREE.BoxGeometry(0.005,0.025,0.005),rpGlow(0xffffff));t.position.set(Math.sin(a)*0.05+Math.sin(a+s*0.9)*0.008,Math.cos(a)*0.05+Math.cos(a+s*0.9)*0.008,0);t.rotation.z=-a-s*0.9;fl.add(t)}}
+    for(let i=0;i<9;i++){const a=i/8*Math.PI;const g=A(new THREE.OctahedronGeometry(0.01),rpGlass(0xe4f6ff,0.9),bx+Math.cos(a)*(bw/2),d.boardBot+bh-bw/2+Math.sin(a)*(bw/2)+0.005,bz+0.014);g.castShadow=false}}
+  else{// galaksi: hilal sırt, yıldız tepe, neon halkalı ayaklar
+    for(const x of LX)for(const z of LZ){A(new THREE.CylinderGeometry(0.016,0.016,LH,10),P.leg,x,d.footY+LH/2,z);A(new THREE.TorusGeometry(0.018,0.004,4,12),rpGlow(0x5ae0ff),x,d.footY+LH*0.5,z).rotation.x=Math.PI/2}
+    posts(d.boardBot+bh*0.45,P.board,0.018);
+    const sp=A(new THREE.BoxGeometry(bw,bh*0.75,0.02),[P.board,P.board,P.board,P.board,new THREE.MeshBasicMaterial({map:rpStarTex('c',0.6).map}),P.board],bx,d.boardBot+bh*0.45,bz);
+    const moon=A(new THREE.TorusGeometry(bw/2+0.02,0.03,10,36,Math.PI*1.3),itc(0xf3e6b0),bx,d.boardBot+bh*0.55,bz+0.012);moon.rotation.z=-Math.PI*0.15;
+    const st=new THREE.Shape();for(let i=0;i<10;i++){const r=i%2?0.025:0.06,a=i*Math.PI/5+Math.PI/2;if(i)st.lineTo(Math.cos(a)*r,Math.sin(a)*r);else st.moveTo(Math.cos(a)*r,Math.sin(a)*r)}
+    A(new THREE.ExtrudeGeometry(st,{depth:0.02,bevelEnabled:false}),rpGlow(0xfff3b0),bx,d.backTop+0.02,bz).castShadow=false;
+    A(new THREE.BoxGeometry(bw+0.04,0.012,0.03),rpGlow(0x5ae0ff),bx,d.boardBot+0.06,bz+0.012)}
+  // iki yanda kolçak (oyundaki yükseklikte)
+  for(const ax of [d.x0-0.045,d.x1+0.045]){A(new THREE.BoxGeometry(0.05,0.03,d.zf-d.zb+0.04),P.arm,ax,d.armY-0.015,mz);
+    A(new THREE.CylinderGeometry(0.015,0.015,d.armY-0.03-d.footY,10),P.leg||P.arm,ax,(d.footY+d.armY-0.03)/2,d.zf);
+    if(id==='kraliyet')A(new THREE.SphereGeometry(0.026,10,8),gold,ax,d.armY,d.zf+0.02);
+    if(id==='galaksi')A(new THREE.BoxGeometry(0.052,0.006,d.zf-d.zb+0.04),rpGlow(0x5ae0ff),ax,d.armY+0.002,mz);
+    if(id==='kristal'){const g=A(new THREE.OctahedronGeometry(0.02),rpGlass(0xe4f6ff,0.9),ax,d.armY+0.015,d.zf+0.02);g.castShadow=false}}
+  L.userData.rpChair=id;return L}
+
+// ================= TASARIM PAKETİ BAĞLANTISI (V145) =================
+// Paket dosyaları (t01…t25_*.js) oyuncunun hazırladığı "TabbyChef Tasarım Paketi"nden DEĞİŞTİRİLMEDEN alınır: İtalya, Türkiye, Japonya, Fransa
+// ülke paketleri ve Royal Pass setleri (Kraliyet, Kristal, Galaksi). Yeni paket sürümü gelince t*.js dosyaları aynen değiştirilir.
+// Bu dosya onları oyuna bağlar: kurucu kancaları, market kataloğu kayıtları (ad, fiyat, aşama) ve kilit kuralı.
+//
+// KİLİT KURALI
+//  • Ülke paketi (ev:'it'|'tr'|'jp'|'fr'): oyundaki etkinlik eşyalarıyla aynı düzen. O ülkenin durağında (etkinlik kafesinde) aşama aşama açılır
+//    (evLvl) ve oranın marketinde satılır; ana kafeye Etkinlikler › Dünya Keşfi'nden getirilir (S.evGot), sonra ana marketten alınır.
+//    Durağı henüz olmayan/açılmamış ülkenin (bugün Türkiye, Japonya, Fransa) eşyaları katalogda bekler, hiçbir yerde görünmez;
+//    durak açılınca (EVENTS + EV_LIST) kendiliğinden devreye girer.
+//  • Royal Pass seti (rp:'kraliyet'|'kristal'|'galaksi'): Pass ödülüyle verilir (S.rpGot); verilene dek markette görünmez.
+const PK_COUNTRY={it:'İtalya',tr:'Türkiye',jp:'Japonya',fr:'Fransa'};
+function catShown(c){if(c.rp)return !!(S.rpGot&&S.rpGot[c.id]);if(!c.ev)return true;return EVMODE?c.ev===EVMODE:!!(S.evGot&&S.evGot[c.id])}
+// kataloğa kayıt ekle (p5'teki CATALOG/CAT kurulduktan sonra): etkinlik kafesinde aşama = seviye kilidi
+function pkAdd(c){if(CAT[c.id])return;c.pk=c.ev||'rp';if(c.lvl==null)c.lvl=99;if(EVMODE&&c.ev===EVMODE)c.lvl=c.evLvl;CATALOG.push(c);CAT[c.id]=c}
+
+// ---------- 1) MASA + SANDALYE ----------
+TABLE_EXT.push((p,f,id,v)=>IT_TABLE[id]?italiaTable(p,f,IT_TABLE[id],v):TR_TABLE[id]?trTable(p,f,TR_TABLE[id],v):JP_TABLE[id]?jpTable(p,f,JP_TABLE[id],v):FR_TABLE[id]?frTable(p,f,FR_TABLE[id],v):RP_TABLE[id]?rpTable(p,f,RP_TABLE[id],v):null);
+CHAIR_EXT.push((p,f,id)=>IT_CHAIR[id]?italiaChair(p,f,IT_CHAIR[id]):TR_CHAIR[id]?trChair(p,f,TR_CHAIR[id]):JP_CHAIR[id]?jpChair(p,f,JP_CHAIR[id]):FR_CHAIR[id]?frChair(p,f,FR_CHAIR[id]):RP_CHAIR[id]?rpChair(p,f,RP_CHAIR[id]):null);
+// takımlar: [kod, görünen ad, masa açıklaması, sandalye açıklaması]; sıra = açılma aşaması (1…7), sadeden gösterişliye
+const PK_SETS={
+ it:[['trattoria','Trattoria','Kareli örtü, hasır örgülü Chianti şişesi ve mum.','Kavisli üç latalı İtalyan meyhane sandalyesi.'],
+     ['amalfi','Amalfi','Limonlu mayolika tabla, kıvrımlı ferforje ayak ve kâsede limonlar.','Ferforje çerçevede limonlu çini pano.'],
+     ['gelato','Gelato','Çilekli dondurma topu tabla, ters külah gövde.','Fıstıklı dondurma topu sırt, damlalar ve kiraz.'],
+     ['venezia','Venedik','Dalgalı su kaidesi ve spiral çizgili gondol direkleri.','Lacivert kadife oval sırt, altın çerçeve, karnaval maskesi.'],
+     ['colonna','Sütun','Yivli Roma sütunu ayak, iyon başlığı.','Mermer sırt, kırmızı minder, altın defne çelengi.'],
+     ['pisa','Pisa','Beyaz mermer tabla, eğik kule gövde.','Sütunlu galeri sırt, tepesinde minik eğik kuleler.'],
+     ['colosseo','Kolezyum','Traverten tabla, kat kat kemerli Kolezyum gövde.','Kemerli traverten sırt.']],
+ tr:[['kahvehane','Kahvehane','Döküm ayaklı klasik kahvehane masası; tavla ve iki çay.','Bükme ahşap kahvehane sandalyesi.'],
+     ['simit','Simitçi','Çapraz üç ayaklı simitçi sehpası; tabakta simit ve çay.','Pudra şekerli dev lokum sırt.'],
+     ['nazar','Nazar','Burgulu mavi cam gövde ve asılı nazarlık.',''],
+     ['iznik','İznik','Çini vazo gövde; vazoda lale.',''],
+     ['galata','Galata','Taş kule gövde; masada minik İstanbul vapuru.',''],
+     ['kapalicarsi','Kapalıçarşı','Dövme pirinç sini tabla, sedef kakmalı ceviz sehpa; mozaik lamba.','Sedef kakmalı Osmanlı sandalyesi.'],
+     ['kapadokya','Kapadokya','Peri bacası gövde; üstünde minik sıcak hava balonu.','Kemerli tüf sırt.']],
+ jp:[['bambu','Bambu','Bambu demeti ayak, hasır tabla.',''],
+     ['ramen','Ramen','Dev ramen kâsesi gövde.',''],
+     ['sushi','Suşi','Maki dilimi tabla, geta tahtası taban.',''],
+     ['origami','Origami','Katlanmış kâğıt sütun ve turna.',''],
+     ['sakura','Kiraz çiçeği','Kiraz ağacı gövde, çiçekli tabla.',''],
+     ['maneki','Şans kedisi','El sallayan şans kedisi gövde.',''],
+     ['fuji','Fuji','Fuji dağı gövde, dalga desenli tabla; minik bonsai.','']],
+ fr:[['bistro','Paris bistro','Mermer tabla, döküm demir ayak.','Bükme ahşap, hasır örgü sırt.'],
+     ['boulangerie','Fırıncı','Kesme tahtası tabla, baget sepeti gövde.',''],
+     ['provence','Provence','Boyalı ahşap masa ve lavanta.',''],
+     ['macaron','Makaron','Üst üste pastel makaron gövde.',''],
+     ['louvre','Louvre','Cam piramit gövde.',''],
+     ['eiffel','Eyfel','Demir kafes kule gövde.',''],
+     ['versailles','Versay','Yaldızlı rokoko ayak, mermer tabla.','']]};
+const PK_PRICE={t2:[90,105,120,135,150,170,190],t4:[165,180,195,210,225,245,265],ch:[55,60,65,75,80,90,100]};
+for(const ev in PK_SETS)PK_SETS[ev].forEach(([k,N,td,cd],i)=>{const ch='c_'+ev+'_'+k,st=i+1;
+  pkAdd({id:'t_'+ev+'_'+k,kind:'table',chair:ch,name:N+' masası',price:PK_PRICE.t2[i],ev,evLvl:st,desc:td+' İki kişilik; kendi sandalyeleriyle gelir.'});
+  pkAdd({id:'t_four_'+ev+'_'+k,kind:'table',seats:4,chair:ch,name:'Dört kişilik '+N+' masası',price:PK_PRICE.t4[i],ev,evLvl:st,desc:td+' Dört kişilik; kendi sandalyeleriyle gelir.'});
+  pkAdd({id:ch,kind:'chair',name:N+' sandalyesi',price:PK_PRICE.ch[i],ev,evLvl:st,desc:(cd?cd+' ':'')+N+' masasıyla takım.'})});
+// Royal Pass takımları: fiyat yok (ödül); verilince markette "Ücretsiz" görünür
+const PK_RP=[['kraliyet','Kraliyet','Kadife arma tabla, taç kaide, burgulu altın sütun; üç kollu altın şamdan.','Altın ve kadife taht.'],
+  ['kristal','Kristal','Buz camı tabla, kristal küme ayak; kristal gül.','Gümüş ve buz camı.'],
+  ['galaksi','Galaksi','Yıldızlı tabla, hilal ay ve halkalı gezegen ayak, neon kenar.','Gece mavisi, parlayan yıldızlar.']];
+for(const [k,N,td,cd] of PK_RP){const ch='c_rp_'+k;
+  pkAdd({id:'t_rp_'+k,kind:'table',chair:ch,name:N+' masası',price:0,rp:k,desc:td+' Royal Pass ödülü.'});
+  pkAdd({id:'t_four_rp_'+k,kind:'table',seats:4,chair:ch,name:'Dört kişilik '+N+' masası',price:0,rp:k,desc:td+' Royal Pass ödülü.'});
+  pkAdd({id:ch,kind:'chair',name:N+' koltuğu',price:0,rp:k,desc:cd+' Royal Pass ödülü.'})}
+
+// ---------- kayıt: getirilen / ödül verilen eşyalar markette açık ----------
+{const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{if(!S.rpGot)S.rpGot={};for(const id in S.rpGot)if(S.rpGot[id]&&CAT[id])CAT[id].lvl=1;
+    if(!EVMODE)for(const id in S.evGot||{})if(S.evGot[id]&&CAT[id]&&CAT[id].pk)CAT[id].lvl=1}catch(e){console.warn('paket',e)}return r}}
+
+// ---------- Etkinlikler › Dünya Keşfi: hazır olan her şeyi tek dokunuşla getir ----------
+function evTakeAll(){if(EVMODE)return 0;const id=evOfWeek(evWeek());let n=0;
+  for(const k of evTransRecipes(id))if(evRecState(id,k).ok){S.recipes[k]=S.unlocked[k]=S.menu[k]=true;n++}
+  for(const c of evItems(id))if(evItemState(id,c).ok){S.evGot[c.id]=true;c.lvl=1;n++}
+  if(n){sfx('goal');markDirty();saveNow();toast(`<b>${n} yenilik ana kafende!</b><br>Tarifler menüne, eşyalar marketine eklendi`,ic('market'),2800)}renderEvents();evBadge();return n}
+{const _re=renderEvents;renderEvents=function(){_re.apply(this,arguments);try{const p=$('evP');if(!p||p.hidden||EVMODE||UI.evView!=='dk')return;const ul=p.querySelector('.bul');if(!ul)return;
+    const n=ul.querySelectorAll('[data-take]').length;if(n<2)return;const b=document.createElement('button');b.type='button';b.className='btn green evall';b.innerHTML=`${ic('check')}Hazır olanların hepsini kafeme ekle (${n})`;
+    b.onclick=()=>{sfx('tap');evTakeAll()};ul.before(b)}catch(e){console.warn('paket',e)}}}
+{const st=document.createElement('style');st.textContent=`.evall{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 8px;width:100%}.evall svg,.evall .ic{width:18px;height:18px}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
