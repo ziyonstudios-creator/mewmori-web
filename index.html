@@ -3816,7 +3816,8 @@ $('gdReset').onclick=()=>{UI.modal=true;const m=$('lvModal');
   $('rsYes').onclick=()=>{RESETTING=true;clearTimeout(saveTimer);try{localStorage.removeItem(SAVE_KEY);if(EVMODE)localStorage.setItem('mewmori-ev-sil',EVMODE);else if(SB.user)localStorage.setItem(CLOUD_RESET,'1')}catch(e){}location.reload()}};
 
 // ================= ÖĞRETİCİ: işaret eden el + yönlendiren konuşma balonu =================
-// Aşamalar: create (karakter tasarımı) → cafe1..cafe7 (ilk müşteri) → auto (otomatik garson tanıtımı) → help → done
+// Aşamalar (V159, p83_rehber.js): karşılama → create (ekip tasarımı, ZORUNLU) → cafe1..cafe7 (ilk müşteri) → auto (otomatik mod) → stok (malzeme biter,
+// tedarik + otomatik alım) → done + S.tur (arayüz turu: dokundukça geçilir) . Eski 'help' ve 'recipes' adımları tura bağlandı.
 UI_IC.hand=SV(`<path d="M27 6 Q33 6 33 12 V28 Q35 25 39 25 Q44 25 44 30 Q46 27 50 28 Q54 29 54 34 Q57 32 60 34 Q62 36 62 40 V50 Q62 60 52 62 H34 Q26 62 22 55 L12 42 Q9 37 13 34 Q17 31 21 35 V12 Q21 6 27 6 Z" fill="#fff8ec"/><path d="M33 28 V40 M44 30 V40 M54 34 V42" stroke-width="2.5"/><path d="M24 12 q3 -2 6 0" stroke="#f2a6a0" stroke-width="3"/>`,'0 0 72 68');
 UI_IC.auto=SV(`<circle cx="32" cy="32" r="24" fill="#bfe39a"/><path d="M20 34 A12 12 0 0 1 42 24" stroke-width="4"/><path d="M42 16 V25 H33" stroke-width="4"/><path d="M44 30 A12 12 0 0 1 22 40" stroke-width="4"/><path d="M22 48 V39 H31" stroke-width="4"/><circle cx="32" cy="32" r="4" fill="#f2a6a0"/>`);
 {const st=document.createElement('style');st.textContent=`
@@ -3871,18 +3872,18 @@ function coachFrame(){CO.raf=requestAnimationFrame(coachFrame);const box=$('coac
     else{bub.style.top='';const want=g.height-(cy+r.height/2+70);bub.style.bottom=Math.max(12,Math.min(want-bh,g.height-bh-40))+'px'}}}
 // ---------- karakter tasarımı aşaması ----------
 const ROLE_TUT={
-  waiter:{intro:'Kedilerin dünyasına hoş geldin! Hadi ilk önce bir <b>garson</b> tasarlayalım. Kürkünden desenine, gözlerinden kulaklarına kadar her şeyi sen seçiyorsun; aklındaki kedi nasılsa öyle olsun.',
-    done:n=>`İşte garsonumuz <b>${n}</b> hazır! Kafeye gelen müşterileri güler yüzle karşılar, siparişlerini alır ve hazırlanan lezzetleri tepsiyle masalarına taşır.`,next:'Şimdi bir barista tasarlayalım'},
-  barista:{intro:'Sırada <b>barista</b> var. Tezgahın arkasındaki bu usta kedi kahveleri demler, çayları hazırlar, tatlı ve yemekleri tabağa dizer. Ona da kendine özgü bir görünüm ver!',
-    done:n=>`Baristamız <b>${n}</b> tezgahın başında! Garsonun getirdiği her siparişi özenle hazırlayıp teslim alanına bırakır.`,next:'Şimdi bir kasiyer tasarlayalım'},
-  cashier:{intro:'Son olarak <b>kasiyer</b>. Karnını doyuran müşteriler kasaya gelir, kasiyer de ödemelerini alıp onları gülümseyerek uğurlar. Hadi onu da tasarla!',
-    done:n=>`Kasiyerimiz <b>${n}</b> kasada yerini aldı! Her ödemeyi tam ve doğru alır, bahşişleri de kavanoza koyar.`,next:'Devam'}};
+  waiter:{intro:'İlk ekip arkadaşımız <b>garson</b>! Müşterileri güler yüzle karşılayan, siparişleri masalara taşıyan kedi o olacak. Kürkünden gözlerine her şeyi sen seçiyorsun; hayalindeki kedi nasılsa öyle olsun.',
+    done:n=>`İşte bu! Garsonumuz <b>${n}</b> hazır. Müşterileri karşılayacak, siparişlerini alacak ve lezzetleri tepsiyle masalarına taşıyacak.`,next:'Sırada barista var'},
+  barista:{intro:'Şimdi sıra <b>baristada</b>! Tezgâhın arkasındaki bu usta kedi kahveleri demler, çayları hazırlar, tatlıları tabağa dizer. Ona da kendine has bir hava verelim mi?',
+    done:n=>`Çok yakıştı! Baristamız <b>${n}</b> tezgâhın başına geçti. Garsonun getirdiği her siparişi özenle hazırlayacak.`,next:'Son olarak kasiyer'},
+  cashier:{intro:'Ve son ekip arkadaşımız: <b>kasiyer</b>! Karnı doyan müşteriler kasaya gelir; o da ödemelerini alıp tatlı bir gülümsemeyle uğurlar. Hadi onu da tasarlayalım!',
+    done:n=>`Süper! Kasiyerimiz <b>${n}</b> kasadaki yerini aldı. Her ödemeyi tam alır, bahşişleri de kavanoza koyar.`,next:'Devam'}};
 function tutCreateHint(role){if(!tutOn())return;const T=ROLE_TUT[role];
-  coach({title:ROLES.find(r=>r.id===role).name,text:T.intro,target:()=>$('ceCats'),buttons:[{label:'Tamam',onClick:()=>coach({text:'Seçeneklerle oyna, kedi önizlemede anında değişsin. <b>Kıyafet</b> sekmesinden de giydir. Beğenince <b>Kaydet ve devam</b>’a dokun.',target:()=>$('ceOk'),place:'top',buttons:[{label:'Tamam',green:true,onClick:()=>coachOff()}]})}]})}
+  coach({title:ROLES.find(r=>r.id===role).name,text:T.intro,target:()=>$('ceCats'),buttons:[{label:'Tamam',onClick:()=>coach({text:'Seçeneklerle dilediğin gibi oyna; kedin önizlemede anında değişir. <b>Kıyafet</b> sekmesinden giydirmeyi de unutma. İçine sinince <b>Kaydet ve devam</b>’a dokun.',target:()=>$('ceOk'),place:'top',buttons:[{label:'Tamam',green:true,onClick:()=>coachOff()}]})}]})}
 function tutRoleDone(role,next){if(!tutOn()){next();return}const T=ROLE_TUT[role];const n=S.chars[role].name;sfx('goal');
-  coach({title:'Harika!',text:T.done(n),dim:true,center:true,buttons:[{label:T.next,green:true,icon:'paw',onClick:()=>{coachOff();next()}}]})}
+  coach({title:'Çok güzel oldu!',text:T.done(n),dim:true,center:true,buttons:[{label:T.next,green:true,icon:'paw',onClick:()=>{coachOff();next()}}]})}
 function tutTeamDone(next){if(!tutOn()){next();return}const N=ROLES.map(r=>S.chars[r.id].name);sfx('levelup');
-  coach({title:'Ekibin tamam!',text:`<b>${N[0]}</b>, <b>${N[1]}</b> ve <b>${N[2]}</b> hazır. Hadi artık kafemizi işletmeye hazırız!`,dim:true,center:true,buttons:[{label:'Kafeyi aç',green:true,icon:'cafe',onClick:()=>{coachOff();if(S.tut==='create'){S.tut='cafe1';tutCafeStart()}markDirty();next()}}]})}
+  coach({title:'Ekibimiz tamam!',text:`<b>${N[0]}</b>, <b>${N[1]}</b> ve <b>${N[2]}</b> artık bir takım; çok güzel oldular! Hadi kapıyı açalım, ilk müşterimiz gelmek üzere.`,dim:true,center:true,buttons:[{label:'Kafeyi aç',green:true,icon:'cafe',onClick:()=>{coachOff();if(S.tut==='create'){S.tut='cafe1';tutCafeStart()}markDirty();next()}}]})}
 const tutOn=()=>S.tut&&S.tut!=='done';
 // ---------- ilk müşteri aşaması ----------
 let tutSpawned=false;
@@ -3894,17 +3895,17 @@ function tutTick(){autoBtnVis();if(!S.tut||S.tut==='done'||S.tut==='create'||S.t
   const show=(key,opt)=>{if(tutShown===key)return;tutShown=key;coach(opt)};
   if(st==='cafe1'){if(customers.length)tutSpawned=true;
     if(c&&c.state==='WAITING_TO_ORDER'&&!c.orderQueued&&els.get('take'+c.id)){S.tut='cafe2';return}
-    show('cafe1',{title:'İlk müşterimiz!',text:'Kapı çanını duydun mu? İlk müşterimiz geliyor. Boş bir masaya oturmasını bekleyelim…'});return}
-  if(st==='cafe2'){if(c&&c.orderQueued){S.tut='cafe3';return}show('cafe2',{text:`Müşterimiz oturdu ve menüye göz atıyor. Masanın üstündeki <b>Sipariş al</b> düğmesine dokun; ${N.waiter.name} hemen yanına koşsun.`,target:()=>c&&els.get('take'+c.id)});return}
-  if(st==='cafe3'){const o=orders[0];if(o&&o.state==='TAKEN'&&!o.submitQueued&&els.get('prep'+o.id)){show('cafe3',{text:`Sipariş alındı! Şimdi siparişi baristaya iletelim: tezgahtaki <b>Hazırla</b> düğmesine dokun, baristamız ${N.barista.name} hemen hazırlamaya başlasın.`,target:()=>els.get('prep'+o.id)})}
+    show('cafe1',{title:'İlk müşterimiz geliyor!',text:'Kapı çanını duydun mu? İlk misafirimiz yolda. Heyecanlanma, her adımda yanındayım. Önce boş bir masaya oturmasını bekleyelim…'});return}
+  if(st==='cafe2'){if(c&&c.orderQueued){S.tut='cafe3';return}show('cafe2',{text:`Misafirimiz oturdu, menüye göz atıyor. Masanın üstündeki <b>Sipariş al</b> düğmesine dokun; ${N.waiter.name} hemen yanına koşsun.`,target:()=>c&&els.get('take'+c.id)});return}
+  if(st==='cafe3'){const o=orders[0];if(o&&o.state==='TAKEN'&&!o.submitQueued&&els.get('prep'+o.id)){show('cafe3',{text:`Sipariş alındı, aferin! Şimdi onu baristamıza iletelim: tezgâhtaki <b>Hazırla</b> düğmesine dokun, ${N.barista.name} kolları sıvasın.`,target:()=>els.get('prep'+o.id)})}
     else if(o&&o.submitQueued){S.tut='cafe4'}else show('cafe3w',{text:`${N.waiter.name} siparişi not alıyor…`});return}
-  if(st==='cafe4'){const o=orders[0];if(o&&o.state==='READY'){S.tut='cafe5';return}show('cafe4',{text:`${N.barista.name} işe koyuldu! Başının üstündeki çubuk dolunca ürün tezgahın sağındaki teslim alanına konacak.`});return}
-  if(st==='cafe5'){const o=orders[0];if(o&&o.pickupQueued){S.tut='cafe6';return}show('cafe5',{text:`Sipariş hazır! <b>Teslim al</b>’a dokun; ${N.waiter.name} tepsiyle masaya götürsün.`,target:()=>o&&els.get('pick'+o.id)});return}
-  if(st==='cafe6'){const o=orders[0];if(o&&o.paid){S.tut='cafe7';return}show('cafe6',{text:`Afiyet olsun! Müşterimiz yemeğini bitirince kasaya gidecek; kasiyerimiz ${N.cashier.name} ödemesini alacak.`});return}
-  if(st==='cafe7'){if(customers.length)return show('cafe7w',{text:'Ödeme alındı! Müşterimiz mutlu mutlu ayrılıyor…'});
-    show('cafe7',{title:'Tebrikler!',text:'İlk müşterini ağırlayıp gönderdin. Kazandığın altın ve XP ile kafeni büyütebilir, yeni tarifler keşfedebilirsin.',dim:true,center:true,buttons:[{label:'Devam',green:true,onClick:()=>{S.tut='auto';markDirty();tutShown=''}}]});return}
-  if(st==='auto'){$('autoBtn').hidden=false;show('auto',{title:'Otomatik garson',text:`İstersen garsonumuzu otomatiğe alabilirsin. Bu düğmeye dokunduğunda ${N.waiter.name} siparişleri kendisi alır, baristaya iletir ve servis eder. Tekrar dokunursan kontrol yine sende.`,target:()=>$('autoBtn'),
-      buttons:[{label:'Şimdi değil',light:true,onClick:()=>{S.tut='help';markDirty();tutShown=''}}]});CO.onAuto=()=>{S.tut='help';markDirty();tutShown=''};return}
+  if(st==='cafe4'){const o=orders[0];if(o&&o.state==='READY'){S.tut='cafe5';return}show('cafe4',{text:`${N.barista.name} işe koyuldu bile! Başının üstündeki çubuk dolunca siparişimiz tezgâhın ucundaki teslim alanına gelecek.`});return}
+  if(st==='cafe5'){const o=orders[0];if(o&&o.pickupQueued){S.tut='cafe6';return}show('cafe5',{text:`Mis gibi oldu! Şimdi <b>Teslim al</b>’a dokun; ${N.waiter.name} tepsiyle masaya götürsün.`,target:()=>o&&els.get('pick'+o.id)});return}
+  if(st==='cafe6'){const o=orders[0];if(o&&o.paid){S.tut='cafe7';return}show('cafe6',{text:`Afiyet olsun! Misafirimiz yemeğini bitirince kasaya uğrayacak; ${N.cashier.name} ödemesini alacak.`});return}
+  if(st==='cafe7'){if(customers.length)return show('cafe7w',{text:'Ödeme alındı! Misafirimiz mutlu mutlu ayrılıyor…'});
+    show('cafe7',{title:'İşte bu kadar!',text:'İlk müşterini ağırlayıp uğurladın, harikaydın! Kazandığın altın ve deneyimle kafeni büyütecek, yeni tarifler keşfedeceksin.',dim:true,center:true,buttons:[{label:'Devam',green:true,onClick:()=>{S.tut='auto';markDirty();tutShown=''}}]});return}
+  if(st==='auto'){$('autoBtn').hidden=false;show('auto',{title:'Biraz da sen dinlen!',text:`Her siparişe tek tek dokunmak yorar. Şu <b>Otomatik</b> düğmesine dokunursan ${N.waiter.name} siparişleri kendisi alır, baristaya iletir ve servis eder. İstediğin an yeniden dokunup kontrolü geri alabilirsin.`,target:()=>$('autoBtn'),
+      buttons:[{label:'Şimdi değil',light:true,onClick:()=>{S.tut='stok';markDirty();tutShown=''}}]});CO.onAuto=()=>{S.tut='stok';markDirty();tutShown=''};return}
   if(st==='help'){CO.onAuto=null;show('help',{text:'Bir şeyi unutursan sağ üstteki <b>?</b> düğmesine dokun; rehberimiz kedilerin dünyasını sana yeniden anlatır. İyi eğlenceler!',target:()=>document.querySelector('button[aria-label="Rehber"]'),buttons:[{label:'Tamam',green:true,onClick:()=>{S.tut='recipes';markDirty();coachOff();tutShown=''}}]});return}
   if(st==='recipes'){show('recipes',{title:'Sırada ne var?',text:'Yeni ürünler keşfetmek için <b>Tarifler</b>’e göz at! Orada birleştirme tahtasını da öğreneceksin. Yeni tarifler daha çok altın demek.',target:()=>navBtn('book'),
       buttons:[{label:'Tarifler’e git',green:true,icon:'book',onClick:()=>{S.tut='done';markDirty();coachOff();tutShown='';setMode('book')}},{label:'Sonra',light:true,onClick:()=>{S.tut='done';markDirty();coachOff();tutShown=''}}]});return}}
@@ -3938,7 +3939,7 @@ function tut2Tick(){const m=UI.mode;
   // --- Ekip: ilk açılışta işe alım bilgisi ---
   if(m==='team'&&S.created&&!(S.seen&&S.seen.team)&&!UI.modal){const btn=$('tmHire');if(btn){if(t2Shown!=='team'){scrollToEl(btn,0.85)}
       const f=r=>{const h=HIRE[r][0];return `${ROLE_NAME[r]}: Seviye ${h.lv} · ${h.c} altın`};
-      t2Show('team',{title:'Ekibini büyüt!',text:`<b>İşçi bul</b>’da her gün yeni adaylar var. Her çalışanın 3 özelliği (hız, dayanıklılık, ustalık) ve günlük bir <b>maaşı</b> olur; maaşlar gün sonunda hasılattan düşülür. Yıldızı düşük çalışan çabuk yorulur ve molaya çıkar. Daha iyi adaylar için gazete ya da ajans ilanı ver; ekibi büyütmek için seviye gerekir.`,target:()=>$('tmHire'),place:'top',
+      t2Show('team',{title:'Ekibini büyütelim mi?',text:`<b>İşçi bul</b>’da her gün yeni adaylar seni bekler. Her çalışanın 3 özelliği (hız, dayanıklılık, ustalık) ve günlük bir <b>maaşı</b> olur; maaşlar gün sonunda hasılattan düşülür. Yıldızı düşük çalışan çabuk yorulur ve molaya çıkar. Daha iyi adaylar için gazete ya da ajans ilanı ver; ekibi büyütmek için seviye gerekir.`,target:()=>$('tmHire'),place:'top',
         buttons:[{label:'Anladım',green:true,onClick:()=>{S.seen={...(S.seen||{}),team:true};markDirty();t2Hide()}}]});return}}
   if(t2Shown==='team'&&(m!=='team'||UI.modal)){t2Hide();return}
   // --- Tarif → Birleştir → Tarif → Menü ---
@@ -3947,14 +3948,14 @@ function tut2Tick(){const m=UI.mode;
   if(tr==='done'||UI.modal){if(t2Shown&&t2Shown!=='team')t2Hide();return}
   const R=RECIPE[T2_RECIPE];
   if(S.tr==='rb1'){if(m!=='book')return t2Hide();
-    t2Show('rb1',{title:'Tarif Defteri',text:'Burada kafende yapılabilecek bütün tarifler var. Her ürün üç adımda menüne girer: <b>keşfet</b> → <b>ürünü aç</b> → <b>menüye ekle</b>. Kilitli tarifler hangi seviyede açılacağını, alttaki çizim de hangi malzemelerden yapıldığını gösterir.',dim:true,center:true,
+    t2Show('rb1',{title:'Tarif defterimiz',text:'Kafende yapabileceğin bütün lezzetler burada! Her ürün üç adımda menüne girer: <b>keşfet</b> → <b>ürünü aç</b> → <b>menüye ekle</b>. Kilitli tarifler hangi seviyede açılacağını, alttaki çizim de hangi malzemelerden yapıldığını gösterir.',dim:true,center:true,
       buttons:[{label:'Devam',green:true,onClick:()=>{S.tr=S.recipes[T2_RECIPE]?(S.unlocked[T2_RECIPE]?'menu1':'rbopen'):'rb2';markDirty();t2Shown=''}}]});return}
   if(S.tr==='rb2'){if(m!=='book')return t2Hide();if(UI.rbTab!=='drink'){UI.rbTab='drink';renderBook()}
     const card=()=>document.querySelector(`[data-rc="${T2_RECIPE}"]`);if(t2Shown!=='rb2'){const c=card();if(c){scrollToEl(c,0.7);c.classList.add('tutfocus')}}
     t2Show('rb2',{title:'Hadi yeni tarifimizi bulalım!',text:`İlk yeni ürünümüz <b>${R.name}</b>. Kartın altında tarifi var: iki süt birleşir, sonra yine birleşir ve <b>${ITEMS[T2_DISC].name}</b> olur. Bu ilk ürün için hiçbir şart yok!`,target:()=>{const c=card();return c&&c.querySelector('.combo')},
       buttons:[{label:'Devam',green:true,icon:'merge',onClick:()=>{S.tr='rb3';markDirty();t2Shown=''}}]});return}
   if(S.tr==='rb3'){if(m!=='book')return t2Hide();
-    t2Show('rb3',{text:'Yeni tarifleri keşfetmek için <b>birleştirme tahtasını</b> kullanmayı öğrenelim!',dim:true,center:true,buttons:[{label:'Tahtaya geç',green:true,icon:'merge',onClick:()=>{clearTutHL();S.tr='mg';markDirty();t2Shown='';setMode('merge')}}]});return}
+    t2Show('rb3',{text:'Yeni tarifleri <b>birleştirme tahtasında</b> keşfederiz. Gel, birlikte deneyelim!',dim:true,center:true,buttons:[{label:'Tahtaya geç',green:true,icon:'merge',onClick:()=>{clearTutHL();S.tr='mg';markDirty();t2Shown='';setMode('merge')}}]});return}
   if(S.tr==='mg'){if(S.recipes[T2_RECIPE]){S.tr='mgdone';markDirty();t2Shown='';return}
     if(m!=='merge'){if(m==='cafe'||m==='book'){t2Show('mgnav',{text:`Ballı Süt tarifini keşfetmek için <b>Birleştirme tahtasına</b> geçelim.`,target:()=>navBtn('merge'),buttons:[{label:'Birleştir’e git',green:true,icon:'merge',onClick:()=>setMode('merge')}]})}else t2Hide();return}
     const B=S.board,idx=id=>B.reduce((a,v,i)=>(v===id&&a.push(i),a),[]);const n2=idx(T2_MID),n1=idx(T2_BASE);clearTutHL();
@@ -3965,20 +3966,20 @@ function tut2Tick(){const m=UI.mode;
     t2Show('mg1'+n1.length+n2.length,{title:n1.length||n2.length?'Bir süt daha':'Torbaya dokun',text:n1.length||n2.length?`Torbaya bir kez daha dokun.${n2.length?' Bir tane daha '+ITEMS[T2_MID].name+' yapacağız.':''}`:`<b>İçecek torbasına</b> dokun; içinden malzeme çıkar. Bu öğreticide torba ücretsiz ve hep <b>${ITEMS[T2_BASE].name}</b> verecek.`,target:()=>bag>=0?cellEl(bag):null,place:'head'});return}
   if(S.tr==='mgdone'){clearTutHL();
     if(m==='book'){S.tr='rbopen';markDirty();t2Shown='';return}
-    if(m==='merge'||m==='cafe'){t2Show('mgdone',{title:'Tebrikler!',text:'Hadi yeni tarifimizi keşfettik! Şimdi gidip bunu menümüze ekleyelim. <b>Tarifler</b>’e geçelim.',target:()=>navBtn('book'),buttons:[{label:'Tarifler’e git',green:true,icon:'book',onClick:()=>setMode('book')}]})}else t2Hide();return}
+    if(m==='merge'||m==='cafe'){t2Show('mgdone',{title:'Buldun!',text:'Yeni tarifimizi keşfettin, ellerine sağlık! Şimdi onu menümüze ekleyelim. <b>Tarifler</b>’e geçelim.',target:()=>navBtn('book'),buttons:[{label:'Tarifler’e git',green:true,icon:'book',onClick:()=>setMode('book')}]})}else t2Hide();return}
   if(S.tr==='rbopen'){if(S.unlocked[T2_RECIPE]){S.tr='menu1';markDirty();t2Shown='';return}
     if(m!=='book'){if(m==='cafe'||m==='merge')t2Show('rbnav',{text:'<b>Tarifler</b>’e git ve yeni ürünü aç.',target:()=>navBtn('book'),buttons:[{label:'Tarifler’e git',green:true,icon:'book',onClick:()=>setMode('book')}]});else t2Hide();return}
     if(UI.rbTab!=='drink'){UI.rbTab='drink';renderBook()}const btn=()=>document.querySelector(`[data-un="${T2_RECIPE}"]`);
     if(t2Shown!=='rbopen'){const b=btn();scrollToEl(b,0.7)}
     t2Show('rbopen',{text:`Tarif keşfedildi, <b>Ürünü aç</b> düğmesi artık aktif! Dokun ve <b>Ballı Süt</b>’ü aç. Bu ilk ürün ücretsiz.`,target:btn});return}
   if(S.tr==='menu1'){if(m==='menu'){S.tr='menu2';markDirty();t2Shown='';return}
-    if(['book','cafe','merge'].includes(m))t2Show('menu1',{title:'Ürün açıldı!',text:'Hadi bu ürünleri menümüze nasıl ekleyeceğimizi öğrenelim! <b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>setMode('menu')}]});else t2Hide();return}
+    if(['book','cafe','merge'].includes(m))t2Show('menu1',{title:'Ürün açıldı!',text:'Harika! Şimdi bu lezzeti menümüze nasıl ekleyeceğimize bakalım. <b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>setMode('menu')}]});else t2Hide();return}
   if(S.tr==='menu2'){if(S.menu[T2_RECIPE]){S.tr='menu3';markDirty();t2Shown='';return}
     if(m!=='menu'){if(['book','cafe','merge'].includes(m))t2Show('menu1b',{text:'<b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>setMode('menu')}]});else t2Hide();return}
     const tg=()=>document.querySelector(`[data-tg="${T2_RECIPE}"]`);if(t2Shown!=='menu2'){const t=tg();scrollToEl(t,0.3)}
     t2Show('menu2',{title:'Menü',text:`Burada açtığın ürünler var. Müşteriler yalnızca <b>menündeki</b> ürünleri sipariş eder. <b>Ballı Süt</b>’ü menüye eklemek için <b>Menüye ekle</b>’ye dokun.`,target:tg});return}
-  if(S.tr==='menu3'){t2Show('menu3',{title:'Harika!',text:`Artık müşterilerin <b>Ballı Süt</b> de sipariş edebilir. Ürünleri istediğin zaman buradan ekleyip çıkarabilirsin; yeni tarifler keşfettikçe menün büyüyecek.<br>Şimdi son bir şey: ürünlerin <b>malzemeleri</b> nereden geliyor?`,dim:true,center:true,
-      buttons:[{label:'Devam',green:true,onClick:()=>{S.tr='st1';markDirty();t2Shown=''}}]});return}
+  if(S.tr==='menu3'){{const seenSt=!!(S.seen&&S.seen.tedarik);t2Show('menu3',{title:'Harika!',text:`Artık müşterilerin <b>Ballı Süt</b> de sipariş edebilir. Ürünleri istediğin zaman buradan ekleyip çıkarabilirsin; yeni tarifler keşfettikçe menün büyüyecek.${seenSt?'':'<br>Şimdi son bir şey: ürünlerin <b>malzemeleri</b> nereden geliyor?'}`,dim:true,center:true,
+      buttons:[{label:seenSt?'Kafeye dön':'Devam',green:true,onClick:()=>{if(seenSt){S.tr='done';markDirty();t2Hide();menuTab='menu';setMode('cafe')}else{S.tr='st1';markDirty();t2Shown=''}}}]})}return}
   // --- tedarik (V144): Stok sekmesi → malzeme deposu → otomatik tedarik → toptancı seçimi ---
   if(/^st/.test(S.tr)&&m!=='menu'){if(['book','cafe','merge'].includes(m))t2Show('stnav',{text:'Tedarik sistemini öğrenmek için <b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>{menuTab=S.tr==='st1'?'menu':'stock';setMode('menu')}}]});else t2Hide();return}
   if(S.tr==='st1'){if(menuTab==='stock'){S.tr='st2';markDirty();t2Shown='';return}
@@ -5758,7 +5759,8 @@ const EVENTS={
  tr:{id:'tr',name:'Türkiye Durağı',country:'Türkiye',city:'İstanbul',cafe:'Galata Kahvecisi',flag:['#e0483f'],wall:'w_tr_cini',floor:'f_tr_cini',
    desc:'İstanbul’da Galata’nın dibinde 0’dan bir kahveci kur: Türk kahvesi, simit, baklava ve künefe.',
    tiers:[[2,150],[3,250],[4,400],[5,600],[6,800],[7,1000],[8,1300],[10,2000]]}};
-const EV_JOIN_LVL=3;
+const EV_JOIN_LVL=8;   // V159: etkinlikler 8. seviyede açılır (daha önce katılmış oyuncunun erişimi sürer)
+const evJoinOk=()=>{try{return (S.lvl|0)>=EV_JOIN_LVL||Object.keys(S.evs||{}).length>0}catch(e){return true}};
 const evFlagHTML=E=>E.id==='tr'?`<span class="mflag trf"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#e30a17"/><circle cx="11" cy="10" r="5" fill="#fff"/><circle cx="12.3" cy="10" r="4" fill="#e30a17"/><path d="M16.2 10 L20.6 8.6 L17.9 12.3 L17.9 7.7 L20.6 11.4 Z" fill="#fff"/></svg></span>`:`<span class="mflag">${E.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`;
 function evLeft(){const ms=Math.max(0,evEnds()-Date.now()),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);return d?`${d} gün ${h} sa`:h?`${h} sa ${m} dk`:`${m} dk`}
 const evArch=id=>S.evs&&S.evs[id]||null;
@@ -5797,7 +5799,7 @@ if(EVMODE){cloudSync=function(){};cloudPush=function(){};cloudMark=function(){};
   UI_IC.coin=SV(`<circle cx="32" cy="32" r="24" fill="#7cc6b5"/><circle cx="32" cy="32" r="17" fill="#a9e0d1" stroke-width="3"/><path d="M32 21 L35 28.5 L43 29 L37 34 L39 42 L32 37.5 L25 42 L27 34 L21 29 L29 28.5 Z" fill="#fff8ec" stroke-width="2.5"/>`);try{$('coinIc').innerHTML=UI_IC.coin;$('coinPill').title='Etkinlik parası'}catch(e){}}
 
 // ---- geçişler ----
-function evGo(){const id=evOfWeek(evWeek());if(EVMODE||S.lvl<EV_JOIN_LVL)return;try{clearTimeout(saveTimer)}catch(e){}saveNow();
+function evGo(){const id=evOfWeek(evWeek());if(EVMODE||!evJoinOk())return;try{clearTimeout(saveTimer)}catch(e){}saveNow();
   try{const a=evArch(id);localStorage.setItem(EV_SAVE,JSON.stringify(a?{...a,lastSeen:Date.now()}:{v:defaultState().v,chars:S.chars,clothes:S.clothes,lastSeen:Date.now()}));
     localStorage.setItem(EV_FLAG,JSON.stringify({id,week:evWeek()}))}catch(e){toast('Kayıt yazılamadı, tekrar dene',ic('close'),2200);return}
   evTravel(EVENTS[id],true)}
@@ -5916,7 +5918,7 @@ function renderEvents(){const p=$('evP');if(!p||p.hidden)return;const w=evWeek()
     return `<li class="bu"><img src="${productThumb(k)}" alt=""><span class="but"><b>${r.name}</b><small>${st.done?'Ana kafende':st.note||st.why||'Getirmeye hazır'}</small></span>${!EVMODE&&st.ok?`<button class="btn sm green" type="button" data-take="rec:${k}">Kafeme ekle</button>`:st.done?`<span class="bumax">${ic('check')}</span>`:''}</li>`}).join('');
   const items=evItems(id).map(c=>{let st;if(EVMODE)st={note:lv>=c.evLvl?'Açıldı · eve dönünce getir':`${c.evLvl}. aşamada`};else st=evItemState(id,c);
     return `<li class="bu"><img src="${itemThumb(c.id)}" alt=""><span class="but"><b>${c.name}</b><small>${st.done?'Ana kafenin marketinde':st.note||st.why||'Getirmeye hazır'}</small></span>${!EVMODE&&st.ok?`<button class="btn sm green" type="button" data-take="item:${c.id}">Kafeme ekle</button>`:st.done?`<span class="bumax">${ic('check')}</span>`:''}</li>`}).join('');
-  const go=EVMODE?`<button class="btn" type="button" id="evHome">${ic('cafe')}Ana kafeye dön</button>`:S.lvl<EV_JOIN_LVL?`<button class="btn" type="button" disabled>${ic('lock')}Seviye ${EV_JOIN_LVL} gerekli</button>`:`<button class="btn green" type="button" id="evGo">${ic('event')}${d?'Kaldığın yerden devam':E.city+'’ya git'}</button>`;
+  const go=EVMODE?`<button class="btn" type="button" id="evHome">${ic('cafe')}Ana kafeye dön</button>`:!evJoinOk()?`<button class="btn" type="button" disabled>${ic('lock')}Seviye ${EV_JOIN_LVL} gerekli</button>`:`<button class="btn green" type="button" id="evGo">${ic('event')}${d?'Kaldığın yerden devam':E.city+'’ya git'}</button>`;
   const stops=EV_LIST.map((x,i)=>{const X=EVENTS[x.id],on=x.id===id;return `<li class="evst${on?' on':''}${x.ready||on?'':' lock'}">${x.ready||on?evFlagHTML(X):ic('lock')}<span><b>${x.ready||on?X.country+' · '+X.city:(i+1)+'. durak'}</b><small>${on?(EVMODE?'şu an buradasın':'açık · '+evLeft()+' kaldı'):x.ready?'sırada':'yakında'}</small></span></li>`}).join('')+'<li class="evst lock">'+ic('lock')+'<span><b>Yeni duraklar</b><small>yakında</small></span></li>';
   p.innerHTML=`<div class="panel-head"><span class="iconbtn" style="pointer-events:none">${ic('event')}</span><h2>Dünya Keşfi</h2><button class="iconbtn" id="evClose" type="button" aria-label="Kapat">${ic('close')}</button></div><button class="evback" type="button" id="evBack">${ic('left')}Etkinlikler</button>
    <div class="scroll"><div class="evnav"><b>Rota</b><ol class="evroute">${stops}</ol><p class="evsub">Her durakta sıfırdan bir kafe kurarsın. Durağın süresi bitince kafe kapanır; durak yeniden açılınca kaldığın yerden devam edersin.</p></div><div class="evhero"><div class="evsky">${id==='tr'?EV_SCENE_TR:EV_SCENE}</div><div class="evht">${evFlagHTML(E)}<b>${E.country} · ${E.city}</b><span class="evtime">${ic('clock')}Bitmesine ${evLeft()}</span></div>
@@ -8368,7 +8370,7 @@ html.land .mlist .tgl{min-width:104px;padding:8px 10px}
  const authFix=()=>{try{const A=$('auth'),card=A&&A.querySelector('.acard'),tabs=card&&card.querySelector('.atabs'),gb=card&&card.querySelector('#aGuest');
    if(card&&tabs&&gb&&!card.querySelector('.aquick')){const q=document.createElement('div');q.className='aquick';tabs.parentElement.insertBefore(q,tabs);gb.classList.add('btn','green');gb.textContent='Hemen oyna (misafir)';q.appendChild(gb);const s=document.createElement('small');s.textContent='İlerlemen bu cihazda saklanır. Hesap açarsan başka cihazda da devam edersin:';q.appendChild(s)}}catch(e){console.warn('giriş',e)}};authFix();const _af=setInterval(()=>{authFix();if(document.querySelector('#auth .aquick')||(typeof started!=='undefined'&&started))clearInterval(_af)},400);
  // yeni oyuncu görünümü: seviye 1'de yalnız temel düğmeler, seviye 2-3'te Etkinlik/Pass/Duyurular, seviye 4'te hepsi
- setInterval(()=>{try{const l=S&&S.lvl||1,g=$('game'),v=EVMODE?'':l<2?'1':l<4?'2':'';if(g.dataset.nb!==v)g.dataset.nb=v}catch(e){}},1200);
+ setInterval(()=>{try{const l=S&&S.lvl||1,g=$('game'),v='';/* V159: düğmeler seviyeye göre gizlenmez; rehber turu hepsini anlatır */if(g.dataset.nb!==v)g.dataset.nb=v}catch(e){}},1200);
  // profil: fotoğraf kalkar, yerine seviye madalyonu gelir (yıldız + seviye sayısı)
  try{const pf=document.querySelector('.y2prof');if(pf){const por=pf.querySelector('.por'),star=pf.querySelector('.star');if(por&&star){por.appendChild(star);pf.classList.add('pf2')}}}catch(e){console.warn('profil',e)}
  // yatay ekranda kamera kafeye biraz daha yakın başlar (kafe planı öne gelsin)
@@ -14391,6 +14393,151 @@ function gateHit(x,y){if(!NW.gate)return false;const r=renderer.domElement.getBo
    try{const kb=KOBST_BASE.map(b=>boxW(b,k||KP,K_PIV)),cb=COBST_BASE.map(b=>boxW(b,c||CP,C_PIV));for(const a of kb.concat(cb))if(boxOv(a,NW.zone))return 'Bahçe kapısının önünü kapatıyor'}catch(e){}return r}}
 // ilk kurulum: kabuk bu dosyadan önce kurulmuştu (kayıtta oda ölçüsü yoksa buildShell yeniden çağrılmaz)
 try{gateSync();nwBuild()}catch(e){console.warn('dört duvar',e)}
+
+// ================= YENİ REHBER AKIŞI (V159) =================
+// Kullanıcı isteği (özet): başta, müşteri gelmeden, rehber "önce ekibimizi oluşturalım" der ve EKİP KURMAK ZORUNLUDUR → ilk müşteride
+// kamera yaklaşır, rehber yönlendirir → müşteri yiyip gidince OTOMATİK MOD gösterilir → malzeme biter, rehber TEDARİK sistemini ve otomatik
+// alımı gösterir → sonra ARAYÜZ TURU: menülere girmek zorunlu değil, oklarla sırayla her düğme anlatılır, ekrana dokundukça geçilir; sonda
+// "takılırsan Rehber" denir ve komut oyuncuya geçer → 8. SEVİYEDE Etkinlikler açılır, rehber başka ülkeye gidilebileceğini anlatır.
+// Bütün rehber diyalogları samimi, cana yakın ve öğretici olacak ("TabbyChef'e hoş geldin… Hadii! Şimdi ilk karakterlerimizi tasarlayalım").
+//
+// Akış (S.tut):  [sinema] → karşılama (rhWelcome) → 'create' (garson → barista → kasiyer; p16/p18 zinciri, kapatma düğmesi yok)
+//   → 'cafe1'…'cafe7' (p18; kamera yaklaşması ve sade ekran p65'te: tutA) → 'auto' (p18) → 'stok' (burada: RH.st 0…3) → 'done' + S.tur
+//   S.tur = arayüz turunun adım numarası (kayıtlı; bitince null). Tur sırasında oyun durur (UI.modal) ve müşteri gelmez.
+// Rehberin yüzü: logodaki şef kedi "Tabby" (coach sarmalayıcısı balondaki pati simgesini kediyle değiştirir).
+// Eskiden: sinema → ilk müşteri → ekip tasarımı İSTEĞE BAĞLI öneriliyordu ("Daha sonra" denebiliyordu). Öğreticiyi eski sürümde bitirip
+// ekibini tasarlamamış oyuncuya (S.tut==='done' && !S.created) eski teklif aynen gösterilir.
+// Seviyeye göre gizlenen düğmeler (V125, data-nb) kaldırıldı: tur bütün düğmeleri anlatır. Etkinlikler düğmesi 8. seviyeye dek kilitli görünür.
+const RH={st:0,shown:'',emptied:0,modal:false,tour:false,ev:false,av:0};
+const RH_EV_LVL=EV_JOIN_LVL;
+{const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.tur=null;return s}}
+{const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{if(S.tut==='help'||S.tut==='recipes'){S.tut='done';S.tur=0}if(!S.seen)S.seen={}}catch(e){}return r}}
+// ---- rehberin yüzü: şef kedi ----
+const RH_FACE=`<svg viewBox="-74 -130 148 196" aria-hidden="true">${evaCat(0,0,1,{})}</svg>`;
+{const _c=coach;coach=function(o){const r=_c.apply(this,arguments);try{const w=$('coach').querySelector('.cbub .who');if(w){w.innerHTML=RH_FACE;w.classList.add('rhface')}$('coach').classList.remove('rhb','rht','rhtour');const b=$('coach').querySelector('.cbub');b.style.removeProperty('left');b.style.removeProperty('width');RH.av=14}catch(e){}return r}}
+// ---- balon, gösterdiği düğmenin (ve işaret eden elin) üstünü kapatmasın ----
+// Yatayda balonlar hep üstte durur (p65); hedef de üstteyse (Otomatik düğmesi, depo kartı…) balon onu örtüyordu. Sırayla denenir:
+// alta al → hedefin soluna/sağına sığdır → olmuyorsa olduğu gibi bırak.
+function rhAvoid(){const box=$('coach');if(!box||box.hidden||CO.center||CO.drag||!CO.target)return;const bub=box.querySelector('.cbub');if(!bub||bub.hidden)return;
+  const t=targetRect(CO.target);if(!t)return;const g=$('game').getBoundingClientRect(),W=g.width,H=g.height,x0=t.left-g.left,y0=t.top-g.top,below=y0+t.height/2<H*0.55;
+  const K={l:x0-10,r:x0+t.width+10,t:y0-(below?8:62),b:y0+t.height+(below?62:8)};
+  const cur=()=>{const r=bub.getBoundingClientRect();return {l:r.left-g.left,r:r.right-g.left,t:r.top-g.top,b:r.bottom-g.top}};
+  const bad=r=>!(r.r<=K.l||K.r<=r.l||r.b<=K.t||K.b<=r.t)||r.t<-1||r.b>H+1||r.l<-1||r.r>W+1;
+  if(!bad(cur()))return;
+  const v0=box.classList.contains('rhb')?'b':'t',setV=v=>{box.classList.toggle('rhb',v==='b');box.classList.toggle('rht',v==='t')};
+  const setH=s=>{if(!s){bub.style.removeProperty('left');bub.style.removeProperty('width');return true}const a=s==='l'?12:K.r+4,z=s==='l'?K.l-4:W-12,w=Math.min(460,z-a);if(w<330)return false;
+    bub.style.setProperty('left',(s==='l'?z-w/2:a+w/2).toFixed(1)+'px','important');bub.style.setProperty('width',w.toFixed(1)+'px','important');return true};
+  const v1=v0==='b'?'t':'b';
+  for(const [v,s] of [[v1,null],[v0,'l'],[v0,'r'],[v1,'l'],[v1,'r']]){setV(v);if(!setH(s))continue;if(!bad(cur()))return}
+  setV(v0);setH(null)}
+function rhShow(key,opt){if(RH.shown===key&&CO.owner==='rh'&&!$('coach').hidden)return;RH.shown=key;coach({...opt,owner:'rh'})}
+function rhHide(){if(CO.owner==='rh'&&!$('coach').hidden)coachOff();RH.shown=''}
+
+// ---- 1) karşılama + zorunlu ekip kurma ----
+function rhWelcome(){if(S.created)return;S.tut='create';try{markDirty()}catch(e){}RH.shown='welcome';
+  coach({owner:'rh',title:'TabbyChef’e hoş geldin!',dim:true,center:true,
+    text:'Ben <b>Tabby</b>! Bu yolculukta hep yanında olacağım. Burada kendi kedi kafeni yönetirsin: misafirleri ağırlar, mis gibi lezzetler hazırlar, kazandıklarınla kafeni adım adım büyütürsün. Ama iyi bir kafe, iyi bir ekiple başlar.<br><b>Hadii! Şimdi ilk karakterlerimizi tasarlayalım.</b>',
+    buttons:[{label:'Hadi başlayalım!',green:true,icon:'paw',onClick:()=>{coachOff();RH.shown='';UI.backTo='cafe';openEditor('waiter','create')}}]})}
+{const _o=offerSetup;offerSetup=function(isNew){if(S.created)return;
+   if(EVMODE||(typeof buildOn==='function'&&buildOn())||S.tut==='done')return _o.apply(this,arguments);   // etkinlik kafesi kendi kurulum rehberini kullanır
+   if(!S.cine){S.cine=1;try{markDirty()}catch(e){}playCine(()=>{try{rhWelcome()}catch(e){console.warn('rehber',e)}});return}
+   rhWelcome()}}
+// ekip kurulmadan, tedarik dersinde ve tur sırasında müşteri gelmez
+{const _h=tutHoldArrivals;tutHoldArrivals=function(){try{if(!EVMODE&&((!S.created&&(S.tut==='create'||!S.tut))||S.tut==='stok'||S.tur!=null))return true}catch(e){}return _h.apply(this,arguments)}}
+
+// ---- 2) tedarik dersi: malzeme biter → Menü › Stok ----
+function rhStok(){const N=NMs();
+  if(RH.st===0){if(UI.mode!=='cafe'||UI.modal){rhHide();return}
+    if(!RH.emptied){RH.emptied=1;try{const T=stockS();T.g=[{n:0,q:CONFIG.stock.startQ,c:CONFIG.stock.unit}];T.pend=[];T.arr=[];stockUI()}catch(e){console.warn('rehber stok',e)}}
+    rhShow('stok0',{title:'Eyvah, malzeme bitti!',dim:true,center:true,text:`Bak şu işe: depomuzdaki malzeme tükenmiş! Malzeme olmadan ${N.barista.name} hiçbir şey hazırlayamaz. Ama telaş yok; gel, sana malzemelerin nereden geldiğini göstereyim.`,
+      buttons:[{label:'Depoya bakalım',green:true,icon:'box',onClick:()=>{RH.st=1;RH.shown='';menuTab='stock';setMode('menu');try{renderMenu()}catch(e){}}}]});return}
+  if(UI.mode!=='menu'){if(UI.mode==='cafe'&&!UI.modal)rhShow('stoknav',{text:'Depomuz <b>Menü</b>’nün içinde duruyor. Hadi oraya geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>{RH.shown='';menuTab='stock';setMode('menu')}}]});else rhHide();return}
+  if(menuTab!=='stock'){menuTab='stock';renderMenu()}
+  if(RH.st===1)rhShow('stok1',{title:'Burası depomuz',text:'Bütün malzemelerimiz bu depoda durur. Sattığın her ürün, tarifindeki malzeme sayısı kadar buradan harcar. Çubuk azalınca sararır, bitince kızarır. Şu an bomboş; <b>malzeme bitince ürün satılamaz</b>, misafirler üzülüp gider.',
+    target:()=>document.querySelector('#menuList .depo'),place:'top',buttons:[{label:'Peki ne yapacağız?',green:true,onClick:()=>{RH.st=2;RH.shown=''}}]});
+  else if(RH.st===2)rhShow('stok2',{title:'Otomatik alım',text:'İyi haber: sipariş vermekle hiç uğraşmazsın! Depo azalınca toptancıdan <b>koli kendiliğinden istenir</b>, parası kasadan düşer. Toptancı koliyi kapıya bırakır, ekibimiz içeri taşır. Sen yalnızca kasada biraz altın bulundur, yeter.',
+    target:()=>document.querySelector('#menuList .supstat'),place:'top',buttons:[{label:'Devam',green:true,onClick:()=>{RH.st=3;RH.shown=''}}]});
+  else rhShow('stok3',{title:'Toptancını sen seç',text:'Sana düşen tek karar bu: <b>5 toptancıdan</b> birine dokun. Ucuz olanın kalitesi düşük, pahalı olanınki yüksektir; kalite de misafirlerin verdiği puanı etkiler. İstediğin zaman değiştirebilirsin. Bu arada <b>ilk kolin benden hediye</b>, depoya koydum bile!',
+    target:()=>document.querySelector('#menuList .supc[aria-pressed="true"]'),place:'bottom',buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:rhStokDone}]})}
+function rhStokDone(){try{lotAdd(CONFIG.stock.pack,CONFIG.stock.startQ,CONFIG.stock.unit)}catch(e){console.warn('rehber stok',e)}
+  S.seen={...(S.seen||{}),tedarik:true};S.tut='done';S.tur=0;RH.st=0;RH.emptied=0;coachOff();RH.shown='';menuTab='menu';setMode('cafe');try{stockUI()}catch(e){}markDirty();try{saveNow()}catch(e){}}
+
+// ---- 3) arayüz turu: ekrana dokundukça sıradaki düğme ----
+const rhQ=s=>()=>document.querySelector(s);
+const RH_TOUR=[
+  {t:rhQ('.y2prof'),h:'Kafenin kartviziti',x:'Burada <b>seviyen</b>, kafenin adı ve misafirlerin verdiği <b>puan</b> durur. Güzel hizmet verdikçe ikisi de yükselir. Dokunursan profilin açılır.'},
+  {t:()=>{const b=document.querySelector('button.plus[aria-label="Altın"]');return b&&b.parentElement},h:'Altınların',x:'Kazandığın <b>altınla</b> eşya ve malzeme alır, ekibinin maaşını ödersin. Yanındaki artıya dokunursan mağaza açılır.'},
+  {t:()=>{const b=document.querySelector('button.plus[aria-label="Elmas"]');return b&&b.parentElement},h:'Elmasların',x:'<b>Elmas</b> daha nadir bulunur; özel kıyafetlere ve Royal Pass’e yarar. Görevlerden ve ödüllerden kazanırsın.'},
+  {t:rhQ('#shopBtn'),h:'Dükkânın tabelası',x:'Kafe <b>açık</b> mı kapalı mı, buradan görürsün. Dokunursan kapatırsın, yeni misafir gelmez; yeniden dokununca kapılar açılır.'},
+  {t:rhQ('#dailyBtn'),h:'Görevler',x:'Her gün yeni görevler seni bekler. Tamamladıkça altın ve ödül kazanırsın; günde bir uğramayı unutma!'},
+  {t:rhQ('#evBtn'),h:'Etkinlikler',x:`Başka ülkelere yolculuk buradan başlar! <b>${RH_EV_LVL}. seviyede</b> açılacak; o gün geldiğinde ben sana haber veririm.`},
+  {t:rhQ('#rpBtn'),h:'Royal Pass',x:'Oynadıkça puan toplarsın; her ay kademe kademe altın, elmas ve <b>özel eşyalar</b> kazanırsın.'},
+  {t:rhQ('#mailBtn'),h:'Duyurular',x:'Hediyeler ve haberler buraya düşer. Üstünde kırmızı nokta görürsen bir bak derim.'},
+  {t:()=>navBtn('book'),h:'Tarifler',x:'Tarif defterimiz! Yapabileceğin bütün lezzetler burada; keşfettiklerini buradan açarsın.'},
+  {t:()=>navBtn('menu'),h:'Menü',x:'Misafirler yalnızca <b>menündeki</b> ürünleri ister. Ürün ekleyip çıkarmak, fiyatlar ve az önce gördüğümüz depo hep burada.'},
+  {t:()=>navBtn('merge'),h:'Birleştir',x:'Birleştirme tahtası: aynı iki malzemeyi üst üste koyarsın, bir üst seviyesi çıkar. <b>Yeni tarifleri</b> böyle keşfederiz.'},
+  {t:()=>navBtn('team'),h:'Ekip',x:'Ekibin burada. Yeni çalışan alır, kedilerinin görünüşünü ve kıyafetlerini dilediğin gibi değiştirirsin.'},
+  {t:()=>navBtn('market'),h:'Market',x:'Masa, sandalye, dekor, duvar, zemin… Kafeni güzelleştirecek ne varsa burada. Kıyafetler ve kafeyi büyütmek de markette.'},
+  {t:rhQ('#kesBtn'),h:'Keşfet',x:'Başka oyuncuların kafelerini gezebilir, beğendiklerine kalp bırakabilirsin. İlham almak serbest!'},
+  {t:rhQ('#duzBtn'),h:'Düzenle',x:'Eşyaların yerini değiştirmek istersen buraya dokun: kafe boşalır, her şeyi rahatça taşırsın. Bitince ekip kapıdan girip işine döner.'},
+  {t:rhQ('#setBtn'),h:'Ayarlar ve Rehber',x:'Ses ve görüntü ayarları burada. En önemlisi: <b>Rehber</b> de burada! Takıldığın bir yer olursa oradan her zaman yardım alabilirsin.'}];
+function rhTourVisible(i){const s=RH_TOUR[i];let r=null;try{r=targetRect(s.t)}catch(e){}return !!r}
+function rhTourEnd(){S.tur=null;RH.tour=false;if(RH.modal){RH.modal=false;UI.modal=false}coachOff();RH.shown='';markDirty();try{saveNow()}catch(e){}}
+function rhTourNext(){if(S.tur==null)return;try{sfx('tap')}catch(e){}S.tur=(S.tur|0)+1;RH.shown='';markDirty();rhTour()}
+function rhTour(){if(S.tur==null)return false;if(EVMODE||!S.created){S.tur=null;return false}
+  // başka bir pencere açıksa tur bekler: pencere UI.modal'ı kendisi yönetir (kapanınca false yapar), tur ancak o zaman yeniden alır
+  const other=!!(document.querySelector('#game .modal:not([hidden])')||$('cine'));
+  if(UI.mode!=='cafe'||other||(UI.modal&&!RH.modal)){if(RH.modal){RH.modal=false;rhHide();if(!other)UI.modal=false}return true}
+  RH.tour=true;RH.modal=true;UI.modal=true;
+  const N=RH_TOUR.length;let i=S.tur|0;
+  if(i===0){rhShow('tur0',{title:'Kafende küçük bir tur',dim:true,center:true,text:'Şimdi sana ekrandaki düğmeleri tek tek tanıtayım. Hiçbirine girmen gerekmiyor; <b>ekrana dokundukça</b> sıradakine geçeriz.<small class="rhn">devam etmek için dokun</small>',
+      buttons:[{label:'Turu geç',light:true,onClick:rhTourEnd}]});$('coach').classList.add('rhtour');return true}
+  while(i<=N&&!rhTourVisible(i-1))i++;if(i!==(S.tur|0)){S.tur=i;RH.shown=''}
+  if(i>N){rhShow('turson',{title:'Artık komut sende!',dim:true,center:true,text:'Kafe artık senin ellerinde, şefim. Takıldığın bir yer olursa <b>Ayarlar › Rehber</b>’den her zaman yardım alabilirsin; ben de arada bir uğrarım. Kolay gelsin, iyi eğlenceler!',
+      buttons:[{label:'Hadi başlayalım!',green:true,icon:'paw',onClick:rhTourEnd}]});$('coach').classList.add('rhtour');return true}
+  const s=RH_TOUR[i-1],key='tur'+i;if(RH.shown!==key||CO.owner!=='rh'||$('coach').hidden){RH.shown=key;coach({owner:'rh',title:s.h,dim:true,target:s.t,text:`${s.x}<small class="rhn">${i} / ${N} · devam etmek için dokun</small>`,buttons:[{label:'Turu geç',light:true,onClick:rhTourEnd}]});
+    const box=$('coach'),r=targetRect(s.t),g=$('game').getBoundingClientRect();box.classList.add('rhtour',r&&(r.top-g.top+r.height/2)<g.height*0.5?'rhb':'rht')}
+  return true}
+const rhTourUp=()=>RH.tour&&RH.modal&&S.tur!=null&&CO.owner==='rh'&&/^tur\d/.test(RH.shown)&&!$('coach').hidden&&(S.tur|0)<=RH_TOUR.length;
+$('coach').addEventListener('click',e=>{if(!rhTourUp()||e.target.closest('button'))return;rhTourNext()});
+addEventListener('keydown',e=>{if(rhTourUp()&&(e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();rhTourNext()}});
+
+// ---- 4) Etkinlikler 8. seviyede açılır ----
+const rhEvOpen=()=>{try{return !!EVMODE||S.lvl>=RH_EV_LVL||Object.keys(S.evs||{}).length>0}catch(e){return true}};
+{const _oe=openEvents;openEvents=function(){if(!rhEvOpen()){try{sfx('nope')}catch(e){}toast(`<b>Etkinlikler ${RH_EV_LVL}. seviyede açılıyor</b><br>Başka ülkelere yolculuk için biraz daha büyüyelim!`,ic('lock'),3000);return}return _oe.apply(this,arguments)};openMap=openEvents}
+function rhEvSync(){const b=$('evBtn');if(!b)return;const lock=!rhEvOpen();if(b.classList.contains('rhlock')!==lock)b.classList.toggle('rhlock',lock);let k=b.querySelector('.rhlk');
+  if(lock&&!k){k=document.createElement('span');k.className='rhlk';k.innerHTML=`${ic('lock')}Sv ${RH_EV_LVL}`;b.appendChild(k)}else if(!lock&&k)k.remove();
+  if(!lock&&!b.dataset.rhc){b.dataset.rhc='1';b.addEventListener('click',()=>{if(S.seen&&!S.seen.ev8){S.seen={...S.seen,ev8:true};markDirty()}},true)}}
+setInterval(()=>{try{rhEvSync()}catch(e){}},1000);
+function rhEv8(){if(EVMODE||!started||(S.seen&&S.seen.ev8)||!rhEvOpen()||S.tut!=='done'||S.tur!=null||!S.created)return false;
+  if(Object.keys(S.evs||{}).length){S.seen={...(S.seen||{}),ev8:true};markDirty();return false}   // etkinliğe zaten katılmış
+  if(UI.mode!=='cafe'||UI.modal||lvQueue.length||document.querySelector('#game .modal:not([hidden])')||!$('evBtn')||$('coach').hidden===false&&CO.owner!=='rh'){if(RH.ev){RH.ev=false;rhHide()}return false}
+  RH.ev=true;const done=()=>{S.seen={...(S.seen||{}),ev8:true};RH.ev=false;coachOff();RH.shown='';markDirty();try{saveNow()}catch(e){}};
+  rhShow('ev8',{title:'Dünya seni bekliyor!',dim:true,target:rhQ('#evBtn'),text:`${(S.lvl|0)===RH_EV_LVL?`Tebrikler, ${RH_EV_LVL}. seviyeye ulaştın ve <b>Etkinlikler</b> açıldı!`:'<b>Etkinlikler</b> artık açık!'} Artık başka ülkelere yolculuk edebilirsin: her durakta sıfırdan bir kafe kurar, o ülkenin tariflerini ve eşyalarını ana kafene getirirsin. Ana kafen sen yokken de yerinde durur. İlk durağımız <b>İtalya</b>!`,
+    buttons:[{label:'Sonra',light:true,onClick:done},{label:'Etkinliklere bak',green:true,icon:'event',onClick:()=>{done();openEvents()}}]});
+  const box=$('coach'),r=targetRect(rhQ('#evBtn')),g=$('game').getBoundingClientRect();box.classList.add(r&&(r.top-g.top+r.height/2)<g.height*0.5?'rhb':'rht');return true}
+
+// ---- ana döngü ----
+function rhTick(){if(EVMODE)return false;
+  if(S.tut==='stok'){try{autoBtnVis()}catch(e){}rhStok();return true}
+  if(S.tur!=null){try{autoBtnVis()}catch(e){}if(rhTour())return true}
+  rhEv8();return false}
+{const _tt=tutTick;let f=0;tutTick=function(){let h=false;try{if(RH.av>0){RH.av--;rhAvoid()}else if(++f%12===0)rhAvoid();h=rhTick()}catch(e){console.warn('rehber',e)}if(h)return;return _tt.apply(this,arguments)}}
+
+{const st=document.createElement('style');st.textContent=`
+#coach .cbub .who.rhface{position:relative;width:50px;height:66px;padding:0;border:0;border-radius:0;background:none;display:block;margin:-4px 0 0 -2px;filter:drop-shadow(0 2px 0 rgba(74,46,28,.25))}
+#coach .cbub .who.rhface svg{display:block;width:100%;height:100%;overflow:visible}
+#coach .cbub .who.rhface::after{content:'Tabby';position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);font:800 10px/1 var(--font-display,inherit);color:var(--ink);background:#ffe7a8;border:2px solid var(--ink);border-radius:999px;padding:2px 7px 2px}
+#coach .cbub{padding-bottom:16px}
+#coach .cbub .rhn{display:block;margin-top:6px;font-size:11px;font-weight:800;opacity:.62}
+#coach.rhtour .cdim{background:rgba(43,26,16,.24);cursor:pointer}
+#coach.rhtour .cbub{cursor:pointer}
+html.land #coach.rhb .cbub:not(.center){top:auto!important;bottom:calc(max(10px,var(--sab,0px)) + 6px)!important}
+html.land #coach.rht .cbub:not(.center){top:calc(max(8px,var(--sat,0px)))!important;bottom:auto!important}
+#evBtn.rhlock{filter:saturate(.35)}
+#evBtn .rhlk{position:absolute;right:-4px;top:-5px;z-index:3;display:inline-flex;align-items:center;gap:2px;padding:1px 5px 1px 3px;border:2px solid var(--ink,#4a2a14);border-radius:999px;background:#fff6e0;font:800 9px/1.2 var(--font-display,inherit);color:#4a2a14;white-space:nowrap;filter:none}
+#evBtn .rhlk .ic{width:10px!important;height:10px!important;display:inline-grid}#evBtn .rhlk .ic svg{width:100%;height:100%}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
