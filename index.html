@@ -3275,41 +3275,166 @@ const PAW=`<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="26" 
 .paws span:nth-child(even){color:#f2a6a0}
 @keyframes pawIn{0%{opacity:0;transform:var(--r) scale(.4)}25%{opacity:.95;transform:var(--r) scale(1)}75%{opacity:.85}100%{opacity:0;transform:var(--r) scale(1)}}
 #intro .sub{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--wood2);opacity:0;animation:fadeUp .5s ease 3.0s forwards;text-align:center}
-#intro .ld{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:40px}
-#intro .ld[hidden]{display:none}
-#intro .ld div{width:min(calc(60*var(--vw)),240px);height:10px;border:3px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff8ec}
-#intro .ld i{display:block;height:100%;width:0;background:var(--gold)}
-#intro .ld small{font-size:12px;font-weight:800;opacity:.7}
 #intro .skip{position:absolute;bottom:calc(16px + var(--sab));font-size:12px;font-weight:800;opacity:.55}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.lg-head,.lg-hat,.lg-w,.lg-spark{animation-duration:.01s!important;animation-delay:0s!important}.lg-steam{animation:none;opacity:.9;stroke-dashoffset:0}.lg-eyes{animation:none}.paws{display:none}}
+/* ---- V142: logo → "kafe kuruluyor" sahnesi + Yükleniyor şeridi ---- */
+#intro{display:block;padding:0;cursor:default}
+#intro .intop{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:14px;transform:translate(-50%,-50%);transform-origin:50% 50%;animation:inTop .55s cubic-bezier(.5,0,.2,1) 4.3s forwards;width:max-content;max-width:96%;z-index:2}
+@keyframes inTop{to{transform:translate(-50%,calc(-50% + var(--iy,-130px))) scale(var(--is,.36))}}
+#intro .inlogo{display:flex}
+#intro .sub{animation:fadeUp .5s ease 3.0s forwards,subOut .3s ease 4.2s forwards}
+@keyframes subOut{to{opacity:0}}
+#intro .bstage{position:absolute;left:50%;top:calc(50% + 12px);width:min(80%,calc(470px*var(--u,1)));aspect-ratio:420/190;transform:translate(-50%,-50%);box-sizing:border-box;border:3px solid var(--ink);border-radius:20px;box-shadow:0 5px 0 var(--ink);overflow:hidden;background:#cfeaf5;opacity:0;animation:bsIn .45s ease 4.5s forwards}
+@keyframes bsIn{from{opacity:0;transform:translate(-50%,-46%) scale(.95)}to{opacity:1;transform:translate(-50%,-50%)}}
+#intro .bstage svg{display:block;width:100%;height:100%}
+.bs{opacity:0;transform-box:fill-box;transform-origin:50% 100%;animation:bsPop .5s cubic-bezier(.3,1.5,.5,1) calc(var(--d)*1ms) forwards}
+@keyframes bsPop{0%{opacity:0;transform:scale(.2)}60%{opacity:1}100%{opacity:1;transform:none}}
+.bs.drop{animation-name:bsDrop}@keyframes bsDrop{0%{opacity:0;transform:translateY(-46px)}55%{opacity:1;transform:translateY(3px) scaleY(.9)}100%{opacity:1;transform:none}}
+.bs.rise{animation-name:bsRise;animation-timing-function:cubic-bezier(.3,1.25,.5,1)}@keyframes bsRise{0%{opacity:0;transform:scaleY(0)}30%{opacity:1}100%{opacity:1;transform:none}}
+.bs.roll{transform-origin:50% 0;animation-name:bsRoll}@keyframes bsRoll{0%{opacity:0;transform:scaleX(.05)}40%{opacity:1}100%{opacity:1;transform:none}}
+.bs.left{transform-origin:100% 100%;animation-name:bsLeft;animation-duration:.6s;animation-timing-function:cubic-bezier(.3,1.2,.5,1)}@keyframes bsLeft{0%{opacity:0;transform:scaleX(0)}30%{opacity:1}100%{opacity:1;transform:none}}
+.bs.fade{animation-name:bsFade;animation-timing-function:ease}@keyframes bsFade{from{opacity:0}to{opacity:1}}
+.bs.lot{animation:bsFade .35s ease calc(var(--d)*1ms) forwards,bsOut .35s ease 5.15s forwards}@keyframes bsOut{to{opacity:0}}
+.bs.walk{animation:bsWalk .95s linear calc(var(--d)*1ms) forwards}@keyframes bsWalk{0%{opacity:0;transform:translateX(74px)}8%{opacity:1}25%{transform:translate(56px,-2px)}50%{transform:translate(37px,0)}75%{transform:translate(18px,-2px)}100%{opacity:1;transform:none}}
+.bs .bob{transform-box:fill-box;transform-origin:50% 100%;animation:bsBob 1.3s ease-in-out calc(var(--b,0)*1ms) infinite}@keyframes bsBob{0%,100%{transform:none}50%{transform:translateY(-1.6px) scaleY(1.02)}}
+.bs-steam{stroke-dasharray:16;animation:bsSteam 1.5s linear 6.3s infinite;opacity:0}@keyframes bsSteam{0%{opacity:0;stroke-dashoffset:16}30%{opacity:.9}100%{opacity:0;stroke-dashoffset:-10}}
+.bs-heart{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:bsHeart 2.2s ease-out calc(var(--d)*1ms) infinite}@keyframes bsHeart{0%{opacity:0;transform:translateY(4px) scale(.4)}20%{opacity:1;transform:translateY(0) scale(1)}70%{opacity:1}100%{opacity:0;transform:translateY(-12px) scale(1)}}
+.bs-coin{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:bsHeart 1.8s ease-out calc(var(--d)*1ms) infinite}
+.bs-star{opacity:0;transform-box:fill-box;transform-origin:50% 50%;animation:bsStar .55s cubic-bezier(.3,1.7,.5,1) calc(var(--d)*1ms) forwards}@keyframes bsStar{0%{opacity:0;transform:scale(0) rotate(-50deg)}100%{opacity:1;transform:none}}
+.bs-cloud{animation:bsCloud 9s ease-in-out 0s infinite alternate}@keyframes bsCloud{to{transform:translateX(16px)}}
+#intro .ld{position:absolute;left:50%;bottom:max(calc(10px*var(--u,1)),var(--sab,0px));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:calc(3px*var(--u,1));min-height:0;opacity:0;animation:bsFade .4s ease 4.6s forwards;width:min(80%,calc(470px*var(--u,1)))}
+#intro .ld .ldrow{display:flex;align-items:center;gap:calc(9px*var(--u,1));width:100%}
+#intro .ld .ldrow b{font:800 calc(15px*var(--u,1)) var(--font-display,inherit);color:var(--ink);white-space:nowrap}
+#intro .ld .ldbar{flex:1;width:auto;height:calc(14px*var(--u,1));box-sizing:border-box;border:3px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff8ec;box-shadow:0 2px 0 var(--ink)}
+#intro .ld .ldbar i{display:block;height:100%;width:0;background:linear-gradient(#ffe08a,#f6b93a);transition:width .25s ease}
+#intro .ld em{font:800 calc(13px*var(--u,1)) var(--font-display,inherit);font-style:normal;color:var(--ink);min-width:calc(36px*var(--u,1));text-align:right}
+#intro .ld small{font-size:calc(12px*var(--u,1));font-weight:800;opacity:.75;color:var(--ink);min-height:calc(15px*var(--u,1));white-space:nowrap}
+/* kısa kip (oyunun kendi yeniden yüklemeleri): yalnız logo; oyun hazır değilse altta ince Yükleniyor şeridi */
+#intro.short .intop{animation:none}#intro.short .sub{animation:fadeUp .5s ease 3.0s forwards}#intro.short .bstage{display:none}
+#intro.short .ld{animation:none;opacity:0;transition:opacity .3s ease}#intro.short .ld.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.lg-head,.lg-hat,.lg-w,.lg-spark{animation-duration:.01s!important;animation-delay:0s!important}.lg-steam{animation:none;opacity:.9;stroke-dashoffset:0}.lg-eyes{animation:none}.paws{display:none}.bs .bob,.bs-cloud{animation:none}}
 `;document.head.appendChild(st)}
-const INTRO={done:false,ready:false,cb:null,el:null};
+// ---- "kafe kuruluyor" sahnesi (V142) ----
+// Logo animasyonundan sonra logo küçülüp yukarı çıkar; ortada boş dükkândan büyüyen kafeye uzanan küçük bir canlandırma oynar
+// (oyunun başlangıcındaki sırayla: dükkân → duvarlar → tente → tezgâh → kasa → masa → ekip → ilk müşteri → genişleme, bahçe, tabela, yıldızlar);
+// altında "Yükleniyor" şeridi (çubuk + yüzde + o anki adımın yazısı) durur. Hepsi CSS animasyonu: logo gibi sanal saatle sürülür,
+// oyun arka planda yüklenirken takılmaz. Oyun hazır olunca kalan kısım 2,2 kat hızla oynar; hazırken ekrana dokunmak canlandırmayı geçer.
+function buildStage(){const I=INK,st=`stroke="${I}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"`,F=`font-family="'Baloo 2',Nunito,system-ui,sans-serif" font-weight="800"`;
+  const G=(d,c,body)=>`<g class="bs ${c}" style="--d:${d}">${body}</g>`;
+  const awn=(x0,x1,y)=>{const n=Math.round((x1-x0)/13),w=(x1-x0)/n;let s='';for(let i=0;i<n;i++)s+=`<path d="M${x0+i*w} ${y}h${w}v10a${w/2} ${w/2} 0 0 1 ${-w} 0z" fill="${i%2?'#fff8ec':'#f39a4a'}"/>`;
+    return s+`<path d="M${x0} ${y}H${x1}v10${Array.from({length:n},()=>`a${w/2} ${w/2} 0 0 1 ${-w} 0`).join('')}z" fill="none" ${st}/><rect x="${x0-3}" y="${y-6}" width="${x1-x0+6}" height="7" rx="3.5" fill="#c98a4e" ${st}/>`};
+  const cat=(x,y,fur,apr,o={})=>`<g transform="translate(${x} ${y})"><g class="bob" style="--b:${o.b||0}">${o.tail?`<path d="M${6*o.tail} 20q${10*o.tail} -1 ${8*o.tail} -12" fill="none" stroke="${I}" stroke-width="6.5" stroke-linecap="round"/><path d="M${6*o.tail} 20q${10*o.tail} -1 ${8*o.tail} -12" fill="none" stroke="${fur}" stroke-width="3.2" stroke-linecap="round"/>`:''}
+    <path d="M-7 6h14v15a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3 -3z" fill="${apr}" ${st}/><path d="M-9 -9l1 -9 7 5zM9 -9l-1 -9 -7 5z" fill="${fur}" ${st}/><ellipse cx="0" cy="-3" rx="10.5" ry="9" fill="${fur}" ${st}/>
+    <ellipse cx="0" cy="1.2" rx="4.6" ry="3.3" fill="#fbf3e4"/><circle cx="-4" cy="-4" r="1.5" fill="${I}"/><circle cx="4" cy="-4" r="1.5" fill="${I}"/><path d="M-1.4 -.4h2.8l-1.4 1.8z" fill="#f2a6a0"/>
+    ${o.hat?`<path d="M-6 -11h12v-4a3.5 3.5 0 0 0 -4 -5a4 4 0 0 0 -8 0a3.5 3.5 0 0 0 -4 5z" fill="#fff8ec" stroke="${I}" stroke-width="2" stroke-linejoin="round"/>`:''}${o.bow?`<path d="M0 -12l-6 -3.5v7zM0 -12l6 -3.5v7z" fill="#f2665c" stroke="${I}" stroke-width="1.6" stroke-linejoin="round"/>`:''}${o.extra||''}</g></g>`;
+  const table=x=>`<path d="M${x} 131V144" ${st} stroke-width="3.4"/><ellipse cx="${x}" cy="145" rx="7" ry="2.2" fill="#c98a4e" ${st}/><ellipse cx="${x}" cy="128.5" rx="13.5" ry="3.8" fill="#f6e2bd" ${st}/>`;
+  const chair=(x,s)=>`<path d="M${x-5} 137h10M${x-4} 137v9M${x+4} 137v9" ${st}/><path d="M${x+5*s} 137V119" ${st} stroke-width="3.6"/><rect x="${x-5.5}" y="133" width="11" height="4" rx="1.8" fill="#f2a6a0" ${st} stroke-width="2"/>`;
+  const lamp=(x,d)=>G(d,'drop',`<path d="M${x} 70v10" ${st} stroke-width="2"/><path d="M${x-7.5} 87a7.5 7.5 0 0 1 15 0z" fill="#f2b134" ${st} stroke-width="2.2"/>`);
+  const star=(x,y,r,d)=>{let p='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r*0.45:r;p+=(i?'L':'M')+(x+Math.cos(a)*q).toFixed(1)+' '+(y+Math.sin(a)*q).toFixed(1)}return `<path class="bs-star" style="--d:${d}" d="${p}z" fill="#f2b134" ${st} stroke-width="2.2"/>`};
+  const heart=(x,y,d)=>`<path class="bs-heart" style="--d:${d}" d="M${x} ${y+4}c-7 -5 -5 -10 -1.5 -10c1.5 0 1.5 1.5 1.5 1.5s0 -1.5 1.5 -1.5c3.5 0 5.5 5 -1.5 10z" fill="#f2665c" stroke="${I}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  const wall=(x,w)=>`<rect x="${x}" y="70" width="${w}" height="78" fill="#fbe9c9"/><rect x="${x}" y="126" width="${w}" height="22" fill="#f1d5a4"/><path d="M${x} 126h${w}" stroke="${I}" stroke-width="1.6" opacity=".4"/><rect x="${x}" y="70" width="${w}" height="78" fill="none" ${st}/>`;
+  const P=[];
+  // boş dükkân (kiralık arsa): duvarlar yükselince kaybolur
+  P.push(G(4550,'lot',`<rect x="112" y="72" width="196" height="76" rx="4" fill="rgba(255,250,240,.45)" stroke="${I}" stroke-width="2.4" stroke-dasharray="7 7"/><path d="M88 150V120" ${st} stroke-width="3.4"/><rect x="74" y="105" width="28" height="18" rx="4" fill="#fff8ec" ${st}/><g fill="${I}"><ellipse cx="88" cy="117" rx="3.8" ry="2.9"/><circle cx="83.2" cy="112.4" r="1.6"/><circle cx="86.6" cy="110" r="1.6"/><circle cx="90.4" cy="110.2" r="1.6"/><circle cx="93.2" cy="112.8" r="1.5"/></g>`));
+  // genişleme: sol bölüm (ana duvarın arkasından sola doğru açılır)
+  P.push(G(9700,'left',wall(32,80)+`<rect x="28" y="146" width="86" height="8" rx="2.5" fill="#c98a4e" ${st}/>`));
+  // ana dükkân: duvar, pencere, kapı, zemin
+  P.push(G(5050,'rise',wall(112,196)));
+  P.push(G(5700,'pop',`<rect x="214" y="79" width="40" height="21" rx="5" fill="#cfeaf5" ${st}/><path d="M234 79v21M214 89.5h40" stroke="${I}" stroke-width="1.8"/>`));
+  P.push(G(5600,'rise',`<rect x="282" y="98" width="22" height="50" rx="3" fill="#6f9a4a" ${st}/><rect x="286" y="103" width="14" height="16" rx="2.5" fill="#cfeaf5" stroke="${I}" stroke-width="1.8"/><circle cx="286.6" cy="127" r="1.8" fill="#f2b134" stroke="${I}" stroke-width="1"/>`));
+  P.push(G(4900,'drop',`<rect x="108" y="146" width="204" height="8" rx="2.5" fill="#c98a4e" ${st}/>`));
+  // çatı tabelası (direkleri tentenin arkasında kalır), tenteler, AÇIK levhası, lambalar
+  P.push(G(10900,'drop',`<path d="M186 50v8M234 50v8" ${st}/><rect x="168" y="29" width="84" height="23" rx="7.5" fill="#fff8ec" ${st}/><text x="210" y="45.4" text-anchor="middle" ${F} font-size="13" fill="#c98a4e">Tabby<tspan fill="#8a9a3b">Chef</tspan></text>`));
+  P.push(G(10000,'roll',awn(26,108,58)));P.push(G(5450,'roll',awn(106,314,58)));
+  P.push(G(8250,'drop',`<path d="M287 68v6M301 68v6" stroke="${I}" stroke-width="1.6"/><rect x="280.5" y="74" width="27" height="12.5" rx="3.2" fill="#6fae4a" ${st} stroke-width="2.2"/><text x="294" y="83.4" text-anchor="middle" ${F} font-size="7.8" fill="#fff8ec">AÇIK</text>`));
+  P.push(lamp(159,10500));P.push(lamp(70,10600));
+  P.push(G(10550,'pop',`<rect x="38" y="82" width="19" height="17" rx="3" fill="#fff8ec" ${st} stroke-width="2.2"/><g fill="#f2a6a0"><ellipse cx="47.5" cy="93" rx="3.2" ry="2.5"/><circle cx="43.6" cy="89.2" r="1.35"/><circle cx="46.3" cy="87.3" r="1.35"/><circle cx="49.4" cy="87.4" r="1.35"/><circle cx="51.7" cy="89.5" r="1.3"/></g>`));
+  // tezgâh + barista, kasa + kasiyer (kediler tezgâhın arkasında)
+  P.push(G(7500,'pop',cat(128,100,'#e9a25a','#86a34c',{hat:1})));
+  P.push(G(6000,'drop',`<rect x="116" y="120" width="50" height="28" fill="#86a34c" ${st}/><path d="M133 127v15M149.5 127v15" stroke="#5c7430" stroke-width="2.2" stroke-linecap="round"/><rect x="112" y="113" width="58" height="8" rx="3" fill="#c98a4e" ${st}/>`));
+  P.push(G(6200,'pop',`<rect x="148" y="96" width="19" height="17" rx="3" fill="#e0483f" ${st}/><rect x="152" y="100" width="11" height="5" rx="1.5" fill="#fff8ec" stroke="${I}" stroke-width="1.4"/><path d="M157.5 109v4" ${st} stroke-width="2"/><path d="M135 106h9v4a3 3 0 0 1 -3 3h-3a3 3 0 0 1 -3 -3z" fill="#fff8ec" ${st} stroke-width="2"/><path d="M144 107.5h2.4v3h-2.4" fill="none" stroke="${I}" stroke-width="1.6"/>`));
+  P.push(`<path class="bs-steam" d="M139.5 103c-3 -3 3 -5 0 -9" fill="none" stroke="#fff8ec" stroke-width="2.4" stroke-linecap="round"/>`);
+  P.push(G(7650,'pop',cat(189.5,99,'#b9b9c4','#f2a6a0',{b:300})));
+  P.push(G(6500,'drop',`<rect x="177" y="124" width="25" height="24" fill="#86a34c" ${st}/><rect x="174" y="117" width="31" height="8" rx="3" fill="#c98a4e" ${st}/><rect x="181" y="104" width="17" height="13" rx="2.5" fill="#fff8ec" ${st} stroke-width="2.2"/><rect x="184" y="107" width="11" height="4" rx="1" fill="#9fe0a8" stroke="${I}" stroke-width="1.2"/>`));
+  P.push(`<g class="bs-coin" style="--d:11300"><circle cx="207" cy="103" r="4.6" fill="#f2b134" ${st} stroke-width="1.8"/><path d="M207 100.8v4.4" stroke="${I}" stroke-width="1.5" stroke-linecap="round"/></g><g class="bs-coin" style="--d:12200"><circle cx="210.5" cy="99" r="3.8" fill="#f2b134" ${st} stroke-width="1.8"/><path d="M210.5 97.2v3.6" stroke="${I}" stroke-width="1.4" stroke-linecap="round"/></g>`);
+  // masa, garson, ilk müşteri
+  P.push(G(7000,'pop',chair(270,1)+table(252)));
+  P.push(G(7800,'pop',cat(228,122,'#f3e3c8','#8a9a3b',{tail:-1,b:600,extra:`<ellipse cx="12.5" cy="9" rx="7.5" ry="2.2" fill="#fff8ec" ${st} stroke-width="2"/><path d="M9.5 7.5v-5h6v5" fill="#f2a6a0" stroke="${I}" stroke-width="1.6" stroke-linejoin="round"/>`})));
+  P.push(G(8400,'walk',cat(271,117,'#fbf3e4','#f2b134',{bow:1,b:900})));
+  P.push(G(9300,'pop',`<path d="M246 122h8v3.4a2.6 2.6 0 0 1 -2.6 2.6h-2.8a2.6 2.6 0 0 1 -2.6 -2.6z" fill="#fff8ec" ${st} stroke-width="1.8"/>`));
+  P.push(heart(271,86,9500));
+  // genişleyen bölüm: ikinci masa, saksı, ikinci müşteri
+  P.push(G(10300,'pop',chair(88,1)+table(70)));
+  P.push(G(10450,'pop',`<path d="M37 137h14l-2 11h-10z" fill="#d98a4e" ${st} stroke-width="2.2"/><path d="M44 137c-9 -4 -9 -14 -3 -18c2 6 4 10 3 18zM44 137c8 -3 10 -12 6 -17c-3 5 -6 9 -6 17z" fill="#7fb85a" ${st} stroke-width="2"/>`));
+  P.push(G(10700,'pop',cat(89,117,'#8c8c96','#86b8d8',{b:400})));P.push(heart(89,86,11200));
+  // bahçe: çit, ağaç, çiçekler
+  {let f='';for(let x=322;x<=392;x+=10)f+=`<rect x="${x}" y="134" width="6" height="16" rx="2.4" fill="#fff8ec" ${st} stroke-width="2"/>`;P.push(G(10200,'pop',f+`<path d="M320 141h80" ${st} stroke-width="2.2"/>`))}
+  P.push(G(10350,'pop',`<rect x="364" y="118" width="7" height="32" rx="2" fill="#b07a3e" ${st} stroke-width="2.2"/><circle cx="367.5" cy="102" r="19" fill="#8fc86a" ${st}/><circle cx="360" cy="96" r="3" fill="#f2665c"/><circle cx="375" cy="106" r="3" fill="#f2665c"/><circle cx="369" cy="91" r="2.6" fill="#f2665c"/>`));
+  P.push(star(184,15,7,11100)+star(210,10,8.5,11220)+star(236,15,7,11340));
+  return `<svg viewBox="0 -8 420 190" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect y="-8" width="420" height="198" fill="#cfeaf5"/><circle cx="392" cy="24" r="15" fill="#fff3c4"/>
+   <g class="bs-cloud" fill="#fffaf0"><ellipse cx="62" cy="30" rx="26" ry="9"/><ellipse cx="80" cy="24" rx="16" ry="8"/><ellipse cx="310" cy="24" rx="22" ry="7"/></g>
+   <rect y="152" width="420" height="38" fill="#b7de7c"/><g fill="#fff8ec"><circle cx="24" cy="172" r="2.4"/><circle cx="140" cy="178" r="2.4"/><circle cx="262" cy="170" r="2.4"/><circle cx="352" cy="176" r="2.4"/></g><g fill="#f2a6a0"><circle cx="70" cy="180" r="2.4"/><circle cx="204" cy="172" r="2.4"/><circle cx="404" cy="168" r="2.4"/></g>
+   <rect y="150" width="420" height="9" fill="#ecdcbf"/><path d="M0 150H420" ${st}/><path d="M0 159H420" stroke="${I}" stroke-width="1.6" opacity=".3"/>${P.join('')}</svg>`}
+// Kafe kuruluşu yalnız oyunun AÇILIŞINDA oynar. Oyunun kendi yeniden yüklemelerinde (etkinlik yolculuğu, yerleşim onayı, oda genişletme, hesap değişimi,
+// düzenleme yedeği) yalnız logo görünür: gameReload() bir oturum işareti bırakır, açılış onu okuyup siler. Elle yenileme ve yeni açılışta tam canlandırma oynar.
+function gameReload(){try{sessionStorage.setItem('tcKisa','1')}catch(e){}location.reload()}
+const IN_SHORT=(()=>{try{if(sessionStorage.getItem('tcKisa')==='1'){sessionStorage.removeItem('tcKisa');return true}}catch(e){}return false})();
+const INTRO={done:false,ready:false,built:IN_SHORT,skip:false,p:0,pm:0,cb:null,el:null};
+const IN_T0=4500,IN_END=11900,IN_CAPS=[[0,'Kafe hazırlanıyor…'],[4550,'Dükkân tutuluyor…'],[4900,'Duvarlar örülüyor…'],[5450,'Tente geriliyor…'],[6000,'Tezgâh kuruluyor…'],[6500,'Kasa yerleşiyor…'],[7000,'Masalar diziliyor…'],[7500,'Ekip işbaşı yapıyor…'],[8250,'Kapılar açılıyor…'],[9700,'Kafe büyüyor…'],[10900,'Neredeyse hazır…']];
 function startIntro(){const el=document.createElement('div');el.id='intro';el.setAttribute('role','presentation');
   const pts=[[8,82,-20],[18,74,-10],[27,68,-25],[37,61,-12],[47,57,-28],[57,52,-15]];
   el.innerHTML=`<div class="paws">${pts.map(([x,y,r],i)=>`<span style="left:${x}%;top:${y}%;--r:rotate(${r+(i%2?14:-6)}deg);animation-delay:${i*0.17}s">${PAW}</span>`).join('')}</div>
-    ${logoSVG()}<div class="sub">Kedi şefin sıcacık kafesine hoş geldin</div><div class="ld" hidden><div><i id="introBar"></i></div><small>Kafe hazırlanıyor…</small></div>`;
-  $('game').appendChild(el);INTRO.el=el;
+    <div class="intop"><div class="inlogo">${logoSVG()}</div><div class="sub">Kedi şefin sıcacık kafesine hoş geldin</div></div><div class="bstage">${buildStage()}</div>
+    <div class="ld"><div class="ldrow"><b>Yükleniyor</b><div class="ldbar"><i id="introBar"></i></div><em id="introPct">0%</em></div><small id="introCap">Kafe hazırlanıyor…</small></div>`;
+  if(IN_SHORT)el.classList.add('short');$('game').appendChild(el);INTRO.el=el;
   // yumuşak sesler (ses motoru açıksa): pati, harf, parıltı — yankısız
   if(AU.ctx&&AU.ctx.state==='running'&&SET.sfx){const t0=AU.ctx.currentTime;pts.forEach((_,i)=>introBlip(t0+i*0.17+0.05,260-i*6,0.06));for(let i=0;i<7;i++)introBlip(t0+1.2+i*0.08,520+i*45,0.05,'triangle');[1568,2093].forEach((f,i)=>introBlip(t0+2.9+i*0.09,f,0.04))}
   // animasyon kendi saatiyle oynar: oyun arka planda yüklenirken ana iş parçacığı takılsa da kare atlanmaz (her karede en çok 50 ms ilerler),
-  // böylece logo, harfler ve alt yazı sırayla mutlaka görünür. Atlama yok; bitince oyun hazırsa kendiliğinden geçilir.
-  el.addEventListener('pointerdown',()=>auInit());
+  // böylece logo, sahne ve yazılar sırayla mutlaka görünür. Oyun hazırsa kalan canlandırma hızlanır; hazırken dokunmak canlandırmayı geçer.
+  el.addEventListener('pointerdown',()=>{auInit();if(INTRO.done&&INTRO.ready)INTRO.skip=true});
   const anims=()=>el.getAnimations?el.getAnimations({subtree:true}):[];let A=anims();A.forEach(a=>{try{a.pause()}catch(e){}});
   let vt=0,last=performance.now();const END=4300;
-  const tick=now=>{if(!INTRO.el)return;const dt=Math.min(50,Math.max(0,now-last));last=now;vt+=dt;
+  const tick=now=>{if(!INTRO.el)return;const dt=Math.min(50,Math.max(0,now-last));last=now;vt+=dt*(!IN_SHORT&&INTRO.ready&&vt>END&&vt<IN_END?2.2:1);introFit();
+    if(INTRO.seek!=null){vt=INTRO.seek;INTRO.seek=null}INTRO.vt=vt;
     if(!A.length)A=anims();for(const a of A){try{a.pause();a.currentTime=vt}catch(e){}}
     if(vt>=END&&!INTRO.done){INTRO.done=true;INTRO.doneAt=now;introGo()}
-    if(INTRO.done&&INTRO.ready)introSettle(now,dt);
+    if(INTRO.ready)INTRO.ok=dt<40?(INTRO.ok|0)+1:0;   // oyun hazır olduğundan beri art arda akıcı kare sayısı (sahne arkada çizilip ısınıyor)
+    if(!INTRO.built&&(vt>=IN_END||INTRO.skip))INTRO.built=true;
+    introLoad(vt);
+    if(INTRO.done&&INTRO.ready&&INTRO.built&&!INTRO.hold)introSettle(now,dt);
     requestAnimationFrame(tick)};
   requestAnimationFrame(t=>{last=t;requestAnimationFrame(tick)})}
-// oyun hazır olduktan sonra kareler düzgün akana kadar (art arda 24 akıcı kare ya da en çok 3 sn) bekle, sonra geç
-function introSettle(now,dt){INTRO.ok=dt<40?(INTRO.ok|0)+1:0;INTRO.rt=INTRO.rt||now;if(INTRO.ok>=24||now-INTRO.rt>3000)introFinish()}
+// yerleşim: küçülmüş logo + sahne + Yükleniyor şeridi tek öbek olarak dikeyde ortalanır (telefonda ekranı doldurur, tablette ortada toplu durur).
+// Ekran boyu, arayüz ölçeği (--u) ya da yön değişince yeniden hesaplanır. Ölçüler yerleşim (offset) değerlerinden alınır:
+// dikey tutulan telefonda #game döndürülmüş olsa da doğru kalır.
+function introFit(){const el=INTRO.el;if(!el||IN_SHORT||(INTRO.fit&&(INTRO.fc=(INTRO.fc|0)+1)%10))return;try{const W=el.clientWidth,H=el.clientHeight,U=window.__U,u=(U&&U.k)||1;if(!(W>0&&H>0))return;
+    const top=el.querySelector('.intop'),lg=el.querySelector('.inlogo'),stg=el.querySelector('.bstage'),ld=el.querySelector('.ld');const lh=lg.offsetHeight,th=top.offsetHeight,lH=ld.offsetHeight;
+    const key=[W,H,u,lh,th,lH].join('|');if(INTRO.fit===key||!(lh>0))return;INTRO.fit=key;
+    const sb=Math.max(10*u,U?U.eb*U.k:0),st=Math.max(4,U?(U.et-6)*U.k:0),g2=8*u;          // alt/üst kenar payı, sahne–şerit arası en az boşluk
+    let gh=Math.max(46,Math.min(H*0.23,lh*0.8,100*u));                                   // küçülmüş logonun boyu
+    const cap=Math.min(W*0.8,470*u)*190/420,room=()=>H-sb-st-lH-g2-4-gh;let sh=Math.min(cap,room());
+    if(sh<120){gh=Math.max(34,Math.min(gh,gh+room()-120));sh=Math.max(60,Math.min(cap,room()))}   // çok basık ekran: önce logo küçülür
+    const sw=sh*420/190,free=H-sb-st-gh-sh-lH,gap=Math.max(4,Math.min(free/3,16*u)),gap2=Math.max(g2,Math.min(free/3,18*u)),y0=st+Math.max(0,(H-sb-st-gh-gap-sh-gap2-lH)/2);
+    el.style.setProperty('--is',(gh/lh).toFixed(4));el.style.setProperty('--iy',(y0+gh/2-(H/2-th/2+lh/2)).toFixed(1)+'px');top.style.transformOrigin='50% '+(lh/2).toFixed(1)+'px';
+    stg.style.width=sw.toFixed(1)+'px';stg.style.height=sh.toFixed(1)+'px';stg.style.top=(y0+gh+gap+sh/2).toFixed(1)+'px';
+    ld.style.width=Math.max(sw,Math.min(W*0.8,300*u)).toFixed(1)+'px';ld.style.bottom='auto';ld.style.top=(y0+gh+gap+sh+gap2).toFixed(1)+'px'}catch(e){}}
+// Yükleniyor şeridi: çubuk kafe kuruldukça dolar (canlandırmanın ilerleyişi); oyun henüz hazır değilse gerçek yüklemenin (model indirme) izin verdiği
+// yerde bekler, hazır olunca tamamlanır. Hiç geri gitmez. Alt yazı o an kurulan şeyi söyler.
+function introLoad(vt){const b=$('introBar');if(!b)return;
+  if(IN_SHORT){const on=INTRO.done&&!INTRO.ready;if(INTRO.on!==on){INTRO.on=on;INTRO.el.querySelector('.ld').classList.toggle('on',on)}
+    const pc=Math.round((INTRO.ready?1:0.08+0.87*INTRO.p)*100);if(INTRO.pc!==pc){INTRO.pc=pc;b.style.width=pc+'%';const e=$('introPct');if(e)e.textContent=pc+'%'}return}
+  const t=Math.max(0,Math.min(1,(vt-IN_T0)/(IN_END-IN_T0)));
+  let p=INTRO.ready&&INTRO.built?1:Math.min(0.05+0.95*t,INTRO.ready?0.99:0.3+0.62*INTRO.p);p=INTRO.pm=Math.max(INTRO.pm,p);const pc=Math.round(p*100);
+  if(INTRO.pc!==pc){INTRO.pc=pc;b.style.width=pc+'%';const e=$('introPct');if(e)e.textContent=pc+'%'}
+  let cap=IN_CAPS[0][1];for(const [T,c] of IN_CAPS)if(vt>=T)cap=c;if(INTRO.ready&&INTRO.built)cap='Hazır!';else if(INTRO.ready&&vt>IN_T0+600)cap+=' · dokunarak geç';
+  if(INTRO.cap!==cap){INTRO.cap=cap;const s=$('introCap');if(s)s.textContent=cap}}
+// canlandırma bitti + oyun hazır: "Hazır!" kısa bir an görünür (0,35 sn); kareler akıcıysa (sahne ısındıysa) açılış kapanır, değilse en çok 3 sn beklenir
+function introSettle(now,dt){INTRO.rt=INTRO.rt||now;if(((INTRO.ok|0)>=24&&now-INTRO.rt>350)||now-INTRO.rt>3000)introFinish()}
 function introBlip(t,f,v,type='sine'){const g=AU.ctx.createGain();g.connect(AU.sfx);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);
   const o=AU.ctx.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*0.92,t+0.2);o.connect(g);o.start(t);o.stop(t+0.25)}
-function introProgress(p){const b=$('introBar');if(b)b.style.width=Math.round(p*100)+'%'}
+function introProgress(p){INTRO.p=Math.max(INTRO.p,Math.max(0,Math.min(1,+p||0)))}
 function introReady(cb){INTRO.ready=true;INTRO.cb=cb;introGo()}
-function introGo(){if(!INTRO.el)return;if(INTRO.done&&!INTRO.ready){INTRO.el.querySelector('.ld').hidden=false;return}}
+function introGo(){}   // (V142) Yükleniyor şeridi artık sahneyle birlikte kendiliğinden görünür
 function introFinish(){if(!INTRO.el)return;const el=INTRO.el;INTRO.el=null;el.classList.add('out');setTimeout(()=>el.remove(),520);INTRO.cb&&INTRO.cb()}
 startIntro();
 
@@ -5432,7 +5557,7 @@ async function cloudPush(force){clearTimeout(CLOUD.timer);CLOUD.timer=0;if(!clou
   finally{CLOUD.busy=false}}
 function cloudBackup(){try{const raw=localStorage.getItem(SAVE_KEY);if(raw)localStorage.setItem(CLOUD_BAK,JSON.stringify({t:Date.now(),data:raw}))}catch(e){}}
 function cloudApply(data,msg){cloudBackup();RESETTING=true;clearTimeout(saveTimer);try{localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch(e){RESETTING=false;return false}
-  toast(msg||'Hesabındaki kafe yükleniyor…',ic('paw'),2500);setTimeout(()=>location.reload(),900);return true}
+  toast(msg||'Hesabındaki kafe yükleniyor…',ic('paw'),2500);setTimeout(()=>gameReload(),900);return true}
 const localFresh=()=>!S.created||(S.lvl<=1&&(S.xp||0)<5&&!((S.stats||{}).orders));
 // açılışta ve giriş yapılınca: bulut ile cihazı eşitle
 async function cloudSync(){if(!cloudOn()||CLOUD.syncing)return;const uid=SB.user.id;if(CLOUD.synced===uid)return;CLOUD.syncing=true;
@@ -5440,7 +5565,7 @@ async function cloudSync(){if(!cloudOn()||CLOUD.syncing)return;const uid=SB.user
     if(reset){S.owner=uid;CLOUD.synced=uid;CLOUD.syncing=false;return cloudPush(true)}   // oyuncu kafesini sıfırladı: bulut da sıfırlanır
     const sb=await sbClient();const {data:row,error}=await sb.from('saves').select('data,save_t').eq('user_id',uid).maybeSingle();if(error)throw error;
     const other=!!(S.owner&&S.owner!==uid),fresh=localFresh();
-    if(!row){if(other&&!fresh){cloudBackup();RESETTING=true;try{localStorage.removeItem(SAVE_KEY)}catch(e){}toast('Bu hesap için yeni bir kafe açılıyor…',ic('paw'),2500);setTimeout(()=>location.reload(),900);return}
+    if(!row){if(other&&!fresh){cloudBackup();RESETTING=true;try{localStorage.removeItem(SAVE_KEY)}catch(e){}toast('Bu hesap için yeni bir kafe açılıyor…',ic('paw'),2500);setTimeout(()=>gameReload(),900);return}
       S.owner=uid;CLOUD.synced=uid;CLOUD.syncing=false;return cloudPush(true)}
     const ct=+row.save_t||0,lt=+S.saveT||0;
     // sahipsiz (misafirken oynanmış) cihaz kafesi ile hesaptaki kafe ikisi de doluysa: oyuncuya sorulur
@@ -5500,7 +5625,7 @@ function buyExpand(e){if(typeof e==='string')e=expSide(e);const s=expandState(e.
   let moved=false;if(nk||nc){const k=nk||KP,c=nc||CP;if(!layoutCheck(k,c,true)){Object.assign(KP,k);Object.assign(CP,c);S.layout={...(S.layout||{}),k:{...KP},c:{...CP},op:JSON.parse(JSON.stringify(OP))};moved=true}}
   refreshWorld();markDirty();saveNow();sfx('levelup');
   toast(`<b>Kafen büyüdü!</b><br>${e.name} açıldı · masa sınırı ${tableCap(S.lvl)}${moved?'<br>Tezgâh duvarla birlikte kaydırılıyor…':''}`,ic('plus'),3600);try{bump('expand')}catch(err){}
-  if(moved){try{clearTimeout(saveTimer)}catch(err){}saveNow();RESETTING=true;setTimeout(()=>location.reload(),1400)}return true}
+  if(moved){try{clearTimeout(saveTimer)}catch(err){}saveNow();RESETTING=true;setTimeout(()=>gameReload(),1400)}return true}
 // önizleme: açılacak alan zeminde yarı saydam yeşil, kenarı kesik çizgili
 let EXPV=null;
 function expPreview(e){if(EXPV){scene.remove(EXPV);disposeTree(EXPV);EXPV=null}if(!e)return;const G=new THREE.Group();scene.add(G);EXPV=G;
@@ -5657,7 +5782,7 @@ function evGo(){const id=evOfWeek(evWeek());if(EVMODE||S.lvl<EV_JOIN_LVL)return;
     localStorage.setItem(EV_FLAG,JSON.stringify({id,week:evWeek()}))}catch(e){toast('Kayıt yazılamadı, tekrar dene',ic('close'),2200);return}
   evTravel(EVENTS[id],true)}
 function evHome(why){if(!EVMODE)return;try{clearTimeout(saveTimer)}catch(e){}saveNow();try{localStorage.removeItem(EV_FLAG)}catch(e){}evTravel(EVENTS[EVMODE],false,why)}
-function evTravel(E,go,why){RESETTING=true;const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div>${evFlagHTML(E)}<b>${go?E.city+'’ya gidiliyor…':why||'Ana kafene dönülüyor…'}</b></div>`;document.body.appendChild(o);setTimeout(()=>location.reload(),650)}
+function evTravel(E,go,why){RESETTING=true;const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div>${evFlagHTML(E)}<b>${go?E.city+'’ya gidiliyor…':why||'Ana kafene dönülüyor…'}</b></div>`;document.body.appendChild(o);setTimeout(()=>gameReload(),650)}
 
 // ---- ödüller ve getirilebilenler (ana kafede) ----
 function evClaim(){if(EVMODE)return 0;let tot=0;for(const id in S.evs){const E=EVENTS[id],d=S.evs[id];if(!E||!d)continue;const c=S.evClaim[id]||1;let n=0;for(const [L,g] of E.tiers)if(L>c&&L<=evlOf(d))n+=g;
@@ -6068,7 +6193,7 @@ function layConfirm(){const why=layoutCheck();if(why){toast(why,ic('close'),2200
   if(customers.length&&(blocks||doorMv)){toast('<b>İçeride müşteri var</b><br>Taşımak için önce dükkânı kapat, müşteriler çıksın',ic('lock'),3000);return}
   S.layout={k:{...KP},c:{...CP},w:OP.win.wall==='back'?OP.win.t:WIN.x,op:JSON.parse(JSON.stringify(OP))};LAY.on=null;layMark();if(!blocks){markDirty();saveNow();sfx('place');toast(doorMv?'Kapı taşındı':'Yeni yeri kaydedildi',ic('check'),1600);drawEditBar();return}
   try{clearTimeout(saveTimer)}catch(e){}saveNow();RESETTING=true;
-  const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div><b>Kafe yeniden düzenleniyor…</b></div>`;document.body.appendChild(o);setTimeout(()=>location.reload(),500)}
+  const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div><b>Kafe yeniden düzenleniyor…</b></div>`;document.body.appendChild(o);setTimeout(()=>gameReload(),500)}
 // açıklıklar duvarın içinde ve birbirinden ayrı mı?
 function opCheck(){const D=OP_DIM();for(const q in OP){const o=OP[q],[a,b]=wallSpan(o.wall);if(o.t-D[q].w/2<a+0.3||o.t+D[q].w/2>b-0.3)return `${OP_NAME[q]} duvarın dışına taşıyor`}
   const ks=Object.keys(OP);for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){const A=OP[ks[i]],B=OP[ks[j]];if(A.wall===B.wall&&Math.abs(A.t-B.t)<(D[ks[i]].w+D[ks[j]].w)/2+0.2)return `${OP_NAME[ks[i]]} ile ${OP_NAME[ks[j]].toLowerCase()} üst üste geliyor`}
@@ -9690,7 +9815,7 @@ async function edRun(){let steps=0,park=0,frames=0;const raf=()=>new Promise(r=>
       if(steps>2000||frames>3600){if(customers.length){edReload();return}ED.ph='park';park=0;edPark()}}
     await raf()}}
 // güvenlik ağı: kafe boşalmadıysa kaydet, sayfayı yenile ve doğrudan düzenlemeye gir
-function edReload(){ED.busy=false;try{sessionStorage.setItem('tcEdit','1')}catch(e){}try{clearTimeout(saveTimer)}catch(e){}try{saveNow()}catch(e){}RESETTING=true;setTimeout(()=>location.reload(),250)}
+function edReload(){ED.busy=false;try{sessionStorage.setItem('tcEdit','1')}catch(e){}try{clearTimeout(saveTimer)}catch(e){}try{saveNow()}catch(e){}RESETTING=true;setTimeout(()=>gameReload(),250)}
 {let n=0;const iv=setInterval(()=>{let f=null;try{f=sessionStorage.getItem('tcEdit')}catch(e){}if(!f||++n>160){clearInterval(iv);return}
   try{if(started&&!UI.modal&&UI.mode==='cafe'&&edCan()){clearInterval(iv);sessionStorage.removeItem('tcEdit');enterEdit()}}catch(e){}},500)}
 // perde: hemen dokunmayı keser; 0,3 sn'den uzun sürerse görünür
