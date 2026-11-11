@@ -2034,7 +2034,7 @@ function spawnCustomer(forceSeat,g0,idx=0){
   const used=new Set(customers.map(c=>c.look).concat(g.members.map(m=>m.look)));const looks=LOOKS.filter(l=>!used.has(l));const look=(looks.length?looks:LOOKS)[Math.floor(Math.random()*(looks.length||LOOKS.length))];
   const vip=g.size===1&&wantVIP();const look2=vip?VIP_LOOK:look;
   const seat=forceSeat||t.seats[Math.floor(Math.random()*t.seats.length)];const P=PERSONA[look2.name]||{pref:{drink:1,dessert:1,main:1},eat:1,tip:CONFIG.tipChanceBase,look:0.2};
-  const ch=new Char(cloneLook(look2.tex,look2),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;attachAcc(ch.o,(h,n)=>look2.hat(h,n));
+  const ch=new Char(cloneLook(look2.tex,look2),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;{const AG=attachAcc(ch.o,(h,n)=>look2.hat(h,n));if(look2.itHat&&AG&&AG[0])AG[0].position.set(0,0,0)}   // (V147) paket müşterileri: kubbe şapka kafaya gömülmesin
   {const n=DOOR_OUTN,j=idx%2?0.25:-0.1;ch.pos.set(OUTSIDE.x+n.x*idx*0.7-n.z*j,0,OUTSIDE.z+n.z*idx*0.7+n.x*j);ch.o.rotation.y=Math.atan2(-n.x,-n.z)}   // grup kaldırımdan arka arkaya, birlikte yürür
   const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip,group:g};ch.sitMode=g.size>1?'chat':(Math.random()<0.55?'phone':'calm');ch.sitT=2+Math.random()*4;g.members.push(c);if(!g.leader)g.leader=c;
   custTag(c);seat.occupant=c;customers.push(c);
@@ -11452,6 +11452,453 @@ function rpApplySurfaces(st,rugObjs){const wt=rpWallTex(st);wt.repeat.set(1/2,1/
   const ft=rpFloorTex(st);ft.repeat.set(ROOM_W/1.2,ROOM_D/1.2);M.floor.map=ft;M.floor.color.setHex(0xffffff);floorStrips.forEach(s=>s.visible=false);SHELL.strips=false;M.floor.needsUpdate=true;
   if(rugObjs)for(const o of rugObjs)o.visible=false;if(window.__itRug){window.__itRug.parent&&window.__itRug.parent.remove(window.__itRug)}const R=rpRugMesh(st);R.position.set(1.35,0,1.35);scene.add(R);window.__itRug=R;return R}
 
+// =====================================================================
+// TabbyChef · İTALYA KIYAFETLERİ (5 çalışan takımı + 5 müşteri tipi)
+// Bu dosya bağımsızdır (italya_koleksiyonu.js gerekmez); oyundaki ACC_BUILD, apronColor, CLOTHES, CLO, accMesh'i kullanır.
+//
+// OYUNA EKLEME (index.html):
+// 1) Bu dosyayı, CLO ve ACC_BUILD tanımlarından SONRA gelen bir yere yapıştır (ör. script'in sonuna).
+//    - Yeni şapka/boyunluk parçaları ACC_BUILD'e eklenir: boater, pizzacap, coppola, sunhat, tricorn, ruff.
+//    - Yeni önlük desenleri apronColor'a eklenir: 'hstripe', 'tricolore', 'lemon'.
+//    - 14 yeni kıyafet CLOTHES/CLO'ya eklenir (ap_it_*, hat_it_*, nk_it_*); Kıyafetler menüsünde otomatik görünür.
+// 2) Hazır takımlar: IT_STAFF_SETS (önlük+şapka+boyunluk kombinasyonları).
+// 3) Müşteriler: IT_CUST_LOOKS, oyundaki LOOKS listesiyle aynı biçimde (W, B, A, xs, top, bt, hat).
+//    Müşteri üstleri için İtalya'ya özgü yeni desenler topColor'a eklenir: 'suspenders', 'gingham', 'lemonprint', 'jerseyv', 'smock'.
+//    LOOKS'a eklenirse spawn kodunda şu satır gerekli (kubbe şapkalar kafaya gömülmesin):
+//      const AG=attachAcc(ch.o,(h,n)=>look2.hat(h,n)); if(look2.itHat&&AG[0]) AG[0].position.set(0,0,0);
+//    (IT_CUST_LOOKS kayıtlarına itHat:true eklenmiştir.)
+//    PERSONA tablosuna isimleri için tercih satırı eklenebilir (Signore, Turista, Vacanza, Azzurro, Pittore).
+// Not: çalışan şapkaları oyundaki fitHat ile kulakların arasına sığacak kadar küçültülür (mevcut şapkalarla aynı davranış).
+// =====================================================================
+// ================= İTALYA KIYAFETLERİ =================
+// Çalışanlar: önlük + şapka + boyunluk (oyundaki sisteme uygun). Müşteriler: üst + alt + şapka/boyunluk.
+// ---- yeni şapka / boyunluk parçaları (ACC_BUILD'e eklenir; kafa kemiği uzayında, oyundaki şapkalarla aynı ölçek) ----
+Object.assign(ACC_BUILD,{
+  boater(n,h,c){// hasır gondolcu şapkası (paglietta) + kurdele — kulakların arasına sığacak ölçüde
+    accMesh(h,new THREE.CylinderGeometry(0.06,0.064,0.05,20),c.c,0,0.348,0.0);accMesh(h,new THREE.CylinderGeometry(0.06,0.06,0.006,20),c.c,0,0.374,0.0);
+    accMesh(h,new THREE.CylinderGeometry(0.104,0.104,0.009,24),c.c,0,0.323,0.0);accMesh(h,new THREE.CylinderGeometry(0.0655,0.0655,0.02,20),c.c2||0xcf3a32,0,0.335,0.0);
+    accMesh(h,new THREE.TorusGeometry(0.085,0.0018,4,28),0xc9a65a,0,0.3285,0.0,Math.PI/2,0,0)},
+  pizzacap(n,h,c){// pizzacı beyaz kep
+    accMesh(h,new THREE.CylinderGeometry(0.088,0.082,0.065,20),c.c,0,0.335,0.0);const t=accMesh(h,new THREE.SphereGeometry(0.09,16,10),c.c,0,0.37,0.0);t.scale.y=0.45;
+    accMesh(h,new THREE.TorusGeometry(0.084,0.008,6,24),c.c2||0xcf3a32,0,0.31,0.0,Math.PI/2,0,0)},
+  coppola(n,h,c){// Sicilya kasketi (coppola)
+    const b=accMesh(h,new THREE.SphereGeometry(0.104,18,10,0,Math.PI*2,0,Math.PI/2),c.c,0,0.31,-0.005);b.scale.y=0.48;b.scale.z=1.06;
+    const br=accMesh(h,new THREE.CylinderGeometry(0.088,0.088,0.012,18,1,false,-Math.PI/2,Math.PI),c.c2||0x4a3a2c,0,0.314,0.045,0.22,0,0);br.scale.z=0.75;
+    accMesh(h,new THREE.SphereGeometry(0.011,8,6),c.c2||0x4a3a2c,0,0.36,0.02)},
+  sunhat(n,h,c){// yazlık hasır şapka + mavi kurdele + limon
+    accMesh(h,new THREE.CylinderGeometry(0.112,0.112,0.008,28),c.c,0,0.322,0.0);const cr=accMesh(h,new THREE.SphereGeometry(0.068,16,10,0,Math.PI*2,0,Math.PI/2),c.c,0,0.325,0.0);cr.scale.y=0.95;
+    accMesh(h,new THREE.CylinderGeometry(0.07,0.07,0.02,20),c.c2||0x1f5aa6,0,0.335,0.0);
+    const l=accMesh(h,new THREE.SphereGeometry(0.02,10,8),0xf5c518,0.045,0.35,0.045);l.scale.set(1.3,1,1);
+    for(const s of [-1,1]){const lf=accMesh(h,new THREE.SphereGeometry(0.014,8,6),0x4f8a3a,0.045+s*0.02,0.352,0.06);lf.scale.set(1.3,0.5,0.6)}},
+  tricorn(n,h,c){// Venedik karnavalı üç köşeli şapka + altın kenar + tüy
+    accMesh(h,new THREE.CylinderGeometry(0.058,0.066,0.05,18),c.c,0,0.345,0.0);accMesh(h,new THREE.CylinderGeometry(0.098,0.098,0.008,20),c.c,0,0.324,0.0);
+    for(let k=0;k<3;k++){const a=k*2*Math.PI/3+Math.PI/6,L=2*Math.PI/3-0.45;const w=accMesh(h,new THREE.CylinderGeometry(0.1,0.098,0.045,20,1,true,a+0.22,L),c.c,0,0.348,0.0);w.material.side=THREE.DoubleSide;
+      for(let j=0;j<=6;j++){const t=a+0.22+L*j/6;accMesh(h,new THREE.SphereGeometry(0.0055,6,4),c.c2||0xd9a53a,Math.sin(t)*0.1,0.371,Math.cos(t)*0.1)}}
+    const f=accMesh(h,new THREE.SphereGeometry(0.026,8,6),0xfbf7ec,0.045,0.39,-0.03,0,0,-0.6);f.scale.set(0.45,1.8,0.45)},
+  ruff(n,h,c){// karnaval yaka fırfırı
+    const p=n||h;const g=new THREE.Group();g.userData.cacc=true;g.position.set(0,0.03,0.035);g.rotation.x=Math.PI/2+0.15;p.add(g);
+    for(let i=0;i<22;i++){const a=i/22*Math.PI*2;const m=accMesh(g,new THREE.SphereGeometry(0.03,8,6),c.c,Math.cos(a)*0.095,Math.sin(a)*0.095,0);m.scale.set(0.7,0.7,1.1)}
+    accMesh(g,new THREE.TorusGeometry(0.09,0.012,6,24),c.c2||0xd9a53a,0,0,-0.012)}});
+// ---- yeni önlük desenleri: yatay çizgi (gondolcu), üç renk bandı (pizzacı), limon ----
+{const _ac=apronColor;apronColor=function(ap,x,y,z,out){
+  if(ap.pat==='hstripe'){const c=Math.sin(y*95)>0.15?ap.c2:ap.c;out[0]=c[0];out[1]=c[1];out[2]=c[2];return}
+  if(ap.pat==='tricolore'){let c=ap.c;if(y<0.74){c=x<-0.045?[47,138,74]:x>0.045?[207,58,50]:[250,248,244]}else if(y<0.77)c=[214,170,90];
+    else if(Math.abs(x)<0.05&&y>1.0&&y<1.06){c=x<-0.017?[47,138,74]:x>0.017?[207,58,50]:[250,248,244]}out[0]=c[0];out[1]=c[1];out[2]=c[2];return}
+  if(ap.pat==='lemon'){let c=ap.c;const u=x*16,v=y*13+(Math.floor(x*16)%2?0.5:0);const du=u-Math.round(u),dv=v-Math.round(v);
+    if(du*du/0.09+dv*dv/0.05<1)c=[245,197,24];else if((du+0.22)**2/0.02+(dv-0.2)**2/0.008<1)c=[79,138,58];if(y<0.64)c=[31,90,166];out[0]=c[0];out[1]=c[1];out[2]=c[2];return}
+  return _ac(ap,x,y,z,out)}}
+// ---- katalog kayıtları ----
+const IT_CLOTHES=[
+  {id:'ap_it_gondola',slot:'apron',name:'Gondolcu çizgili önlük',roles:['waiter','barista','cashier'],price:90,ap:{c:[250,246,238],c2:[40,62,110],pat:'hstripe'}},
+  {id:'ap_it_pizza',slot:'apron',name:'Pizzacı üç renkli önlük',roles:['waiter','barista','cashier'],price:90,ap:{c:[250,248,244],pat:'tricolore'}},
+  {id:'ap_it_bar',slot:'apron',name:'Bar Italiano önlüğü',roles:['waiter','barista','cashier'],price:100,ap:{c:[36,80,58],c2:[214,170,90],pat:'trim'}},
+  {id:'ap_it_lemon',slot:'apron',name:'Amalfi limonlu önlük',roles:['waiter','barista','cashier'],price:100,ap:{c:[252,250,242],pat:'lemon'}},
+  {id:'ap_it_carnevale',slot:'apron',name:'Karnaval kadife önlük',roles:['waiter','barista','cashier'],gems:6,ap:{c:[110,28,36],c2:[214,170,90],pat:'trim'}},
+  {id:'hat_it_boater',slot:'hat',name:'Gondolcu hasır şapka',roles:['waiter','barista','cashier'],price:80,acc:'boater',c:0xe8c878,c2:0xcf3a32},
+  {id:'hat_it_pizza',slot:'hat',name:'Pizzacı kepi',roles:['waiter','barista','cashier'],price:60,acc:'pizzacap',c:0xffffff,c2:0xcf3a32},
+  {id:'hat_it_coppola',slot:'hat',name:'Sicilya kasketi',roles:['waiter','barista','cashier'],price:70,acc:'coppola',c:0x6e5a46,c2:0x4a3a2c},
+  {id:'hat_it_sun',slot:'hat',name:'Limonlu yazlık şapka',roles:['waiter','barista','cashier'],price:90,acc:'sunhat',c:0xf0dca8,c2:0x1f5aa6},
+  {id:'hat_it_tricorn',slot:'hat',name:'Karnaval üç köşeli şapka',roles:['waiter','barista','cashier'],gems:6,acc:'tricorn',c:0x1e1a1a,c2:0xd9a53a},
+  {id:'nk_it_red',slot:'neck',name:'Kırmızı boyun mendili',roles:['waiter','barista','cashier'],price:40,acc:'scarf',c:0xcf3a32},
+  {id:'nk_it_tricolore',slot:'neck',name:'Üç renkli fular',roles:['waiter','barista','cashier'],price:55,acc:'scarf',c:0x2f8a4a,c2:0xcf3a32},
+  {id:'nk_it_blue',slot:'neck',name:'Amalfi mavisi fular',roles:['waiter','barista','cashier'],price:50,acc:'scarf',c:0x3e86c6,c2:0xffffff},
+  {id:'nk_it_ruff',slot:'neck',name:'Karnaval yakası',roles:['waiter','barista','cashier'],gems:4,acc:'ruff',c:0xfbf7ec,c2:0xd9a53a}];
+for(const c of IT_CLOTHES){if(!CLO[c.id]){CLOTHES.push(c);CLO[c.id]=c}}
+// ---- çalışan takımları ----
+const IT_STAFF_SETS=[
+  {key:'gondola',name:'Gondolcu',wear:{apron:'ap_it_gondola',hat:'hat_it_boater',neck:'nk_it_red'}},
+  {key:'pizza',name:'Pizzacı',wear:{apron:'ap_it_pizza',hat:'hat_it_pizza',neck:'nk_it_tricolore'}},
+  {key:'bar',name:'Bar Italiano',wear:{apron:'ap_it_bar',hat:'hat_it_coppola',neck:'bow_black'}},
+  {key:'amalfi',name:'Amalfi',wear:{apron:'ap_it_lemon',hat:'hat_it_sun',neck:'nk_it_blue'}},
+  {key:'carnevale',name:'Venedik Karnavalı',wear:{apron:'ap_it_carnevale',hat:'hat_it_tricorn',neck:'nk_it_ruff'}}];
+// ---- müşteri görünümleri (LOOKS listesine eklenebilir) ----
+// müşteri şapkası: kubbe biçimli şapkalarda (kasket, bere) tabana küçük bir disk eklenir; seatHat şapkayı kafaya doğru oturtur, içine gömmez
+const itHat=(id,id2)=>(h,n)=>{for(const k of [id,id2]){if(!k)continue;const c=CLO[k];ACC_BUILD[c.acc](n,h,c);if(c.slot==='hat'&&['coppola','beret','beanie','cap'].includes(c.acc))accMesh(h,new THREE.CylinderGeometry(0.03,0.03,0.004,10),c.c,0,0.305,0.0)}};
+// ---- müşteri üst desenleri (yalnız İtalya'ya özgü): askılı gömlek, kareli gömlek, limon baskı, V yakalı forma, ressam önlüğü ----
+{const _tc=topColor;topColor=function(t,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};const ax=Math.abs(x);
+  if(t.kind==='suspenders'){let c=t.c;if(y<1.24&&Math.abs(ax-0.062)<0.011)c=t.c2;if(y<0.905&&y>0.87)c=[60,40,30];if(z>0.03&&ax<0.006&&y>0.9&&y<1.18&&Math.sin(y*90)>0.6)c=[200,190,170];if(t.collar&&y>1.19&&ax<0.085)c=t.collar;set(c);return}
+  if(t.kind==='gingham'){const a=Math.sin(x*110)>0,b=Math.sin(y*110)>0;let c=a&&b?t.c2:(a||b)?[(t.c[0]+t.c2[0])/2,(t.c[1]+t.c2[1])/2,(t.c[2]+t.c2[2])/2]:t.c;if(t.collar&&y>1.19&&ax<0.085)c=t.collar;set(c);return}
+  if(t.kind==='lemonprint'){let c=t.c;const u=x*22,v=y*22+(Math.round(x*22)%2?0.5:0);const du=u-Math.round(u),dv=v-Math.round(v);if(Math.hypot(du*1.4,dv)<0.3)c=[245,197,24];else if(Math.hypot(du-0.25,dv+0.25)<0.12)c=[79,122,46];if(t.collar&&y>1.19&&ax<0.085)c=t.collar;set(c);return}
+  if(t.kind==='jerseyv'){let c=t.c;if(z>0.03&&y>1.08&&Math.abs(ax-(1.25-y)*0.55)<0.014)c=t.c2;if(ax>0.24&&ax<0.262)c=t.c2;if(y>1.2&&ax<0.09)c=t.c2;if(z>0.03&&y>1.0&&y<1.07&&ax>0.04&&ax<0.07)c=[217,165,58];set(c);return}
+  if(t.kind==='smock'){let c=t.c;const pal=[[207,58,50],[31,90,166],[245,197,24],[47,138,74],[230,120,40]];const i=Math.round(x*26),j=Math.round(y*26);const h=Math.abs(Math.sin(i*12.9898+j*78.233)*43758.5453)%1;
+    if(h<0.22){const dx=x*26-i,dy=y*26-j;if(Math.hypot(dx,dy)<0.18+h)c=pal[Math.floor(h*100)%5]}if(y>1.2&&ax<0.09)c=[60,60,70];set(c);return}
+  return _tc(t,x,y,z,out)}}
+const IT_CUST_LOOKS=[
+  {name:'Signore',W:[236,230,222],B:[90,84,80],A:[44,52,74],xs:1.02,itHat:true,top:{c:[248,246,240],c2:[44,52,74],kind:'suspenders',collar:[248,246,240]},bt:'bt_black',hat:itHat('hat_it_coppola','bow_red')},
+  {name:'Turista',W:[255,236,214],B:[222,128,52],A:[40,62,110],xs:1.04,itHat:true,top:{c:[250,246,238],c2:[40,62,110],kind:'stripe'},bt:'bt_navy',hat:itHat('hat_it_boater')},
+  {name:'Vacanza',W:[250,246,240],B:[196,170,140],A:[245,214,90],xs:0.98,itHat:true,top:{c:[252,248,236],kind:'lemonprint',collar:[31,90,166]},bt:'bt_cream',hat:itHat('hat_it_sun')},
+  {name:'Azzurro',W:[200,204,212],B:[104,110,124],A:[58,110,190],xs:1.0,itHat:true,top:{c:[40,96,190],c2:[250,250,250],kind:'jerseyv'},bt:'bt_cream',hat:itHat('nk_it_tricolore')},
+  {name:'Pittore',W:[78,74,82],B:[36,34,40],A:[207,58,50],xs:0.96,itHat:true,top:{c:[244,240,230],kind:'smock'},bt:'bt_jeans',hat:itHat('hat_beret_red','nk_it_blue')}];
+
+// =====================================================================
+// TabbyChef · TÜRKİYE KIYAFETLERİ (5 çalışan takımı + 5 müşteri tipi)
+// GEREKSİNİM: italya_kiyafetleri.js bundan ÖNCE eklenmiş olmalı (itHat yardımcısı ve hat_it_coppola kasketi oradan gelir).
+//
+// OYUNA EKLEME (index.html):
+// 1) italya_kiyafetleri.js'in hemen ardına yapıştır (CLO, ACC_BUILD, apronColor tanımlarından SONRA).
+//    - Yeni şapkalar ACC_BUILD'e eklenir: fes, simittray, kece, fotr, takke, hasir.
+//    - Yeni önlük desenleri apronColor'a eklenir: 'nazar', 'kilim', 'embroid' (işleme).
+//    - 15 yeni kıyafet CLOTHES/CLO'ya eklenir (ap_tr_*, hat_tr_*, nk_tr_*); Kıyafetler menüsünde otomatik görünür.
+// 2) Hazır takımlar: TR_STAFF_SETS (Osmanlı Kahvecisi, Simitçi, Maraş Dondurmacısı, Ege, Kapadokya Yörüğü).
+// 3) Müşteriler: TR_CUST_LOOKS (Beyefendi, Gezgin, Taraftar, Balıkçı, Yaylacı), LOOKS ile aynı biçimde.
+//    Türkiye'ye özgü üst desenleri topColor'a eklenir: 'yelek', 'nazartee', 'jerseyband', 'cable'; yeni şapka: balıkçı beresi (watchcap).
+//    Spawn sırasında, İtalya dosyasındaki gibi: const AG=attachAcc(r,...); if(L.itHat&&AG[0])AG[0].position.set(0,0,0);
+// =====================================================================
+Object.assign(ACC_BUILD,{
+  fes(n,h,c){// kırmızı fes + siyah püskül
+    accMesh(h,new THREE.CylinderGeometry(0.052,0.064,0.085,20),c.c,0,0.355,0.0);accMesh(h,new THREE.CylinderGeometry(0.052,0.052,0.004,20),c.c,0,0.398,0.0);
+    accMesh(h,new THREE.SphereGeometry(0.008,8,6),c.c2||0x1e1a1a,0,0.402,0.0);const cd=accMesh(h,new THREE.CylinderGeometry(0.0025,0.0025,0.06,4),c.c2||0x1e1a1a,-0.03,0.38,-0.03,0.5,0,0.6);
+    const ts=accMesh(h,new THREE.ConeGeometry(0.014,0.045,8),c.c2||0x1e1a1a,-0.055,0.345,-0.045,0,0,0.2)},
+  simittray(n,h,c){// başta simit tablası
+    accMesh(h,new THREE.CylinderGeometry(0.03,0.04,0.012,12),0xf3eee6,0,0.318,0.0);accMesh(h,new THREE.CylinderGeometry(0.11,0.11,0.012,24),c.c,0,0.33,0.0);
+    accMesh(h,new THREE.TorusGeometry(0.11,0.006,6,28),c.c2||0x6b3f22,0,0.336,0.0,Math.PI/2,0,0);
+    for(const [x,z] of [[0,0],[0.055,0.03],[-0.05,0.035],[0.01,-0.06]]){accMesh(h,new THREE.TorusGeometry(0.028,0.01,8,16),0xd28a3c,x,0.346,z,Math.PI/2,0,0)}},
+  kece(n,h,c){// Yörük keçe külahı
+    const g=new THREE.LatheGeometry([[0,0],[0.075,0],[0.07,0.03],[0.055,0.07],[0.03,0.095],[0,0.1]].map(p=>new THREE.Vector2(p[0],p[1])),20);accMesh(h,g,c.c,0,0.31,0.0);
+    accMesh(h,new THREE.TorusGeometry(0.073,0.006,6,24),c.c2||0xa8322a,0,0.318,0.0,Math.PI/2,0,0);
+    for(let i=0;i<6;i++){const a=i/6*Math.PI*2;accMesh(h,new THREE.SphereGeometry(0.006,6,4),c.c2||0xa8322a,Math.sin(a)*0.062,0.345,Math.cos(a)*0.062)}},
+  fotr(n,h,c){// fötr şapka
+    const cr=accMesh(h,new THREE.CylinderGeometry(0.055,0.065,0.07,20),c.c,0,0.355,0.0);const tp=accMesh(h,new THREE.SphereGeometry(0.056,16,8,0,Math.PI*2,0,Math.PI/2),c.c,0,0.388,0.0);tp.scale.y=0.35;
+    accMesh(h,new THREE.CylinderGeometry(0.11,0.11,0.008,24),c.c,0,0.322,0.0);accMesh(h,new THREE.CylinderGeometry(0.0655,0.0655,0.016,20),c.c2||0x1e1a1a,0,0.335,0.0)},
+  takke(n,h,c){// Maraş dondurmacısı işlemeli takke
+    accMesh(h,new THREE.CylinderGeometry(0.07,0.075,0.045,20),c.c,0,0.335,0.0);accMesh(h,new THREE.CylinderGeometry(0.07,0.07,0.004,20),c.c,0,0.358,0.0);
+    for(const y of [0.318,0.35])accMesh(h,new THREE.TorusGeometry(0.073,0.004,4,24),c.c2||0xd9a53a,0,y,0.0,Math.PI/2,0,0);
+    for(let i=0;i<10;i++){const a=i/10*Math.PI*2;accMesh(h,new THREE.SphereGeometry(0.006,6,4),c.c2||0xd9a53a,Math.sin(a)*0.074,0.334,Math.cos(a)*0.074)}},
+  hasir(n,h,c){// Ege hasır şapkası + mavi kurdele + nazar boncuğu
+    accMesh(h,new THREE.CylinderGeometry(0.06,0.066,0.05,20),c.c,0,0.346,0.0);accMesh(h,new THREE.CylinderGeometry(0.115,0.115,0.009,24),c.c,0,0.322,0.0);
+    accMesh(h,new THREE.CylinderGeometry(0.067,0.067,0.018,20),c.c2||0x2f6ea8,0,0.334,0.0);
+    accMesh(h,new THREE.CylinderGeometry(0.014,0.014,0.004,14),0x1d4fa3,0,0.336,0.068,Math.PI/2,0,0);accMesh(h,new THREE.CylinderGeometry(0.008,0.008,0.005,12),0xffffff,0,0.336,0.069,Math.PI/2,0,0);accMesh(h,new THREE.CylinderGeometry(0.004,0.004,0.006,10),0x111418,0,0.336,0.07,Math.PI/2,0,0)}});
+// ---- önlük desenleri: nazar, kilim, işleme ----
+{const _ac=apronColor;apronColor=function(ap,x,y,z,out){
+  if(ap.pat==='nazar'){let c=ap.c;const u=x*14,v=y*11+(Math.floor(x*14)%2?0.5:0);const du=u-Math.round(u),dv=v-Math.round(v),r=Math.hypot(du,dv);
+    if(r<0.07)c=[17,20,24];else if(r<0.14)c=[127,196,236];else if(r<0.2)c=[255,255,255];else if(r<0.3)c=[29,79,163];out[0]=c[0];out[1]=c[1];out[2]=c[2];return}
+  if(ap.pat==='kilim'){const b=Math.floor(y*16);const pal=[[168,50,42],[35,57,91],[224,137,47],[241,227,198],[42,138,143]];let c=pal[((b%5)+5)%5];
+    const fy=y*16-b;if(Math.abs(fy-0.5)<0.35*Math.abs(Math.sin(x*40+b))+0.05)c=pal[((b+2)%5+5)%5];out[0]=c[0];out[1]=c[1];out[2]=c[2];return}
+  if(ap.pat==='embroid'){let c=ap.c;const hem=y<0.72,side=Math.abs(x)>0.12&&y<1.15;if((hem||side)&&Math.sin(x*90+Math.sin(y*80)*2.2)*Math.sin(y*70)>0.25)c=ap.c2;if(y<0.66&&y>0.645)c=ap.c2;out[0]=c[0];out[1]=c[1];out[2]=c[2];return}
+  return _ac(ap,x,y,z,out)}}
+const TR_CLOTHES=[
+  {id:'ap_tr_kahveci',slot:'apron',name:'Kahveci bordo önlüğü',roles:['waiter','barista','cashier'],price:100,ap:{c:[110,28,36],c2:[214,170,90],pat:'embroid'}},
+  {id:'ap_tr_simitci',slot:'apron',name:'Simitçi beyaz önlüğü',roles:['waiter','barista','cashier'],price:70,ap:{c:[250,248,244],c2:[200,48,58],pat:'trim'}},
+  {id:'ap_tr_maras',slot:'apron',name:'Maraş dondurmacısı yeleği',roles:['waiter','barista','cashier'],gems:5,ap:{c:[35,57,91],c2:[214,170,90],pat:'embroid'}},
+  {id:'ap_tr_nazar',slot:'apron',name:'Ege mavisi önlük',roles:['waiter','barista','cashier'],price:90,ap:{c:[250,248,244],pat:'nazar'}},
+  {id:'ap_tr_kilim',slot:'apron',name:'Kilim desenli önlük',roles:['waiter','barista','cashier'],price:90,ap:{c:[168,50,42],pat:'kilim'}},
+  {id:'hat_tr_fes',slot:'hat',name:'Fes',roles:['waiter','barista','cashier'],price:80,acc:'fes',c:0xb3202a,c2:0x1e1a1a},
+  {id:'hat_tr_simit',slot:'hat',name:'Simit tablası',roles:['waiter','barista','cashier'],price:70,acc:'simittray',c:0xa8723f,c2:0x6b3f22},
+  {id:'hat_tr_takke',slot:'hat',name:'İşlemeli takke',roles:['waiter','barista','cashier'],price:70,acc:'takke',c:0x23395b,c2:0xd9a53a},
+  {id:'hat_tr_hasir',slot:'hat',name:'Ege hasır şapkası',roles:['waiter','barista','cashier'],price:80,acc:'hasir',c:0xe8c878,c2:0x2f6ea8},
+  {id:'hat_tr_kece',slot:'hat',name:'Keçe külah',roles:['waiter','barista','cashier'],price:70,acc:'kece',c:0xe9dcc2,c2:0xa8322a},
+  {id:'hat_tr_fotr',slot:'hat',name:'Fötr şapka',roles:['waiter','barista','cashier'],price:90,acc:'fotr',c:0x5a5550,c2:0x1e1a1a},
+  {id:'nk_tr_red',slot:'neck',name:'Kırmızı mendil',roles:['waiter','barista','cashier'],price:40,acc:'scarf',c:0xc8303a},
+  {id:'nk_tr_redwhite',slot:'neck',name:'Kırmızı-beyaz atkı',roles:['waiter','barista','cashier'],price:55,acc:'scarf',c:0xc8303a,c2:0xffffff},
+  {id:'nk_tr_blue',slot:'neck',name:'Ege mavisi fular',roles:['waiter','barista','cashier'],price:50,acc:'scarf',c:0x2f6ea8,c2:0xffffff},
+  {id:'nk_tr_oya',slot:'neck',name:'Oyalı yazma',roles:['waiter','barista','cashier'],price:60,acc:'scarf',c:0xf1e3c6,c2:0xa8322a}];
+for(const c of TR_CLOTHES){if(!CLO[c.id]){CLOTHES.push(c);CLO[c.id]=c}}
+const TR_STAFF_SETS=[
+  {key:'kahveci',name:'Osmanlı Kahvecisi',wear:{apron:'ap_tr_kahveci',hat:'hat_tr_fes',neck:'bow_black'}},
+  {key:'simitci',name:'Simitçi',wear:{apron:'ap_tr_simitci',hat:'hat_tr_simit',neck:'nk_tr_red'}},
+  {key:'maras',name:'Maraş Dondurmacısı',wear:{apron:'ap_tr_maras',hat:'hat_tr_takke',neck:'bow_gold'}},
+  {key:'ege',name:'Ege',wear:{apron:'ap_tr_nazar',hat:'hat_tr_hasir',neck:'nk_tr_blue'}},
+  {key:'yoruk',name:'Kapadokya Yörüğü',wear:{apron:'ap_tr_kilim',hat:'hat_tr_kece',neck:'nk_tr_oya'}}];
+// ---- müşteri üst desenleri (yalnız Türkiye'ye özgü): sırma işlemeli yelek + kuşak, nazar tişört, göğüs bantlı forma, örgü balıkçı kazağı ----
+ACC_BUILD.watchcap=function(n,h,c){// balıkçı yün beresi: kıvrık kenarlı, tepesi düz
+  accMesh(h,new THREE.CylinderGeometry(0.066,0.07,0.05,20),c.c,0,0.34,0.0);const t=accMesh(h,new THREE.SphereGeometry(0.066,18,8,0,Math.PI*2,0,Math.PI/2),c.c,0,0.364,0.0);t.scale.y=0.45;
+  accMesh(h,new THREE.TorusGeometry(0.071,0.012,8,24),c.c,0,0.318,0.0,Math.PI/2,0,0);for(let i=0;i<12;i++){const a=i/12*Math.PI*2;accMesh(h,new THREE.BoxGeometry(0.006,0.045,0.004),c.c2||0x1a2a44,Math.sin(a)*0.068,0.345,Math.cos(a)*0.068,0,a,0)}};
+{const cl={id:'hat_tr_balikci',slot:'hat',name:'Balıkçı beresi',roles:['waiter','barista','cashier'],price:55,acc:'watchcap',c:0x23395b,c2:0x1a2a44};if(!CLO[cl.id]){CLOTHES.push(cl);CLO[cl.id]=cl}}
+{const _tc=topColor;topColor=function(t,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};const ax=Math.abs(x);
+  if(t.kind==='yelek'){let c=t.c;const torso=ax<0.15&&y<1.23;const open=z>0.03&&ax<0.03+(y-0.95)*0.1&&y>0.98;
+    if(torso&&!open){c=t.v;const edge=z>0.03&&Math.abs(ax-(0.03+(y-0.95)*0.1))<0.016&&y>0.98;if(edge||Math.abs(ax-0.145)<0.006||(y<1.0&&y>0.985))c=[214,170,90];
+      if(z>0.03&&ax>0.06&&ax<0.12&&y>1.0&&y<1.16&&Math.sin(x*180)*Math.sin(y*160)>0.55)c=[214,170,90]}
+    if(y<0.99&&y>0.86){const b=Math.floor((y-0.86)*80);c=[[200,48,58],[224,137,47],[200,48,58],[241,227,198]][b%4]}set(c);return}
+  if(t.kind==='nazartee'){let c=t.c;if(z>0.03){const r=Math.hypot(x,(y-1.07)*1.0);if(r<0.022)c=[17,20,24];else if(r<0.042)c=[127,196,236];else if(r<0.058)c=[255,255,255];else if(r<0.082)c=[29,79,163]}if(y>1.2&&ax<0.09)c=[29,79,163];set(c);return}
+  if(t.kind==='jerseyband'){let c=t.c;if(y>1.04&&y<1.1)c=t.c2;if(y>1.19&&ax<0.09)c=t.c2;if(ax>0.24&&ax<0.262)c=t.c2;set(c);return}
+  if(t.kind==='cable'){let c=t.c;const rib=Math.sin(x*150);if(rib>0.55)c=[c[0]*0.78,c[1]*0.78,c[2]*0.78];if(z>0.03&&ax<0.04){const tw=Math.sin(y*70+(x>0?0:Math.PI));if(Math.abs(Math.abs(x)-0.02-tw*0.012)<0.007)c=[c[0]*1.25,c[1]*1.25,c[2]*1.25]}
+    if(y<0.92||ax>0.25||(y>1.19&&ax<0.09)){c=Math.sin(x*220)>0?[t.c[0]*0.85,t.c[1]*0.85,t.c[2]*0.85]:t.c}set(c);return}
+  return _tc(t,x,y,z,out)}}
+const TR_CUST_LOOKS=[
+  {name:'Beyefendi',W:[236,230,222],B:[90,84,80],A:[110,28,36],xs:1.02,itHat:true,top:{c:[248,246,240],v:[110,28,36],kind:'yelek'},bt:'bt_black',hat:itHat('hat_tr_fotr')},
+  {name:'Gezgin',W:[255,236,214],B:[222,128,52],A:[29,79,163],xs:1.04,itHat:true,top:{c:[250,248,244],kind:'nazartee'},bt:'bt_cream',hat:itHat('hat_tr_hasir')},
+  {name:'Taraftar',W:[250,246,240],B:[196,170,140],A:[200,48,58],xs:0.98,itHat:true,top:{c:[200,40,50],c2:[250,250,250],kind:'jerseyband'},bt:'bt_cream',hat:itHat('nk_tr_redwhite')},
+  {name:'Balıkçı',W:[200,204,212],B:[104,110,124],A:[35,57,91],xs:1.0,itHat:true,top:{c:[40,62,98],kind:'cable'},bt:'bt_navy',hat:itHat('hat_tr_balikci','nk_tr_red')},
+  {name:'Yaylacı',W:[78,74,82],B:[36,34,40],A:[224,137,47],xs:0.96,itHat:true,top:{c:[224,137,47],kind:'shirt',collar:[250,248,244]},bt:'bt_jeans',hat:itHat('hat_tr_kece','nk_tr_oya')}];
+
+// =====================================================================
+// TabbyChef · JAPONYA KIYAFETLERİ (5 çalışan takımı + 5 müşteri tipi)
+// GEREKSİNİM: italya_kiyafetleri.js bundan ÖNCE eklenmiş olmalı (itHat yardımcısı oradan gelir).
+//
+// OYUNA EKLEME (index.html):
+// 1) italya_kiyafetleri.js'in hemen ardına yapıştır (CLO, ACC_BUILD, apronColor tanımlarından SONRA).
+//    - Yeni şapkalar ACC_BUILD'e eklenir: hachimaki, itamae, tenugui, kanzashi, kasa, bucket.
+//    - Yeni önlük desenleri apronColor'a eklenir: 'wave', 'kimono', 'sashiko', 'matsuri', 'itamae'.
+//    - 15 yeni kıyafet CLOTHES/CLO'ya eklenir (ap_jp_*, hat_jp_*, nk_jp_*); Kıyafetler menüsünde otomatik görünür.
+// 2) Hazır takımlar: JP_STAFF_SETS (Suşi Şefi, Ramen Ustası, Çay Evi, Matsuri, Umi).
+// 3) Müşteriler: JP_CUST_LOOKS (Salaryman, Festivalci, Yukatalı, Ramen Sever, Fuji Gezgini), LOOKS ile aynı biçimde.
+//    Japonya'ya özgü üst desenleri topColor'a eklenir: 'suit' (kravatlı takım), 'happi' (festival ceketi), 'kimono' (yukata + obi).
+//    Spawn sırasında, İtalya dosyasındaki gibi: const AG=attachAcc(r,...); if(L.itHat&&AG[0])AG[0].position.set(0,0,0);
+// =====================================================================
+Object.assign(ACC_BUILD,{
+  hachimaki(n,h,c){// alın bandı + arkada düğüm ve uçlar (+ istenirse önde kırmızı daire)
+    const t=accMesh(h,new THREE.TorusGeometry(0.07,0.012,8,28),c.c,0,0.31,0.0,Math.PI/2,0,0);
+    if(c.c3)accMesh(h,new THREE.CylinderGeometry(0.016,0.016,0.004,14),c.c3,0,0.312,0.08,Math.PI/2,0,0);
+    accMesh(h,new THREE.SphereGeometry(0.016,8,6),c.c2||c.c,0,0.312,-0.075);
+    for(const s of [-1,1])accMesh(h,new THREE.BoxGeometry(0.018,0.05,0.006),c.c2||c.c,s*0.014,0.28,-0.085,0.3,0,s*0.35)},
+  itamae(n,h,c){// suşi şefi beyaz kep
+    accMesh(h,new THREE.CylinderGeometry(0.07,0.072,0.06,20),c.c,0,0.335,0.0);accMesh(h,new THREE.CylinderGeometry(0.07,0.07,0.004,20),c.c,0,0.366,0.0);
+    accMesh(h,new THREE.CylinderGeometry(0.0725,0.0725,0.012,20),c.c2||0x24365a,0,0.312,0.0)},
+  tenugui(n,h,c){// başa bağlanmış desenli bez (bandana) + arkada düğüm
+    const d=accMesh(h,new THREE.SphereGeometry(0.075,16,8,0,Math.PI*2,0,Math.PI/2),c.c,0,0.305,0.0);d.scale.y=0.75;
+    for(let i=0;i<8;i++){const a=i/8*Math.PI*2;accMesh(h,new THREE.SphereGeometry(0.008,6,4),c.c2||0xf4efe3,Math.sin(a)*0.055,0.33,Math.cos(a)*0.055)}
+    accMesh(h,new THREE.SphereGeometry(0.014,8,6),c.c,0,0.31,-0.075);for(const s of [-1,1])accMesh(h,new THREE.BoxGeometry(0.02,0.045,0.006),c.c,s*0.016,0.285,-0.082,0.3,0,s*0.4)},
+  kanzashi(n,h,c){// saç tokası: yan tarafta çiçek demeti + sarkan boncuklar
+    accMesh(h,new THREE.CylinderGeometry(0.025,0.03,0.008,10),0x2b2b2b,0.02,0.31,0.0);
+    for(let i=0;i<5;i++){const a=i/5*Math.PI*2;accMesh(h,new THREE.SphereGeometry(0.014,8,6),c.c,0.045+Math.cos(a)*0.016,0.33+Math.sin(a)*0.016,0.02)}
+    accMesh(h,new THREE.SphereGeometry(0.009,8,6),c.c2||0xf6d35a,0.045,0.33,0.03);accMesh(h,new THREE.SphereGeometry(0.01,8,6),c.c,0.02,0.335,-0.025);
+    for(let k=0;k<3;k++){accMesh(h,new THREE.CylinderGeometry(0.0015,0.0015,0.03,4),0xc9a24a,0.06,0.3-k*0.025,0.02);accMesh(h,new THREE.SphereGeometry(0.005,6,4),k%2?c.c:0xc9a24a,0.06,0.284-k*0.025,0.02)}},
+  kasa(n,h,c){// hasır sugegasa (geniş konik şapka) + çene bağı
+    const g=new THREE.ConeGeometry(0.16,0.07,24,1,true);const m=accMesh(h,g,c.c,0,0.345,0.0);m.material=m.material.clone();m.material.side=THREE.DoubleSide;
+    accMesh(h,new THREE.CylinderGeometry(0.008,0.008,0.012,8),c.c2||0x5a3a22,0,0.382,0.0);accMesh(h,new THREE.TorusGeometry(0.16,0.004,4,32),c.c2||0x5a3a22,0,0.31,0.0,Math.PI/2,0,0)},
+  bucket(n,h,c){// turist bucket şapka
+    accMesh(h,new THREE.CylinderGeometry(0.06,0.068,0.055,20),c.c,0,0.34,0.0);accMesh(h,new THREE.CylinderGeometry(0.06,0.06,0.004,20),c.c,0,0.368,0.0);
+    const b=accMesh(h,new THREE.CylinderGeometry(0.068,0.1,0.025,24,1,true),c.c,0,0.31,0.0);b.material=b.material.clone();b.material.side=THREE.DoubleSide;
+    accMesh(h,new THREE.CylinderGeometry(0.069,0.069,0.01,20),c.c2||0xd9473a,0,0.322,0.0)}});
+// ---- önlük desenleri: dalga, kimono (obi kuşaklı), sashiko, matsuri, şef ----
+{const _ac=apronColor;apronColor=function(ap,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};
+  if(ap.pat==='wave'){const u=x*9,v=y*9;const row=Math.floor(v),fx=u+(row%2?0.5:0);const dx=fx-Math.round(fx),dy=v-row;const r=Math.hypot(dx,dy);set(r<0.5?((Math.floor(r*6))%2?ap.c2:ap.c):ap.c);return}
+  if(ap.pat==='kimono'){let c=ap.c;if(y>0.98&&y<1.1)c=ap.c3;else if(y>0.96&&y<1.12)c=ap.c2;else{const u=x*10,v=y*10;const dx=u-Math.round(u),dy=v-Math.round(v+(Math.round(u)%2?0.5:0));if(Math.hypot(dx,dy)<0.22)c=ap.c2}set(c);return}
+  if(ap.pat==='sashiko'){let c=ap.c;const u=x*16,v=y*16;const du=Math.abs(u-Math.round(u)),dv=Math.abs(v-Math.round(v));if(du<0.08||dv<0.08)c=ap.c2;if(y<0.68&&y>0.64)c=ap.c2;set(c);return}
+  if(ap.pat==='matsuri'){let c=ap.c;const zig=0.72+Math.abs(((x*12)%2+2)%2-1)*0.06;if(y<zig)c=ap.c2;if(y<zig-0.06&&y>zig-0.09)c=ap.c;if(Math.abs(x)>0.13)c=ap.c2;set(c);return}
+  if(ap.pat==='itamae'){let c=ap.c;if(Math.abs(x)>0.135||y<0.64)c=ap.c2;set(c);return}
+  return _ac(ap,x,y,z,out)}}
+const JP_CLOTHES=[
+  {id:'ap_jp_itamae',slot:'apron',name:'Suşi şefi önlüğü',roles:['waiter','barista','cashier'],price:90,ap:{c:[250,248,244],c2:[36,54,90],pat:'itamae'}},
+  {id:'ap_jp_sashiko',slot:'apron',name:'Sashiko işlemeli önlük',roles:['waiter','barista','cashier'],price:95,ap:{c:[36,54,90],c2:[244,239,227],pat:'sashiko'}},
+  {id:'ap_jp_kimono',slot:'apron',name:'Kimono önlük (obi kuşaklı)',roles:['waiter','barista','cashier'],gems:5,ap:{c:[243,167,187],c2:[251,243,230],c3:[183,42,42],pat:'kimono'}},
+  {id:'ap_jp_matsuri',slot:'apron',name:'Matsuri önlüğü',roles:['waiter','barista','cashier'],price:85,ap:{c:[200,48,42],c2:[250,248,244],pat:'matsuri'}},
+  {id:'ap_jp_wave',slot:'apron',name:'Dalga desenli önlük',roles:['waiter','barista','cashier'],price:90,ap:{c:[45,79,124],c2:[244,239,227],pat:'wave'}},
+  {id:'hat_jp_hachimaki',slot:'hat',name:'Hachimaki alın bandı',roles:['waiter','barista','cashier'],price:50,acc:'hachimaki',c:0xfbf7ec,c2:0xfbf7ec,c3:0xd9473a},
+  {id:'hat_jp_hachimaki_red',slot:'hat',name:'Matsuri alın bandı',roles:['waiter','barista','cashier'],price:50,acc:'hachimaki',c:0xc8302a,c2:0xfbf7ec},
+  {id:'hat_jp_itamae',slot:'hat',name:'Suşi şefi kepi',roles:['waiter','barista','cashier'],price:60,acc:'itamae',c:0xfbf7ec,c2:0x24365a},
+  {id:'hat_jp_tenugui',slot:'hat',name:'Tenugui başörtüsü',roles:['waiter','barista','cashier'],price:55,acc:'tenugui',c:0x24365a,c2:0xf4efe3},
+  {id:'hat_jp_kanzashi',slot:'hat',name:'Sakura kanzashi',roles:['waiter','barista','cashier'],price:70,acc:'kanzashi',c:0xf39ab2,c2:0xf6d35a},
+  {id:'hat_jp_kasa',slot:'hat',name:'Hasır kasa şapka',roles:['waiter','barista','cashier'],price:80,acc:'kasa',c:0xd8b47a,c2:0x5a3a22},
+  {id:'hat_jp_bucket',slot:'hat',name:'Turist şapkası',roles:['waiter','barista','cashier'],price:60,acc:'bucket',c:0xf4efe3,c2:0xd9473a},
+  {id:'nk_jp_indigo',slot:'neck',name:'Çivit fular',roles:['waiter','barista','cashier'],price:45,acc:'scarf',c:0x24365a,c2:0xf4efe3},
+  {id:'nk_jp_pink',slot:'neck',name:'Sakura fular',roles:['waiter','barista','cashier'],price:50,acc:'scarf',c:0xf3a7bb,c2:0xffffff},
+  {id:'nk_jp_red',slot:'neck',name:'Kırmızı-beyaz fular',roles:['waiter','barista','cashier'],price:50,acc:'scarf',c:0xc8302a,c2:0xffffff}];
+for(const c of JP_CLOTHES){if(!CLO[c.id]){CLOTHES.push(c);CLO[c.id]=c}}
+const JP_STAFF_SETS=[
+  {key:'itamae',name:'Suşi Şefi',wear:{apron:'ap_jp_itamae',hat:'hat_jp_itamae',neck:'nk_jp_indigo'}},
+  {key:'ramen',name:'Ramen Ustası',wear:{apron:'ap_jp_sashiko',hat:'hat_jp_tenugui',neck:'nk_jp_red'}},
+  {key:'chaya',name:'Çay Evi',wear:{apron:'ap_jp_kimono',hat:'hat_jp_kanzashi',neck:'nk_jp_pink'}},
+  {key:'matsuri',name:'Matsuri (festival)',wear:{apron:'ap_jp_matsuri',hat:'hat_jp_hachimaki_red',neck:'bow_black'}},
+  {key:'umi',name:'Umi',wear:{apron:'ap_jp_wave',hat:'hat_jp_hachimaki',neck:'nk_jp_indigo'}}];
+// ---- müşteri üst desenleri (yalnız Japonya'ya özgü): kravatlı takım elbise, happi festival ceketi, yukata (çapraz yaka + obi) ----
+{const _tc=topColor;topColor=function(t,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};const ax=Math.abs(x);
+  if(t.kind==='suit'){let c=t.c;if(z>0.03&&y>0.97&&y<1.24&&ax<(1.24-y)*0.32+0.012){c=t.c2;if(ax<0.011&&y<1.2)c=t.tie;if(ax<0.016&&y>1.17&&y<1.2)c=t.tie}
+    if(z>0.03&&y>1.0&&Math.abs(ax-((1.24-y)*0.32+0.02))<0.006)c=[c[0]*0.7,c[1]*0.7,c[2]*0.7];if(z>0.03&&ax<0.006&&(Math.abs(y-0.94)<0.008||Math.abs(y-0.9)<0.008))c=[30,30,30];set(c);return}
+  if(t.kind==='happi'){let c=t.c;if(z>0.03&&Math.abs(ax-0.035)<0.024&&y>0.86){c=t.c2;if(y<1.18&&Math.abs(Math.sin(y*55))<0.25&&Math.abs(ax-0.035)<0.01)c=t.c}
+    if(y<0.93&&Math.sin(x*60)>0.2&&Math.sin(y*120)>-0.3)c=t.c2;if(ax>0.25&&ax<0.27)c=t.c2;set(c);return}
+  if(t.kind==='kimono'){let c=t.c;const u=x*40,v=y*40;const du=Math.abs(u-Math.round(u)),dv=Math.abs(v-Math.round(v));if((du<0.07&&dv<0.3)||(dv<0.07&&du<0.3))c=[244,239,227];
+    if(z>0.03&&y>0.98){const d1=x+(y-1.24)*0.42,d2=x-(y-1.24)*0.42;if(Math.abs(d1)<0.016||(Math.abs(d2)<0.016&&y>1.12))c=t.c2}if(y>0.9&&y<1.0){c=t.obi;if(y>0.94&&y<0.955)c=[244,214,120]}
+    if(ax>0.2&&y<1.0)c=t.c;set(c);return}
+  return _tc(t,x,y,z,out)}}
+const JP_CUST_LOOKS=[
+  {name:'Salaryman',W:[236,230,222],B:[90,84,80],A:[70,74,84],xs:1.02,itHat:true,top:{c:[70,74,84],c2:[250,248,244],tie:[183,42,42],kind:'suit'},bt:'bt_black',hat:itHat()},
+  {name:'Festivalci',W:[255,236,214],B:[222,128,52],A:[36,54,90],xs:1.04,itHat:true,top:{c:[36,54,90],c2:[244,239,227],kind:'happi'},bt:'bt_navy',hat:itHat('hat_jp_hachimaki_red')},
+  {name:'Yukatalı',W:[250,246,240],B:[196,170,140],A:[243,167,187],xs:0.98,itHat:true,top:{c:[45,79,124],c2:[251,243,230],obi:[183,42,42],kind:'kimono'},bt:'bt_navy',hat:itHat('hat_jp_kanzashi')},
+  {name:'Ramen Sever',W:[200,204,212],B:[104,110,124],A:[200,48,42],xs:1.0,itHat:true,top:{c:[200,48,42],kind:'shirt'},bt:'bt_cream',hat:itHat('hat_jp_hachimaki','nk_jp_indigo')},
+  {name:'Fuji Gezgini',W:[78,74,82],B:[36,34,40],A:[79,122,46],xs:0.96,itHat:true,top:{c:[244,239,227],kind:'vest',v:[79,122,46]},bt:'bt_jeans',hat:itHat('hat_jp_kasa')}];
+
+// =====================================================================
+// TabbyChef · FRANSA KIYAFETLERİ (5 çalışan takımı + 5 müşteri tipi)
+// GEREKSİNİM: italya_kiyafetleri.js bundan ÖNCE eklenmiş olmalı (itHat, 'hstripe' deseni, 'ruff' yaka, hat_it_boater oradan gelir).
+//
+// OYUNA EKLEME (index.html):
+// 1) italya_kiyafetleri.js'in hemen ardına yapıştır (CLO, ACC_BUILD, apronColor tanımlarından SONRA).
+//    - Yeni şapkalar ACC_BUILD'e eklenir: toque, lavhat, perruque, cloche, velocap.
+//    - Yeni önlük desenleri apronColor'a eklenir: 'garcon', 'lavande', 'fleur', 'bbr' (mavi-beyaz-kırmızı etek).
+//    - 15 yeni kıyafet CLOTHES/CLO'ya eklenir (ap_fr_*, hat_fr_*, nk_fr_*); Kıyafetler menüsünde otomatik görünür.
+// 2) Hazır takımlar: FR_STAFF_SETS (Fırıncı, Garçon de Café, Bretanya, Provence, Versay).
+// 3) Müşteriler: FR_CUST_LOOKS (Parisienne, Turist, Bisikletçi, Şık Hanım, Gurme), LOOKS ile aynı biçimde.
+//    Fransa'ya özgü üst desenleri topColor'a eklenir: 'trench', 'eiffeltee', 'polka'; yeni parçalar: bachi şapkası, lavanta tacı, fotoğraf makinesi.
+//    Spawn sırasında, İtalya dosyasındaki gibi: const AG=attachAcc(r,...); if(L.itHat&&AG[0])AG[0].position.set(0,0,0);
+// =====================================================================
+Object.assign(ACC_BUILD,{
+  toque(n,h,c){// kırmalı fırıncı/şef toku + üç renkli bant
+    accMesh(h,new THREE.CylinderGeometry(0.066,0.068,0.03,20),c.c2||0x2a4a9a,0,0.318,0.0);accMesh(h,new THREE.CylinderGeometry(0.066,0.066,0.008,20),0xd9343e,0,0.33,0.0);
+    accMesh(h,new THREE.CylinderGeometry(0.072,0.064,0.09,16),c.c,0,0.378,0.0);const p=accMesh(h,new THREE.SphereGeometry(0.08,16,10),c.c,0,0.43,0.0);p.scale.y=0.55;
+    for(let i=0;i<8;i++){const a=i/8*Math.PI*2;const r=accMesh(h,new THREE.BoxGeometry(0.004,0.088,0.012),0xe8e4dc,Math.sin(a)*0.069,0.378,Math.cos(a)*0.069);r.rotation.y=a}},
+  lavhat(n,h,c){// hasır Provence şapkası + lavanta demeti
+    accMesh(h,new THREE.CylinderGeometry(0.058,0.064,0.05,20),c.c,0,0.345,0.0);accMesh(h,new THREE.CylinderGeometry(0.12,0.12,0.008,24),c.c,0,0.322,0.0);accMesh(h,new THREE.CylinderGeometry(0.065,0.065,0.016,20),c.c2||0x8a6ac8,0,0.334,0.0);
+    for(let i=0;i<5;i++){const s=accMesh(h,new THREE.CylinderGeometry(0.006,0.008,0.04,6),[0x8a6ac8,0x9d7ed6][i%2],-0.05+i*0.008,0.36,0.04-i*0.004,0.2,0,-0.5+i*0.15)}},
+  perruque(n,h,c){// Versay pudralı peruk: bukleler + arkada fiyonk
+    const t=accMesh(h,new THREE.SphereGeometry(0.075,16,10),c.c,0,0.33,-0.005);t.scale.set(1,0.75,1);
+    for(const s of [-1,1])for(let k=0;k<3;k++){accMesh(h,new THREE.TorusGeometry(0.016,0.009,6,12),c.c,s*0.07,0.28-k*0.028,-0.005,0,Math.PI/2,0)}
+    accMesh(h,new THREE.SphereGeometry(0.03,10,8),c.c,0,0.3,-0.075);for(const s of [-1,1]){const b=accMesh(h,new THREE.SphereGeometry(0.016,8,6),c.c2||0x1e2a4a,s*0.02,0.28,-0.1);b.scale.set(1.4,0.8,0.6)}},
+  cloche(n,h,c){// 1920'ler cloche şapka + yan çiçek
+    const d=accMesh(h,new THREE.SphereGeometry(0.074,18,10,0,Math.PI*2,0,Math.PI/2),c.c,0,0.31,0.0);d.scale.y=0.95;const b=accMesh(h,new THREE.CylinderGeometry(0.075,0.09,0.025,24,1,true),c.c,0,0.305,0.0);b.material=b.material.clone();b.material.side=THREE.DoubleSide;
+    accMesh(h,new THREE.CylinderGeometry(0.0755,0.0755,0.014,20),c.c2||0x1e1a1a,0,0.322,0.0);for(let i=0;i<5;i++){const a=i/5*Math.PI*2;accMesh(h,new THREE.SphereGeometry(0.011,8,6),c.c3||0xf2a6b8,0.07+Math.cos(a)*0.012,0.33+Math.sin(a)*0.012,0.03)}accMesh(h,new THREE.SphereGeometry(0.007,6,4),0xf6d35a,0.075,0.33,0.034)},
+  velocap(n,h,c){// bisikletçi kepi: kısa, yukarı kalkık siperlik, üç renk şerit
+    const d=accMesh(h,new THREE.SphereGeometry(0.068,16,8,0,Math.PI*2,0,Math.PI/2),c.c,0,0.31,0.0);d.scale.y=0.55;
+    for(const [x,col] of [[-0.018,0x2a4a9a],[0,0xfbf7ec],[0.018,0xd9343e]]){const s=accMesh(h,new THREE.BoxGeometry(0.014,0.004,0.12),col,x,0.345,0.0)}
+    const v=accMesh(h,new THREE.BoxGeometry(0.08,0.006,0.035),c.c2||0xd9343e,0,0.33,0.07,-0.6,0,0)}});
+// ---- önlük desenleri: garçon, lavanta, zambak (fleur), üç renk etek ----
+{const _ac=apronColor;apronColor=function(ap,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};
+  if(ap.pat==='garcon'){let c=ap.c;if(y>1.0)c=ap.c2;if(y>1.0&&Math.abs(x)<0.02&&z>0)c=[200,170,90];set(c);return}
+  if(ap.pat==='lavande'){let c=ap.c;const u=x*12,v=y*24;const du=Math.abs(u-Math.round(u)),dv=v-Math.floor(v);if(du<0.12&&dv<0.6)c=ap.c2;if(y<0.68&&y>0.64)c=ap.c2;set(c);return}
+  if(ap.pat==='fleur'){let c=ap.c;const u=x*9,v=y*9+(Math.round(x*9)%2?0.5:0);const du=u-Math.round(u),dv=v-Math.round(v);if(Math.hypot(du,dv*0.8)<0.18)c=ap.c2;if(y<0.68||Math.abs(x)>0.135)c=ap.c2;set(c);return}
+  if(ap.pat==='bbr'){let c=ap.c;if(y<0.7){c=y<0.62?[217,52,62]:y<0.66?[250,248,244]:[42,74,154]}set(c);return}
+  return _ac(ap,x,y,z,out)}}
+const FR_CLOTHES=[
+  {id:'ap_fr_boulanger',slot:'apron',name:'Fırıncı önlüğü (üç renk etek)',roles:['waiter','barista','cashier'],price:85,ap:{c:[250,248,244],pat:'bbr'}},
+  {id:'ap_fr_garcon',slot:'apron',name:'Garçon yeleği ve uzun önlük',roles:['waiter','barista','cashier'],price:95,ap:{c:[250,248,244],c2:[30,30,34],pat:'garcon'}},
+  {id:'ap_fr_mariniere',slot:'apron',name:'Marinière çizgili önlük',roles:['waiter','barista','cashier'],price:85,ap:{c:[250,248,244],c2:[30,46,90],pat:'hstripe'}},
+  {id:'ap_fr_lavande',slot:'apron',name:'Lavanta önlük',roles:['waiter','barista','cashier'],price:90,ap:{c:[178,160,214],c2:[250,248,244],pat:'lavande'}},
+  {id:'ap_fr_versailles',slot:'apron',name:'Versay önlüğü (altın zambaklı)',roles:['waiter','barista','cashier'],gems:6,ap:{c:[40,64,140],c2:[214,176,80],pat:'fleur'}},
+  {id:'hat_fr_toque',slot:'hat',name:'Fırıncı toku',roles:['waiter','barista','cashier'],price:70,acc:'toque',c:0xfbf7ec,c2:0x2a4a9a},
+  {id:'hat_fr_beret_black',slot:'hat',name:'Siyah bere',roles:['waiter','barista','cashier'],price:55,acc:'beret',c:0x1e1e22},
+  {id:'hat_fr_lavande',slot:'hat',name:'Lavantalı hasır şapka',roles:['waiter','barista','cashier'],price:80,acc:'lavhat',c:0xe8c878,c2:0x8a6ac8},
+  {id:'hat_fr_perruque',slot:'hat',name:'Versay peruğu',roles:['waiter','barista','cashier'],gems:4,acc:'perruque',c:0xf4f1ec,c2:0x1e2a4a},
+  {id:'hat_fr_cloche',slot:'hat',name:'Cloche şapka',roles:['waiter','barista','cashier'],price:75,acc:'cloche',c:0xe6a8b8,c2:0x7a1e3a,c3:0xfbf7ec},
+  {id:'hat_fr_velo',slot:'hat',name:'Bisikletçi kepi',roles:['waiter','barista','cashier'],price:55,acc:'velocap',c:0xfbf7ec,c2:0xd9343e},
+  {id:'nk_fr_tricolore',slot:'neck',name:'Mavi-beyaz-kırmızı fular',roles:['waiter','barista','cashier'],price:50,acc:'scarf',c:0x2a4a9a,c2:0xd9343e},
+  {id:'nk_fr_red',slot:'neck',name:'Kırmızı boyun mendili',roles:['waiter','barista','cashier'],price:40,acc:'scarf',c:0xd9343e,c2:0xffffff},
+  {id:'nk_fr_yellow',slot:'neck',name:'Güneş sarısı fular',roles:['waiter','barista','cashier'],price:45,acc:'scarf',c:0xf2c84a,c2:0x2c4a7a},
+  {id:'nk_fr_jabot',slot:'neck',name:'Dantel jabot yaka',roles:['waiter','barista','cashier'],price:70,acc:'ruff',c:0xfbf8f0}];
+for(const c of FR_CLOTHES){if(!CLO[c.id]){CLOTHES.push(c);CLO[c.id]=c}}
+const FR_STAFF_SETS=[
+  {key:'boulanger',name:'Fırıncı (Boulanger)',wear:{apron:'ap_fr_boulanger',hat:'hat_fr_toque',neck:'nk_fr_tricolore'}},
+  {key:'garcon',name:'Garçon de Café',wear:{apron:'ap_fr_garcon',hat:'hat_fr_beret_black',neck:'bow_black'}},
+  {key:'breton',name:'Bretanya (Marinière)',wear:{apron:'ap_fr_mariniere',hat:'hat_beret_red',neck:'nk_fr_red'}},
+  {key:'provence',name:'Provence',wear:{apron:'ap_fr_lavande',hat:'hat_fr_lavande',neck:'nk_fr_yellow'}},
+  {key:'versailles',name:'Versay',wear:{apron:'ap_fr_versailles',hat:'hat_fr_perruque',neck:'nk_fr_jabot'}}];
+// ---- yalnız Fransa'ya özgü: denizci bachi şapkası, lavanta tacı, fotoğraf makinesi; trençkot, Eiffel tişört, puantiyeli forma ----
+Object.assign(ACC_BUILD,{
+  bachi(n,h,c){// Fransız denizci şapkası: beyaz düz tepe, lacivert bant, kırmızı ponpon
+    accMesh(h,new THREE.CylinderGeometry(0.06,0.064,0.035,20),c.c2||0x1e2e5a,0,0.33,0.0);const tp=accMesh(h,new THREE.CylinderGeometry(0.082,0.066,0.022,22),c.c,0,0.358,0.0);
+    accMesh(h,new THREE.CylinderGeometry(0.082,0.082,0.004,22),c.c,0,0.37,0.0);const p=accMesh(h,new THREE.SphereGeometry(0.022,12,10),0xd9343e,0,0.385,0.0);p.scale.y=0.8},
+  lavcrown(n,h,c){// lavanta tacı: örgü sap halkası + mor başaklar
+    accMesh(h,new THREE.TorusGeometry(0.066,0.009,6,26),0x6b8a4a,0,0.315,0.0,Math.PI/2,0,0);
+    for(let i=0;i<14;i++){const a=i/14*Math.PI*2;accMesh(h,new THREE.CylinderGeometry(0.006,0.008,0.04,6),[0x8a6ac8,0x9d7ed6][i%2],Math.sin(a)*0.066,0.335,Math.cos(a)*0.066,Math.cos(a)*0.4,0,-Math.sin(a)*0.4)}
+    accMesh(h,new THREE.SphereGeometry(0.012,8,6),0xf2c84a,0.05,0.33,0.045)},
+  camera(n,h,c){// boyunda fotoğraf makinesi (boyun yuvası)
+    const p=n||h;const g=new THREE.Group();g.position.set(0,-0.1,0.125);p.add(g);accMesh(g,new THREE.BoxGeometry(0.075,0.048,0.032),c.c,0,0,0);accMesh(g,new THREE.CylinderGeometry(0.017,0.019,0.026,14),0x1e1e22,0,0,0.027,Math.PI/2,0,0);
+    accMesh(g,new THREE.CylinderGeometry(0.012,0.012,0.004,12),0x6a8ab0,0,0,0.041,Math.PI/2,0,0);accMesh(g,new THREE.BoxGeometry(0.014,0.008,0.012),0xd9343e,0.024,0.028,0);
+    accMesh(p,new THREE.TorusGeometry(0.09,0.004,4,24),0x1e1e22,0,0.0,0.05,Math.PI/2+0.5,0,0)}});
+for(const cl of [{id:'hat_fr_bachi',slot:'hat',name:'Denizci bachi şapkası',roles:['waiter','barista','cashier'],price:65,acc:'bachi',c:0xfbf7ec,c2:0x1e2e5a},
+  {id:'hat_fr_lavcrown',slot:'hat',name:'Lavanta tacı',roles:['waiter','barista','cashier'],price:70,acc:'lavcrown',c:0x8a6ac8},
+  {id:'nk_fr_camera',slot:'neck',name:'Fotoğraf makinesi',roles:['waiter','barista','cashier'],price:60,acc:'camera',c:0x3a3a3e}]){if(!CLO[cl.id]){CLOTHES.push(cl);CLO[cl.id]=cl}}
+{const s1=FR_STAFF_SETS.find(s=>s.key==='breton');if(s1)s1.wear.hat='hat_fr_bachi';const s2=FR_STAFF_SETS.find(s=>s.key==='provence');if(s2)s2.wear.hat='hat_fr_lavcrown'}
+{const _tc=topColor;topColor=function(t,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};const ax=Math.abs(x);
+  if(t.kind==='trench'){let c=t.c;const dk=[t.c[0]*0.72,t.c[1]*0.72,t.c[2]*0.72];if(y>0.93&&y<0.975)c=dk;if(z>0.03&&y>0.975&&y<1.18&&Math.abs(ax-0.045)<0.009&&Math.abs(Math.sin(y*38))>0.88)c=[60,40,25];
+    if(z>0.03&&y>1.12&&Math.abs(ax-(0.02+(y-1.12)*0.9))<0.012)c=dk;if(ax>0.23&&ax<0.25)c=dk;if(z>0.03&&ax<0.012&&y>0.98&&y<1.22)c=[c[0]*0.85,c[1]*0.85,c[2]*0.85];set(c);return}
+  if(t.kind==='eiffeltee'){let c=t.c;if(z>0.03&&y>0.95&&y<1.19){const k=(1.19-y)/0.24;const w=0.006+0.055*Math.pow(k,1.8);if(ax<w&&!(y<1.0&&ax<w*0.55)&&!(Math.abs(y-1.06)<0.005))c=t.c2;if(Math.abs(y-1.06)<0.006&&ax<w+0.008)c=t.c2}
+    if(z>0.03&&y>0.92&&y<0.95&&ax<0.06)c=[217,52,62];if(y>1.2&&ax<0.09)c=t.c2;set(c);return}
+  if(t.kind==='polka'){let c=t.c;const u=x*18,v=y*18+(Math.round(x*18)%2?0.5:0);if(Math.hypot(u-Math.round(u),v-Math.round(v))<0.24)c=t.c2;if(y>1.2&&ax<0.09)c=t.c2;set(c);return}
+  return _tc(t,x,y,z,out)}}
+const FR_CUST_LOOKS=[
+  {name:'Parisienne',W:[236,230,222],B:[90,84,80],A:[200,170,120],xs:1.02,itHat:true,top:{c:[200,170,120],kind:'trench'},bt:'bt_black',hat:itHat('hat_fr_beret_black','nk_fr_red')},
+  {name:'Turist',W:[255,236,214],B:[222,128,52],A:[42,74,154],xs:1.04,itHat:true,top:{c:[250,248,244],c2:[30,30,34],kind:'eiffeltee'},bt:'bt_cream',hat:itHat('nk_fr_camera')},
+  {name:'Bisikletçi',W:[250,246,240],B:[196,170,140],A:[217,52,62],xs:0.98,itHat:true,top:{c:[250,248,244],c2:[217,52,62],kind:'polka'},bt:'bt_black',hat:itHat('hat_fr_velo')},
+  {name:'Şık Hanım',W:[200,204,212],B:[104,110,124],A:[230,168,184],xs:1.0,itHat:true,top:{c:[230,168,184],kind:'shirt',collar:[250,248,244]},bt:'bt_cream',hat:itHat('hat_fr_cloche')},
+  {name:'Gurme',W:[78,74,82],B:[36,34,40],A:[120,30,50],xs:0.96,itHat:true,top:{c:[120,30,50],kind:'shirt',collar:[250,248,244]},bt:'bt_navy',hat:itHat('hat_beret','nk_fr_yellow')}];
+
+// =====================================================================
+// TabbyChef · ROYAL PASS · KIYAFETLER (3 seçkin çalışan takımı + 3 VIP müşteri)
+// GEREKSİNİM: italya_kiyafetleri.js bundan ÖNCE eklenmiş olmalı (itHat yardımcısı oradan gelir).
+//
+// OYUNA EKLEME (index.html):
+// 1) italya_kiyafetleri.js'in ardına yapıştır (CLO, ACC_BUILD, apronColor, topColor tanımlarından SONRA).
+//    - Yeni parçalar ACC_BUILD'e eklenir: crownhat (mücevherli taç), tiara (kristal taç), moonhat (hilal ay başlığı),
+//      ermine (kakım kürk yaka), gemcollar (kristal gerdanlık), starcape (yıldızlı pelerin yakası). Taşlar ve yıldızlar ışık almadan parlar.
+//    - Yeni önlük desenleri: 'royal', 'crystal', 'galaxy'. Yeni müşteri üstleri: 'royalcoat', 'sparkle', 'astro'.
+//    - 9 kıyafet CLOTHES/CLO'ya eklenir (ap_rp_*, hat_rp_*, nk_rp_*). Hepsinde rp:true işareti var: Royal Pass ödülü olarak
+//      kilitli göstermek için Kıyafetler menüsünde bu işarete bakılabilir (fiyatlar gems olarak yazıldı, istersen değiştir).
+// 2) Hazır takımlar: RP_STAFF_SETS (Kraliyet, Kristal, Galaksi).
+// 3) VIP müşteriler: RP_CUST_LOOKS (Kraliyet VIP, Kristal Prenses, Astronot), LOOKS ile aynı biçimde.
+//    Spawn sırasında, İtalya dosyasındaki gibi: const AG=attachAcc(r,...); if(L.itHat&&AG[0])AG[0].position.set(0,0,0);
+// =====================================================================
+const RPO_GLOW={};function rpoGlow(c){return RPO_GLOW[c]||(RPO_GLOW[c]=new THREE.MeshBasicMaterial({color:c}))}
+function rpoMesh(p,geo,mat,x,y,z,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;p.add(m);return m}
+Object.assign(ACC_BUILD,{
+  crownhat(n,h,c){// mücevherli altın taç (kulakların arasına sığacak kadar dar ve yüksek)
+    accMesh(h,new THREE.CylinderGeometry(0.06,0.056,0.04,20),c.c,0,0.33,0.0);accMesh(h,new THREE.TorusGeometry(0.061,0.007,6,24),c.c,0,0.312,0.0,Math.PI/2,0,0);accMesh(h,new THREE.CylinderGeometry(0.057,0.057,0.03,20),c.c2||0x7a1424,0,0.326,0.0);
+    for(let i=0;i<8;i++){const a=i/8*Math.PI*2;accMesh(h,new THREE.ConeGeometry(0.014,0.05,4),c.c,Math.sin(a)*0.058,0.374,Math.cos(a)*0.058);accMesh(h,new THREE.SphereGeometry(0.007,6,4),0xfbf3e6,Math.sin(a)*0.058,0.402,Math.cos(a)*0.058);
+      if(i%2===0)accMesh(h,new THREE.SphereGeometry(0.009,8,6),[0xc8203a,0x2a5ab0,0x2a8a5a,0xc8203a][i/2],Math.sin(a+0.39)*0.062,0.33,Math.cos(a+0.39)*0.062)}
+    accMesh(h,new THREE.SphereGeometry(0.03,12,10),c.c2||0x7a1424,0,0.36,0.0).scale.y=0.7;accMesh(h,new THREE.SphereGeometry(0.012,8,6),c.c,0,0.388,0.0)},
+  tiara(n,h,c){// gümüş taç + parlayan kristaller
+    const arc=accMesh(h,new THREE.TorusGeometry(0.066,0.006,6,24,Math.PI),c.c,0,0.312,0.0,0,0,0);arc.rotation.y=Math.PI/2;arc.rotation.x=-0.2;
+    for(let i=0;i<7;i++){const a=(i/6-0.5)*Math.PI*0.9;const ht=0.028+(i===3?0.03:Math.abs(i-3)===1?0.016:0.006);const s=accMesh(h,new THREE.ConeGeometry(0.008,ht,4),c.c,Math.sin(a)*0.066,0.315+ht/2,Math.cos(a)*0.066);
+      const g=new THREE.Mesh(new THREE.OctahedronGeometry(i===3?0.014:0.008),rpoGlow(c.c2||0xd8f2ff));g.position.set(Math.sin(a)*0.068,0.318+ht*0.55,Math.cos(a)*0.068+0.004);h.add(g)}},
+  moonhat(n,h,c){// hilal ay başlığı + yörüngede minik gezegen ve yıldızlar
+    const m=accMesh(h,new THREE.TorusGeometry(0.045,0.016,10,24,Math.PI*1.3),c.c,0,0.36,0.0);m.rotation.set(0,Math.PI/2,-0.6);
+    const r=new THREE.Mesh(new THREE.TorusGeometry(0.075,0.003,4,32),rpoGlow(0x5ae0ff));r.position.set(0,0.33,0);r.rotation.x=Math.PI/2-0.25;h.add(r);
+    const pl=accMesh(h,new THREE.SphereGeometry(0.013,10,8),0xb070ff,0.072,0.335,0.02);for(const [x,y,z] of [[-0.06,0.35,0.04],[0.02,0.4,-0.03],[-0.03,0.32,-0.07]]){const s=new THREE.Mesh(new THREE.OctahedronGeometry(0.008),rpoGlow(0xfff3b0));s.position.set(x,y,z);h.add(s)}},
+  ermine(n,h,c){// kraliyet kakım yakası: beyaz kürk, siyah benekler, altın zincir
+    const p=n||h;accMesh(p,new THREE.TorusGeometry(0.095,0.04,8,22),c.c,0,0.02,0.03,Math.PI/2+0.15,0,0);
+    for(let i=0;i<10;i++){const a=i/10*Math.PI*2;accMesh(p,new THREE.SphereGeometry(0.008,6,4),0x1e1a1a,Math.sin(a)*0.12,0.03-Math.cos(a)*0.015,0.03+Math.cos(a)*0.12)}
+    accMesh(p,new THREE.TorusGeometry(0.075,0.005,4,20,Math.PI),c.c2||0xd6aa5a,0,-0.04,0.08,0.3,0,Math.PI);accMesh(p,new THREE.SphereGeometry(0.016,8,6),c.c2||0xd6aa5a,0,-0.11,0.12)},
+  gemcollar(n,h,c){// kristal gerdanlık: parlayan taşlar
+    const p=n||h;accMesh(p,new THREE.TorusGeometry(0.09,0.006,4,24),c.c,0,0.02,0.035,Math.PI/2+0.15,0,0);
+    for(let i=0;i<9;i++){const a=(i/8-0.5)*Math.PI*0.9;const g=new THREE.Mesh(new THREE.OctahedronGeometry(i===4?0.02:0.011),rpoGlow(c.c2||0xd8f2ff));g.position.set(Math.sin(a)*0.093,0.0-(i===4?0.025:0.008),0.035+Math.cos(a)*0.093);p.add(g)}},
+  starcape(n,h,c){// yıldızlı pelerin yakası + parlayan yıldızlar
+    const p=n||h;accMesh(p,new THREE.TorusGeometry(0.095,0.035,8,22),c.c,0,0.02,0.03,Math.PI/2+0.15,0,0);
+    for(let i=0;i<8;i++){const a=i/8*Math.PI*2;const s=new THREE.Mesh(new THREE.OctahedronGeometry(0.01),rpoGlow(i%2?0xfff3b0:0x5ae0ff));s.position.set(Math.sin(a)*0.12,0.03-Math.cos(a)*0.012,0.03+Math.cos(a)*0.12);p.add(s)}}});
+// ---- önlük desenleri (köşe başına renk: kaba ve belirgin desenler) ----
+{const _ac=apronColor;apronColor=function(ap,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};const ax=Math.abs(x);const hsh=(a,b)=>Math.abs(Math.sin(a*12.9898+b*78.233)*43758.5453)%1;
+  if(ap.pat==='royal'){let c=ap.c;const u=x*12,v=y*12+(Math.round(x*12)%2?0.5:0);if(Math.hypot(u-Math.round(u),v-Math.round(v))<0.2)c=ap.c2;if(ax>0.125&&ax<0.15)c=ap.c2;
+    if(y<0.7){c=[250,248,244];if(hsh(Math.round(x*30),Math.round(y*30))<0.18)c=[30,26,26]}if(y<0.72&&y>0.69)c=ap.c2;set(c);return}
+  if(ap.pat==='crystal'){let c=ap.c;const k=hsh(Math.round(x*40),Math.round(y*40));if(k<0.16)c=[255,255,255];else if(k<0.24)c=[200,236,255];const band=Math.floor(y*14)%2;if(y<0.7)c=band?[200,214,232]:[160,184,214];if(ax>0.13)c=[200,214,232];set(c);return}
+  if(ap.pat==='galaxy'){let c=ap.c;const nb=Math.sin(x*14+y*6)*Math.sin(y*9-x*5);if(nb>0.45)c=[90,50,150];else if(nb<-0.55)c=[40,70,140];const k=hsh(Math.round(x*45),Math.round(y*45));if(k<0.1)c=[255,255,255];else if(k<0.14)c=[255,243,176];
+    if(y<0.68&&y>0.645)c=[90,224,255];if(y<0.645&&y>0.625)c=[176,112,255];set(c);return}
+  return _ac(ap,x,y,z,out)}}
+// ---- VIP müşteri üstleri ----
+{const _tc=topColor;topColor=function(t,x,y,z,out){const set=c=>{out[0]=c[0];out[1]=c[1];out[2]=c[2]};const ax=Math.abs(x);const hsh=(a,b)=>Math.abs(Math.sin(a*12.9898+b*78.233)*43758.5453)%1;
+  if(t.kind==='royalcoat'){let c=t.c;if(z>0.03&&ax<0.03&&y>0.88)c=t.c2;if(z>0.03&&y>0.9&&y<1.2&&Math.abs(ax-0.045)<0.012&&Math.abs(Math.sin(y*50))>0.85)c=[214,170,90];if(ax>0.235&&ax<0.27){c=[250,248,244];if(hsh(Math.round(x*60),Math.round(y*60))<0.2)c=[30,26,26]}
+    if(y>1.18&&ax<0.1){c=[250,248,244];if(hsh(Math.round(x*60),Math.round(y*60))<0.2)c=[30,26,26]}if(y<0.93&&y>0.9)c=[214,170,90];set(c);return}
+  if(t.kind==='sparkle'){let c=t.c;const k=hsh(Math.round(x*70),Math.round(y*70));if(k<0.12)c=[255,255,255];else if(k<0.2)c=[200,236,255];if(y>1.19&&ax<0.09)c=t.collar||[230,244,252];set(c);return}
+  if(t.kind==='astro'){let c=t.c;if(z>0.03&&y>1.0&&y<1.12&&x>0.03&&x<0.11){c=[40,70,140];if(hsh(Math.round(x*80),Math.round(y*80))<0.25)c=[255,255,255]}if(z>0.03&&y>1.02&&y<1.08&&x<-0.04&&x>-0.1)c=[230,120,40];
+    if(y<0.95&&y>0.9)c=[90,224,255];if(ax>0.24&&ax<0.265)c=[176,112,255];if(y>1.19&&ax<0.09)c=[180,190,200];set(c);return}
+  return _tc(t,x,y,z,out)}}
+const RP_CLOTHES=[
+  {id:'ap_rp_kraliyet',slot:'apron',name:'Kraliyet önlüğü (kakım etekli)',roles:['waiter','barista','cashier'],gems:12,rp:true,ap:{c:[122,20,36],c2:[214,170,90],pat:'royal'}},
+  {id:'ap_rp_kristal',slot:'apron',name:'Kristal pullu önlük',roles:['waiter','barista','cashier'],gems:12,rp:true,ap:{c:[143,208,240],pat:'crystal'}},
+  {id:'ap_rp_galaksi',slot:'apron',name:'Galaksi önlüğü',roles:['waiter','barista','cashier'],gems:12,rp:true,ap:{c:[20,22,58],pat:'galaxy'}},
+  {id:'hat_rp_crown',slot:'hat',name:'Mücevherli taç',roles:['waiter','barista','cashier'],gems:10,rp:true,acc:'crownhat',c:0xe8c060,c2:0x7a1424},
+  {id:'hat_rp_tiara',slot:'hat',name:'Kristal taç',roles:['waiter','barista','cashier'],gems:10,rp:true,acc:'tiara',c:0xc8d4e4,c2:0xd8f2ff},
+  {id:'hat_rp_moon',slot:'hat',name:'Hilal ay başlığı',roles:['waiter','barista','cashier'],gems:10,rp:true,acc:'moonhat',c:0xf3e6b0},
+  {id:'nk_rp_ermine',slot:'neck',name:'Kakım kürk yaka',roles:['waiter','barista','cashier'],gems:8,rp:true,acc:'ermine',c:0xfbf8f2,c2:0xd6aa5a},
+  {id:'nk_rp_gems',slot:'neck',name:'Kristal gerdanlık',roles:['waiter','barista','cashier'],gems:8,rp:true,acc:'gemcollar',c:0xc8d4e4,c2:0xd8f2ff},
+  {id:'nk_rp_stars',slot:'neck',name:'Yıldızlı pelerin yakası',roles:['waiter','barista','cashier'],gems:8,rp:true,acc:'starcape',c:0x1e2050}];
+for(const c of RP_CLOTHES){if(!CLO[c.id]){CLOTHES.push(c);CLO[c.id]=c}}
+const RP_STAFF_SETS=[
+  {key:'kraliyet',name:'Kraliyet',wear:{apron:'ap_rp_kraliyet',hat:'hat_rp_crown',neck:'nk_rp_ermine'}},
+  {key:'kristal',name:'Kristal',wear:{apron:'ap_rp_kristal',hat:'hat_rp_tiara',neck:'nk_rp_gems'}},
+  {key:'galaksi',name:'Galaksi',wear:{apron:'ap_rp_galaksi',hat:'hat_rp_moon',neck:'nk_rp_stars'}}];
+const RP_CUST_LOOKS=[
+  {name:'Kraliyet VIP',W:[236,230,222],B:[90,84,80],A:[122,20,36],xs:1.02,itHat:true,top:{c:[122,20,36],c2:[214,170,90],kind:'royalcoat'},bt:'bt_black',hat:itHat('hat_rp_crown')},
+  {name:'Kristal Prenses',W:[255,236,214],B:[222,128,52],A:[143,208,240],xs:1.0,itHat:true,top:{c:[160,214,242],kind:'sparkle',collar:[250,252,255]},bt:'bt_cream',hat:itHat('hat_rp_tiara','nk_rp_gems')},
+  {name:'Astronot',W:[78,74,82],B:[36,34,40],A:[90,224,255],xs:0.98,itHat:true,top:{c:[236,240,244],kind:'astro'},bt:'bt_navy',hat:itHat('hat_rp_moon','nk_rp_stars')}];
+
 // ================= TASARIM PAKETİ BAĞLANTISI (V145) =================
 // Paket dosyaları (t01…t25_*.js) oyuncunun hazırladığı "TabbyChef Tasarım Paketi"nden DEĞİŞTİRİLMEDEN alınır: İtalya, Türkiye, Japonya, Fransa
 // ülke paketleri ve Royal Pass setleri (Kraliyet, Kristal, Galaksi). Yeni paket sürümü gelince t*.js dosyaları aynen değiştirilir.
@@ -11546,19 +11993,46 @@ for(const [k,N] of PK_RP){
   pkAdd({id:'f_rp_'+k,kind:'floor',tex:k,name:N+' zemini',price:0,rp:k,desc:'Royal Pass ödülü.'});
   pkRug('rp',k);pkAdd({id:'r_rp_'+k,kind:'decor',flat:true,rot:true,half:[2.15,1.65],name:N+' halısı',price:0,rp:k,desc:'Büyük salon halısı (4,3 × 3,3 m). Royal Pass ödülü.'})}
 
+// ---------- 3) KIYAFETLER ----------
+// Paket dosyaları kıyafetlerini CLOTHES/CLO'ya kendisi ekler (yeni şapka/boyunluk kurucuları ve önlük/üst desenleriyle birlikte).
+// Kilit: henüz açılmamış paket kıyafeti CLO'da kalır (giyilmişse çizilebilsin) ama CLOTHES listesinden çıkarılır → dolapta, karakter
+// düzenleyicide ve eski kıyafet şeridinde görünmez. Açılınca (etkinlikten getirilince / Pass ödülü verilince / etkinlik kafesinde) listeye döner.
+const PK_CLOTHES={it:IT_CLOTHES,tr:TR_CLOTHES,jp:JP_CLOTHES,fr:FR_CLOTHES,rp:RP_CLOTHES},PK_STAFF={it:IT_STAFF_SETS,tr:TR_STAFF_SETS,jp:JP_STAFF_SETS,fr:FR_STAFF_SETS,rp:RP_STAFF_SETS};
+const PK_CUST={it:IT_CUST_LOOKS,tr:TR_CUST_LOOKS,jp:JP_CUST_LOOKS,fr:FR_CUST_LOOKS};
+const PK_CLO_ALL=[];
+for(const pk in PK_CLOTHES){const seen={};
+  for(const c of PK_CLOTHES[pk]){c.pk=pk;if(pk==='rp')c.rp=true;else{c.ev=pk;const i=seen[c.slot]=(seen[c.slot]||0)+1;c.evLvl=Math.min(10,i*2-1)}PK_CLO_ALL.push(c)}
+  // hazır çalışan takımları → dolabın "Takımlar" sekmesi (parçaların toplamından %15 indirimli)
+  for(const s of PK_STAFF[pk]||[]){const id='set_'+pk+'_'+s.key;if(CLO[id])continue;let C=0,G=0,lv=1;for(const k in s.wear){const p=CLO[s.wear[k]];if(!p||p.free)continue;C+=p.price||0;G+=p.gems||0;lv=Math.max(lv,p.evLvl||1)}
+    const c={id,slot:'outfit',name:s.name+' takımı',roles:['waiter','barista','cashier'],set:{...s.wear},pk};if(G)c.gems=Math.max(1,Math.round((G+C/30)*0.85));else c.price=Math.max(5,Math.round(C*0.85/5)*5);
+    if(pk==='rp')c.rp=true;else{c.ev=pk;c.evLvl=lv}CLOTHES.push(c);CLO[id]=c;PK_CLO_ALL.push(c)}}
+function clothShown(c){if(S.clothes&&S.clothes[c.id])return true;if(c.rp)return !!(S.rpGot&&S.rpGot[c.id]);if(!c.ev)return true;return EVMODE?c.ev===EVMODE:!!(S.evGot&&S.evGot[c.id])}
+function pkClothSync(){for(const c of PK_CLO_ALL){const i=CLOTHES.indexOf(c),on=clothShown(c);if(on&&i<0)CLOTHES.push(c);else if(!on&&i>=0)CLOTHES.splice(i,1)}}
+const evCloths=id=>PK_CLO_ALL.filter(c=>c.ev===id);
+// etkinlik kafesinde o ülkenin müşterileri de gelir (paketin müşteri görünümleri); dokuları init() hazırlar
+if(EVMODE&&PK_CUST[EVMODE])for(const L of PK_CUST[EVMODE])if(!LOOKS.some(x=>x.name===L.name))LOOKS.push(L);
+
 // ---------- kayıt: getirilen / ödül verilen eşyalar markette açık ----------
 {const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{if(!S.rpGot)S.rpGot={};for(const id in S.rpGot)if(S.rpGot[id]&&CAT[id])CAT[id].lvl=1;
-    if(!EVMODE)for(const id in S.evGot||{})if(S.evGot[id]&&CAT[id]&&CAT[id].pk)CAT[id].lvl=1}catch(e){console.warn('paket',e)}return r}}
+    if(!EVMODE)for(const id in S.evGot||{})if(S.evGot[id]&&CAT[id]&&CAT[id].pk)CAT[id].lvl=1;pkClothSync()}catch(e){console.warn('paket',e)}return r}}
 
-// ---------- Etkinlikler › Dünya Keşfi: hazır olan her şeyi tek dokunuşla getir ----------
+// ---------- Etkinlikler › Dünya Keşfi: paket kıyafetleri de listede; hazır olan her şeyi tek dokunuşla getir ----------
+function evClothTake(id,k,quiet){const c=CLO[k];if(!c||!evItemState(id,c).ok)return false;S.evGot[k]=true;pkClothSync();if(!quiet){sfx('goal');markDirty();saveNow();toast(`<b>${c.name}</b><br>Artık Kıyafet Dolabında`,`<span class="ic">${clothIcon(c.slot==='outfit'?(c.set.apron||c.set.hat):c.id)}</span>`,2600);renderEvents();evBadge()}return true}
 function evTakeAll(){if(EVMODE)return 0;const id=evOfWeek(evWeek());let n=0;
   for(const k of evTransRecipes(id))if(evRecState(id,k).ok){S.recipes[k]=S.unlocked[k]=S.menu[k]=true;n++}
   for(const c of evItems(id))if(evItemState(id,c).ok){S.evGot[c.id]=true;c.lvl=1;n++}
-  if(n){sfx('goal');markDirty();saveNow();toast(`<b>${n} yenilik ana kafende!</b><br>Tarifler menüne, eşyalar marketine eklendi`,ic('market'),2800)}renderEvents();evBadge();return n}
-{const _re=renderEvents;renderEvents=function(){_re.apply(this,arguments);try{const p=$('evP');if(!p||p.hidden||EVMODE||UI.evView!=='dk')return;const ul=p.querySelector('.bul');if(!ul)return;
-    const n=ul.querySelectorAll('[data-take]').length;if(n<2)return;const b=document.createElement('button');b.type='button';b.className='btn green evall';b.innerHTML=`${ic('check')}Hazır olanların hepsini kafeme ekle (${n})`;
+  for(const c of evCloths(id))if(evClothTake(id,c.id,true))n++;
+  if(n){sfx('goal');markDirty();saveNow();toast(`<b>${n} yenilik ana kafende!</b><br>Tarifler menüne, eşyalar marketine, kıyafetler dolabına eklendi`,ic('market'),2800)}renderEvents();evBadge();return n}
+{const _tk=evTakeable;evTakeable=function(){let n=_tk.apply(this,arguments);try{if(!EVMODE)for(const id in S.evs)if(EVENTS[id])for(const c of evCloths(id))if(evItemState(id,c).ok)n++}catch(e){}return n}}
+{const _re=renderEvents;renderEvents=function(){_re.apply(this,arguments);try{const p=$('evP');if(!p||p.hidden||UI.evView!=='dk')return;const ul=p.querySelector('.bul');if(!ul)return;const id=EVMODE||evOfWeek(evWeek()),d=EVMODE?S:evArch(id),lv=evlOf(d);
+    // kıyafet satırları (katalog eşyalarıyla aynı görünüm)
+    ul.insertAdjacentHTML('beforeend',evCloths(id).map(c=>{const st=EVMODE?{note:lv>=c.evLvl?'Açıldı · eve dönünce getir':`${c.evLvl}. aşamada`}:evItemState(id,c);
+      return `<li class="bu"><span class="buic">${clothIcon(c.slot==='outfit'?(c.set.apron||c.set.hat):c.id)}</span><span class="but"><b>${c.name}</b><small>${st.done?'Kıyafet Dolabında':st.note||st.why||'Getirmeye hazır'}</small></span>${!EVMODE&&st.ok?`<button class="btn sm green" type="button" data-takec="${c.id}">Kafeme ekle</button>`:st.done?`<span class="bumax">${ic('check')}</span>`:''}</li>`}).join(''));
+    ul.querySelectorAll('[data-takec]').forEach(b=>b.onclick=()=>evClothTake(id,b.dataset.takec));
+    if(EVMODE)return;const n=ul.querySelectorAll('[data-take],[data-takec]').length;if(n<2)return;const b=document.createElement('button');b.type='button';b.className='btn green evall';b.innerHTML=`${ic('check')}Hazır olanların hepsini kafeme ekle (${n})`;
     b.onclick=()=>{sfx('tap');evTakeAll()};ul.before(b)}catch(e){console.warn('paket',e)}}}
-{const st=document.createElement('style');st.textContent=`.evall{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 8px;width:100%}.evall svg,.evall .ic{width:18px;height:18px}`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`.evall{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 8px;width:100%}.evall svg,.evall .ic{width:18px;height:18px}
+.bul .buic{flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:#fff6e0}.bul .buic svg{width:34px;height:34px}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
