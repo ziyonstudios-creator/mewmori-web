@@ -795,7 +795,9 @@ const CHAIR_STYLE={
   c_glass:{seat:toon(0xffffff),wood:M.gold,leg:M.gold,legs:'thin',back:'ghost',accent:M.gold},
   c_sakura:{seat:toon(0xf6c9cf),wood:toon(0xfbeef0),leg:M.gold,legs:'turned',back:'flower',accent:M.gold,pad:toon(0xf6c9cf)},
   c_lace:{seat:toon(0xfff6e6),wood:toon(0xd6a35c),leg:toon(0xb07a3e),legs:'turned',back:'oval',accent:toon(0xb07a3e),pad:toon(0xfff6e6)},
-  c_bistro:{seat:toon(0x3a2a22),wood:M.dark,leg:M.dark,legs:'bent',back:'hoop'}};
+  c_bistro:{seat:toon(0x3a2a22),wood:M.dark,leg:M.dark,legs:'bent',back:'hoop'},
+  // V139 kasiyer sandalyesi (satılmaz; p30 cashChair): kasa tezgâhının dili — yeşil gövde, kabartma pano, ahşap başlık, dalgalı saçak, altın madalyon
+  c_cash:{seat:toon(0xfff3df),wood:M.wood,leg:M.green,back:'cash',accent:M.gold,body:M.green,coin:toon(0xd99a1e)}};
 function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,parent),S=CHAIR_STYLE[styleId]||CHAIR_STYLE.c_cushion;const A=(g,m,x,y,z)=>addTo(L,g,m,x,y,z);
   const cush=S.seat||toon(CUSH_COLS[colIdx%CUSH_COLS.length]);
   // oturma yüzeyi (doğrulanmış profil)
@@ -836,6 +838,13 @@ function chairMeshes(parent,f,styleId,colIdx=0){const d=SEAT_D,L=frameGroup(f,pa
   else if(BK==='flower'){posts();const hs=new THREE.Shape();hs.absellipse(0,0,bw/2+0.02,bh*0.45,0,Math.PI*2,false);const g=new THREE.ExtrudeGeometry(hs,{depth:0.05,bevelEnabled:false,curveSegments:24});A(g,S.wood,bx,d.boardBot+bh*0.55,bz-0.025);
     A(new THREE.CircleGeometry(1,28),S.pad,bx,d.boardBot+bh*0.55,bz+0.027).scale.set(bw/2-0.04,bh*0.38,1);
     for(let k=0;k<5;k++){const a=k/5*Math.PI*2;const p=A(new THREE.SphereGeometry(0.03,8,6),M.pink,bx+Math.cos(a)*0.045,d.boardBot+bh*0.62+Math.sin(a)*0.045,bz+0.035);p.scale.z=0.4}A(new THREE.SphereGeometry(0.018,8,6),M.gold,bx,d.boardBot+bh*0.62,bz+0.04)}
+  else if(BK==='cash'){const w=bw+0.04,y0=d.boardBot+0.17,ph=d.backTop-y0-0.05,r=0.06,r2=0.03,ps=new THREE.Shape();ps.moveTo(-w/2+r2,0);ps.lineTo(w/2-r2,0);ps.quadraticCurveTo(w/2,0,w/2,r2);ps.lineTo(w/2,ph-r);ps.quadraticCurveTo(w/2,ph,w/2-r,ph);ps.lineTo(-w/2+r,ph);ps.quadraticCurveTo(-w/2,ph,-w/2,ph-r);ps.lineTo(-w/2,r2);ps.quadraticCurveTo(-w/2,0,-w/2+r2,0);
+    const pg=new THREE.ExtrudeGeometry(ps,{depth:0.055,bevelEnabled:false,curveSegments:8});pg.translate(0,0,-0.0275);A(pg,S.body,bx,y0,bz);const my=y0+ph/2-0.04;
+    for(const s of [1,-1]){A(new RoundedBoxGeometry(w-0.09,ph-0.2,0.012,2,0.005),KM.line,bx,my,bz+s*0.028).castShadow=false;A(new RoundedBoxGeometry(w-0.15,ph-0.26,0.012,2,0.005),KM.panel,bx,my,bz+s*0.034).castShadow=false;   // kabartma pano (iki yüzde)
+      const c=A(new THREE.CylinderGeometry(0.052,0.052,0.012,20),M.gold,bx,my,bz+s*0.042);c.rotation.x=Math.PI/2;c.castShadow=false;const c2=A(new THREE.CylinderGeometry(0.033,0.033,0.012,16),S.coin,bx,my,bz+s*0.046);c2.rotation.x=Math.PI/2;c2.castShadow=false}   // altın para madalyonu
+    A(new RoundedBoxGeometry(w+0.06,0.055,0.09,2,0.016),S.wood,bx,y0+ph+0.018,bz);   // ahşap başlık (tezgâh üstü gibi)
+    {const m=6,sw=w/m;for(let i=0;i<m;i++)for(const s of [1,-1]){const q=A(new THREE.CylinderGeometry(sw*0.5,sw*0.5,0.012,12),i%2?M.cream:M.pink,bx-w/2+sw*(i+0.5),y0+ph-0.008,bz+s*0.032);q.rotation.x=Math.PI/2;q.castShadow=false}}   // dalgalı saçak
+    posts(y0+ph)}
   else{if(BK==='pad'){const w=bw+0.04,y0=d.boardBot+0.17,ph=d.backTop-y0,r=0.09,r2=0.03,ps=new THREE.Shape();ps.moveTo(-w/2+r2,0);ps.lineTo(w/2-r2,0);ps.quadraticCurveTo(w/2,0,w/2,r2);ps.lineTo(w/2,ph-r);ps.quadraticCurveTo(w/2,ph,w/2-r,ph);ps.lineTo(-w/2+r,ph);ps.quadraticCurveTo(-w/2,ph,-w/2,ph-r);ps.lineTo(-w/2,r2);ps.quadraticCurveTo(-w/2,0,-w/2+r2,0);
       const pg=new THREE.ExtrudeGeometry(ps,{depth:0.055,bevelEnabled:false,curveSegments:8});pg.translate(0,0,-0.0275);A(pg,S.wood,bx,y0,bz)}
     else A(new THREE.BoxGeometry(bw+0.04,BK==='arch'?bh-0.1:bh,0.06),S.wood,bx,d.boardBot+(BK==='arch'?bh-0.1:bh)/2,bz);
@@ -5296,7 +5305,7 @@ async function baristaWander(b,h){if(baristaQ.length)return;const ch=b.ch;const 
 let CASH_CHAIR=null;
 // kasa sandalyesi: kasiyerin tam arkasında; arkada duvar ya da eşya varsa sığdığı kadar öne gelir, hiç sığmazsa yanına konur
 let CHAIR_LB=null;   // sandalye gövdesinin oturma noktasına göre yerel kutusu (bir kez ölçülür)
-function chairLocalBox(){if(CHAIR_LB)return CHAIR_LB;const g=new THREE.Group();chairMeshes(g,frame(0,0,0),'c_cushion',2);g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g);
+function chairLocalBox(){if(CHAIR_LB)return CHAIR_LB;const g=new THREE.Group();chairMeshes(g,frame(0,0,0),'c_cash',2);g.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(g);
   CHAIR_LB={minX:b.min.x,maxX:b.max.x,minZ:b.min.z,maxZ:b.max.z};g.traverse(m=>{if(m.isMesh&&m.geometry)m.geometry.dispose()});return CHAIR_LB}
 function cashChairSpot(){const own=new Set(COBST);const obs=OBST.filter(b=>!own.has(b));let fb=[];try{fb=furnBoxes()}catch(e){}const LB=chairLocalBox(),c=Math.cos(CP.r),sn=Math.sin(CP.r);
   const fits=(lx,lz)=>{const o=cW(lx,lz);const ps=[[LB.minX,LB.minZ],[LB.maxX,LB.minZ],[LB.minX,LB.maxZ],[LB.maxX,LB.maxZ],[-0.15,-0.15],[0.15,0.15]].map(([x,z])=>({x:o.x+c*x+sn*z,z:o.z-sn*x+c*z}));
@@ -5304,9 +5313,12 @@ function cashChairSpot(){const own=new Set(COBST);const obs=OBST.filter(b=>!own.
     if(B.minX<RM.x0+0.01||B.maxX>RM.x1-0.01||B.minZ<RM.z0+0.01||B.maxZ>RM.z1-0.01)return false;
     for(const b of obs.concat(fb))if(B.maxX>b.minX&&B.minX<b.maxX&&B.maxZ>b.minZ&&B.minZ<b.maxZ)return false;return true};
   const cx=CASH.x-(LB.minX+LB.maxX)/2;   // sandalye kasanın tam ortasına hizalı
-  for(let dz=0.36;dz>=-0.14;dz-=0.02)if(fits(cx,CASH.stand.z-dz))return {lx:cx,lz:CASH.stand.z-dz};
+  // V139: sandalye kasaya yakın durur (oturma noktası kasiyerin durduğu yerin 20 cm önünde: minderin ön kenarı kasiyerin hemen arkasında);
+  // oraya sığmazsa adım adım geriye, o da olmazsa öne denenir
+  for(let dz=-0.2;dz<=0.36;dz+=0.02)if(fits(cx,CASH.stand.z-dz))return {lx:cx,lz:CASH.stand.z-dz};
+  for(let dz=-0.22;dz>=-0.3;dz-=0.02)if(fits(cx,CASH.stand.z-dz))return {lx:cx,lz:CASH.stand.z-dz};
   return null}
-function cashChair(){if(CASH_CHAIR)return CASH_CHAIR;const sp=cashChairSpot();if(!sp){CASH_CHAIR={G:new THREE.Group(),seat:null,used:null,none:true};return CASH_CHAIR}const p=cW(sp.lx,sp.lz),a=cW(sp.lx,Math.max(sp.lz,CASH.stand.z)+0.02);const f=frame(p.x,p.z,CP.r);const G=new THREE.Group();scene.add(G);chairMeshes(G,f,'c_cushion',2);
+function cashChair(){if(CASH_CHAIR)return CASH_CHAIR;const sp=cashChairSpot();if(!sp){CASH_CHAIR={G:new THREE.Group(),seat:null,used:null,none:true};return CASH_CHAIR}const p=cW(sp.lx,sp.lz),a=cW(sp.lx,Math.max(sp.lz,CASH.stand.z)+0.02);const f=frame(p.x,p.z,CP.r);const G=new THREE.Group();scene.add(G);chairMeshes(G,f,'c_cash',0);
   const seat=seatData(f);seat.A={x:a.x,z:a.z};seat.cash=true;CASH_CHAIR={G,seat,used:null};return CASH_CHAIR}
 // kasa ve telefon boşsa oturmaya uygun
 function cashCalm(k){const R=REGS[k.i];return R&&!R.busy&&!R.cust&&!CASH.queue.length&&!k.chasing&&!cashMoving&&!customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='RUNNING'||c.state==='WAITING_TO_PAY')&&!(S.auto&&typeof DLV!=='undefined'&&DLV.call)}
@@ -9516,11 +9528,21 @@ function mvMove(e){const D=MV.d,b=MV.b;if(!D||!b||D.id!==e.pointerId)return;
 // eşya çubuğu: adın yanında kare ölçüsü; seçim değişince kareler yenilenir
 {const _d=drawEditBar;drawEditBar=function(){const r=_d.apply(this,arguments);try{if(!LAY.on){const R=UI.edit!=null?FURN.get(UI.edit):null,m=$('placeMsg');
      if(R&&m&&CAT[R.rec.id].kind!=='walldecor'&&!(R.table&&R.table.occupant))m.textContent=CAT[R.rec.id].name+' · '+tileLabel(tileDims(R.rec));
-     else if(!R&&m)m.textContent='Taşımak istediğin eşyaya dokun'}
+     else if(!R&&m){const row=$('placeRow'),done=$('edDone');
+       if(UI.edAll){m.textContent='Bütün eşyalar depoya kaldırılsın mı?';row.innerHTML=`<button class="btn light" type="button" id="edAllNo">${ic('close')}Vazgeç</button><button class="btn red" type="button" id="edAllYes">${ic('box')}Evet, kaldır</button>`;
+         $('edAllNo').onclick=()=>{UI.edAll=0;drawEditBar()};$('edAllYes').onclick=edAllStore}
+       else{m.textContent='Taşımak istediğin eşyaya dokun';
+         if(ED.on&&done){const nS=S.furniture.filter(f=>f.stored).length,mk=(id,html,fn)=>{const b=document.createElement('button');b.type='button';b.className='btn light';b.id=id;b.innerHTML=html;b.onclick=fn;row.insertBefore(b,done)};
+           if(nS)mk('edDepo',`${ic('box')}Depo · ${nS}`,openDepo);
+           if(FURN.size)mk('edAll',`${ic('close')}Hepsini kaldır`,()=>{UI.edAll=1;try{sfx('tap')}catch(e){}drawEditBar()})}}}}
    gridRefresh()}catch(e){}return r}}
 // taşıma sürerken başka şeye dokunulmaz; yalnızca seçiliyken başka yere dokununca seçim bırakılır
-{const _t=editTap;editTap=function(x,y){if(MV.b)return;if(LAY.on&&!layMoved())layCancel();return _t(x,y)}}
-{const _x=exitEdit;exitEdit=function(){try{if(MV.b)mvStop()}catch(e){}return _x.apply(this,arguments)}}
+{const _t=editTap;editTap=function(x,y){if(MV.b)return;UI.edAll=0;if(LAY.on&&!layMoved())layCancel();return _t(x,y)}}
+// V139 "Hepsini kaldır": bütün eşyalar (masa, dekor, duvar süsü) depoya; tezgâh ve kasa yerinde kalır. Oyuncu sonra Depo'dan istediğini yerleştirir.
+function edAllStore(){let n=0;for(const R of [...FURN.values()]){if(R.table&&R.table.occupant)continue;R.rec.stored=true;despawnFurn(R.rec.uid);n++}
+  UI.edit=null;UI.edAll=0;if(n){refreshWorld();markDirty();try{sfx('place')}catch(e){}toast(`<b>${n} eşya depoya kaldırıldı</b><br>Depo’dan istediğini seçip yerleştir`,ic('box'),2800)}drawEditBar()}
+function openDepo(){setMode('market');try{const s=mkSecOf('store');if(s){UI.mkSec=s;UI.tab='store';UI.mkTab0=null;UI.sel=null;renderMarket()}}catch(e){console.warn('depo',e)}}
+{const _x=exitEdit;exitEdit=function(){try{UI.edAll=0;if(MV.b)mvStop()}catch(e){}return _x.apply(this,arguments)}}
 // yerleştirme modunda ipucu metni
 {const _rp=renderPlacebar;renderPlacebar=function(){const r=_rp.apply(this,arguments);try{if(PL&&!PL.why){const m=$('placeMsg'),c=CAT[PL.rec.id];if(m)m.textContent=c.kind==='walldecor'?'Duvardaki yeşil yerlerden birine dokun':`${tileLabel(tileDims(PL.rec))} · sürükle ya da bir kareye dokun`}}catch(e){}return r}}
 
@@ -9651,17 +9673,23 @@ function edLeave(){if(!ED.on)return;ED.on=false;for(const o of ED.hid)o.visible=
   const N=DOOR_OUTN,yaw=Math.atan2(-N.x,-N.z),P=[];let i=0;
   const go=(o,role)=>{const d=1.1+0.8*i,p={x:DOOR_IN.x+N.x*d,z:DOOR_IN.z+N.z*d};P.push(edWalkIn(o,role,p,yaw,i));i++};
   try{for(const w of WSTAFF)go(w,'w');for(const b of BSTAFF)go(b,'b');for(const k of CSTAFF)go(k,'c');if(COURIER&&ED.courier)go(COURIER,'k')}catch(e){console.error('ekip girişi',e)}
+  try{if(!TABLES.length)toast('<b>Kafede masa yok</b><br>Müşteri gelemez · Düzenle › Depo’dan masa yerleştir',ic('table'),3600)}catch(e){}
   ED.courier=false;ED.holdT=gameT;Promise.all(P).then(()=>{ED.hold=false;try{if(spawnT>4)spawnT=4}catch(e){}})}
 
 // ---- mod geçişleri ----
 {const _ee=enterEdit;enterEdit=function(keep){if(!ED.on&&UI.mode!=='edit'&&UI.mode!=='place'&&edCan()){if(!ED.busy)edBegin(()=>_ee(keep));return}return _ee(keep)}}
 {const _sm=setMode;setMode=function(m){
    if(m==='edit'&&!ED.on&&UI.mode!=='edit'&&edCan()){if(!ED.busy)edBegin(()=>{_sm('edit');try{drawEditBar()}catch(e){}});return}
+   if(ED.on&&m==='cafe'&&UI.mode==='market'){enterEdit();return}   // oturumda Market kapatılınca kafeye değil Düzenle'ye dönülür (kafeye "Bitti" ile çıkılır)
    const r=_sm(m);try{edView(m==='edit'||m==='place')}catch(e){}if(ED.on&&m!=='edit'&&m!=='place'&&m!=='market')edLeave();return r}}
 // düzenleme/yerleştirme görünümü: küçük ana ekran düğmeleri gizlenir, sahne biraz yukarı alınır (alttaki çubuk kafenin önünü kapatmasın)
 function edView(on){const g=$('game');if(g.classList.contains('edmode')===on)return;g.classList.toggle('edmode',on);
   try{if(on){const r=renderer.domElement.getBoundingClientRect(),W=Math.max(1,r.width),H=Math.max(1,r.height);camera.setViewOffset(W,H,0,Math.round(H*0.085),W,H)}else camera.clearViewOffset()}catch(e){}}
-{const _ep=endPlacement;endPlacement=function(){if(ED.on&&PL)PL.fromEdit=true;return _ep.apply(this,arguments)}}   // oturumda Market'ten alınan eşya da Düzenle'ye döner
+{const _ep=endPlacement;endPlacement=function(){if(ED.on&&PL)PL.fromEdit=true;const r=_ep.apply(this,arguments);   // oturumda Market'ten alınan eşya da Düzenle'ye döner
+   try{if(ED.depoNext){ED.depoNext=false;if(ED.on&&S.furniture.some(f=>f.stored))openDepo()}}catch(e){}return r}}
+// depodan yerleştirilen eşyadan sonra (depoda eşya kaldıysa) yeniden Depo açılır: "Hepsini kaldır"dan sonra eşyalar art arda yerleştirilebilsin
+{const _cp=confirmPlacement;confirmPlacement=function(){ED.depoNext=!!(ED.on&&PL&&PL.fromStore);const r=_cp.apply(this,arguments);if(PL)ED.depoNext=false;return r}}
+{const _np=cancelPlacement;cancelPlacement=function(){ED.depoNext=false;return _np.apply(this,arguments)}}
 
 // ---- ana ekran düğmesi: Keşfet'in yanında "Düzenle" ----
 const ED_ICON=(()=>{const b=`<rect x="6" y="18" width="40" height="40" rx="7" fill="#fff6e2"/><path d="M26 18v40M6 38h40" stroke="#d98a3a" stroke-width="3"/><path d="M29 47l3.5-12.5L48 19l9 9L41.5 43.5z"/><path d="M29 47l3.5-12.5l9 9z" fill="#fff6e2"/><path d="M44 23l9 9"/>`;
