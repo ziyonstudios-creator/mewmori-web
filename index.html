@@ -296,15 +296,15 @@ var EV_FLAG='mewmori-etkinlik',EV_SAVE='mewmori-etkinlik-kayit';
 var EVMODE=(()=>{try{const f=JSON.parse(localStorage.getItem(EV_FLAG)||'null');if(f&&f.id&&f.week===evWeek()&&f.id===evOfWeek(f.week))return f.id;if(f)localStorage.removeItem(EV_FLAG)}catch(e){}return null})();
 // ================= ODA (kafe kabuğu) — değişken ölçülü, dört yöne büyür =================
 // Arka duvar (RM.z0) ve sol duvar (RM.x0) duvarlıdır; sağ (RM.x1) ve ön (RM.z1) açık kesittir. Kafe her kenardan 2 m'lik iki kademeyle büyür.
-// Kapı, kapı yanındaki cam ve büyük pencere iki duvardan istenene, istenen yere taşınabilir (OP). Zemin, duvarlar ve süpürgelikler buildShell() ile kurulur.
+// Kapı ve büyük pencere iki duvardan istenene, istenen yere taşınabilir (OP). (Kapı yanındaki küçük cam V160'ta kaldırıldı.) Zemin, duvarlar ve süpürgelikler buildShell() ile kurulur.
 var GDN={r:0,f:0};
 var SHELL={g:null,strips:true,plants:[],outer:[],base:{x0:-4.75,z0:-4,x1:4.75,z1:4}};
 const ROOM_MAX={x0:-8.75,x1:8.75,z0:-8,z1:8};                              // en büyük oda (her kenar +4 m)
 const LOT={x0:ROOM_MAX.x0-0.3,x1:ROOM_MAX.x1+0.3,z0:ROOM_MAX.z0-0.3,z1:ROOM_MAX.z1+0.3};   // genişleme arsası: içinde hiçbir şey yok
 // açıklıklar: duvar ('left' | 'back') ve duvar boyunca konum t (sol duvarda z, arka duvarda x)
-var OP={door:{wall:'left',t:1.8},side:{wall:'left',t:0.55},win:{wall:'back',t:1.6}};
-const OP_DIM=()=>({door:{w:DOOR.w,h:DOOR.h,y:DOOR.h/2},side:{w:SIDEL.w,h:SIDEL.h,y:SIDEL.y},win:{w:WIN.w,h:WIN.h,y:WIN.y}});
-const OP_NAME={door:'Kapı',side:'Kapı yanı cam',win:'Pencere'};
+var OP={door:{wall:'left',t:1.8},win:{wall:'back',t:1.6}};   // V160: kapının yanındaki küçük cam ('side') oyundan kaldırıldı
+const OP_DIM=()=>({door:{w:DOOR.w,h:DOOR.h,y:DOOR.h/2},win:{w:WIN.w,h:WIN.h,y:WIN.y}});
+const OP_NAME={door:'Kapı',win:'Pencere'};
 // duvar üstünde bir nokta ve içe bakan normal
 function wallPt(wall,t,off=0){return wall==='left'?{x:RM.x0+off,z:t}:{x:t,z:RM.z0+off}}
 const wallIn=wall=>wall==='left'?{x:1,z:0}:{x:0,z:1};
@@ -314,7 +314,7 @@ function gdSync(){let g={};try{g=(S&&S.garden)||{}}catch(e){}GDN.r=g.r?Math.max(
 function roomDims(){gdSync();ROOM_W=RM.x1-RM.x0;ROOM_D=RM.z1-RM.z0;ROOM.minX=RM.x0+0.35;ROOM.maxX=RM.x1+GDN.r-0.35;ROOM.minZ=RM.z0+0.35;ROOM.maxZ=RM.z1+GDN.f-0.35}
 function disposeTree(o){o.traverse(m=>{if(m.isMesh){m.geometry&&m.geometry.dispose()}})}
 // sahnede kurulmuş parçaları bir açıklığa bağlamak için yakalama (sahne çocukları + engeller)
-const OPCAP={door:{objs:[],obst:[]},side:{objs:[],obst:[]},corner:{objs:[],obst:[]}};
+const OPCAP={door:{objs:[],obst:[]},corner:{objs:[],obst:[]}};
 function capStart(){return {n:scene.children.length,o:OBST.length}}
 function capEnd(key,c){OPCAP[key].objs.push(...scene.children.slice(c.n));OPCAP[key].obst.push(...OBST.slice(c.o))}
 function openingHole(path,k,t){const D=OP_DIM()[k];if(k==='door'){path.moveTo(t-D.w/2,0);path.lineTo(t+D.w/2,0);path.lineTo(t+D.w/2,D.h);path.absarc(t,D.h,D.w/2,0,Math.PI,false);path.lineTo(t-D.w/2,0);return path}
@@ -347,15 +347,15 @@ function buildShell(){if(SHELL.g){scene.remove(SHELL.g);disposeTree(SHELL.g)}
   if(OP.win.wall==='back')WIN.x=OP.win.t;
   try{for(const k in FLOOR_TEX)FLOOR_TEX[k].repeat.set(W/1.2,D/1.2)}catch(e){}   // ilk kurulumda FLOOR_TEX henüz tanımlı değil
   try{placeOpenings()}catch(e){}}
-// yakalanmış parçaları (kapı, yan cam, köşe süsü) duvarına oturt: temel konumdan (sol duvar, temel t) dönüşümle
-const OPB={door:{wall:'left',t:1.8,x0:-4.75},side:{wall:'left',t:0.55,x0:-4.75}};
+// yakalanmış parçaları (kapı, köşe süsü) duvarına oturt: temel konumdan (sol duvar, temel t) dönüşümle
+const OPB={door:{wall:'left',t:1.8,x0:-4.75}};
 function opPose(k){const o=OP[k],p=wallPt(o.wall,o.t);return {x:p.x,z:p.z,r:o.wall==='left'?0:-Math.PI/2}}
 // temel (sol duvar, x0=-4.75, t=temel) koordinattaki bir noktayı açıklığın şimdiki yerine taşı
 function opW(k,x,z){const b=OPB[k],P=opPose(k);const lx=x-b.x0,lz=z-b.t,c=Math.cos(P.r),s=Math.sin(P.r);return {x:P.x+lx*c+lz*s,z:P.z-lx*s+lz*c}}
 function opBox(k,b){const ps=[opW(k,b.minX,b.minZ),opW(k,b.maxX,b.minZ),opW(k,b.minX,b.maxZ),opW(k,b.maxX,b.maxZ)];return {minX:Math.min(...ps.map(p=>p.x)),maxX:Math.max(...ps.map(p=>p.x)),minZ:Math.min(...ps.map(p=>p.z)),maxZ:Math.max(...ps.map(p=>p.z))}}
 const OPG={};   // açıklık pivot grupları
 var OP_READY=false;
-function placeOpenings(){if(!OP_READY)return;for(const k of ['door','side']){const C=OPCAP[k];if(!C.objs.length)continue;
+function placeOpenings(){if(!OP_READY)return;for(const k of ['door']){const C=OPCAP[k];if(!C.objs.length)continue;
     if(!OPG[k]){const pv=new THREE.Group(),inn=new THREE.Group();pv.userData.opening=k;inn.position.set(-OPB[k].x0,0,-OPB[k].t);pv.add(inn);scene.add(pv);for(const o of C.objs){if(o.parent)o.parent.remove(o);inn.add(o)}
       OPG[k]=pv;C.base=C.obst.map(b=>({minX:b.minX,maxX:b.maxX,minZ:b.minZ,maxZ:b.maxZ}))}
     const P=opPose(k);OPG[k].position.set(P.x,0,P.z);OPG[k].rotation.y=P.r;OPG[k].userData.wall=OP[k].wall;
@@ -4656,14 +4656,7 @@ UI_IC.door=UI_IC.door||SV(`<rect x="16" y="8" width="32" height="50" rx="3" fill
 function hudShop(){const b=$('shopBtn');if(!b)return;const o=shopOpen();b.hidden=!(S.created&&S.tut==='done');b.classList.toggle('closed',!o);
   const html=`<span class="hook"></span><span class="sign"><i class="dot"></i><b>${o?'AÇIK':'KAPALI'}</b></span>`;if(b._h!==html){b.innerHTML=html;b._h=html}b.setAttribute('aria-pressed',String(!o));b.setAttribute('aria-label',o?'Dükkan açık · kapatmak için dokun':'Dükkan kapalı · açmak için dokun');
   if(DOOR_SIGN)DOOR_SIGN.draw(o)}
-// kapının iç yüzünde AÇIK / KAPALI tabelası
-const DOOR_SIGN=(()=>{const cv=document.createElement('canvas');cv.width=256;cv.height=128;const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;
-  // tabela kapının yanındaki dikey camın arkasında asılı: iki yüzü de okunur (içeriden ve sokaktan)
-  const mat=new THREE.MeshBasicMaterial({map:tx});const geo=new THREE.PlaneGeometry(0.38,0.19);const sg=new THREE.Group();sg.userData.wall='left';scene.add(sg);OPCAP.side.objs.push(sg);
-  const fr=new THREE.Mesh(new THREE.BoxGeometry(0.014,0.21,0.4),M.woodDark);fr.position.set(-ROOM_W/2-0.075,SIDEL.y+0.24,SIDEL.z);sg.add(fr);
-  for(const s of [1,-1]){const m=new THREE.Mesh(geo,mat);m.position.set(-ROOM_W/2-0.075+s*0.008,SIDEL.y+0.24,SIDEL.z);m.rotation.y=s*Math.PI/2;sg.add(m)}
-  let last=null;return {draw(o){if(last===o)return;last=o;const c=cv.getContext('2d');c.fillStyle=o?'#5b9a3a':'#d0453c';c.fillRect(0,0,256,128);c.strokeStyle='#fbf6ec';c.lineWidth=10;c.strokeRect(8,8,240,112);
-    c.fillStyle='#fbf6ec';c.font='800 62px "Baloo 2",Nunito,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(o?'AÇIK':'KAPALI',128,68);tx.needsUpdate=true}}})();
+const DOOR_SIGN=null;   // (V160) yan camla birlikte kaldırıldı; açık/kapalı durumu üstteki tabela düğmesinde (#shopBtn) görünür
 // ---------- AFK: oyun kapalıyken kafe çalışmaya devam eder (en fazla 8 saat) ----------
 // Gerçek kazanç hızı ölçülür: dükkan açıkken oynanan her dakikada kazanılan altın (kafe + paket). Kapalıyken hesap, bu hızın %70'iyle yapılır.
 const afkState=()=>S.afk||(S.afk={rate:0,cust:0,acc:0,accC:0,t:0});
@@ -4994,21 +4987,7 @@ function doorTick(dt){if(!DOORA.leaves.length)return;const P=[];for(const c of c
   const e=DOORA.a<0.5?2*DOORA.a*DOORA.a:1-Math.pow(-2*DOORA.a+2,2)/2;const ang=e*1.45;
   for(const L of DOORA.leaves)L.p.rotation.y=L.side*ang}
 
-// ---------- kapının yanındaki dikey cam (AÇIK/KAPALI tabelası camın arkasında asılı) ----------
-const SIDEG=(()=>{const g=new THREE.Group();g.userData.wall='left';scene.add(g);const x0=-ROOM_W/2,{z,y,w,h}=SIDEL;
-  const add=(geo,mat,px,py,pz,o={})=>{const m=new THREE.Mesh(geo,mat);m.position.set(px,py,pz);if(o.rx)m.rotation.x=o.rx;if(o.ry)m.rotation.y=o.ry;m.castShadow=o.sh!==false;m.receiveShadow=true;g.add(m);return m};
-  const gs=new THREE.Shape();gs.moveTo(z-w/2,y-h/2);gs.lineTo(z+w/2,y-h/2);gs.lineTo(z+w/2,y+h/2);gs.absarc(z,y+h/2,w/2,0,Math.PI,false);gs.lineTo(z-w/2,y-h/2);
-  const gl=add(new THREE.ShapeGeometry(gs,20),M.glass,0,0,0,{sh:false});gl.rotation.y=-Math.PI/2;gl.position.x=x0-0.1;
-  // çerçeve: iki yan, alt pervaz, kemer, orta kayıt — içte ve dışta
-  for(const fx of [x0+0.0,x0-0.2]){add(new THREE.BoxGeometry(0.06,h,0.07),M.green,fx,y,z-w/2-0.02);add(new THREE.BoxGeometry(0.06,h,0.07),M.green,fx,y,z+w/2+0.02);
-    const ar=add(new THREE.TorusGeometry(w/2+0.02,0.035,8,20,Math.PI),M.green,fx,y+h/2,z,{ry:Math.PI/2})}
-  add(new THREE.BoxGeometry(0.34,0.06,w+0.22),M.woodDark,x0-0.1,y-h/2-0.02,z);   // pervaz (boşluğun altından biraz yüksek)
-  add(new THREE.BoxGeometry(0.03,0.03,w),M.green,x0-0.1,y-0.05,z);add(new THREE.BoxGeometry(0.03,h+w/2-0.04,0.03),M.green,x0-0.1,y+w/4,z);
-  // askı: üstte küçük çivi + iki ip
-  add(new THREE.SphereGeometry(0.014,8,6),M.gold,x0-0.075,y+0.42,z);
-  for(const s of [-1,1]){const r=add(new THREE.CylinderGeometry(0.004,0.004,0.17,4),M.dark,x0-0.075,y+0.34,z+s*0.08,{sh:false});r.rotation.x=s*0.52}
-  return g})();
-OPCAP.side.objs.push(SIDEG);
+// (V160) kapının yanındaki dikey cam ve arkasındaki AÇIK/KAPALI tabelası kaldırıldı: kullanıcı isteği
 // ---------- tezgah arkası raf: ahşap raflar, demir konsollar, kavanozlar, fincanlar, demlik, sarkan bitki ----------
 function buildBackShelf(bx,bw){const g=new THREE.Group();g.userData.static=true;PARENT.add(g);const zw=-4;const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
   const add=(geo,mat,x,y,z,o={})=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(o.rx)m.rotation.x=o.rx;if(o.ry)m.rotation.y=o.ry;if(o.rz)m.rotation.z=o.rz;m.castShadow=o.sh!==false;m.receiveShadow=true;g.add(m);return m};
@@ -6119,7 +6098,7 @@ function kShelfVis(){if(KSHELF)KSHELF.visible=!!shelfWall()}
 function opValid(o){return o&&(o.wall==='left'||o.wall==='back')&&isFinite(o.t)}
 function layoutBoot(){const L=S.layout;if(!L)return;let sh=false;
   if(L.op){for(const k in OP)if(opValid(L.op[k])){OP[k]={wall:L.op[k].wall,t:+L.op[k].t};sh=true}}else if(L.w!=null&&L.w!==OP.win.t){OP.win={wall:'back',t:L.w};sh=true}
-  if(sh){buildShell();if(opCheck()){console.warn('kayıtlı kapı/pencere yeri geçersiz:',opCheck());OP.door={wall:'left',t:1.8};OP.side={wall:'left',t:0.55};OP.win={wall:'back',t:1.6};S.layout.op=null;buildShell()}try{envShell();ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}
+  if(sh){buildShell();if(opCheck()){console.warn('kayıtlı kapı/pencere yeri geçersiz:',opCheck());OP.door={wall:'left',t:1.8};OP.win={wall:'back',t:1.6};S.layout.op=null;buildShell()}try{envShell();ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}
   const pk=typeof L.k==='number'?{x:L.k,z:0,r:0}:L.k,pc=typeof L.c==='number'?{x:L.c,z:0,r:0}:L.c;layBase();
   if(!pk&&!pc)return;const k=pk||{x:0,z:0,r:0},c=pc||{x:0,z:0,r:0};
   const why=layoutCheck(k,c,true);if(why){console.warn('kayıtlı tezgâh/kasa yeri geçersiz:',why);S.layout={w:L.w,op:L.op};return}
@@ -6163,13 +6142,13 @@ function layoutCheck(k,c,boot){k=k||KP;c=c||CP;const L=layBase();
 {const _t=editTap;editTap=function(x,y){const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
   const fh=raycaster.intersectObjects([...FURN.values()].map(R=>R.group),true),bh=raycaster.intersectObjects([KG,CG].filter(Boolean),true);
   if(bh.length&&(!fh.length||bh[0].distance<fh[0].distance)){let o=bh[0].object;while(o&&!o.userData.block)o=o.parent;if(o){layStart(o.userData.block);return}}
-  {const og=[OPG.door,OPG.side,SHELL.win].filter(o=>o&&o.visible!==false);const near=fh.length?fh[0].distance:1e9;
+  {const og=[OPG.door,SHELL.win].filter(o=>o&&o.visible!==false);const near=fh.length?fh[0].distance:1e9;
     const oh=raycaster.intersectObjects(og,true).filter(h=>{let o=h.object;while(o){if(o.visible===false)return false;o=o.parent}return true});
     if(oh.length&&oh[0].distance<near){let o=oh[0].object;while(o&&!o.userData.opening)o=o.parent;if(o){layStart(o.userData.opening);return}}}
   if(LAY.on)return;_t(x,y)}}
-{const _d=drawEditBar;drawEditBar=function(){if(LAY.on){layBar();return}_d();const m=$('placeMsg');if(m&&UI.edit==null)m.textContent='Düzenlemek istediğin eşyaya dokun · tezgâh, kasa, kapı ve pencereler de taşınır'}}
+{const _d=drawEditBar;drawEditBar=function(){if(LAY.on){layBar();return}_d();const m=$('placeMsg');if(m&&UI.edit==null)m.textContent='Düzenlemek istediğin eşyaya dokun · tezgâh, kasa, kapı ve pencere de taşınır'}}
 {const _x=exitEdit;exitEdit=function(){if(LAY.on)layCancel();_x()}}
-const isOp=b=>b==='door'||b==='side'||b==='win';
+const isOp=b=>b==='door'||b==='win';
 function layStart(b){if(b==='w')b='win';if(!LAY.on){LAY.k0={...KP};LAY.c0={...CP};LAY.w0=WIN.x;LAY.op0=JSON.parse(JSON.stringify(OP))}LAY.on=b;UI.edit=null;try{if(selRing){scene.remove(selRing);selRing=null}}catch(e){}sfx('tap');layMark();layBar()}
 const opMoved=()=>JSON.stringify(OP)!==JSON.stringify(LAY.op0||OP);
 const layMoved=()=>!poseEq(KP,LAY.k0)||!poseEq(CP,LAY.c0)||opMoved();
@@ -6223,7 +6202,7 @@ function opCheck(){const D=OP_DIM();for(const q in OP){const o=OP[q],[a,b]=wallS
 // duvardaki süs yeri: duvarın dışında, bir açıklığın üstünde ya da tezgâh raflarının arkasında mı?
 function slotBlocked(i,kp){const sl=WALL_SLOTS[i];if(!sl)return 'out';const wall=sl.ry?'left':'back',t=sl.ry?sl.z:sl.x,[a,b]=wallSpan(wall);if(t<a+0.35||t>b-0.35)return 'out';
   const sw=shelfWall(kp);if(sw&&sw.wall===wall&&t>(wall==='back'?sw.b.minX:sw.b.minZ)-0.3&&t<(wall==='back'?sw.b.maxX:sw.b.maxZ)+0.3)return 'shelf';
-  const D=OP_DIM();for(const q in OP)if(OP[q].wall===wall&&Math.abs(t-OP[q].t)<D[q].w/2+(q==='side'?-0.05:q==='door'?0.3:0.35))return 'win';return false}
+  const D=OP_DIM();for(const q in OP)if(OP[q].wall===wall&&Math.abs(t-OP[q].t)<D[q].w/2+(q==='door'?0.3:0.35))return 'win';return false}
 {const _v=validatePlacement;validatePlacement=function(rec,...a){const r=_v(rec,...a);if(r)return r;const c=CAT[rec.id];if(c&&c.kind==='walldecor'){const b=slotBlocked(rec.slot);if(b==='shelf')return 'Burası tezgâh raflarının arkasında kalıyor';if(b==='win')return 'Burası kapı ya da pencerenin üstü';if(b)return 'Duvarda boş yer yok'}return null}}
 // tezgâh rafları birleştirilsin (p36 sonrası kurulan gruplar)
 {const _b=buildKitchen;buildKitchen=function(){_b();try{KG.traverse(o=>{if(o.userData&&o.userData.static&&!o.userData.merged){mergeStatic(o);o.userData.merged=true}})}catch(e){}}}
