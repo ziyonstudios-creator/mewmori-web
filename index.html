@@ -647,7 +647,7 @@ function envShell(){if(ENV.shell){scene.remove(ENV.shell);disposeTree(ENV.shell)
     for(const [x,z] of [[LOT.x0,LOT.z0],[LOT.x1,LOT.z0],[LOT.x0,LOT.z1],[LOT.x1,LOT.z1]])box(0.16,0.5,0.16,T(0xfbf6ec),x,0.0,z)}finally{PARENT=P0}}
 // kamera bir duvarın arkasına geçince o duvar (ve üstündekiler) gizlenir: kafenin içi her açıdan görünür
 function wallMeshes(){const back=[],left=[],b=new THREE.Box3();
-  scene.traverse(o=>{if(!o.isMesh||o.isSkinnedMesh)return;let p=o,skip=false,tag=null;while(p){if(p.userData&&p.userData.isChar){skip=true;break}if(p.userData&&p.userData.wall)tag=p.userData.wall;p=p.parent}if(skip)return;if(tag){(tag==='left'?left:back).push(o);return}b.setFromObject(o);
+  scene.traverse(o=>{if(!o.isMesh||o.isSkinnedMesh)return;let p=o,skip=false,tag=null;while(p){if(p.userData&&(p.userData.isChar||p.userData.wallKeep)){skip=true;break}if(p.userData&&p.userData.wall)tag=p.userData.wall;p=p.parent}if(skip)return;if(tag){(tag==='left'?left:back).push(o);return}b.setFromObject(o);
     if(b.min.z>RM.z0-0.45&&b.max.z<RM.z0+0.18&&b.min.x>RM.x0-0.6&&b.max.x<RM.x1+0.6)back.push(o);
     else if(b.min.x>RM.x0-0.45&&b.max.x<RM.x0+0.18&&b.min.z>RM.z0-0.6&&b.max.z<RM.z1+0.6)left.push(o)});return {back,left}}
 function envWalls(){const c=camera.position,hb=c.z<RM.z0+0.5,hl=c.x<RM.x0+0.5;if(hb===ENV.hide.back&&hl===ENV.hide.left)return;
@@ -2883,8 +2883,8 @@ function renderMarket(){const tabs=$('mkTabs');tabs.innerHTML=MK_TABS.map(t=>`<b
   if(UI.tab==='upg'){renderUpg(g);return}
   if(UI.tab==='expand'){renderExpand(g);return}
   if(UI.tab==='store'){const st=S.furniture.filter(f=>f.stored);g.innerHTML=st.length?st.map(f=>`<button class="card" type="button" data-uid="${f.uid}" aria-current="${UI.sel==='u'+f.uid}"><div class="th"><img src="${itemThumb(f.id)}" alt=""></div><b>${CAT[f.id].name}</b><span class="price">Ücretsiz yerleştir</span></button>`).join(''):'<div class="empty">Depon boş. Düzenle modunda eşyaları depoya kaldırabilirsin.</div>'}
-  else{items=CATALOG.filter(c=>(UI.tab==='counter'?c.cat==='counter':(c.kind===UI.tab&&c.cat!=='counter')||(UI.tab==='decor'&&c.kind==='walldecor'))&&catShown(c)&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
-    g.innerHTML=items.map(c=>{const lock=S.lvl<c.lvl;const owned=S.owned[c.id];const using=(c.kind==='wall'&&S.wall===c.id)||(c.kind==='floor'&&S.floor===c.id)||(c.kind==='equip'&&owned);
+  else{items=CATALOG.filter(c=>catTab(c)===UI.tab&&catShown(c)&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
+    g.innerHTML=items.map(c=>{const lock=S.lvl<c.lvl;const owned=S.owned[c.id];const using=(c.kind==='wall'&&S.wall===c.id)||(c.kind==='floor'&&S.floor===c.id)||(c.kind==='equip'&&owned)||catUsing(c);
       return `<button class="card${lock?' locked':''}" type="button" data-id="${c.id}" aria-current="${UI.sel===c.id}"><div class="th"><img src="${itemThumb(c.id)}" alt=""></div>${lock?`<span class="tag">${ic('lock')}Sv ${c.lvl}</span>`:''}${using?'<span class="own">Kullanımda</span>':owned&&c.kind!=='table'&&c.kind!=='decor'&&c.kind!=='walldecor'?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${c.price?ic('coin')+c.price:'Ücretsiz'}</span></button>`}).join('')}
   g.onclick=e=>{const b=e.target.closest('.card');if(!b)return;if(b.dataset.uid){UI.sel='u'+b.dataset.uid}else{UI.sel=b.dataset.id;previewSurface(UI.sel)}renderMarket()};
   renderDetail()}
@@ -12998,6 +12998,8 @@ const PK_COUNTRY={it:'İtalya',tr:'Türkiye',jp:'Japonya',fr:'Fransa'};
 // kayıt alanları: loadState yalnız defaultState'te bulunan anahtarları okur → yeni alanlar buraya eklenir
 // rpGot: Royal Pass ile verilen paket eşyaları · kTheme: seçili tezgâh/kasa teması · oStyle: seçili kapı/pencere stili
 {const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.rpGot={};s.kTheme=null;s.oStyle=null;return s}}
+// market sekmesi: tezgâh temaları ve vitrin 'counter', duvar süsleri 'decor', kapı/pencere stilleri 'wall' sekmesinde
+function catTab(c){return c.cat==='counter'?'counter':c.kind==='walldecor'?'decor':c.kind==='ostyle'?'wall':c.kind}
 function catShown(c){if(c.rp)return !!(S.rpGot&&S.rpGot[c.id]);if(!c.ev)return true;return EVMODE?c.ev===EVMODE:!!(S.evGot&&S.evGot[c.id])}
 // kataloğa kayıt ekle (p5'teki CATALOG/CAT kurulduktan sonra): etkinlik kafesinde aşama = seviye kilidi
 function pkAdd(c){if(CAT[c.id])return;c.pk=c.ev||'rp';if(c.lvl==null)c.lvl=99;if(EVMODE&&c.ev===EVMODE)c.lvl=c.evLvl;CATALOG.push(c);CAT[c.id]=c}
@@ -13131,22 +13133,63 @@ for(const [k,N] of PK_RP)pkAdd({id:'k_rp_'+k,kind:'ktheme',cat:'counter',tema:k,
 function kThemeGroup(c){const g=new THREE.Group(),P0=PARENT,G0=GRP_PARENT,off=KIT_EXT.off;PARENT=g;GRP_PARENT=g;
   try{const {x,z,w,d,h}=CASH;if(c.tema){PK_KIT[c.pk].cash(c.tema);PK_KIT[c.pk].reg(c.tema,x-0.25)}else{KIT_EXT.off=true;box(w,h-0.08,d,M.green,x,(h-0.08)/2,z);box(w+0.12,0.1,d+0.12,M.wood,x,h-0.03,z,{round:0.02});counterFront(x,w,z+d/2,h);makeRegister(x-0.25)}}
   finally{PARENT=P0;GRP_PARENT=G0;KIT_EXT.off=off}return g}
-{const _ft=furnThumb;furnThumb=function(id){const c=CAT[id];if(c&&c.kind==='ktheme')return thumb('f:'+id,()=>kThemeGroup(c),{dir:[0.55,0.55,1],pad:1.02});return _ft.apply(this,arguments)}}
+{const _ft=furnThumb;furnThumb=function(id){const c=CAT[id];if(c&&c.kind==='ktheme')return thumb('f:'+id,()=>kThemeGroup(c),{dir:[0.55,0.55,1],pad:1.02});if(c&&c.kind==='ostyle')return thumb('f:'+id,()=>oStyleGroup(c),{dir:[-1,0.3,0.55],pad:1.0});return _ft.apply(this,arguments)}}
 // market: ayrıntı + satın alma + "Kullanımda" etiketi
-{const _rd=renderDetail;renderDetail=function(){const c=CAT[UI.sel];if(!c||c.kind!=='ktheme'||UI.tab==='clothes'||UI.tab==='upg'||UI.tab==='expand')return _rd.apply(this,arguments);
-    const d=$('mkDetail');d.hidden=false;const lock=S.lvl<c.lvl,owned=!!(S.owned[c.id]||c.id==='k_default'),cur=(S.kTheme||'k_default')===c.id,afford=S.coins>=c.price;let btn='',note=c.desc||'';
+const PK_SEL={ktheme:{cur:()=>S.kTheme||'k_default',def:'k_default',set:id=>setKTheme(id)},ostyle:{cur:()=>S.oStyle||'o_default',def:'o_default',set:id=>setOStyle(id)}};
+{const _rd=renderDetail;renderDetail=function(){const c=CAT[UI.sel],K=c&&PK_SEL[c.kind];if(!K||UI.tab==='clothes'||UI.tab==='upg'||UI.tab==='expand')return _rd.apply(this,arguments);
+    const d=$('mkDetail');d.hidden=false;const lock=S.lvl<c.lvl,owned=!!(S.owned[c.id]||c.id===K.def),cur=K.cur()===c.id,afford=S.coins>=c.price;let btn='',note=c.desc||'';
     if(lock)btn=`<button class="btn" type="button" disabled>${ic('lock')}Seviye ${c.lvl} gerekli</button>`;
     else if(cur)note+=' Şu an kullanılıyor.';
     else{btn=owned?`<button class="btn green" type="button" id="dAct">${ic('check')}Uygula</button>`:`<button class="btn" type="button" id="dAct" ${afford?'':'disabled'}>${ic('coin')}${c.price} · Satın al</button>`;note+=' Uygulanınca kafe kısa bir an yeniden açılır.';if(!owned&&!afford)note+=' Yeterli paran yok.'}
     d.innerHTML=`<div class="th"><img src="${itemThumb(c.id)}" alt=""></div><div class="tx"><b>${c.name}</b><p>${note}</p><div class="row">${btn}</div></div>`;const a=$('dAct');if(a)a.onclick=()=>buy(c)}}
-{const _by=buy;buy=function(c){if(!c||c.kind!=='ktheme')return _by.apply(this,arguments);if(S.lvl<c.lvl)return;
-    if(!S.owned[c.id]&&c.id!=='k_default'){if(S.coins<c.price)return;if(c.price)addCoins(-c.price,'decor');S.owned[c.id]=true;firstXP(c.id)}sfx('buy');markDirty();setKTheme(c.id)}}
-{const _rm=renderMarket;renderMarket=function(){const r=_rm.apply(this,arguments);try{if(UI.tab==='counter'){const b=$('mkGrid').querySelector(`.card[data-id="${S.kTheme||'k_default'}"]`);
-      if(b){let o=b.querySelector('.own');if(!o){o=document.createElement('span');o.className='own';const th=b.querySelector('.th');th?th.after(o):b.prepend(o)}o.textContent='Kullanımda'}}}catch(e){}return r}}
+{const _by=buy;buy=function(c){const K=c&&PK_SEL[c.kind];if(!K)return _by.apply(this,arguments);if(S.lvl<c.lvl)return;
+    if(!S.owned[c.id]&&c.id!==K.def){if(S.coins<c.price)return;if(c.price)addCoins(-c.price,'decor');S.owned[c.id]=true;firstXP(c.id)}sfx('buy');markDirty();K.set(c.id)}}
+// markette "Kullanımda" etiketi: kart şablonu (p11) catUsing(c) sorar
+function catUsing(c){const K=PK_SEL[c.kind];return !!(K&&K.cur()===c.id)}
+
+// ---------- 5) KAPI + PENCERE STİLLERİ ----------
+// S.oStyle = seçili stil kaydının kimliği ('o_it_toscana' …; yoksa oyunun klasik kapı ve penceresi). Paket çerçevesi: x duvar boyunca, y yukarı,
+// z DIŞARI (+); duvarın iç yüzü z=0, dış yüzü z=0,2.
+//  • Kapı: klasik pervaz, kemer, tepe camı ve çan kaldırılır; kanatlar xxDoorLeaf ile yenilenir (menteşe/animasyon aynı: DOORA.leaves),
+//    xxDoorSurround kapının yakalanmış parçalarına (OPCAP.door) eklenir → kapı hangi duvara taşınırsa onunla gider.
+//  • Pencere: buildShell her kurulduğunda SHELL.win'in camı kalır, klasik doğrama yerine xxWindow eklenir (y ekseninde π döndürülür).
+//  • Görünürlük: süslerin çoğu duvarın DIŞ yüzünde. Kamera içerideyken duvar onları kendiliğinden örter. Kamera dışarıya geçip oyun o duvarı
+//    gizlediğinde PENCERE duvarla birlikte gizlenir (boşlukta asılı pencere tuhaf durur); KAPI ise görünür kalır (userData.wallKeep, p1b
+//    wallMeshes): sokak tarafından bakınca süslü kapı tek başına bir giriş takı gibi durur, kanatlar müşteri girerken açılır.
+//  • Stil kayıt yüklenirken uygulanır; oyun sırasında değişince sayfa kısa açılışla yeniden yüklenir (tezgâh temasıyla aynı yol).
+const PK_OPEN={it:{leaf:itDoorLeaf,sur:itDoorSurround,win:itWindow},tr:{leaf:trDoorLeaf,sur:trDoorSurround,win:trWindow},jp:{leaf:jpDoorLeaf,sur:jpDoorSurround,win:jpWindow},
+  fr:{leaf:frDoorLeaf,sur:frDoorSurround,win:frWindow},rp:{leaf:rpDoorLeaf,sur:rpDoorSurround,win:rpWindow}};
+const PKO={door:false,sur:null};
+function oStyleOf(){let c=null;try{c=CAT[S.oStyle]}catch(e){}return c&&c.kind==='ostyle'&&c.tema&&PK_OPEN[c.pk]?c:null}
+function pkDoorApply(){const c=oStyleOf();if(!c||PKO.door||!DOORA.leaves.length)return;const F=PK_OPEN[c.pk],C=OPCAP.door;let par=null;
+  for(const o of C.objs.slice())if(o.isMesh||o===PKO.sur){if(o.parent)o.parent.remove(o);C.objs.splice(C.objs.indexOf(o),1);try{disposeTree(o)}catch(e){}}   // klasik pervaz, kemer, tepe camı, çan (ya da önceki paket çevresi); kanatlar grup: yenilenir
+  const W=DOOR.w/2-0.005;
+  for(const L of DOORA.leaves){const old=L.p,np=F.leaf(W,DOOR.h-0.01,L.side,c.tema);np.position.copy(old.position);np.rotation.copy(old.rotation);np.userData.wallKeep=true;par=old.parent||scene;par.remove(old);par.add(np);
+    const i=C.objs.indexOf(old);if(i>=0)C.objs[i]=np;else C.objs.push(np);L.p=np;try{disposeTree(old)}catch(e){}try{mergeStatic(np.children[0]||np)}catch(e){}}
+  const G=F.sur(c.tema);G.position.set(OPB.door.x0,0,OPB.door.t);G.rotation.y=-Math.PI/2;G.userData.wallKeep=true;(par||scene).add(G);C.objs.push(G);try{mergeStatic(G)}catch(e){}
+  G.traverse(m=>{if(m.isMesh)m.receiveShadow=true});PKO.sur=G;PKO.door=true}
+function pkWindowApply(){const c=oStyleOf(),WG=SHELL.win;if(!c||!WG||WG.userData.pkWin)return;for(const o of WG.children.slice(1)){WG.remove(o);try{disposeTree(o)}catch(e){}}
+  const Wg=PK_OPEN[c.pk].win(c.tema);Wg.rotation.y=Math.PI;WG.add(Wg);try{mergeStatic(Wg)}catch(e){}WG.userData.pkWin=true}
+function pkBootOpen(){if(!oStyleOf())return;try{pkDoorApply();pkWindowApply();ENV.hide={back:null,left:null};renderer.shadowMap.needsUpdate=true}catch(e){console.warn('paket kapı/pencere',e)}}
+{const _bs=buildShell;buildShell=function(){const r=_bs.apply(this,arguments);try{pkWindowApply();if(oStyleOf())ENV.hide={back:null,left:null}}catch(e){console.warn('paket pencere',e)}return r}}
+function setOStyle(id){const c=CAT[id];if(!c||c.kind!=='ostyle')return;if((S.oStyle||'o_default')===id)return;S.oStyle=c.tema?id:null;try{clearTimeout(saveTimer)}catch(e){}saveNow();RESETTING=true;
+  const o=document.createElement('div');o.className='evtravel';o.innerHTML=`<div><b>Kapı ve pencere yenileniyor…</b></div>`;document.body.appendChild(o);setTimeout(()=>gameReload(),500)}
+pkAdd({id:'o_default',kind:'ostyle',name:'Klasik kapı ve pencere',price:0,lvl:1,own:true,desc:'Yeşil doğramalı, kemerli ilk kapı ve pencere.'});CAT.o_default.pk=null;
+const PK_OSTYLES={it:[['trattoria','Trattoria'],['toscana','Toskana'],['positano','Positano'],['venezia','Venedik']],tr:[['carsi','Çarşı'],['bodrum','Bodrum'],['kapadokya','Kapadokya'],['konak','Konak']],
+  jp:[['izakaya','İzakaya'],['namako','Namako'],['ryokan','Ryokan'],['sakura','Kiraz çiçeği']],fr:[['bistro','Bistro'],['provence','Provence'],['patisserie','Pastane'],['paris','Paris']]};
+for(const ev in PK_OSTYLES)PK_OSTYLES[ev].forEach(([k,N],i)=>pkAdd({id:'o_'+ev+'_'+k,kind:'ostyle',tema:k,name:N+' kapısı ve penceresi',price:[250,320,400,480][i],ev,evLvl:[3,6,8,10][i],desc:PK_COUNTRY[ev]+' paketinden kapı kanatları, kapı çevresi ve pencere.'}));
+for(const [k,N] of PK_RP)pkAdd({id:'o_rp_'+k,kind:'ostyle',tema:k,name:N+' kapısı ve penceresi',price:0,rp:k,desc:'Kapı kanatları, kapı çevresi ve pencere. Royal Pass ödülü.'});
+// küçük resim: kapı çevresi + kanatlar, sokak tarafından
+function oStyleGroup(c){const g=new THREE.Group(),W=DOOR.w/2-0.005;
+  if(c.tema){const F=PK_OPEN[c.pk],s=F.sur(c.tema);s.rotation.y=-Math.PI/2;g.add(s);for(const side of [1,-1]){const p=F.leaf(W,DOOR.h-0.01,side,c.tema);p.position.set(0.03,0,-side*DOOR.w/2);g.add(p)}}
+  else{for(const side of [1,-1]){const p=doorLeaf(W,DOOR.h-0.01,side);p.position.set(0.03,0,-side*DOOR.w/2);g.add(p)}
+    for(const s of [-1,1]){const m=new THREE.Mesh(new THREE.BoxGeometry(0.26,DOOR.h,0.12),M.steel);m.position.set(-0.06,DOOR.h/2,s*(DOOR.w/2+0.06));g.add(m)}
+    const a=new THREE.Mesh(new THREE.TorusGeometry(DOOR.w/2+0.06,0.06,8,28,Math.PI),M.steel);a.rotation.y=Math.PI/2;a.position.set(0.02,DOOR.h,0);g.add(a)}
+  return g}
 
 // ---------- kayıt: getirilen / ödül verilen eşyalar markette açık ----------
 {const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{if(!S.rpGot)S.rpGot={};for(const id in S.rpGot)if(S.rpGot[id]&&CAT[id])CAT[id].lvl=1;
-    if(!EVMODE)for(const id in S.evGot||{})if(S.evGot[id]&&CAT[id]&&CAT[id].pk)CAT[id].lvl=1;pkClothSync();pkBootTheme()}catch(e){console.warn('paket',e)}return r}}
+    if(!EVMODE)for(const id in S.evGot||{})if(S.evGot[id]&&CAT[id]&&CAT[id].pk)CAT[id].lvl=1;pkClothSync();pkBootTheme();pkBootOpen()}catch(e){console.warn('paket',e)}return r}}
 
 // ---------- Etkinlikler › Dünya Keşfi: paket kıyafetleri de listede; hazır olan her şeyi tek dokunuşla getir ----------
 function evClothTake(id,k,quiet){const c=CLO[k];if(!c||!evItemState(id,c).ok)return false;S.evGot[k]=true;pkClothSync();if(!quiet){sfx('goal');markDirty();saveNow();toast(`<b>${c.name}</b><br>Artık Kıyafet Dolabında`,`<span class="ic">${clothIcon(c.slot==='outfit'?(c.set.apron||c.set.hat):c.id)}</span>`,2600);renderEvents();evBadge()}return true}
