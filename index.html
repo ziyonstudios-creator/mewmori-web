@@ -14625,6 +14625,95 @@ function oWinGroup(c){const g=new THREE.Group();
 {const _ft=furnThumb;furnThumb=function(id){const c=CAT[id];if(c&&c.kind==='odoor')return thumb('f:'+id,()=>oDoorGroup(c),{dir:[-1,0.3,0.55],pad:1.0});
   if(c&&c.kind==='owin')return thumb('f:'+id,()=>oWinGroup(c),{dir:c.tema&&c.pk!=='gen'?[-0.5,0.22,-1]:[0.5,0.22,1],pad:1.0});return _ft.apply(this,arguments)}}
 
+// ================= SUNUCU HAZIRLIĞI (V163): ödüllü reklam · TL fiyatları · Royal Pass fiyatı · Apple / Google girişi =================
+// Kullanıcı isteği (11 Kasım 21:05): reklam izleme günde 2'şer kez → altın, elmas, +15 enerji, malzeme torbalarını anında yenileme;
+// satın almalar 0,99 $'dan başlasın, TL yazılsın; Royal Pass 4,99 $ (TL); kayıt: Apple, Google, e-posta; dünya sıralaması ve diğer sunucu işleri.
+// Bu dosya İSTEMCİ tarafını ve bağlantı sözleşmelerini kurar. Gerçek reklam ağı, mağaza ödemesi ve Apple/Google anahtarları kullanıcının
+// kendi hesaplarından bağlanır (anahtar/şifre bu oturumda girilmez):
+//  • Reklam: window.TabbyAds.showRewarded(tur) → Promise<boolean> (uygulama sarmalayıcısı / reklam SDK'sı sağlar). Yoksa "deneme reklamı"
+//    (5 sn sayaç, açıkça etiketli) gösterilir → YAYINDAN ÖNCE gerçek sağlayıcı bağlanmalı, yoksa ödül karşılıksız verilir.
+//    Günlük sınır: S.ads (cihaz günü) + girişliyse sunucuda ad_claim() (İstanbul günü; sunucu/v163_*.sql). İşlev yoksa yerel sınır geçerli.
+//  • Satın alma: window.TabbyIAP.purchase(urunId) → {ok,store,receipt}; sonra Edge Function 'iap-verify' makbuzu doğrular (yazılacak),
+//    ancak o zaman iapGrant() ödülü verir. Köprü yokken düğmeler "yakında" der, hiçbir şey verilmez.
+//  • Apple / Google: Supabase Auth sağlayıcıları panelden açılınca çalışır (/auth/v1/settings ile denetlenir); kapalıyken "yakında".
+// Kur (9 Kasım 2026): 1 $ ≈ 50,18 TL → 0,99 $ = ₺49,99 · 4,99 $ = ₺249,99 · 9,99 $ = ₺499,99 · 19,99 $ = ₺999,99 · 49,99 $ = ₺2.499,99.
+{const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.ads=null;return s}}
+try{FIN_IN.ad='Reklam ödülleri'}catch(e){}
+// ---------- 1) ÖDÜLLÜ REKLAM ----------
+const AD_LIMIT=2,AD={busy:false};
+const AD_KINDS={coin:{t:'+200',s:'altın',n:200},gem:{t:'+5',s:'elmas',n:5},energy:{t:'+15',s:'enerji',n:15},bag:{t:'Torbalar',s:'anında dolar'}};
+const AD_ORDER=['coin','gem','energy','bag'];
+const adDay=()=>{const d=new Date(nowT());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function adS(){const d=adDay();if(!S.ads||S.ads.d!==d)S.ads={d,c:{}};return S.ads}
+const adLeft=k=>Math.max(0,AD_LIMIT-(adS().c[k]|0));
+function adUseful(k){try{if(k==='energy')return energyNow().v<energyMax();if(k==='bag')return Object.keys(S.bags||{}).some(b=>{const s=bagState(b);return s.cool>0||s.left<CONFIG.bag.limit})}catch(e){}return true}
+function adGive(k){const A=AD_KINDS[k];
+  if(k==='coin')addCoins(A.n,'ad');else if(k==='gem'){S.gems+=A.n;try{hudGems()}catch(e){}}
+  else if(k==='energy'){energyNow();S.energy.v=Math.min(energyMax(),S.energy.v+A.n)}
+  else if(k==='bag'){for(const b in S.bags){S.bags[b].n=0;S.bags[b].cd=0}}
+  adS().c[k]=(adS().c[k]|0)+1;markDirty();try{saveNow()}catch(e){}try{updateUI()}catch(e){}}
+// deneme reklamı: gerçek reklam sağlayıcısı bağlanana dek yer tutar
+function adTest(k,done){const o=document.createElement('div');o.id='adTest';let t=5,fin=false;const end=ok=>{if(fin)return;fin=true;clearInterval(iv);o.remove();done(ok)};
+  o.innerHTML=`<div class="adBox"><small>REKLAM · deneme</small><b>Burada ödüllü reklam oynayacak</b><p>Gerçek reklam ağı bağlanınca bu ekranın yerini alır.</p><i id="adT">5</i><button type="button" class="btn light" id="adX">Kapat (ödülsüz)</button></div>`;
+  $('game').appendChild(o);o.querySelector('#adX').onclick=()=>end(false);const iv=setInterval(()=>{t--;const e=o.querySelector('#adT');if(e)e.textContent=Math.max(0,t);if(t<=0)end(true)},1000)}
+function adShow(k){return new Promise(res=>{try{const P=window.TabbyAds;if(P&&typeof P.showRewarded==='function'){Promise.resolve(P.showRewarded(k)).then(ok=>res(!!ok),()=>res(false));return}}catch(e){}adTest(k,res)})}
+async function adWatch(k){const A=AD_KINDS[k];if(!A||AD.busy)return false;
+  if(adLeft(k)<=0){sfx('nope');toast('<b>Bugünlük hakkın bitti</b><br>Yarın 2 hak daha gelir',ic('lock'),2400);return false}
+  if(!adUseful(k)){sfx('nope');toast(k==='energy'?'<b>Enerjin zaten dolu</b>':'<b>Torbaların zaten dolu</b>',ic('check'),2000);return false}
+  AD.busy=true;try{const ok=await adShow(k);if(!ok){toast('Reklam tamamlanmadı, ödül verilmedi',ic('close'),2200);return false}
+    if(cloudOn()){try{const sb=await sbClient(),r=await sb.rpc('ad_claim',{p_kind:k});if(!r.error&&r.data&&r.data.ok===false){adS().c[k]=AD_LIMIT;markDirty();toast('<b>Bugünlük hakkın bitti</b><br>Yarın 2 hak daha gelir',ic('lock'),2400);return false}}catch(e){}}
+    adGive(k);sfx('goal');toast(`<b>${A.t} ${A.s}</b><br>Reklam ödülün hesabında · bugün ${adLeft(k)} hak kaldı`,ic(k==='coin'?'coin':k==='gem'?'gem':'check'),2600);return true}
+  finally{AD.busy=false;try{renderShop()}catch(e){}}}
+const AD_ART={coin:`<i class="shI coin adI"></i>`,gem:`<i class="shI gem adI"></i>`,
+  energy:`<svg class="adI" viewBox="0 0 48 48" aria-hidden="true"><path d="M27 4 L10 27 H22 L19 44 L38 19 H26 Z" fill="#ffd34d" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/></svg>`,
+  bag:`<svg class="adI" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 18 H36 L40 42 H8 Z" fill="#e9b872" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/><path d="M18 18 Q18 7 24 7 Q30 7 30 18" fill="none" stroke="#5a2f12" stroke-width="3"/><path d="M24 25 v10 M19 30 h10" stroke="#fff8ec" stroke-width="3.5" stroke-linecap="round"/></svg>`};
+// Mağaza: üçüncü sekme "Ücretsiz" + elmas paketlerinin TL fiyatları
+const IAP_PRODUCTS={gems_80:{usd:0.99,tl:'₺49,99',gems:80},gems_500:{usd:4.99,tl:'₺249,99',gems:500},gems_1200:{usd:9.99,tl:'₺499,99',gems:1200},gems_2600:{usd:19.99,tl:'₺999,99',gems:2600},gems_6500:{usd:49.99,tl:'₺2.499,99',gems:6500},
+  royalpass:{usd:4.99,tl:'₺249,99',royal:true}};
+SHOP_GEM.length=0;SHOP_GEM.push({n:80,p:'₺49,99',b:0,id:'gems_80'},{n:500,p:'₺249,99',b:20,id:'gems_500'},{n:1200,p:'₺499,99',b:45,tag:'En popüler',id:'gems_1200'},{n:2600,p:'₺999,99',b:60,id:'gems_2600'},{n:6500,p:'₺2.499,99',b:60,tag:'En iyi değer',id:'gems_6500'});
+{const _rs=renderShop;renderShop=function(){const free=UI.shopTab==='free';_rs.apply(this,arguments);const w=UI.shopW;if(!w||w.m.hidden)return;try{
+    const tabs=w.body.querySelector('.shTabs'),bal=tabs&&tabs.querySelector('.shBal');if(!tabs)return;
+    const b=document.createElement('button');b.type='button';b.dataset.st='free';b.setAttribute('aria-pressed',String(free));b.innerHTML=`<svg class="shI" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4 L20 12 L5 20 Z" fill="#7cc86a" stroke="#5a2f12" stroke-width="2.5" stroke-linejoin="round"/></svg>Ücretsiz`;
+    tabs.insertBefore(b,bal);b.onclick=()=>{UI.shopTab='free';sfx('tap');renderShop()};
+    if(free){tabs.querySelectorAll('[data-st]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.st==='free')));const row=w.body.querySelector('.shRow'),note=w.body.querySelector('.shNote');
+      row.innerHTML=AD_ORDER.map(k=>{const A=AD_KINDS[k],l=adLeft(k),use=adUseful(k);return `<div class="shCard adc"><div class="shArt">${AD_ART[k]}</div><b>${A.t}</b><small>${A.s}</small>
+        <button class="btn green" type="button" data-ad="${k}" ${l>0&&use?'':'disabled'}>${l>0?(use?`▶ İzle · ${l}/${AD_LIMIT}`:'Dolu'):'Yarın'}</button></div>`}).join('');
+      if(note)note.textContent='Kısa bir reklam izle, ödülünü al. Her ödül için günde 2 hak; haklar gece yarısı yenilenir.';
+      row.querySelectorAll('[data-ad]').forEach(x=>x.onclick=()=>{sfx('tap');adWatch(x.dataset.ad)})}
+    else if(UI.shopTab==='gem'){w.body.querySelectorAll('[data-bm]').forEach(x=>x.onclick=()=>iapBuy(SHOP_GEM[+x.dataset.bm].id))}
+  }catch(e){console.warn('mağaza',e)}}}
+// ---------- 2) SATIN ALMA (köprü + sunucu doğrulaması bağlanınca çalışır) ----------
+function iapGrant(id){const p=IAP_PRODUCTS[id];if(!p)return;if(p.gems){S.gems+=p.gems;try{hudGems()}catch(e){}}if(p.royal){rpS().royal=true;try{renderPass();rpDot()}catch(e){}}markDirty();try{saveNow()}catch(e){}sfx('levelup');
+  toast(p.royal?'<b>Royal Pass açıldı!</b><br>Royal ödüller artık senin':`<b>+${p.gems.toLocaleString('tr-TR')} elmas</b><br>Teşekkürler!`,ic('gem'),3000);try{renderShop()}catch(e){}}
+async function iapBuy(id){const p=IAP_PRODUCTS[id];if(!p)return false;const B=window.TabbyIAP;
+  if(!B||typeof B.purchase!=='function'){sfx('tap');toast(`<b>Satın alma yakında</b><br>${p.tl} · ödeme sistemi bağlanınca açılacak`,ic('gem'),2800);return false}
+  if(!cloudOn()){toast('<b>Önce giriş yap</b><br>Satın aldıkların hesabına bağlanır',ic('lock'),2600);try{authOpen('login')}catch(e){}return false}
+  try{const r=await B.purchase(id);if(!r||!r.ok)return false;const sb=await sbClient(),v=await sb.functions.invoke('iap-verify',{body:{product:id,store:r.store,receipt:r.receipt}});
+    if(v.error||!v.data||!v.data.ok)throw new Error('doğrulanamadı');iapGrant(id);return true}
+  catch(e){console.warn('satın alma',e);toast('<b>Satın alma tamamlanamadı</b><br>Paran çekildiyse destek ile iletişime geç',ic('close'),3600);return false}}
+// Royal Pass artık elmasla değil gerçek parayla açılır (4,99 $ = ₺249,99)
+rpBuy=function(){const R=rpS();if(R.royal)return;iapBuy('royalpass')};
+{const _rp=renderPass;renderPass=function(){const r=_rp.apply(this,arguments);try{const b=$('rpBuy');if(b){b.innerHTML=`${uiIc('i_crown')}Royal’i aç · ${IAP_PRODUCTS.royalpass.tl}`;b.onclick=()=>rpBuy()}}catch(e){}return r}}
+// ---------- 3) APPLE / GOOGLE İLE GİRİŞ ----------
+const OA={st:null};
+async function oaSettings(){if(OA.st)return OA.st;try{const r=await fetch(SB.url+'/auth/v1/settings',{headers:{apikey:SB.key}});OA.st=(await r.json()).external||{}}catch(e){return {}}return OA.st}
+async function oaSign(pv){const nm=pv==='apple'?'Apple':'Google';try{const st=await oaSettings();if(!st[pv]){toast(`<b>${nm} ile giriş yakında</b><br>Şimdilik e-postayla kayıt olabilirsin`,ic('lock'),2800);return}
+    const sb=await sbClient(),{error}=await sb.auth.signInWithOAuth({provider:pv,options:{redirectTo:location.href.split('#')[0].split('?')[0]}});if(error)throw error}
+  catch(e){console.warn('giriş',e);toast(`<b>${nm} ile giriş başlatılamadı</b><br>Biraz sonra yeniden dene`,ic('close'),2600)}}
+function oaFix(){try{const A=$('auth'),card=A&&A.querySelector('.acard'),tabs=card&&card.querySelector('.atabs');if(!card||!tabs||card.querySelector('.aoauth'))return;
+    const d=document.createElement('div');d.className='aoauth';d.innerHTML=`<button type="button" data-oa="apple">Apple ile devam et</button><button type="button" data-oa="google">Google ile devam et</button>`;tabs.parentElement.insertBefore(d,tabs);
+    d.onclick=e=>{const b=e.target.closest('[data-oa]');if(b){e.preventDefault();try{sfx('tap')}catch(_){}oaSign(b.dataset.oa)}}}catch(e){}}
+oaFix();setInterval(oaFix,700);
+{const st=document.createElement('style');st.textContent=`
+.shCard.adc .shArt{display:grid;place-items:center;height:58px}.shCard.adc .adI{width:46px;height:46px;display:block}.shCard.adc .btn{font-size:13px;padding:6px 10px;white-space:nowrap}
+#adTest{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(20,12,6,.86)}
+#adTest .adBox{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:min(86%,420px);padding:18px 20px;border:3px solid #5a2f12;border-radius:18px;background:#fff8ec;font-family:var(--font-display);color:#4a2a14;text-align:center}
+#adTest small{font-weight:900;letter-spacing:.08em;font-size:11px;color:#a0522d}#adTest b{font-size:18px;font-weight:900}#adTest p{margin:0;font-size:13px;font-weight:700;opacity:.8}
+#adTest i{font-style:normal;font-weight:900;font-size:34px;line-height:1;width:64px;height:64px;display:grid;place-items:center;border-radius:50%;border:4px solid #5a2f12;background:#ffe590}
+#auth .aoauth{display:flex;gap:8px}#auth .aoauth button{flex:1;appearance:none;height:38px;border:3px solid var(--ink);border-radius:999px;background:#fff;box-shadow:0 2px 0 var(--ink);font-family:var(--font-display);font-weight:800;font-size:13.5px;color:var(--ink);cursor:pointer;white-space:nowrap;padding:0 8px}
+html.land #auth .aoauth button{height:34px;font-size:12.5px}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
