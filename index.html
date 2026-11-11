@@ -1811,12 +1811,13 @@ function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
     for(const o of furnBoxes(exUid))if(ovl(b,o,-0.045))return 'Başka bir eşyaya çarpıyor';
     for(const z of NO_BUILD)if(ovl(b,z))return 'Bu alan yürüme yolu (kapı / tezgah önü)';
     for(const ch of allChars())if(inside(ch.pos,b,0.25))return 'Bir kedinin üstüne konamaz'}
-  for(const p of points){if(p.x<ROOM.minX||p.x>ROOM.maxX||p.z<ROOM.minZ||p.z>ROOM.maxZ)return 'Sandalyenin yanında yürüme payı kalmalı';
-    for(const o of OBST.concat(furnBoxes(exUid)))if(inside(p,o,0.12))return 'Sandalyenin yanında yürüme payı kalmalı'}
-  // erişim: kapıdan tüm masalara, garson köşesine ve tezgaha yol kalmalı
-  const g=makeGrid(OBST.concat(furnBoxes(exUid),boxes));const seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
-  const need=[PREP_SPOT,PICKUP_SPOT,...points];for(const [u,R] of FURN)if(u!==exUid&&R.table)for(const s of R.table.seats)need.push(s.A,s.serve);
-  for(const p of need)if(!pointReachable(g,seen,p))return 'Bu konum bir yolu kapatıyor';
+  // (V164) SERBEST YERLEŞTİRME: yol denetimi ve sandalye yanındaki yürüme payı şartı kaldırıldı (kullanıcı isteği). Korunan tek boşluk
+  // garsonun servis noktasıdır: bu masanın servis noktaları boş olmalı; bu eşya da başka bir masanın servis noktasına oturmamalı.
+  // Eşyalar bir hedefi çevirirse karakterler mobilyanın içinden "yumuşak yol" ile geçer (p86_serbest.js).
+  {const lx0=RM.x0+0.12,lx1=RM.x1+GDN.r-0.12,lz0=RM.z0+0.12,lz1=RM.z1+GDN.f-0.12,others=OBST.concat(furnBoxes(exUid));
+    for(let i=1;i<points.length;i+=2){const p=points[i];if(p.x<lx0||p.x>lx1||p.z<lz0||p.z>lz1)return 'Garsonun servis yapacağı boşluk kalmalı';
+      for(const o of others)if(inside(p,o,0.08))return 'Garsonun servis yapacağı boşluk kalmalı'}
+    for(const [u,R] of FURN)if(u!==exUid&&R.table)for(const s of R.table.seats)for(const b of boxes)if(inside(s.serve,b,0.08))return 'Burası bir masanın servis boşluğu'}
   return null}
 
 // ================= OYUN DURUMU + KAYIT =================
@@ -6142,13 +6143,13 @@ function layoutCheck(k,c,boot){k=k||KP;c=c||CP;const L=layBase();
     for(const b of R.boxes||[])if(boxOv(b,NO_BUILD[0])||boxOv(b,DOOR_LANE))return `“${ck.name}” kapının önünü kapatıyor: önce onu taşı`;
     for(const b of R.boxes||[])for(const a of kb.concat(cb,kz,cz))if(boxOv(a,b))return `“${ck.name}” yolu kapatıyor: önce onu taşı`}
   // erişim: kapıdan tezgâh önüne, teslim noktalarına, kasa sırasına ve garson köşesine yol kalmalı
-  const g=makeGrid(fixed.concat(kb,cb,furnBoxes()));const seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
+  const g=makeGrid(fixed.concat(kb,cb));const seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);   // (V164) mobilya sayılmaz: yumuşak yol
   const P=pt=>blkW(k,K_PIV,pt.x,pt.z),Q=pt=>blkW(c,C_PIV,pt.x,pt.z),Lb=L.P;
   const need=[...Lb.filter(p=>p.b==='k'&&(PREP_SPOTS.includes(p.o)||PICK_SPOTS.includes(p.o))).map(P),...(noC?[]:[...Lb.filter(p=>p.b==='c'&&QLINE.includes(p.o)).map(Q),Q({x:CASH.x,z:-1.98})])];
   for(const p of need)if(!pointReachable(g,seen,p))return 'Bu yerleşim bir yolu kapatıyor (tezgâh önü ya da kasa sırası)';
   // çalışanların arkaya geçtiği yer de açık olmalı
   // (çalışanlar dar aralıktan da geçer: bu denetim daha ince bir payla yapılır)
-  if(!noC){const sh=b=>({minX:b.minX+0.16,maxX:b.maxX-0.16,minZ:b.minZ+0.16,maxZ:b.maxZ-0.16});const g2=makeGrid(fixed.concat(kb,cb,furnBoxes()).map(sh));
+  if(!noC){const sh=b=>({minX:b.minX+0.16,maxX:b.maxX-0.16,minZ:b.minZ+0.16,maxZ:b.maxZ-0.16});const g2=makeGrid(fixed.concat(kb,cb).map(sh));
     if(!pointReachable(g2,floodFrom(g2,DOOR_IN.x,DOOR_IN.z),Q({x:CASH_GATE.L,z:CASH_GATE.front})))return 'Kasiyerin tezgâh arkasına geçeceği yer kapalı'}
   return null}
 // ---- düzenle modu: tezgâha / kasaya / pencereye dokununca taşıma çubuğu ----
@@ -14713,6 +14714,41 @@ oaFix();setInterval(oaFix,700);
 #auth .aoauth{display:flex;gap:8px}#auth .aoauth button{flex:1;appearance:none;height:38px;border:3px solid var(--ink);border-radius:999px;background:#fff;box-shadow:0 2px 0 var(--ink);font-family:var(--font-display);font-weight:800;font-size:13.5px;color:var(--ink);cursor:pointer;white-space:nowrap;padding:0 8px}
 html.land #auth .aoauth button{height:34px;font-size:12.5px}
 `;document.head.appendChild(st)}
+
+// ================= SERBEST YERLEŞTİRME + YUMUŞAK YOL (V164) =================
+// Kullanıcı isteği (11 Kasım 16:49): "ızgara taban sağlayıp eşyaların her yere konulabilecek şekilde… herhangi bir engel olmasın eşyaları
+// taşırken. Olabilecek engeller sadece: garsonun masaya servis edebileceği boşluklar, kasa sırası, tezgâh önü gibi alanlar. Gerekirse
+// çalışanlar, müşteriler iç içe geçebilecek şekilde tasarla."
+//  • YERLEŞTİRME (p9 validatePlacement): "bu konum bir yolu kapatıyor" denetimi ve sandalye yanındaki yürüme payı şartı KALDIRILDI.
+//    Kalan kurallar: kafenin içinde olmak, bir karede tek eşya, tezgâh/kasa ve sabit eşyaya çarpmamak, yasak bölgeler (NO_BUILD: kapı girişi,
+//    tezgâh önü, kasa sırası, bahçe kapısı, kapı şeridi) ve GARSONUN SERVİS BOŞLUĞU: masanın her koltuğunun servis noktası boş kalmalı;
+//    başka bir eşya da var olan bir masanın servis noktasına konamaz. Tezgâh/kasa/kapı taşırken de mobilya artık "yolu kapatmaz" (p37).
+//  • YOL (burada): eşyalar bir hedefi tümüyle çevirebilir. Önce eskisi gibi boş hücrelerden yol aranır (astar). Yol yoksa ya da hedefe
+//    0,7 m'den fazla uzakta bitiyorsa İKİNCİ arama yapılır: duvar, tezgâh, kasa ve bahçe duvarı yine geçilmez (GRID_H), ama mobilya hücreleri
+//    pahalı da olsa geçilir (SOFT_COST). Böylece karakter takılmaz, duvarın/tezgâhın içinden değil en az eşyanın içinden geçer.
+//    (Eskiden yol bulunamazsa karakter hedefe dümdüz, duvar dahil her şeyin içinden yürürdü.)
+//  • Karakterler birbirini zaten engellemez (çarpışma yok); garsonlar aynı servis noktası için sırayla bekler (waitSpotClear, 12 sn sınırlı).
+const SOFT_COST=5;
+let GRID_H=null;   // yalnız sert engeller: oda sınırı, tezgâh, kasa, sabit eşya, bahçe duvarı (mobilya YOK)
+{const _bg=buildGrid;buildGrid=function(){const r=_bg.apply(this,arguments);try{GRID_H=makeGrid(OBST.slice())}catch(e){GRID_H=null}return r}}
+function softAstar(sx,sz,tx,tz){const H=GRID_H;if(!H||H.length!==GX*GZ)return [];const s=nearestFreeIn(H,...cellOf(sx,sz)),t=nearestFreeIn(H,...cellOf(tx,tz));if(!s||!t)return [];
+  const [si,sk]=s,[ti,tk]=t,N=GX*GZ,key=(i,k)=>k*GX+i,G=new Float32Array(N).fill(Infinity),came=new Int32Array(N).fill(-1),closed=new Uint8Array(N);
+  const hB=(i,k)=>blockedIn(H,i,k),open=[[0,si,sk]];G[key(si,sk)]=0;let found=false;
+  while(open.length){let bi=0;for(let j=1;j<open.length;j++)if(open[j][0]<open[bi][0])bi=j;const [,i,k]=open.splice(bi,1)[0],c=key(i,k);if(closed[c])continue;closed[c]=1;if(i===ti&&k===tk){found=true;break}
+    for(let dk=-1;dk<=1;dk++)for(let di=-1;di<=1;di++){if(!di&&!dk)continue;const ni=i+di,nk=k+dk;if(hB(ni,nk))continue;if(di&&dk&&(hB(i+di,k)||hB(i,k+dk)))continue;
+      const n=key(ni,nk),ng=G[c]+Math.hypot(di,dk)*(grid[n]===1?SOFT_COST:1);if(ng<G[n]){G[n]=ng;came[n]=c;open.push([ng+Math.hypot(ni-ti,nk-tk),ni,nk])}}}
+  if(!found)return [];const path=[];for(let c=key(ti,tk);c!==-1;c=came[c])path.push(c);path.reverse();
+  const pts=path.map(c=>{const [x,z]=posOf(c%GX,Math.floor(c/GX));return new THREE.Vector3(x,0,z)});
+  // düzleştirme yalnız tümüyle boş hücrelerden geçen görüş hattında yapılır; mobilyanın içindeki parça hücre hücre kalır
+  const los=(a,b)=>{const n=Math.ceil(a.distanceTo(b)/(CELL*0.5));for(let q=0;q<=n;q++){const x=a.x+(b.x-a.x)*q/n,z=a.z+(b.z-a.z)*q/n;if(blocked(...cellOf(x,z)))return false}return true};
+  const out=[pts[0]];let cur=0;while(cur<pts.length-1){let nxt=cur+1;for(let j=pts.length-1;j>cur+1;j--){if(los(pts[cur],pts[j])){nxt=j;break}}out.push(pts[nxt]);cur=nxt}
+  return out}
+const SOFT_STAT={n:0,last:0};
+{const _as=astar;astar=function(sx,sz,tx,tz){const P=_as(sx,sz,tx,tz);
+   try{const e=P.length?P[P.length-1]:null,d=e?Math.hypot(e.x-tx,e.z-tz):1e9;
+     if(d>0.7){const Q=softAstar(sx,sz,tx,tz);if(Q.length){const q=Q[Q.length-1];if(Math.hypot(q.x-tx,q.z-tz)+0.3<d){SOFT_STAT.n++;return Q}}}}catch(err){console.warn('yumuşak yol',err)}
+   return P}}
+try{buildGrid()}catch(e){}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
