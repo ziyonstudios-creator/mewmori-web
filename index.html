@@ -15181,6 +15181,20 @@ ${M} .enplus{font-size:13px!important;padding:2px 4px 0!important}
 ${M} .enplus::after{padding-left:16px!important;background-size:13px!important}
 .tkbtns .btn.tkt,.tkbtns .btn.tki{flex:0 0 40px!important;width:40px!important;min-width:40px!important;padding:0!important}.tkbtns .btn.tkt .ic,.tkbtns .btn.tki .ic{margin:0!important}
 `;document.head.appendChild(st)}
+// ---- Bilgi kartı sade (V176): görsel + ad + "2 tane birleşince →" çıkacak malzeme (hiç üretilmediyse "?") ----
+{const _ri=renderInfo;renderInfo=function(){const r=_ri.apply(this,arguments);try{const box=$('mgInfo'),i=UI.mgSel,id=i!=null?S.board[i]:null,it=id&&ITEMS[id];
+  const tx=box&&box.querySelector('.tx');if(!it||!it.chain||!tx)return r;const nx=it.next,known=nx&&!!S.items[nx];
+  tx.innerHTML=`<b>${it.name}</b>`+(nx?`<div class="k4nx"><small>2 tane birleşince</small><div class="k4row"><span class="k4t">${itemArt(id)}<i>×2</i></span><span class="k4ar">→</span><span class="k4t${known?'':' q'}">${known?itemArt(nx):'?'}</span></div><b class="k4nn">${known?ITEMS[nx].name:'?'}</b></div>`:`<div class="k4nx"><small>En üst kademe</small></div>`)}catch(e){console.warn('bilgi sade',e)}return r}}
+{const M='html.land #game#game #merge.skin',INK='#4a2a14';const st=document.createElement('style');st.textContent=`
+${M} .info .box .tx .k4nx{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:6px}
+${M} .info .box .tx .k4nx small{font-size:12px;font-weight:800;color:#7a5236}
+.k4row{display:flex;align-items:center;gap:6px}
+.k4t{position:relative;width:44px;height:44px;display:grid;place-items:center;box-sizing:border-box;border:2.5px solid ${INK};border-radius:12px;background:#fff8ea;font:800 22px/1 var(--font-display);color:${INK}}
+.k4t>img,.k4t>svg,.k4t>.kt{width:36px;height:36px}.k4t.q{background:#efe2c8}
+.k4t>i{position:absolute;right:-6px;bottom:-6px;font-style:normal;font-size:11px;font-weight:900;padding:1px 4px;border-radius:999px;background:${INK};color:#fff}
+.k4ar{font-weight:900;font-size:18px;color:${INK}}
+${M} .info .box .tx .k4nn{font-size:14px!important}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
