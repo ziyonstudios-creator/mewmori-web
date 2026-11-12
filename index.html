@@ -15785,11 +15785,11 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     const I=tkInfo(G_REC);if(!I||!I.stage)return;const need=I.stage.d.find(([it,n])=>(I.dl[it]|0)<n);if(!need)return;const [X]=need,ch=X.replace(/\d+$/,''),Y=ch+'1',bagK='bag_'+((typeof packOf==='function'&&packOf(ch))||{k:'firin'}).k;
     RH2.need=Y;RH2.bag=bagK;
     const idx=id=>S.board.reduce((a,v,i)=>(v===id&&a.push(i),a),[]);const nx=idx(X),ny=idx(Y);clearTutHL();
-    if(nx.length){const b=()=>document.querySelector(`#merge [data-thdv="${X}"]`);RH2.allow=[b];rh2Show('mgdv'+X+(I.dl[X]|0),{title:'Teslim et',text:`<b>${ITEMS[X].name}</b> hazır! Hedef kartındaki onay düğmesine dokun; malzeme tahtadan alınıp tarife teslim edilir.`,target:b,place:'head'});return}
+    if(nx.length){const b=()=>document.querySelector(`#merge [data-thdv="${X}"]`);RH2.allow=[b];rh2Show('mgdv'+X+(I.dl[X]|0),{title:'Teslim et',text:`<b>${ITEMS[X].name}</b> hazır! Hedefteki onaya dokun.`,target:b,place:'head'});return}
     if(ny.length>=2){const a=ny[0],z=ny[1];RH2.pair=[a,z];RH2.allow=[()=>cellEl(a)];cellEl(z)&&cellEl(z).classList.add('tuthl');
-      rh2Show('mgmg'+X+a+z,{title:'Birleştir',text:`İki <b>${ITEMS[Y].name}</b> var! Birini parmağınla tut ve parlayan diğerinin üstüne bırak: <b>${ITEMS[X].name}</b> olsun.`,target:()=>cellEl(a),drag:{from:()=>cellEl(a),to:()=>cellEl(z)},place:'head'});return}
+      rh2Show('mgmg'+X+a+z,{title:'Birleştir',text:`İki <b>${ITEMS[Y].name}</b>’ü üst üste sürükle.`,target:()=>cellEl(a),drag:{from:()=>cellEl(a),to:()=>cellEl(z)},place:'head'});return}
     const pk=bagK.slice(4);const b=()=>document.querySelector(`#pkRaf [data-pk="${pk}"]`);RH2.allow=[b];
-    rh2Show('mgbag'+X+ny.length,{title:ny.length?'Bir tane daha':'Pakete dokun',text:ny.length?`Pakete bir kez daha dokun, bir <b>${ITEMS[Y].name}</b> daha çıksın.`:`<b>${ITEMS[X].name}</b> için önce <b>${ITEMS[Y].name}</b> lazım. Parlayan <b>${ITEMS[bagK].name}</b>’ne dokun. Bu ilk tarifte paketler ücretsiz!`,target:b,place:'head'});return}
+    rh2Show('mgbag'+X+ny.length,{title:ny.length?'Bir tane daha':'Pakete dokun',text:ny.length?`Bir kez daha dokun.`:`<b>${ITEMS[Y].name}</b> lazım. <b>${PACKS.find(P=>'bag_'+P.k===bagK).n}</b> paketine dokun.`,target:b,place:'head'});return}
   if(st==='g_rb'){if(m!=='book')return setMode('book');RH2.allow=[];RH2.ok=[];
     if(RH2.sub!=='rb2')return rh2Show('rb1',{title:'Tarif defterimiz',text:'Bütün tariflerin burada. Bir tarifte <b>Hedefle</b>’ye dokunursan, istediği malzemeler birleştirme tahtasında hep gözünün önünde olur.',target:()=>$('rbTabs'),place:'bottom',
       buttons:[{label:'Menüye geçelim',green:true,icon:'menu',onClick:rh2Go('menu',()=>{S.tut='g_mn';RH2.sub='';menuTab='menu';try{const f=famOf(G_REC);if(f)UI.mnFam=f.id}catch(e){}markDirty()})}]});
@@ -15958,11 +15958,11 @@ camStop=function(){CAM.on=false;CAM.mid=false;CAM.cd=null;$('rhBars').classList.
 
 // ---- 2) küçük balon: hedefi olan, düğmesiz rehber adımlarında köşede durur, gösterilen düğmeyi örtmez ----
 (()=>{const st=document.createElement('style');st.textContent=`
-html.land #coach.rhmini .cbub,#coach.rhmini .cbub{width:min(290px,calc(36*var(--vw)))!important;transform:none!important;padding:7px 11px 9px 8px!important;gap:8px!important;border-radius:18px!important;animation:rhmin .28s ease}
+html.land #game#game #coach.rhmini .cbub:not(.center),#game#game #coach.rhmini .cbub{width:min(270px,calc(34*var(--vw)))!important;transform:none!important;padding:7px 11px 9px 8px!important;gap:8px!important;border-radius:18px!important;animation:rhmin .28s ease}
 html.land #coach.rhmini.rhB .cbub,#coach.rhmini.rhB .cbub{top:auto!important;bottom:calc(max(10px,var(--sab,0px)) + 8px)!important}
 html.land #coach.rhmini.rhT .cbub,#coach.rhmini.rhT .cbub{bottom:auto!important;top:calc(max(10px,var(--sat,0px)) + 6px)!important}
-#coach.rhmini.rhL .cbub{left:calc(max(12px,var(--sal,0px)) + 4px)!important;right:auto!important}
-#coach.rhmini.rhR .cbub{left:auto!important;right:calc(max(12px,var(--sar,0px)) + 64px)!important}
+#game#game #coach.rhmini.rhL .cbub:not(.center){left:calc(max(12px,var(--sal,0px)) + 4px)!important;right:auto!important}
+#game#game #coach.rhmini.rhR .cbub:not(.center){left:auto!important;right:calc(max(12px,var(--sar,0px)) + 64px)!important}
 #coach.rhmini .cbub .who.rhface{width:40px!important;height:52px!important}
 #coach.rhmini .cbub b.t{font-size:14.5px!important}
 #coach.rhmini .cbub p{font-size:12.5px!important;line-height:1.35!important}
@@ -15971,7 +15971,7 @@ html.land #coach.rhmini.rhT .cbub,#coach.rhmini.rhT .cbub{bottom:auto!important;
 #coach.rhmini.rhT .cbub::after{bottom:auto;top:-11px;transform:rotate(225deg)}
 @keyframes rhmin{from{opacity:0;transform:translateY(8px) scale(.96)}}
 `;document.head.appendChild(st)})();
-function rhMiniPlace(){const box=$('coach');if(!box||box.hidden||!box.classList.contains('rhmini'))return;const r=targetRect(CO.target);if(!r)return;const g=$('game').getBoundingClientRect();
+function rhMiniPlace(){const box=$('coach');if(!box||box.hidden||!box.classList.contains('rhmini'))return;{const bub=box.querySelector('.cbub');if(bub){bub.style.removeProperty('left');bub.style.removeProperty('width')}}const r=targetRect(CO.target);if(!r)return;const g=$('game').getBoundingClientRect();
   const cx=(r.left+r.width/2-g.left)/g.width,cy=(r.top+r.height/2-g.top)/g.height;
   box.classList.toggle('rhL',cx>=0.5);box.classList.toggle('rhR',cx<0.5);box.classList.toggle('rhB',cy<0.62);box.classList.toggle('rhT',cy>=0.62)}
 {const _s=rh2Show;rh2Show=function(key,opt){const same=RH2.shown===key&&!$('coach').hidden&&CO.owner==='rh2';const r=_s.apply(this,arguments);if(same)return r;
@@ -16001,6 +16001,21 @@ function ceRandName(){const used=new Set(Object.values(S.chars||{}).map(c=>c&&c.
       d.onclick=()=>{sfx('tap');const n=ceRandName();CE.cfg.name=n;inp.value=n;$('ceCnt').textContent=`${n.length}/12`;$('ceErr').textContent='';renderCEFoot()}}}catch(e){}
   return r}}
 {const _o=openEditor;openEditor=function(){CE.nmInit=null;return _o.apply(this,arguments)}}
+
+// ---- V200: kamera geri dönüşte bütün rehber düğmelerini (Hazırla, Teslim al, masalar) kadraja alır ----
+camBack=function(){if(!CAM.on||CAM.back||!CAM.base)return;
+  try{const V=THREE.Vector3,pts=[PREP_ANCHOR.clone(),PICKUP_ANCHOR.clone()];for(const c of customers)if(c.table&&c.table.center)pts.push(new V(c.table.center.x,1.05,c.table.center.z));
+    for(const R of FURN.values())if(R.table&&R.table.center&&!R.rec.stored)pts.push(new V(R.table.center.x,1.05,R.table.center.z));
+    const T=new V();pts.forEach(p=>T.add(p));T.multiplyScalar(1/pts.length);T.y=0.4;
+    const cam=camera.clone(),dir=CAM.bdir.clone();let best=CAM.bd;
+    for(let k=0.45;k<=1.0001;k+=0.05){const d=CAM.bd*k;cam.position.copy(T).addScaledVector(dir,d);cam.lookAt(T);cam.updateMatrixWorld();cam.updateProjectionMatrix();
+      if(pts.every(p=>{const q=p.clone().project(cam);return q.x>-0.86&&q.x<0.82&&q.y>-0.45&&q.y<0.78})){best=d;break}}
+    CAM.base.t=T;CAM.bd=best;CAM.mid=true}catch(e){console.warn('kamera',e)}
+  CAM.back=true;CAM.subj=()=>CAM.base.t;$('rhBars').classList.remove('on')};
+// birleştirme ekranında sağda gezinme çubuğu yok: balon kenara yaslanır ve daha dar olur
+(()=>{const st=document.createElement('style');st.textContent=`html.land #game#game.mgOn #coach.rhmini.rhR .cbub:not(.center){right:calc(max(10px,var(--sar,0px)) + 4px)!important;width:min(232px,calc(28*var(--vw)))!important}
+html.land #game#game.mgOn #coach.rhmini.rhL .cbub:not(.center){width:min(232px,calc(28*var(--vw)))!important}`;document.head.appendChild(st)})();
+setInterval(()=>{try{$('game').classList.toggle('mgOn',UI.mode==='merge')}catch(e){}},300);
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
