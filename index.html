@@ -16016,6 +16016,32 @@ camBack=function(){if(!CAM.on||CAM.back||!CAM.base)return;
 (()=>{const st=document.createElement('style');st.textContent=`html.land #game#game.mgOn #coach.rhmini.rhR .cbub:not(.center){right:calc(max(10px,var(--sar,0px)) + 4px)!important;width:min(232px,calc(28*var(--vw)))!important}
 html.land #game#game.mgOn #coach.rhmini.rhL .cbub:not(.center){width:min(232px,calc(28*var(--vw)))!important}`;document.head.appendChild(st)})();
 setInterval(()=>{try{$('game').classList.toggle('mgOn',UI.mode==='merge')}catch(e){}},300);
+// ---- V201: müşteri oturunca kamera tezgâha dönük, önden bakan açıya döner; rehber bu açıyla devam eder ----
+const CAM_GDIR=new THREE.Vector3(0.12,1.0,1.08).normalize();
+camBack=function(){if(!CAM.on||CAM.back||!CAM.base)return;
+  try{const V=THREE.Vector3,pts=[PREP_ANCHOR.clone(),PICKUP_ANCHOR.clone()];for(const c of customers)if(c.table&&c.table.center)pts.push(new V(c.table.center.x,1.05,c.table.center.z));
+    for(const R of FURN.values())if(R.table&&R.table.center&&!R.rec.stored)pts.push(new V(R.table.center.x,1.05,R.table.center.z));
+    const T=new V();pts.forEach(p=>T.add(p));T.multiplyScalar(1/pts.length);T.y=0.4;
+    const cam=camera.clone();let best=CAM.bd;
+    for(let d=6;d<=CAM.bd*1.2;d+=0.5){cam.position.copy(T).addScaledVector(CAM_GDIR,d);cam.lookAt(T);cam.updateMatrixWorld();cam.updateProjectionMatrix();
+      if(pts.every(p=>{const q=p.clone().project(cam);return q.z<1&&q.x>-0.86&&q.x<0.82&&q.y>-0.45&&q.y<0.78})){best=d;break}}
+    CAM.base.t=T;CAM.bd=best;CAM.gdir=CAM_GDIR.clone();CAM.mid=true}catch(e){console.warn('kamera',e)}
+  CAM.back=true;CAM.subj=()=>CAM.base.t;$('rhBars').classList.remove('on')};
+camLoop=function(){CAM.raf=requestAnimationFrame(camLoop);if(!CAM.on){cancelAnimationFrame(CAM.raf);CAM.raf=0;return}
+  const now=performance.now(),dt=Math.min(0.05,camT?(now-camT)/1000:0.016);camT=now;const p=CAM.back?CAM.base.t:rhEl(CAM.subj);
+  const k=1-Math.exp(-dt*(CAM.back?1.4:2.6));if(p){const T=p.clone?p.clone():new THREE.Vector3(p.x,p.y,p.z);if(!CAM.back)T.y=Math.max(0.6,T.y+0.6);controls.target.lerp(T,k)}
+  const wantD=CAM.back?CAM.bd:CAM.dist;CAM.cd=CAM.cd==null?camera.position.distanceTo(controls.target):CAM.cd+(wantD-CAM.cd)*k;
+  if(!CAM.cur)CAM.cur=camera.position.clone().sub(controls.target).normalize();
+  const goal=CAM.back&&CAM.gdir?CAM.gdir:CAM.dir;CAM.cur.lerp(goal,k).normalize();
+  camera.position.copy(controls.target).addScaledVector(CAM.cur,CAM.cd);camera.lookAt(controls.target);
+  if(CAM.back&&Math.abs(CAM.cd-CAM.bd)<0.04&&controls.target.distanceTo(CAM.base.t)<0.04&&CAM.cur.distanceTo(goal)<0.004){CAM.cd=null;CAM.cur=null;camStop()}};
+{const _cs=camStart;camStart=function(){CAM.cur=null;CAM.gdir=null;return _cs.apply(this,arguments)}}
+// kurtarma: rehber bir düğmeyi gösteriyor ama düğme ekranda değilse kamera düğmeyi kadraja alır
+setInterval(()=>{try{if(!rh2Act()||!/^k[235]$/.test(S.tut||'')||$('coach').hidden||!CO.target)return;const r=targetRect(CO.target);const g=$('game').getBoundingClientRect();
+  const v=typeof CO.target==='function'?CO.target():CO.target;if(!v)return;
+  const off=!r||r.top<g.top+6||r.bottom>g.bottom-6||r.left<g.left+6||r.right>g.right-60;if(!off)return;
+  if(!CAM.on&&CAM.lastFix&&performance.now()-CAM.lastFix<4000)return;CAM.lastFix=performance.now();
+  if(!CAM.on){camStart();CAM.mid=false;camBack()}}catch(e){}},1000);
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
