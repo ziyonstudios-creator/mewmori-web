@@ -14848,6 +14848,39 @@ AdService.on(()=>adUiRefresh());
 #adSim i{font-style:normal;font-weight:900;font-size:34px;line-height:1;width:64px;height:64px;display:grid;place-items:center;border-radius:50%;border:4px solid #5a2f12;background:#ffe590}
 `;document.head.appendChild(st)}
 
+// ================= GİRİŞ KARTI: yatay ekranda iki sütun (V168) =================
+// Kart dikeyde 620 px'e çıkıyordu; yatay ekranda logo ve "Şifre tekrar" kesiliyordu. Kart iki sütuna bölünür:
+// solda logo + alt yazı + Apple/Google + "Hemen oyna"; sağda Kayıt ol/Giriş yap sekmeleri, alanlar, düğme, not.
+// 844×390 ve 568×320'de kaydırmadan sığar. Dikeyde sütunlar display:contents (eski düzen).
+function authCols(){try{const card=document.querySelector('#auth .acard');if(!card||card.querySelector('.acL'))return!!card;
+  if(!card.querySelector('.aoauth')||!card.querySelector('.aquick'))return false;
+  const L=document.createElement('div');L.className='acL';const R=document.createElement('div');R.className='acR';
+  const left=['.alogo','.asub','.aoauth','.aquick'].map(s=>card.querySelector(':scope>'+s)).filter(Boolean);
+  const right=[...card.children].filter(e=>!left.includes(e));
+  left.forEach(e=>L.appendChild(e));right.forEach(e=>R.appendChild(e));card.append(L,R);return true}catch(e){console.warn('giriş sütun',e);return true}}
+{const t=setInterval(()=>{if(authCols())clearInterval(t)},300)}
+{const st=document.createElement('style');st.textContent=`
+#auth .acL,#auth .acR{display:contents}
+html.land #auth{padding:8px calc(max(8px,env(safe-area-inset-right))) 8px calc(max(8px,env(safe-area-inset-left)))!important;overflow:hidden!important;align-items:center!important;justify-content:center!important}
+html.land #auth .acard{width:min(100%,760px)!important;max-height:100%!important;box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);column-gap:16px;padding:10px 14px!important;align-items:center;overflow:hidden}
+html.land #auth .acL,html.land #auth .acR{display:flex;flex-direction:column;gap:4px;min-width:0}
+html.land #auth .acL{align-items:stretch;justify-content:center;text-align:center;padding-right:14px;border-right:2px dashed rgba(90,47,18,.25)}
+html.land #auth .acL .alogo{width:auto!important;height:min(84px,calc(calc(100*var(--vh)) - 250px));min-height:48px;margin:0 auto}
+html.land #auth .acL .alogo svg{height:100%;width:auto}
+html.land #auth .acL .asub{margin:0;font-size:12px}
+html.land #auth .acL .aoauth{flex-direction:column;gap:4px}html.land #auth .acL .aoauth button{height:30px;flex:none;font-size:12.5px}
+html.land #auth .acL .aquick{gap:4px}
+html.land #auth .acL .aquick #aGuest{min-height:36px;font-size:14px;padding:4px 10px}
+html.land #auth .acL .aquick small{font-size:10.5px;line-height:1.25}
+html.land #auth .acR label{display:flex;flex-direction:column;gap:2px;font-size:11.5px;margin:0}
+html.land #auth .acR .inp input{padding:5px 10px;font-size:15px}
+html.land #auth .acR .atabs{margin:0}
+html.land #auth .acR .atabs button{padding:6px 8px;font-size:13.5px}
+html.land #auth .acR .abtn{padding:7px 12px;font-size:15px}
+html.land #auth .acR .amsg{padding:5px 8px;font-size:11.5px}
+html.land #auth .acR .ahint{font-size:10.5px}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
