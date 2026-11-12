@@ -14881,6 +14881,27 @@ html.land #auth .acR .amsg{padding:5px 8px;font-size:11.5px}
 html.land #auth .acR .ahint{font-size:10.5px}
 `;document.head.appendChild(st)}
 
+// ================= KAFELER DÜNYASI: "Seviye" sıralaması (V170) =================
+// Sunucudaki level_ranking(lim) işlevi: yayımlanmış kafeler seviyeye göre (eşitlikte toplam beğeni). Sekme "Haftanın kafeleri"nin yanında.
+const LVR={list:null,t:0,busy:false,err:''};
+async function lvrLoad(force){if(LVR.busy)return;if(!force&&LVR.list&&Date.now()-LVR.t<60000)return;LVR.busy=true;LVR.err='';renderWorld();
+  try{const sb=await sbClient();const r=await sb.rpc('level_ranking',{lim:50});if(r.error)throw r.error;LVR.list=r.data||[];LVR.t=Date.now()}
+  catch(e){console.warn('seviye sıralaması',e);LVR.err='Bağlantı kurulamadı, biraz sonra tekrar dene.'}
+  LVR.busy=false;renderWorld()}
+{const _rw=renderWorld;renderWorld=function(){const t=SOC.tab;if(t==='lvl')SOC.tab='rank';_rw.apply(this,arguments);SOC.tab=t;
+  const p=$('worldP');if(!p||p.hidden)return;const tabs=p.querySelector('.tabs');if(!tabs)return;
+  if(!tabs.querySelector('[data-wt="lvl"]')){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.dataset.wt='lvl';b.innerHTML=`${ic('up')}Seviye`;
+    const rk=tabs.querySelector('[data-wt="rank"]');rk?rk.after(b):tabs.appendChild(b)}
+  tabs.querySelectorAll('[data-wt]').forEach(x=>{x.setAttribute('aria-selected',String(x.dataset.wt===t));x.onclick=()=>{SOC.tab=x.dataset.wt;sfx('tap');renderWorld();if(SOC.tab==='lvl')lvrLoad(false)}});
+  if(t!=='lvl')return;const sc=p.querySelector('.scroll');if(!sc)return;
+  if(!LVR.list&&!LVR.busy&&!LVR.err){setTimeout(()=>lvrLoad(false),0)}
+  const me=SB.user&&SB.user.id,L=LVR.list||[],myI=L.findIndex(x=>x.user_id===me);
+  sc.innerHTML=LVR.busy&&!LVR.list?'<p class="wmsg">Yükleniyor…</p>':LVR.err?`<p class="wmsg">${LVR.err}</p>`:
+    `<p class="wmsg">En yüksek seviyeli kafeler.${myI>=0?` Sen <b>${myI+1}.</b> sıradasın.`:''}</p><ol class="wlist lvlist">${L.map((x,i)=>`<li class="wr${x.user_id===me?' me':''}"><span class="wn">${i+1}</span><span class="wt"><b></b><small>toplam ${x.likes_total} ${ic('heart')}</small></span><span class="wl lvb">Sv ${x.lvl}</span>${x.user_id===me?'<span class="wme">Sen</span>':`<button class="btn light sm" type="button" data-visit="${x.user_id}">Gez</button>`}</li>`).join('')||'<p class="wmsg">Henüz yayımlanmış kafe yok.</p>'}</ol>`;
+  sc.querySelectorAll('.wr').forEach((li,i)=>{li.querySelector('.wt b').textContent=L[i].name});
+  sc.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>visitCafe(b.dataset.visit))}}
+{const st=document.createElement('style');st.textContent=`.lvlist .lvb{font-family:var(--font-display);font-weight:900;padding:2px 9px;border-radius:999px;background:linear-gradient(#ffe590,#f0b52e);border:2px solid var(--ink);white-space:nowrap}`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
