@@ -15729,7 +15729,7 @@ function camBack(){if(!CAM.on||CAM.back)return;CAM.back=true;CAM.subj=()=>CAM.ba
 function camStop(){CAM.on=false;$('rhBars').classList.remove('on');if(CAM.base){controls.target.copy(CAM.base.t);camera.position.copy(CAM.base.p);controls.minDistance=CAM.base.min;controls.update()}CAM.base=null;controls.enabled=true}
 let camT=0;
 function camLoop(){CAM.raf=requestAnimationFrame(camLoop);if(!CAM.on){cancelAnimationFrame(CAM.raf);CAM.raf=0;return}
-  const now=performance.now(),dt=Math.min(0.05,camT?(now-camT)/1000:0.016);camT=now;const p=rhEl(CAM.subj);
+  const now=performance.now(),dt=Math.min(0.05,camT?(now-camT)/1000:0.016);camT=now;const p=CAM.back?CAM.base.t:rhEl(CAM.subj);
   const k=1-Math.exp(-dt*(CAM.back?1.6:2.6));if(p){const T=p.clone?p.clone():new THREE.Vector3(p.x,p.y,p.z);if(!CAM.back)T.y=Math.max(0.6,T.y+0.6);controls.target.lerp(T,k)}
   const wantD=CAM.back?CAM.bd:CAM.dist;CAM.cd=CAM.cd==null?CAM.bd:CAM.cd+(wantD-CAM.cd)*k;
   const dir=CAM.back?CAM.dir.clone().lerp(CAM.bdir,Math.min(1,1-Math.abs(CAM.cd-CAM.bd)/Math.max(1,CAM.bd-CAM.dist))).normalize():CAM.dir;
@@ -15741,7 +15741,7 @@ const rhPosOf=o=>o&&(o.pos||o.position)||null;
 function rh2Cafe(){const st=S.tut,N=NMs(),c=customers[0],o=orders[0];if(customers.length)RH2.spawned=true;
   if(UI.mode!=='cafe'){if(UI.mode!=='cafe')setMode('cafe');return}
   if(UI.modal){rh2Hide();return}
-  if(!CAM.on)camStart();RH2.ok=[];RH2.pair=null;
+  if(S.tut==='k1'&&!RH2.camDone){if(!CAM.on)camStart()}else{RH2.camDone=true;if(CAM.on&&!CAM.back)camBack()}RH2.ok=[];RH2.pair=null;
   const W=()=>WSTAFF[0]&&rhPosOf(WSTAFF[0].ch),B=()=>BSTAFF[0]&&rhPosOf(BSTAFF[0].ch),C=()=>c&&c.char&&rhPosOf(c.char);
   if(st==='k1'){CAM.subj=c?C:()=>CAM.base.t;CAM.dist=c?6.5:9;RH2.allow=[];
     if(c&&c.state==='WAITING_TO_ORDER'&&!c.orderQueued&&els.get('take'+c.id)){S.tut='k2';markDirty();return}
@@ -15825,7 +15825,7 @@ rhTour=function(){if(S&&S.tur!=null){S.tur=null;RH.tour=false;if(RH.modal){RH.mo
 {const _sc=spawnCustomer;spawnCustomer=function(){const c=_sc.apply(this,arguments);try{if(c&&!EVMODE&&/^k\d$/.test(S.tut||'')){c.char.pos.set(DOOR_IN.x,0,DOOR_IN.z);c.char.o.rotation.y=Math.PI/2}}catch(e){}return c}}
 {const _cs=tutCafeStart;tutCafeStart=function(){const r=_cs.apply(this,arguments);try{if(/^k\d$/.test(S.tut||''))spawnT=Math.min(spawnT,0.6)}catch(e){}return r}}
 const rhFast=()=>{try{if(EVMODE||!S||!/^k\d$/.test(S.tut||''))return 1;const st=S.tut,o=orders[0];
-  if(st==='k2'||st==='k5')return 1;if(st==='k3'&&o&&o.state==='TAKEN'&&!o.submitQueued)return 1;return 2}catch(e){return 1}};
+  return st==='k4'?1.6:1}catch(e){return 1}};
 {const _ss=simStep;simStep=function(dt){return _ss.call(this,dt*rhFast())}}
 
 // ---- V195: depo dersi sade: yalnız toptancı seçimi (malzeme bitirme, depo ayrıntıları yok) ----
@@ -15837,6 +15837,9 @@ rhStok=function(){
   if(menuTab!=='stock'){menuTab='stock';renderMenu()}
   rhShow('stok3',{title:'Toptancını seç',text:'<b>5 toptancıdan</b> birini seç. Ucuz olanın kalitesi düşük, pahalı olanınki yüksek. Gerisini ben hallederim; malzemeler kendiliğinden gelir.',
     target:()=>document.querySelector('#menuList .supc[aria-pressed="true"]'),place:'bottom',buttons:[{label:'Tamam',green:true,onClick:rhStokDone}]})};
+
+// ---- V198: müşteriler bir tık yavaş yürür ----
+{const _sc=spawnCustomer;spawnCustomer=function(){const c=_sc.apply(this,arguments);try{if(c&&c.char)c.char.speed=0.72}catch(e){}return c}}
 
 // ================= V196: PAKET RAFI — paketler tahtadan çıktı, tahtanın yanındaki rafta, içeriğe göre bölünmüş =================
 // Kullanıcı isteği: paketler tahtada durmasın; tahtaya bağlı görünen ayrı bir alanda, içeriklerine göre ayrılmış olsun (kafa karışmasın).
