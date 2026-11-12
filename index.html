@@ -1850,6 +1850,7 @@ function validatePlacement(rec,exUid=null){const c=CAT[rec.id];
 
 // ================= OYUN DURUMU + KAYIT =================
 const SAVE_KEY=EVMODE?EV_SAVE:'posa-yosun-kafe-kayit-v3';
+const START_NEW=[[1.25,0.5,'t_round',1],[1.25,2.25,'t_four',0]];   // V177: yeni oyuncu 2 masayla başlar (2 ve 4 kişilik); START_TABLES eski kayıt geçişleri için duruyor
 const START_TABLES=[[0.25,0.5,'t_round',1],[2.5,0.5,'t_round',1],[0.25,2.25,'t_four',0],[2.5,2.25,'t_four',0]];   // 25 cm'lik ızgaraya oturur   // başlangıç: halının üstünde 2×2 düzen (üstte iki kişilik, altta dört kişilik)   // başlangıç: 2 dört kişilik + 2 iki kişilik masa (12 kişi)
 let GLTF=null,TEMPLATE=null,yosun=null,posa=null,cashier=null,orderSeq=0,custSeq=0,spawnT=CONFIG.firstArrival,started=false;
 const customers=[],orders=[],jobs=[],baristaQ=[];
@@ -1865,7 +1866,7 @@ function defaultBoard(){const b=Array(CONFIG.board.w*CONFIG.board.h).fill(null);
 function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.id]=true;
   const recipes={};for(const r of RECIPES)if(r.def)recipes[r.id]=true;const unlocked={...recipes},menu={...recipes};
   return {v:9,lvl:1,xp:0,coins:CONFIG.startCoins,owned,uid:4,
-    furniture:START_TABLES.map((p,i)=>({uid:i+1,id:p[2],x:p[0],z:p[1],rot:p[3],chair:'c_cushion',col:i})),
+    furniture:START_NEW.map((p,i)=>({uid:i+1,id:p[2],x:p[0],z:p[1],rot:p[3],chair:'c_cushion',col:i})),
     wall:'w_cream',floor:'f_classic',equip:{espresso:1,kettle:1,vitrine:1,oven:1},recipes,unlocked,menu,items:{},board:defaultBoard(),
     bags:{food:{n:0,cd:0},drink:{n:0,cd:0}},energy:{v:CONFIG.energy.max,ts:Date.now()},
     stats:{orders:0,merges:0,disc:0,decor:0,wall:0,floor:0,tables:0,equip:0},obj:0,first:{},chairDefault:'c_cushion',
@@ -8508,7 +8509,7 @@ function playCine(done){const busy=()=>{const a=$('auth'),l=$('load'),i=$('intro
   // sahne parçaları ve sıraları
   const parts=[],add=(o,kind)=>{if(o&&!parts.some(p=>p.o===o))parts.push({o,kind,s:o.scale.clone(),v:o.visible,hit:false})};
   try{add(SHELL.g,'shell');add(KG,'pop');add(CG,'pop');for(const k in OPG)add(OPG[k],'pop');try{if(GARDEN_G)add(GARDEN_G,'pop')}catch(e){}
-    for(const R of FURN.values())add(R.group,'furn');for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)if(k.ch&&k.ch.o)add(k.ch.o,'cat')}catch(e){console.warn('sinema',e)}
+    for(const R of FURN.values())add(R.group,'furn');for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)if(k.ch&&k.ch.o)add(k.ch.o,'hide')}catch(e){console.warn('sinema',e)}
   let pi=0,fi=0,ci=0;for(const p of parts){if(p.kind==='shell')p.t0=1.0;else if(p.kind==='pop')p.t0=3.3+0.3*(pi++);else if(p.kind==='furn')p.t0=4.7+Math.min(0.22*(fi++),2.2)}
   const tCat=4.7+Math.min(0.22*fi,2.2)+0.55;for(const p of parts)if(p.kind==='cat')p.t0=tCat+0.28*(ci++);
   const tLogo=tCat+0.28*ci+0.7,tEnd=tLogo+2.2;
@@ -8517,6 +8518,7 @@ function playCine(done){const busy=()=>{const a=$('auth'),l=$('load'),i=$('intro
   const tg=controls.target.clone(),v0=camera.position.clone().sub(tg),was=controls.enabled;controls.enabled=false;
   const T0=performance.now();let ended=false,capI=-1;
   const apply=t=>{for(const p of parts){const o=p.o,s=p.s;
+      if(p.kind==='hide'){o.visible=false;continue}   // V177: karakterler sinemada görünmez; ardından karakter tasarımı gelir
       if(p.kind==='shell'){const a=cl((t-p.t0)/1.1),b=cl((t-p.t0-1.1)/1.1),f=Math.max(0.001,back(a));o.visible=p.v&&a>0;o.scale.set(s.x*f,s.y*(0.02+0.98*eo(b)),s.z*f)}
       else{const a=cl((t-p.t0)/0.5);o.visible=p.v&&a>0;const f=Math.max(0.001,back(a));o.scale.set(s.x*f,s.y*f,s.z*f);if(a>0&&!p.hit){p.hit=true;try{if(p.kind!=='shell')sfx(p.kind==='cat'?'buy':'tap')}catch(e){}}}}
     const e=eio(cl(t/(tEnd-0.4))),th=(1-e)*1.25,f=1+0.6*(1-e),c=Math.cos(th),s2=Math.sin(th);
@@ -14478,8 +14480,8 @@ function rhHide(){if(CO.owner==='rh'&&!$('coach').hidden)coachOff();RH.shown=''}
 
 // ---- 1) karşılama + zorunlu ekip kurma ----
 function rhWelcome(){if(S.created)return;S.tut='create';try{markDirty()}catch(e){}RH.shown='welcome';
-  coach({owner:'rh',title:'TabbyChef’e hoş geldin!',dim:true,center:true,
-    text:'Ben <b>Tabby</b>! Bu yolculukta hep yanında olacağım. Burada kendi kedi kafeni yönetirsin: misafirleri ağırlar, mis gibi lezzetler hazırlar, kazandıklarınla kafeni adım adım büyütürsün. Ama iyi bir kafe, iyi bir ekiple başlar.<br><b>Hadii! Şimdi ilk karakterlerimizi tasarlayalım.</b>',
+  coach({owner:'rh',title:'Kafemiz hazır!',dim:true,center:true,
+    text:'Ben <b>Tabby</b>, TabbyChef’e hoş geldin! Mis kokulu tezgâhımız, ilk iki masamız, her şey yerli yerinde. Ama bir kafeyi asıl güzel yapan, içindeki ekiptir.<br><b>Hadi, kafemize can verecek karakterlerimizi birlikte oluşturalım!</b>',
     buttons:[{label:'Hadi başlayalım!',green:true,icon:'paw',onClick:()=>{coachOff();RH.shown='';UI.backTo='cafe';openEditor('waiter','create')}}]})}
 {const _o=offerSetup;offerSetup=function(isNew){if(S.created)return;
    if(EVMODE||(typeof buildOn==='function'&&buildOn())||S.tut==='done')return _o.apply(this,arguments);   // etkinlik kafesi kendi kurulum rehberini kullanır
