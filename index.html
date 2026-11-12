@@ -15951,6 +15951,57 @@ function enBoxDraw(){if(UI.mode!=='merge'||EVMODE)return;const thd=document.quer
 {const _hd=tkHedefDraw;tkHedefDraw=function(){const r=_hd.apply(this,arguments);try{enBoxDraw()}catch(x){}return r}}
 setInterval(()=>{try{enBoxDraw()}catch(x){}},1000);
 
+// ================= V199: yakın kamera, düğmeyi örtmeyen küçük rehber balonu, isimsiz başlangıç ekibi =================
+// ---- 1) müşteri oturunca kamera genel görünümün ~%60 uzaklığına gelir ve orada kalır ----
+{const _cb=camBack;camBack=function(){if(CAM.on&&!CAM.back&&CAM.base&&!CAM.mid){CAM.mid=true;CAM.bd=CAM.bd*0.6}return _cb.apply(this,arguments)}}
+camStop=function(){CAM.on=false;CAM.mid=false;CAM.cd=null;$('rhBars').classList.remove('on');if(CAM.base){controls.minDistance=CAM.base.min;controls.update()}CAM.base=null;controls.enabled=true};
+
+// ---- 2) küçük balon: hedefi olan, düğmesiz rehber adımlarında köşede durur, gösterilen düğmeyi örtmez ----
+(()=>{const st=document.createElement('style');st.textContent=`
+html.land #coach.rhmini .cbub,#coach.rhmini .cbub{width:min(290px,calc(36*var(--vw)))!important;transform:none!important;padding:7px 11px 9px 8px!important;gap:8px!important;border-radius:18px!important;animation:rhmin .28s ease}
+html.land #coach.rhmini.rhB .cbub,#coach.rhmini.rhB .cbub{top:auto!important;bottom:calc(max(10px,var(--sab,0px)) + 8px)!important}
+html.land #coach.rhmini.rhT .cbub,#coach.rhmini.rhT .cbub{bottom:auto!important;top:calc(max(10px,var(--sat,0px)) + 6px)!important}
+#coach.rhmini.rhL .cbub{left:calc(max(12px,var(--sal,0px)) + 4px)!important;right:auto!important}
+#coach.rhmini.rhR .cbub{left:auto!important;right:calc(max(12px,var(--sar,0px)) + 64px)!important}
+#coach.rhmini .cbub .who.rhface{width:40px!important;height:52px!important}
+#coach.rhmini .cbub b.t{font-size:14.5px!important}
+#coach.rhmini .cbub p{font-size:12.5px!important;line-height:1.35!important}
+#coach.rhmini .cbub::after{content:'';position:absolute;bottom:-11px;width:16px;height:16px;background:var(--cream);border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg);border-radius:0 0 4px 0}
+#coach.rhmini.rhL .cbub::after{right:34px}#coach.rhmini.rhR .cbub::after{left:34px}
+#coach.rhmini.rhT .cbub::after{bottom:auto;top:-11px;transform:rotate(225deg)}
+@keyframes rhmin{from{opacity:0;transform:translateY(8px) scale(.96)}}
+`;document.head.appendChild(st)})();
+function rhMiniPlace(){const box=$('coach');if(!box||box.hidden||!box.classList.contains('rhmini'))return;const r=targetRect(CO.target);if(!r)return;const g=$('game').getBoundingClientRect();
+  const cx=(r.left+r.width/2-g.left)/g.width,cy=(r.top+r.height/2-g.top)/g.height;
+  box.classList.toggle('rhL',cx>=0.5);box.classList.toggle('rhR',cx<0.5);box.classList.toggle('rhB',cy<0.62);box.classList.toggle('rhT',cy>=0.62)}
+{const _s=rh2Show;rh2Show=function(key,opt){const same=RH2.shown===key&&!$('coach').hidden&&CO.owner==='rh2';const r=_s.apply(this,arguments);if(same)return r;
+  try{const box=$('coach'),mini=!!opt.target&&!opt.center&&!(opt.buttons&&opt.buttons.length);box.classList.toggle('rhmini',mini);if(!mini)box.classList.remove('rhL','rhR','rhB','rhT');else rhMiniPlace()}catch(e){}return r}}
+{const _c=coach;coach=function(o){const r=_c.apply(this,arguments);try{if(!o||o.owner!=='rh2')$('coach').classList.remove('rhmini','rhL','rhR','rhB','rhT')}catch(e){}return r}}
+{const _a=rhAvoid;rhAvoid=function(){if($('coach').classList.contains('rhmini'))return;return _a.apply(this,arguments)}}
+setInterval(()=>{try{rhMiniPlace()}catch(e){}},300);
+
+// ---- 3) karakter düzenleyicideki ikinci ipucu ("dilediğin gibi oyna…") kaldırıldı ----
+tutCreateHint=function(role){if(!tutOn())return;const T=ROLE_TUT[role];
+  coach({title:ROLES.find(r=>r.id===role).name,text:T.intro,target:()=>$('ceCats'),buttons:[{label:'Tamam',green:true,onClick:()=>coachOff()}]})};
+
+// ---- 4) başlangıç ekibi isimsiz: oyuncu ismi kendisi yazar ya da zarla rastgele seçer ----
+const DEF_NAMES=['Yosun','Poşa','Fındık'];
+(()=>{const st=document.createElement('style');st.textContent=`
+.ce-name{position:relative}
+.ce-name .ceDice{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:2.5px solid var(--ink,#4a2a14);border-radius:10px;background:linear-gradient(#ffe08a,#f6b93a);box-shadow:0 2px 0 var(--ink,#4a2a14);display:grid;place-items:center;cursor:pointer;padding:0;font-size:17px;line-height:1}
+.ce-name .ceDice:active{transform:translateY(-45%)}
+.ce-name small{margin-right:40px}.ce-name input{padding-right:42px!important}.ce-name input::placeholder{color:#b08a68;font-weight:700}`;document.head.appendChild(st)})();
+function ceRandName(){const used=new Set(Object.values(S.chars||{}).map(c=>c&&c.name));const L=ST_NAMES.filter(n=>!used.has(n)&&n.length<=12);return L[Math.floor(Math.random()*L.length)]||'Pamuk'}
+{const _r=renderCE;renderCE=function(){
+  try{if(CE.mode==='create'&&!S.created&&!CE.nmInit){CE.nmInit=CE.key;if(DEF_NAMES.includes(CE.cfg.name)&&CE.cfg.name===(CE.orig&&CE.orig.name))CE.cfg.name=''}
+      if(CE.nmInit&&CE.nmInit!==CE.key)CE.nmInit=null}catch(e){}
+  const r=_r.apply(this,arguments);
+  try{const inp=$('ceName');if(inp){inp.placeholder='İsim yaz ya da zar at';const box=inp.parentElement;let d=box.querySelector('.ceDice');
+      if(!d){d=document.createElement('button');d.type='button';d.className='ceDice';d.setAttribute('aria-label','Rastgele isim');d.textContent='🎲';box.appendChild(d)}
+      d.onclick=()=>{sfx('tap');const n=ceRandName();CE.cfg.name=n;inp.value=n;$('ceCnt').textContent=`${n.length}/12`;$('ceErr').textContent='';renderCEFoot()}}}catch(e){}
+  return r}}
+{const _o=openEditor;openEditor=function(){CE.nmInit=null;return _o.apply(this,arguments)}}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
