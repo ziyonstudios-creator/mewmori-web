@@ -14940,6 +14940,15 @@ function openDelAcc(){const w=skWin('skDel','Hesabı sil','cat_sleep');let busy=
 .hsBtns{display:flex;gap:10px;justify-content:center}.hsBtns .skbtn{flex:none!important;width:auto!important;padding:0 18px!important;height:40px}
 .skbtn.hsmini{flex:none!important;width:auto!important;padding:0 12px!important;margin-left:6px;font-size:12px!important}
 `;document.head.appendChild(st)}
+// ================= KIYAFET DOLABI tam ekran (V172) =================
+// Geniş telefonlarda pencere 860 px'te kalıp iki yanda boşluk bırakıyordu: dolap artık ekranın tamamını kaplar
+// (köşeler düz, çerçeve kenara oturur; içerik çentik/ana ekran çubuğu paylarını korur).
+{const st=document.createElement('style');st.textContent=`
+#clShop{padding:0!important;background:#b8763a!important}
+#clShop .cswin{width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;border-radius:0!important;border-width:0!important;box-shadow:none!important;
+  padding:calc(10px + var(--sat,0px)) calc(12px + var(--sar,0px)) calc(12px + var(--sab,0px)) calc(12px + var(--sal,0px))!important}
+#clShop .csx{right:2px!important;top:2px!important}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
