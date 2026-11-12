@@ -4092,7 +4092,7 @@ async function authSubmit(){if(AU2.busy)return;const email=$('aEmail').value.tri
   catch(err){console.warn('auth',err);authMsgShow(authMsg(err))}
   finally{AU2.busy=false;if($('auth')&&!$('auth').hidden)authRender()}}
 function authClose(welcome){$('auth').hidden=true;if(welcome)toast(welcome,ic('paw'),3200);if(welcome)setGuest(false);const f=AU2.done;AU2.done=null;f&&f()}
-function authOpen(mode='signup'){authBuild();AU2.mode=mode;authRender(true);$('auth').hidden=false;setTimeout(()=>{try{$('aEmail').focus({preventScroll:true})}catch(e){}},50)}
+function authOpen(mode='signup'){authBuild();AU2.mode=mode;authRender(true);$('auth').hidden=false;setTimeout(()=>{try{if(!(window.Capacitor||matchMedia('(pointer:coarse)').matches))$('aEmail').focus({preventScroll:true})}catch(e){}   /* (V167) dokunmatik cihazda ve uygulamada alana kendiliğinden odaklanma: klavye açılıp ekranın yarısını kapatıyordu */},50)}
 // açılışta: oturum açıksa ya da misafir seçildiyse doğrudan oyuna, değilse kayıt paneli
 async function authGate(next){authBuild();AU2.done=next;
   if(window.__noAuth){authClose();return}
