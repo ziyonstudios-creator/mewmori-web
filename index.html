@@ -15674,10 +15674,9 @@ board.addEventListener('pointermove',e=>{const d=mgDrag;if(d&&d.id===e.pointerId
 // çerçeve: dört paketin çevresinde belirgin sınır
 (()=>{const st=document.createElement('style');st.textContent=`#board{position:relative}
 #board .bagzone{position:absolute;pointer-events:none;z-index:3;border:3px solid #e8892e;border-radius:16px;box-shadow:0 0 0 3px rgba(255,236,200,.9),0 0 14px rgba(232,137,46,.55),inset 0 0 10px rgba(232,137,46,.25)}
-#board .bagzone b{position:absolute;left:50%;top:-11px;transform:translateX(-50%);background:#e8892e;color:#fff;font:800 9px/1 'Baloo 2',system-ui,sans-serif;padding:3px 8px;border-radius:9px;white-space:nowrap;letter-spacing:.3px}
 #board .cell.bagslot .it{cursor:pointer}`;document.head.appendChild(st)})();
 function bagZone(){if(UI.mode!=='merge'||EVMODE)return;const cs=[...BAG_CELLS].map(i=>board.querySelector(`[data-c="${i}"]`));if(cs.some(c=>!c))return;
-  let z=board.querySelector('.bagzone');if(!z){z=document.createElement('div');z.className='bagzone';z.innerHTML='<b>PAKETLER</b>';board.appendChild(z)}
+  let z=board.querySelector('.bagzone');if(!z){z=document.createElement('div');z.className='bagzone';board.appendChild(z)}
   cs.forEach(c=>c.classList.add('bagslot'));
   const x0=Math.min(...cs.map(c=>c.offsetLeft)),y0=Math.min(...cs.map(c=>c.offsetTop)),x1=Math.max(...cs.map(c=>c.offsetLeft+c.offsetWidth)),y1=Math.max(...cs.map(c=>c.offsetTop+c.offsetHeight)),p=3;
   const s=`left:${x0-p}px;top:${y0-p}px;width:${x1-x0+2*p}px;height:${y1-y0+2*p}px`;if(z.getAttribute('style')!==s)z.setAttribute('style',s)}
