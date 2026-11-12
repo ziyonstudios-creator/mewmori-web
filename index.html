@@ -3084,7 +3084,7 @@ function renderEnergy(){const E=energyNow(),MX=energyMax();$('enTxt').textConten
   $('enNext').textContent=E.v>=MX?'Enerji dolu':`+1 enerji: ${fmtT(E.next)} · ${CONFIG.energy.regenSec>=60?CONFIG.energy.regenSec/60+' dakikada':CONFIG.energy.regenSec+' saniyede'} 1`;renderTarget()}
 function refreshCell(i,anim){const c=board.querySelector(`[data-c="${i}"]`);if(!c)return;c.innerHTML=cellHTML(i);c.classList.toggle('sel',UI.mgSel===i);if(anim){const it=c.querySelector('.it');it&&it.classList.add(anim)}}
 function renderInfo(){const box=$('mgInfo');const i=UI.mgSel;const id=i!=null?S.board[i]:null;
-  if(!id){box.innerHTML=`<span class="mi">${UI_IC.merge}</span><div class="tx"><b>Nasıl oynanır?</b>Torbaya dokun, malzeme çıksın. Aynı iki malzemeyi üst üste bırak; farklılar da tarif keşfettirebilir.</div>`;return}
+  if(!id){box.innerHTML=`<span class="mi">${UI_IC.merge}</span><div class="tx"><b>Nasıl oynanır?</b>Soldaki paketlere dokun, malzeme çıksın. Aynı iki malzemeyi üst üste bırak; farklılar da tarif keşfettirebilir.</div>`;return}
   const it=ITEMS[id];let t='';
   if(it.fam==='bag'){const b=bagState(it.bag);t=`<b>${it.name}</b>${it.bag==='food'?'Un, yumurta, şeker, çilek, peynir, süt':'Kahve, çay yaprağı, süt, kakao, limon'} üretir. Her dokunuş ${CONFIG.energy.cost} enerji. ${b.cool?`Dinleniyor: ${fmtT(b.cool)}.`:`${b.left} üretim kaldı; ${CONFIG.bag.limit}. üretimden sonra ${CONFIG.bag.cooldownSec/60} dk dinlenir.`}${S.target?` Hedef tarifin malzemeleri daha sık çıkar.`:''}`;box.innerHTML=`<span class="mi">${itemArt(id)}</span><div class="tx">${t}</div>${b.cool?`<button class="btn light" type="button" id="mgRec">${ic('clock')}Hızlandır</button>`:''}`;if($('mgRec'))$('mgRec').onclick=()=>openRecover('bag',it.bag);return}
   if(it.chain)t=`<b>${it.name}</b>Seviye ${it.lv}/${it.max}. ${it.next?`İki tane birleştir → ${S.items[it.next]?ITEMS[it.next].name:'?'}`:'Zincirin en üst seviyesi.'}`;else t=`<b>${it.name}</b>Özel birleşim.`;
@@ -3803,7 +3803,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <li><span class="n">3</span><span><b>Menüye ekle:</b> alttaki ${tagb('menu','Menü','l')}’de ürünü menüye ekle ya da çıkar. Müşteriler yalnızca menüdekileri sipariş eder.</span></li></ul>
      <p>Keşfedilen tarif kalıcıdır; ${b} onu kendisi hazırlar, malzeme harcanmaz.</p>`},
    {t:'Birleştirme tahtası',art:`<span class="ic">${itemArt('bag_food')}</span><span class="ic">${itemArt('un1')}</span><span class="ar">+</span><span class="ic">${itemArt('un1')}</span><span class="ar">=</span><span class="ic">${itemArt('un2')}</span>`,body:`<ul class="gsteps">
-     <li>${ic('bolt')}<span>Torbaya dokun, malzeme çıksın. Her dokunuş ${CONFIG.energy.cost} enerji harcar; enerji en fazla ${CONFIG.energy.max} olur ve her dakika 1 dolar, oyun kapalıyken de.</span></li>
+     <li>${ic('bolt')}<span>Paketlere dokun, malzeme çıksın. Her dokunuş ${CONFIG.energy.cost} enerji harcar; enerji en fazla ${CONFIG.energy.max} olur ve her dakika 1 dolar, oyun kapalıyken de.</span></li>
      <li>${ic('clock')}<span>Her torba ${CONFIG.bag.limit} malzeme verdikten sonra ${CONFIG.bag.cooldownSec/60} dakika dinlenir; süre torbanın üstünde görünür. Beklemek istemezsen ${tagb('gem','elmas','l')} ile torbayı ya da enerjini hemen yenileyebilirsin.</span></li>
      <li><span class="ic" style="width:30px;height:30px">${itemArt('kahve1')}</span><span>Aynı iki malzemeyi sürükleyip üst üste bırak: bir üst seviye olur. Uyanlar yeşil yanar.</span></li>
      <li><span class="ic" style="width:30px;height:30px">${itemArt('c_latte')}</span><span>Bazı farklı malzemeler de birleşir ve yeni tarif keşfettirir (ör. espresso shot + süt köpüğü = latte).</span></li>
@@ -15780,16 +15780,16 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     if(m!=='merge'){if(m!=='cafe')return setMode('cafe');const b=()=>navBtn('merge');RH2.ok=[b];RH2.allow=[b];rh2Show('mgnav',{text:'Birleştirme tahtasına geçelim.',target:b});return}
     RH2.ok=[];if(S.tkT!==G_REC){S.tkT=G_REC;markDirty();try{const i=document.querySelector('#merge .info');if(i)i.dataset.thk='';tkHedefDraw()}catch(e){}}
     const hed=()=>document.querySelector('#merge .thd');
-    if(!RH2.mgIntro){RH2.allow=[];rh2Show('mg0',{title:'Birleştirme tahtası',text:`Paketlere dokun, malzeme çıksın. Aynı iki malzemeyi birleştir, bir üst kademe olsun. <b>Hedef</b> kartı, tarifin istediklerini gösterir.`,target:hed,place:'head',
+    if(!RH2.mgIntro){RH2.allow=[];rh2Show('mg0',{title:'Birleştirme tahtası',text:`Soldaki paketlere dokun, malzeme çıksın. Aynı iki malzemeyi birleştir, bir üst kademe olsun. <b>Hedef</b> kartı, tarifin istediklerini gösterir.`,target:hed,place:'head',
         buttons:[{label:'Başlayalım',green:true,onClick:()=>{RH2.mgIntro=true;RH2.shown=''}}]});return}
-    const I=tkInfo(G_REC);if(!I||!I.stage)return;const need=I.stage.d.find(([it,n])=>(I.dl[it]|0)<n);if(!need)return;const [X]=need,ch=X.replace(/\d+$/,''),Y=ch+'1',bagK=BAG_OUT.drink.some(w=>w[0]===Y)&&ch!=='seker'?'bag_drink':'bag_food';
+    const I=tkInfo(G_REC);if(!I||!I.stage)return;const need=I.stage.d.find(([it,n])=>(I.dl[it]|0)<n);if(!need)return;const [X]=need,ch=X.replace(/\d+$/,''),Y=ch+'1',bagK='bag_'+((typeof packOf==='function'&&packOf(ch))||{k:'firin'}).k;
     RH2.need=Y;RH2.bag=bagK;
     const idx=id=>S.board.reduce((a,v,i)=>(v===id&&a.push(i),a),[]);const nx=idx(X),ny=idx(Y);clearTutHL();
     if(nx.length){const b=()=>document.querySelector(`#merge [data-thdv="${X}"]`);RH2.allow=[b];rh2Show('mgdv'+X+(I.dl[X]|0),{title:'Teslim et',text:`<b>${ITEMS[X].name}</b> hazır! Hedef kartındaki onay düğmesine dokun; malzeme tahtadan alınıp tarife teslim edilir.`,target:b,place:'head'});return}
     if(ny.length>=2){const a=ny[0],z=ny[1];RH2.pair=[a,z];RH2.allow=[()=>cellEl(a)];cellEl(z)&&cellEl(z).classList.add('tuthl');
       rh2Show('mgmg'+X+a+z,{title:'Birleştir',text:`İki <b>${ITEMS[Y].name}</b> var! Birini parmağınla tut ve parlayan diğerinin üstüne bırak: <b>${ITEMS[X].name}</b> olsun.`,target:()=>cellEl(a),drag:{from:()=>cellEl(a),to:()=>cellEl(z)},place:'head'});return}
-    const bi=S.board.indexOf(bagK);const b=()=>bi>=0?cellEl(bi):null;RH2.allow=[b];
-    rh2Show('mgbag'+X+ny.length,{title:ny.length?'Bir tane daha':'Pakete dokun',text:ny.length?`Pakete bir kez daha dokun, bir <b>${ITEMS[Y].name}</b> daha çıksın.`:`<b>${ITEMS[X].name}</b> için önce <b>${ITEMS[Y].name}</b> lazım. Parlayan <b>${ITEMS[bagK].name}</b> paketine dokun. Bu ilk tarifte paketler ücretsiz!`,target:b,place:'head'});return}
+    const pk=bagK.slice(4);const b=()=>document.querySelector(`#pkRaf [data-pk="${pk}"]`);RH2.allow=[b];
+    rh2Show('mgbag'+X+ny.length,{title:ny.length?'Bir tane daha':'Pakete dokun',text:ny.length?`Pakete bir kez daha dokun, bir <b>${ITEMS[Y].name}</b> daha çıksın.`:`<b>${ITEMS[X].name}</b> için önce <b>${ITEMS[Y].name}</b> lazım. Parlayan <b>${ITEMS[bagK].name}</b>’ne dokun. Bu ilk tarifte paketler ücretsiz!`,target:b,place:'head'});return}
   if(st==='g_rb'){if(m!=='book')return setMode('book');RH2.allow=[];RH2.ok=[];
     if(RH2.sub!=='rb2')return rh2Show('rb1',{title:'Tarif defterimiz',text:'Bütün tariflerin burada. Bir tarifte <b>Hedefle</b>’ye dokunursan, istediği malzemeler birleştirme tahtasında hep gözünün önünde olur.',target:()=>$('rbTabs'),place:'bottom',
       buttons:[{label:'Menüye geçelim',green:true,icon:'menu',onClick:rh2Go('menu',()=>{S.tut='g_mn';RH2.sub='';menuTab='menu';try{const f=famOf(G_REC);if(f)UI.mnFam=f.id}catch(e){}markDirty()})}]});
@@ -15802,7 +15802,7 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     return rh2Show('mn2',{title:'Hepsi bu kadar!',text:'Kafe artık senin, şefim! Takılırsan <b>Ayarlar › Rehber</b>’den bana ulaşabilirsin.',dim:true,center:true,
       buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:()=>{S.tut='done';S.tr='done';S.tur=null;S.tkT=null;RH2.sub='';RH2.shown='';menuTab='menu';rh2Hide();markDirty();try{saveNow()}catch(e){}setMode('cafe')}}]})}}
 // birleştirme dersinde paketler ücretsiz ve hep gereken malzemeyi verir
-{const _tb=tut2Bag;tut2Bag=function(bag){if(S.tut==='g_mg'&&!S.unlocked[G_REC]&&RH2.need){if(bag==='drink'&&RH2.bag==='bag_drink')return RH2.need;if(bag==='food'&&RH2.bag==='bag_food')return RH2.need}return _tb.apply(this,arguments)}}
+{const _tb=tut2Bag;tut2Bag=function(bag){if(S.tut==='g_mg'&&!S.unlocked[G_REC]&&RH2.need&&RH2.bag==='bag_'+bag)return RH2.need;return _tb.apply(this,arguments)}}
 
 // ---- 6) ana döngü ve eski akışa bağlantılar ----
 {const _tt=tutTick;tutTick=function(){try{if(!EVMODE&&S&&S.created){
@@ -15837,6 +15837,83 @@ rhStok=function(){
   if(menuTab!=='stock'){menuTab='stock';renderMenu()}
   rhShow('stok3',{title:'Toptancını seç',text:'<b>5 toptancıdan</b> birini seç. Ucuz olanın kalitesi düşük, pahalı olanınki yüksek. Gerisini ben hallederim; malzemeler kendiliğinden gelir.',
     target:()=>document.querySelector('#menuList .supc[aria-pressed="true"]'),place:'bottom',buttons:[{label:'Tamam',green:true,onClick:rhStokDone}]})};
+
+// ================= V196: PAKET RAFI — paketler tahtadan çıktı, tahtanın yanındaki rafta, içeriğe göre bölünmüş =================
+// Kullanıcı isteği: paketler tahtada durmasın; tahtaya bağlı görünen ayrı bir alanda, içeriklerine göre ayrılmış olsun (kafa karışmasın).
+// Raf: tahtanın solunda dikey şerit (tahtayla aynı ahşap çerçeve). Pakete dokununca malzeme tahtanın ortasına en yakın boş hücreye düşer.
+// Her paketin kendi 15 üretim + dinlenme hakkı vardır (S.bags[k]). Hedef seçiliyse paket o tarifin malzemesini daha sık verir (targetBias).
+const PACKS=[
+ {k:'firin',n:'Fırın',out:[['un1',3],['yum1',2],['seker1',2]],img:'img/bag_food.png'},
+ {k:'mandira',n:'Mandıra',out:[['sut1',3],['peynir1',2]],img:null,tmp:'sut2'},
+ {k:'meyve',n:'Meyve',out:[['cilek1',3],['limon1',2]],img:null,tmp:'cilek2'},
+ {k:'kafe',n:'Kahve & Çay',out:[['kahve1',3],['cay1',3],['kakao1',2],['bitki1',2]],img:'img/bag_drink.png'},
+ {k:'manav',n:'Manav',out:[['domates1',3],['mantar1',2],['marul1',2],['patates1',2],['mercimek1',2]],img:'img/bag_manav.webp'},
+ {k:'kasap',n:'Kasap',out:[['sucuk1',3],['tavuk1',2],['et1',2],['balik1',2]],img:'img/bag_kasap.webp'}];
+const PACK_IMG=[];   // gerçek görseli gelen raf paketleri (img/packs/<k>.webp)
+for(const P of PACKS){BAG_OUT[P.k]=P.out.map(x=>x.slice());const id='bag_'+P.k;
+  ITEMS[id]={...(ITEMS[id]||{}),id,name:P.n+' paketi',fam:'bag',bag:P.k,lv:0};
+  ITEM_ART[id]=PACK_IMG.includes(P.k)?`<img src="img/packs/${P.k}.webp" alt="" draggable="false">`:P.img?`<img src="${P.img}" alt="" draggable="false">`:`<span class="pktmp">${ITEM_ART[P.tmp]||''}</span>`}
+const packOf=chain=>PACKS.find(P=>P.out.some(([i])=>i===chain+'1'));
+
+// ---- tahtadan paketleri kaldır; eski yerleştirme kodları devre dışı ----
+placeNewBags=function(){};fixBags=function(){return false};
+function stripBags(b){let ch=false;for(let i=0;i<b.length;i++){const v=b[i];if(v&&ITEMS[v]&&ITEMS[v].fam==='bag'){b[i]=null;ch=true}}return ch}
+{const _db=defaultBoard;defaultBoard=function(){const b=_db.apply(this,arguments);if(!EVMODE)stripBags(b);return b}}
+{const _as=applyState;applyState=function(){const r=_as.apply(this,arguments);try{if(!EVMODE&&Array.isArray(S.board)&&stripBags(S.board))markDirty()}catch(e){}return r}}
+setInterval(()=>{try{if(!EVMODE&&started&&Array.isArray(S.board)&&!mgDrag&&stripBags(S.board)){markDirty();if(UI.mode==='merge')renderMerge()}}catch(e){}},2000);
+
+// ---- hedef tarif: paket o tarifin eksik malzemesini daha sık verir ----
+targetBases=function(){try{const I=S.tkT&&tkInfo(S.tkT);if(!I||!I.stage)return null;const s=new Set();for(const [it,n] of I.stage.d)if((I.dl[it]|0)<n)s.add(it.replace(/\d+$/,'')+'1');return s.size?s:null}catch(e){return null}};
+
+// ---- rafa dokunma ----
+const MG_MID=()=>{const W=CONFIG.board.w,H=CONFIG.board.h;return Math.floor(H/2)*W+Math.floor(W/2)-1};
+function packTap(k){const P=PACKS.find(x=>x.k===k);if(!P)return;const b=bagState(k),el=document.querySelector(`#pkRaf [data-pk="${k}"]`);
+  const fail=msg=>{sfx('nope');if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}toast(msg,ic('bolt'),1800)};
+  const tutOut=typeof tut2Bag==='function'?tut2Bag(k):null;
+  if(!tutOut){if(b.cool){sfx('nope');return openRecover('bag',k)}const E=energyNow();if(E.v<CONFIG.energy.cost){sfx('nope');return openRecover('energy')}}
+  const t=nearestEmpty(MG_MID());if(t<0)return fail('Tahta dolu: birleştir ya da sat');
+  const W=BAG_OUT[k];let s=W.reduce((a,x)=>a+x[1],0)*Math.random(),out=W[0][0];for(const [id,w] of W){s-=w;if(s<=0){out=id;break}}
+  if(tutOut)out=tutOut;else{const tb=targetBases();if(tb){const opt=W.filter(x=>tb.has(x[0]));if(opt.length&&Math.random()<CONFIG.targetBias)out=opt[Math.floor(Math.random()*opt.length)][0]}
+    const MX=energyMax();S.energy.v-=CONFIG.energy.cost;if(S.energy.v<MX&&S.energy.v+CONFIG.energy.cost>=MX)S.energy.ts=nowT();
+    const B=S.bags[k]||(S.bags[k]={n:0,cd:0});B.n++;if(B.n>=CONFIG.bag.limit){B.cd=nowT()+CONFIG.bag.cooldownSec*1000;setTimeout(()=>toast(`<b>${ITEMS['bag_'+k].name} dinlenmeye geçti</b><br>${CONFIG.bag.cooldownSec/60} dakika sonra yeniden ${CONFIG.bag.limit} üretim`,`<span class="ic">${itemArt('bag_'+k)}</span>`,2800),300)}}
+  S.board[t]=out;sfx('pop');discoverItem(out);markDirty();refreshCell(t,'pop');renderEnergy();packDraw();
+  if(el){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}}
+// eski kod tahtadaki pakete dokunursa (olmamalı) rafa yönlendir
+{const _tb=tapBag;tapBag=function(i){const id=S.board[i];if(id&&ITEMS[id]&&ITEMS[id].bag&&BAG_OUT[ITEMS[id].bag]&&PACKS.some(P=>P.k===ITEMS[id].bag))return packTap(ITEMS[id].bag);return _tb.apply(this,arguments)}}
+
+// ---- raf arayüzü ----
+(()=>{const st=document.createElement('style');st.textContent=`
+html.land #game#game #merge.skin .skwin>.scroll{grid-template-columns:auto auto auto auto!important;column-gap:12px!important}
+html.land #game#game #merge.skin .skwin>.scroll>.mtop{grid-column:1!important;grid-row:1!important}
+html.land #game#game #merge.skin .skwin>.scroll>#pkRaf{grid-column:2!important;grid-row:1!important;order:0!important}
+html.land #game#game #merge.skin .skwin>.scroll>.board-wrap{grid-column:3!important;grid-row:1!important;margin-left:-12px!important}
+html.land #game#game #merge.skin .skwin>.scroll>.info{grid-column:4!important;grid-row:1!important}
+html.land #game#game #merge.skin{--mc:min(64px,calc((100*var(--vh) - 124px)/6),calc((100*var(--vw) - 118px - var(--mwe) - var(--mwi) - var(--mws,64px))/6))!important}
+#pkRaf{flex:none;align-self:start;width:var(--mws,64px);box-sizing:border-box;margin-top:0;display:flex;flex-direction:column;gap:4px;padding:8px 5px;border:3px solid #4a2a14;border-right:0;border-radius:16px 0 0 16px;background:linear-gradient(90deg,#c98a4e,#b5743c);box-shadow:inset 0 0 0 3px #e2a464,0 3px 0 #4a2a14;position:relative;z-index:2;margin-right:-6px}
+#pkRaf::before{content:'Paketler';position:absolute;left:50%;top:-24px;transform:translateX(-50%);font:900 11px/1 var(--font-display,inherit);color:#4a2a14;background:#ffe7a8;border:2.5px solid #4a2a14;border-radius:999px;padding:3px 8px;white-space:nowrap}
+#pkRaf .pk{flex:1 1 0;min-height:0;position:relative;appearance:none;border:2.5px solid #4a2a14;border-radius:12px;background:linear-gradient(#fffaf0,#f6dfb8);box-shadow:0 2px 0 #4a2a14;padding:2px;cursor:pointer;display:grid;place-items:center}
+#pkRaf .pk>img,#pkRaf .pk .pktmp{width:100%;height:100%;object-fit:contain;display:grid;place-items:center;pointer-events:none}
+#pkRaf .pk .pktmp img,#pkRaf .pk .pktmp svg{width:78%;height:78%;object-fit:contain}
+#pkRaf .pk b{position:absolute;right:-5px;bottom:-5px;min-width:18px;padding:1px 4px;box-sizing:border-box;border:2px solid #4a2a14;border-radius:999px;background:#fff6e0;font:900 9.5px/1.1 var(--font-display,inherit);color:#4a2a14;pointer-events:none}
+#pkRaf .pk.cool{filter:saturate(.3) brightness(.92)}#pkRaf .pk.cool b{background:#ffd3c4}
+#pkRaf .pk.tg{box-shadow:0 0 0 3px #ffd34d,0 2px 0 #4a2a14}
+#pkRaf .pk.pop{animation:pkpop .3s ease}#pkRaf .pk.shake{animation:pkshake .35s}
+@keyframes pkpop{50%{transform:scale(1.12)}}@keyframes pkshake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+`;document.head.appendChild(st)})();
+function packEnsure(){const sc=document.querySelector('#merge .scroll'),bw=document.querySelector('#merge .board-wrap');if(!sc||!bw||EVMODE)return null;let r=$('pkRaf');
+  if(!r){r=document.createElement('div');r.id='pkRaf';r.setAttribute('aria-label','Paketler');
+    r.innerHTML=PACKS.map(P=>`<button type="button" class="pk" data-pk="${P.k}" aria-label="${P.n} paketi">${itemArt('bag_'+P.k)}<b></b></button>`).join('');
+    r.addEventListener('click',e=>{const b=e.target.closest('[data-pk]');if(b)packTap(b.dataset.pk)})}
+  if(r.nextElementSibling!==bw)sc.insertBefore(r,bw);return r}
+function packFit(r){const bd=$('board');if(!bd)return;const B=bd.getBoundingClientRect();if(!B.height)return;const R0=r.getBoundingClientRect(),cur=parseFloat(r.style.top)||0;
+  const top=cur+(B.top-6-R0.top),h=B.height+12;if(Math.abs(top-cur)>0.5)r.style.top=top.toFixed(1)+'px';if(Math.abs(R0.height-h)>0.5)r.style.height=h.toFixed(1)+'px'}
+function packDraw(){if(UI.mode!=='merge')return;const r=packEnsure();if(!r)return;const tb=targetBases();try{packFit(r)}catch(e){}
+  for(const P of PACKS){const el=r.querySelector(`[data-pk="${P.k}"]`);if(!el)continue;const b=bagState(P.k),txt=b.cool?fmtT(b.cool):String(b.left);const t=el.querySelector('b');if(t.textContent!==txt)t.textContent=txt;
+    el.classList.toggle('cool',!!b.cool);el.classList.toggle('tg',!!(tb&&P.out.some(([i])=>tb.has(i))))}}
+{const _rm=renderMerge;renderMerge=function(){const r=_rm.apply(this,arguments);try{packDraw()}catch(e){console.warn('raf',e)}return r}}
+setInterval(()=>{try{if(UI.mode==='merge')packDraw()}catch(e){}},1000);
+// etkinlik kafeleri eski tahta paketlerini kullanır: raf yalnız ana kafede
+setInterval(()=>{try{const r=$('pkRaf');if(r)r.hidden=!!EVMODE}catch(e){}},1500);
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
