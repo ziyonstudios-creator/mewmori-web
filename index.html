@@ -15586,6 +15586,11 @@ const TK_LVL={sicak_sut:1,bitki_cay:2,espresso:2,kurabiye:2,tost:2,corba_domates
 for(const id in TK_LVL)if(TK_CFG[id])TK_CFG[id].lvl=TK_LVL[id];
 for(const r of RECIPES){const c=TK_CFG[r.id];if(c&&!r.br)r.lvl=c.lvl}
 
+// ---- V184: ürün görselleri (kullanıcının çizimleri) — 3D küçük resim yerine img/urun/<id>.webp ----
+const URUN_IMG=['su','cay','bitki_cay','yesil_cay','espresso','latte','moka','sicak_sut','tarcinli_sut','sicak_cik','limonata','meyveli_cay','milkshake','corba_domates','corba_mercimek','corba_mantar'];
+function urunImgSet(){for(const id of URUN_IMG)TH.cache.set('p:'+id,'img/urun/'+id+'.webp')}
+urunImgSet();for(const id of URUN_IMG){const i=new Image();i.src='img/urun/'+id+'.webp'}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
