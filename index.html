@@ -15233,7 +15233,7 @@ ITEMS.bag_manav={id:'bag_manav',name:'Manav sandığı',fam:'bag',bag:'manav',lv
 ITEMS.bag_kasap={id:'bag_kasap',name:'Kasap paketi',fam:'bag',bag:'kasap',lv:0};
 BAG_OUT.manav=[['domates1',3],['mercimek1',2],['mantar1',2]];
 BAG_OUT.kasap=[['sucuk1',3],['tavuk1',2],['et1',1]];
-BAG_OUT.drink.push(['su1',2],['bitki1',2]);
+BAG_OUT.drink.push(['bitki1',2]);   // V179: su birleştirmeyle üretilmez (Su tarifi baştan açık); su zinciri yalnız eski tahtalardaki parçalar için tanımlı
 const BAG_TXT={manav:'Domates, mercimek, mantar',kasap:'Sucuk, tavuk, et'};
 ITEM_ART.bag_manav=SV(`<path d="M8 26 H56 L52 54 H12Z" fill="#c98a4e"/><path d="M10 36 H54 M11 45 H53" stroke="#9a6436" stroke-width="2.5"/><circle cx="22" cy="22" r="8" fill="#e0483f"/><path d="M19 15 L22 17 L25 15" stroke="#7fae4a"/><path d="M32 26 Q32 14 42 14 Q50 14 50 22 Z" fill="#c9a27a"/><circle cx="44" cy="24" r="3" fill="#e89a40"/>`);
 ITEM_ART.bag_kasap=SV(`<path d="M10 22 H54 V54 H10Z" fill="#f3e3c8"/><path d="M10 22 L32 12 L54 22" fill="#e9d2a8"/><path d="M18 34 Q20 26 30 28 Q40 30 38 40 Q34 46 24 44 Q16 42 18 34Z" fill="#c0504a"/><path d="M38 44 Q44 32 50 40 Q50 48 42 48Z" fill="#b8372f"/><path d="M24 50 H40" stroke="#9a6436"/>`);
@@ -15254,7 +15254,7 @@ const NEW_RECIPES=[
  {id:'corba_mantar',name:'Mantar Çorbası',cat:'main',sub:'soup',prep:5,price:14,station:'main',needs:['sut'],disc:'mantar4'},
  {id:'kiz_tavuk',name:'Tavuk Kızartma',cat:'main',sub:'fry',prep:6,price:16,station:'main',needs:['un'],disc:'tavuk3'},
  {id:'kiz_et',name:'Et Kızartma',cat:'main',sub:'fry',prep:7,price:21,station:'main',needs:[],disc:'et4'},
- {id:'su',name:'Su',cat:'drink',sub:'water',prep:1,price:2,station:'tea',needs:[],disc:'su2'},
+ {id:'su',name:'Su',cat:'drink',sub:'water',prep:1,price:2,station:'tea',needs:[],disc:''},
  {id:'bitki_cay',name:'Bitki Çayı',cat:'drink',sub:'tea',prep:3,price:5,station:'tea',needs:[],disc:'bitki3'},
  {id:'yesil_cay',name:'Yeşil Çay',cat:'drink',sub:'tea',prep:3,price:6,station:'tea',needs:['cay'],disc:'bitki2'}];
 {const ins=id=>RECIPES.findIndex(r=>r.br)>=0?RECIPES.findIndex(r=>r.br):RECIPES.length;   // etkinlik tariflerinden önce
@@ -15274,14 +15274,14 @@ Object.assign(TK_CFG,{
  omlet_karisik:{cls:3,lvl:6,pre:['omlet_peynir','omlet_sucuk'],st:[{n:'Sebzeler',d:[['domates3',2],['mantar2',2]]},{n:'Sucuk',d:[['sucuk4',1]]},{n:'Son dokunuş',d:[['yum4',1],['peynir3',1]]}]},
  // çorba
  corba_domates:{cls:1,lvl:2,pre:[],st:[{n:'Domates',d:[['domates3',1],['domates2',2]]}]},
- corba_mercimek:{cls:2,lvl:3,pre:['corba_domates'],st:[{n:'Mercimek',d:[['mercimek3',2]]},{n:'Kaynatma',d:[['domates3',1],['su2',2]]}]},
- corba_mantar:{cls:3,lvl:5,pre:['corba_mercimek'],st:[{n:'Mantar',d:[['mantar4',1]]},{n:'Krema',d:[['mantar3',2],['sut3',1]]},{n:'Kaynatma',d:[['su3',2]]}]},
+ corba_mercimek:{cls:2,lvl:3,pre:['corba_domates'],st:[{n:'Mercimek',d:[['mercimek3',2]]},{n:'Kaynatma',d:[['domates3',1],['mercimek2',2]]}]},
+ corba_mantar:{cls:3,lvl:5,pre:['corba_mercimek'],st:[{n:'Mantar',d:[['mantar4',1]]},{n:'Krema',d:[['mantar3',2],['sut3',1]]},{n:'Kaynatma',d:[['domates2',2]]}]},
  // kızartma
  kiz_tavuk:{cls:2,lvl:4,pre:[],st:[{n:'Tavuk',d:[['tavuk3',2]]},{n:'Pane harcı',d:[['un3',1],['yum2',2]]}]},
  kiz_et:{cls:4,lvl:7,pre:['kiz_tavuk'],st:[{n:'Et seçimi',d:[['et4',1]]},{n:'Marine',d:[['et3',2]]},{n:'Garnitür',d:[['domates3',1],['mantar3',1]]},{n:'Servis',d:[['un4',1]]}]},
  // içecekler
- bitki_cay:{cls:1,lvl:2,pre:['cay'],st:[{n:'Demleme',d:[['bitki3',1],['su2',2]]}]},
- yesil_cay:{cls:2,lvl:3,pre:['cay'],st:[{n:'Yapraklar',d:[['cay3',2]]},{n:'Demleme',d:[['bitki3',1],['su3',1]]}]},
+ bitki_cay:{cls:1,lvl:2,pre:['cay'],st:[{n:'Demleme',d:[['bitki3',1],['bitki2',1]]}]},
+ yesil_cay:{cls:2,lvl:3,pre:['cay'],st:[{n:'Yapraklar',d:[['cay3',2]]},{n:'Demleme',d:[['bitki3',1],['cay2',2]]}]},
  espresso:{cls:1,lvl:1,pre:[],st:[{n:'Çekirdek',d:[['kahve3',1]]}]},
  moka:{cls:3,lvl:5,pre:['espresso'],st:[{n:'Harman',d:[['kahve4',1]]},{n:'Çikolata',d:[['kakao4',1],['kakao2',2]]},{n:'Köpük',d:[['sut4',1]]}]},
  sicak_cik:{cls:2,lvl:3,pre:[],st:[{n:'Kakao hazırlığı',d:[['kakao3',2],['kakao2',2]]},{n:'Kremalı süt',d:[['sut4',1],['seker3',2]]}]},
