@@ -15594,6 +15594,17 @@ urunImgSet();for(const id of URUN_IMG){const i=new Image();i.src='img/urun/'+id+
 ITEM_ART.bag_manav='<img src="img/bag_manav.webp" alt="" draggable="false">';ITEM_ART.bag_kasap='<img src="img/bag_kasap.webp" alt="" draggable="false">';
 for(const b of ['bag_manav','bag_kasap']){const i=new Image();i.src='img/'+b+'.webp'}
 
+// ---- V189: patates zinciri (Manav paketi) — ızgara/balık yemeklerine garnitür aşaması olarak eklenir ----
+NEW_CHAINS.patates={fam:'food',n:['Patates','Patates dilimleri','Patates sepeti','Fırın patates'],c:'#e8b450'};
+NC_SVG.patates=`<ellipse cx="32" cy="34" rx="22" ry="16" fill="#e8b450"/><circle cx="24" cy="30" r="1.8" fill="#9a6a2a" stroke="none"/><circle cx="38" cy="36" r="1.8" fill="#9a6a2a" stroke="none"/><circle cx="32" cy="26" r="1.5" fill="#9a6a2a" stroke="none"/>`;
+{const ch='patates',d=NEW_CHAINS[ch];CHAINS[ch]=d.n.slice();CHAIN_FAM[ch]=d.fam;
+  d.n.forEach((nm,i)=>{const id=ch+(i+1);ITEMS[id]={id,name:nm,chain:ch,lv:i+1,max:d.n.length,fam:d.fam,next:i+1<d.n.length?ch+(i+2):null};
+    ITEM_ART[id]=NEW_IMG.includes(id)?`<img src="img/items/${id}.webp" alt="" draggable="false">`:`<span class="kt kt${Math.min(7,i+3)} ktn">${SV(NC_SVG[ch])}<b>${i+1}</b></span>`})}
+BAG_OUT.manav.push(['patates1',2]);BAG_TXT.manav='Domates, mantar, marul, patates';
+// garnitür: aşama sona eklenir (yarıdaki ilerleme bozulmaz)
+for(const [id,d] of [['kiz_tavuk',[['patates2',2]]],['kiz_et',[['patates3',1]]],['pirzola',[['patates3',2]]],['levrek',[['patates2',2]]],['somon',[['patates3',1]]]])
+  if(TK_CFG[id])TK_CFG[id].st.push({n:'Patates',d});
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
