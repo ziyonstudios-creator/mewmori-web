@@ -16052,6 +16052,16 @@ setInterval(()=>{try{if(!rh2Act()||!/^k[235]$/.test(S.tut||'')||$('coach').hidde
     if(!o.target){box.classList.remove('rhR','rhT');box.classList.add('rhL','rhB')}else rhMiniPlace()}else if(o&&o.center)box.classList.remove('rhmini','rhnot','rhL','rhR','rhB','rhT')}catch(e){}return r}}
 (()=>{const st=document.createElement('style');st.textContent=`html.land #game#game #coach.rhmini .cbub:not(.center) .row{margin-top:2px}html.land #game#game #coach.rhmini .cbub:not(.center) .btn{font-size:12.5px;padding:6px 11px}
 html.land #game#game #coach.rhmini .cbub:not(.center){width:min(300px,calc(38*var(--vw)))!important}`;document.head.appendChild(st)})();
+// ---- V205: rehber balonu SABİT yerde: kafede sol alt, birleştirmede sağ alt. Satır içi !important ile her karede uygulanır (hiçbir kural ezemez) ----
+(()=>{const st=document.createElement('style');st.textContent=`#coach.rhfix .cbub::after{display:none!important}`;document.head.appendChild(st)})();
+function rhFix(){const box=$('coach');if(!box)return;const bub=box.querySelector('.cbub');if(!bub)return;
+  const on=!box.hidden&&!bub.hidden&&!bub.classList.contains('center')&&!CO.drag;box.classList.toggle('rhfix',on);
+  const P=['top','bottom','left','right','width','transform','max-width'];
+  if(!on){if(bub.dataset.rhfix){for(const k of P)bub.style.removeProperty(k);delete bub.dataset.rhfix}return}
+  const mg=UI.mode==='merge',w=mg?'min(240px,calc(29*var(--vw)))':'min(300px,calc(37*var(--vw)))',S2=(k,v)=>{if(bub.style.getPropertyValue(k)!==v||bub.style.getPropertyPriority(k)!=='important')bub.style.setProperty(k,v,'important')};
+  bub.dataset.rhfix='1';S2('top','auto');S2('bottom','calc(max(10px, var(--sab, 0px)) + 8px)');S2('transform','none');S2('width',w);S2('max-width',w);
+  if(mg){S2('left','auto');S2('right','calc(max(10px, var(--sar, 0px)) + 6px)')}else{S2('right','auto');S2('left','calc(max(12px, var(--sal, 0px)) + 6px)')}}
+(function rhFixLoop(){try{rhFix()}catch(e){}requestAnimationFrame(rhFixLoop)})();
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
