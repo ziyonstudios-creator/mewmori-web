@@ -299,7 +299,7 @@ var EVMODE=(()=>{try{const f=JSON.parse(localStorage.getItem(EV_FLAG)||'null');i
 // Kapı ve büyük pencere iki duvardan istenene, istenen yere taşınabilir (OP). (Kapı yanındaki küçük cam V160'ta kaldırıldı.) Zemin, duvarlar ve süpürgelikler buildShell() ile kurulur.
 var GDN={r:0,f:0};
 var SHELL={g:null,strips:true,plants:[],outer:[],base:{x0:-4.75,z0:-4,x1:4.75,z1:4}};
-const ROOM_MAX={x0:-8.75,x1:8.75,z0:-8,z1:8};                              // en büyük oda (her kenar +4 m)
+const ROOM_MAX={x0:-10.75,x1:10.75,z0:-10,z1:10};   // arsa sınırı (V171: bahçe 6 m; sol/arka iç genişleme EXP_MAXS ile yine 2 kademe = +4 m)
 const LOT={x0:ROOM_MAX.x0-0.3,x1:ROOM_MAX.x1+0.3,z0:ROOM_MAX.z0-0.3,z1:ROOM_MAX.z1+0.3};   // genişleme arsası: içinde hiçbir şey yok
 // açıklıklar: duvar ('left' | 'back') ve duvar boyunca konum t (sol duvarda z, arka duvarda x)
 var OP={door:{wall:'left',t:1.8},win:{wall:'back',t:1.6}};   // V160: kapının yanındaki küçük cam ('side') oyundan kaldırıldı
