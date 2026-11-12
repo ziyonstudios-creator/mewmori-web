@@ -15361,9 +15361,9 @@ const FAMS=[
    for(let i=0;i<5;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(0.003,5,4),toon(0x9a5a2c));d.position.set(Math.cos(i*1.3)*0.015,0.027,Math.sin(i*1.3)*0.015);f.add(d)}}}
 const famOf=id=>FAMS.find(f=>f.ids.includes(id));
 const recShown=r=>!r.br||!!S.unlocked[r.id];   // ülke tarifi yalnız açıldıysa
-function famsFor(cat){const out=FAMS.filter(f=>f.cat===cat).map(f=>({...f,list:f.ids.map(i=>RECIPE[i]).filter(Boolean)}));
-  const world=RECIPES.filter(r=>r.cat===cat&&r.br&&S.unlocked[r.id]);if(world.length)out.push({id:'world_'+cat,cat,n:'Dünya mutfağı',list:world,world:true});
-  const known=new Set(out.flatMap(f=>f.list.map(r=>r.id)));const rest=RECIPES.filter(r=>r.cat===cat&&!r.br&&!known.has(r.id));if(rest.length)out.push({id:'diger_'+cat,cat,n:'Diğer',list:rest});
+function famsFor(cat){const out=FAMS.filter(f=>f.cat===cat).map(f=>({...f,list:f.ids.map(i=>RECIPE[i]).filter(r=>r&&!r.hidden&&recShown(r))}));
+  const world=RECIPES.filter(r=>r.cat===cat&&r.br&&S.unlocked[r.id]&&!FAMS.some(f=>f.ids.includes(r.id)));if(world.length)out.push({id:'world_'+cat,cat,n:'Dünya mutfağı',list:world,world:true});
+  const known=new Set(out.flatMap(f=>f.list.map(r=>r.id)));const rest=RECIPES.filter(r=>r.cat===cat&&!r.br&&!r.hidden&&!known.has(r.id));if(rest.length)out.push({id:'diger_'+cat,cat,n:'Diğer',list:rest});
   return out.filter(f=>f.list.length)}
 {const _rb=renderBook;renderBook=function(){
   // öğretici Tarif Defteri adımlarında Ballı Süt'ün ailesi açık gelir
@@ -15434,6 +15434,140 @@ function famsOpen(cat){return famsFor(cat).map(f=>({...f,list:f.list.filter(r=>S
 #mnCards .mback>span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:3px solid #4a2a14;background:linear-gradient(#ffe08a,#f6b93a);font-size:24px;font-weight:900;line-height:1}
 #mnCards .mback>b{font-size:13px}
 `;document.head.appendChild(st)}
+
+// ================= İLK SÜRÜM MENÜSÜ: 6 SEKME → AİLE → ÇEŞİT (V182) =================
+// Sekmeler: İçecekler · Çorbalar · Kahvaltı · Ana Yemekler · Salatalar · Tatlılar. Her tarifin cat'i sekmesi, FAMS ailesi.
+// Ülke mutfakları: tarif r.br ile tanımlanır ve FAMS'e bir aile olarak eklenir (ör. {id:'pizza',cat:'main',n:'Pizzalar',ids:[…]});
+// aile, içindeki ülke tarifi açılmadan görünmez (p94 recShown). Listede olmayanlar o sekmenin "Dünya mutfağı" ailesine düşer.
+// Gizlenen eski tarifler (tart, kruvasan, sandviç) RECIPES'ten çıkar (RECIPE'te kalır: eski siparişler/kayıtlar bozulmaz).
+Object.assign(UI_IC,{
+ bowl:SV(`<path d="M8 30 H56 Q54 52 32 52 Q10 52 8 30Z" fill="#f6c86a"/><path d="M8 30 H56" /><path d="M24 22 q3 -5 0 -10 M32 22 q3 -5 0 -10 M40 22 q3 -5 0 -10" stroke-width="2.5"/>`),
+ egg:SV(`<ellipse cx="32" cy="34" rx="24" ry="18" fill="#fffaf0"/><circle cx="32" cy="34" r="9" fill="#f6c43a"/>`),
+ leaf:SV(`<path d="M10 52 Q10 16 54 10 Q56 46 10 52Z" fill="#9fd06a"/><path d="M10 52 L42 22" stroke-width="2.5"/>`)});
+RCAT.length=0;RCAT.push({id:'drink',name:'İçecekler',icon:'cup'},{id:'soup',name:'Çorbalar',icon:'bowl'},{id:'breakfast',name:'Kahvaltı',icon:'egg'},{id:'main',name:'Ana Yemekler',icon:'plate'},{id:'salad',name:'Salatalar',icon:'leaf'},{id:'dessert',name:'Tatlılar',icon:'cake'});
+// ---- yeni zincirler: balık (Kasap paketi), marul (Manav sandığı) ----
+NEW_CHAINS.balik={fam:'food',n:['Balık','Balık fileto','Balık tabağı','Balık sepeti'],c:'#7fb0d8'};
+NEW_CHAINS.marul={fam:'food',n:['Marul yaprağı','Marul','Yeşillik sepeti','Bahçe sepeti'],c:'#8fc85a'};
+NC_SVG.balik=`<path d="M8 32 Q22 16 40 24 L54 14 L50 32 L54 50 L40 40 Q22 48 8 32Z" fill="#7fb0d8"/><circle cx="18" cy="30" r="2.5" fill="#4a2a14" stroke="none"/>`;
+NC_SVG.marul=`<path d="M32 54 Q8 50 10 30 Q12 12 32 12 Q52 12 54 30 Q56 50 32 54Z" fill="#8fc85a"/><path d="M32 54 V20 M32 34 L20 24 M32 40 L44 28" stroke="#5a8a2a" stroke-width="2.5"/>`;
+for(const ch of ['balik','marul']){const d=NEW_CHAINS[ch];CHAINS[ch]=d.n.slice();CHAIN_FAM[ch]=d.fam;
+  d.n.forEach((nm,i)=>{const id=ch+(i+1);ITEMS[id]={id,name:nm,chain:ch,lv:i+1,max:d.n.length,fam:d.fam,next:i+1<d.n.length?ch+(i+2):null};
+    ITEM_ART[id]=NEW_IMG.includes(id)?`<img src="img/items/${id}.webp" alt="" draggable="false">`:`<span class="kt kt${Math.min(7,i+3)} ktn">${SV(NC_SVG[ch])}<b>${i+1}</b></span>`})}
+BAG_OUT.kasap.push(['balik1',2]);BAG_OUT.manav.push(['marul1',2]);BAG_TXT.kasap='Sucuk, tavuk, et, balık';BAG_TXT.manav='Domates, mercimek, mantar, marul';
+
+// ---- tarifler: yeni olanlar ----
+const R2=[
+ ['milkshake','Çilekli Milkshake','drink',3,9,'tea',['sut','cilek'],'cilek3'],
+ ['koy_kahvalti','Köy Kahvaltısı','breakfast',6,20,'main',['yum','peynir'],'yum4'],
+ ['serpme','Serpme Kahvaltı','breakfast',7,26,'main',['yum','peynir','sut'],'yum5'],
+ ['pirzola','Kuzu Pirzola','main',7,24,'main',[],'et4'],
+ ['tavuk_sis','Tavuk Şiş','main',6,18,'main',[],'tavuk4'],
+ ['levrek','Izgara Levrek','main',6,19,'main',['limon'],'balik3'],
+ ['somon','Izgara Somon','main',7,23,'main',['limon'],'balik4'],
+ ['makarna_domates','Domates Soslu Makarna','main',5,13,'main',['un'],'domates3'],
+ ['makarna_mantar','Kremalı Mantarlı Makarna','main',6,16,'main',['un','sut'],'mantar3'],
+ ['kofte','Izgara Köfte','main',6,15,'main',['un'],'et3'],
+ ['kofte_kasar','Kaşarlı Köfte','main',6,18,'main',['un','peynir'],'peynir4'],
+ ['coban','Çoban Salata','salad',3,8,'main',['limon'],'marul2'],
+ ['mevsim','Mevsim Salatası','salad',3,9,'main',['limon'],'marul3'],
+ ['sezar','Sezar Salata','salad',4,14,'main',['peynir'],'marul4'],
+ ['kurabiye_cik','Çikolatalı Kurabiye','dessert',2,5,'dessert',['un','kakao','seker'],'kakao3'],
+ ['puding_sut','Sütlü Puding','dessert',3,6,'dessert',['sut','seker'],'sut3'],
+ ['puding_cik','Çikolatalı Puding','dessert',3,8,'dessert',['sut','kakao','seker'],'kakao4']];
+for(const [id,name,cat,prep,price,station,needs,disc] of R2)if(!RECIPE[id]){const r={id,name,cat,sub:cat,lvl:1,prep,price,station,needs,disc};RECIPES.push(r);RECIPE[id]=r}
+// ---- yeniden adlandırma ve sekme ----
+const RN={meyveli_cay:'Buzlu Çilekli Çay',kiz_tavuk:'Izgara Tavuk',kiz_et:'Izgara Biftek',kahvalti:'Kahvaltı Tabağı'};for(const k in RN)if(RECIPE[k])RECIPE[k].name=RN[k];
+const CAT2={corba_domates:'soup',corba_mercimek:'soup',corba_mantar:'soup',tost_sade:'breakfast',tost:'breakfast',tost_sucuk:'breakfast',tost_karisik:'breakfast',
+ omlet:'breakfast',omlet_peynir:'breakfast',omlet_sucuk:'breakfast',omlet_karisik:'breakfast',kahvalti:'breakfast',kiz_tavuk:'main',kiz_et:'main',meyveli_cay:'drink'};
+for(const k in CAT2)if(RECIPE[k])RECIPE[k].cat=CAT2[k];
+// ---- gizlenenler (ileride ülke mutfaklarına) ----
+for(const id of ['tart','kruvasan','sandvic']){const r=RECIPE[id];if(!r)continue;r.hidden=true;const i=RECIPES.indexOf(r);if(i>=0)RECIPES.splice(i,1)}
+// ---- aileler ----
+FAMS.length=0;FAMS.push(
+ {id:'su',cat:'drink',n:'Su',ids:['su']},
+ {id:'cay',cat:'drink',n:'Çaylar',ids:['cay','bitki_cay','yesil_cay']},
+ {id:'kahve',cat:'drink',n:'Kahveler',ids:['espresso','latte','moka']},
+ {id:'sut',cat:'drink',n:'Sütlü içecekler',ids:['sicak_sut','tarcinli_sut','sicak_cik']},
+ {id:'soguk',cat:'drink',n:'Soğuk içecekler',ids:['limonata','meyveli_cay','milkshake']},
+ {id:'corba',cat:'soup',n:'Çorbalar',ids:['corba_domates','corba_mercimek','corba_mantar']},
+ {id:'tost',cat:'breakfast',n:'Tostlar',ids:['tost_sade','tost','tost_sucuk','tost_karisik']},
+ {id:'omlet',cat:'breakfast',n:'Omletler',ids:['omlet','omlet_peynir','omlet_sucuk','omlet_karisik']},
+ {id:'ktabak',cat:'breakfast',n:'Kahvaltı tabakları',ids:['kahvalti','koy_kahvalti','serpme']},
+ {id:'et',cat:'main',n:'Et ızgara',ids:['kiz_et','pirzola']},
+ {id:'tavuk',cat:'main',n:'Tavuk ızgara',ids:['kiz_tavuk','tavuk_sis']},
+ {id:'balik',cat:'main',n:'Balıklar',ids:['levrek','somon']},
+ {id:'makarna',cat:'main',n:'Makarnalar',ids:['makarna_domates','makarna_mantar']},
+ {id:'kofte',cat:'main',n:'Köfteler',ids:['kofte','kofte_kasar']},
+ {id:'salata',cat:'salad',n:'Salatalar',ids:['coban','mevsim','sezar']},
+ {id:'kurabiye',cat:'dessert',n:'Kurabiyeler',ids:['kurabiye','kurabiye_cik']},
+ {id:'puding',cat:'dessert',n:'Pudingler',ids:['puding_sut','puding_cik']},
+ {id:'kek',cat:'dessert',n:'Kekler',ids:['cupcake','pasta']});
+// ---- keşif ağacı ----
+Object.assign(TK_CFG,{
+ milkshake:{cls:2,lvl:3,pre:['limonata'],st:[{n:'Çilek',d:[['cilek3',2],['sut3',1]]},{n:'Şeker',d:[['seker3',1]]}]},
+ kahvalti:{cls:2,lvl:4,pre:['omlet_peynir'],st:[{n:'Yumurta ve peynir',d:[['yum3',2],['peynir3',1]]},{n:'Yeşillik',d:[['domates3',1],['marul2',1]]}]},
+ koy_kahvalti:{cls:3,lvl:6,pre:['kahvalti'],st:[{n:'Köy yumurtası',d:[['yum4',1]]},{n:'Köy peyniri',d:[['peynir4',1]]},{n:'Süt ve bal',d:[['sut3',2],['seker3',1]]}]},
+ serpme:{cls:4,lvl:8,pre:['koy_kahvalti'],st:[{n:'Yumurtalar',d:[['yum5',1]]},{n:'Peynirler',d:[['peynir5',1]]},{n:'Sıcaklar',d:[['sucuk3',2],['domates3',2]]},{n:'Çay servisi',d:[['c_kahvalti',1],['cay4',1]]}]},
+ tavuk_sis:{cls:3,lvl:6,pre:['kiz_tavuk'],st:[{n:'Tavuk',d:[['tavuk4',1]]},{n:'Şiş',d:[['tavuk3',2],['domates2',2]]}]},
+ pirzola:{cls:4,lvl:9,pre:['kiz_et'],st:[{n:'Kuzu',d:[['et4',1]]},{n:'Marine',d:[['et3',2]]},{n:'Otlar',d:[['bitki3',1],['domates3',1]]},{n:'Izgara',d:[['et4',1]]}]},
+ levrek:{cls:2,lvl:5,pre:[],st:[{n:'Balık',d:[['balik3',2]]},{n:'Garnitür',d:[['limon3',1],['marul2',2]]}]},
+ somon:{cls:3,lvl:7,pre:['levrek'],st:[{n:'Fileto',d:[['balik4',1]]},{n:'Balık',d:[['balik3',2]]},{n:'Sos',d:[['limon3',1],['bitki2',2]]}]},
+ makarna_domates:{cls:2,lvl:4,pre:[],st:[{n:'Hamur',d:[['un3',2]]},{n:'Sos',d:[['domates3',2]]}]},
+ makarna_mantar:{cls:3,lvl:6,pre:['makarna_domates'],st:[{n:'Hamur',d:[['un4',1]]},{n:'Mantar',d:[['mantar3',2]]},{n:'Krema',d:[['sut4',1]]}]},
+ kofte:{cls:2,lvl:5,pre:[],st:[{n:'Kıyma',d:[['et3',2]]},{n:'Harç',d:[['un2',2],['yum2',1]]}]},
+ kofte_kasar:{cls:3,lvl:7,pre:['kofte'],st:[{n:'Kıyma',d:[['et4',1]]},{n:'Kaşar',d:[['peynir4',1]]},{n:'Harç',d:[['un3',1],['yum3',1]]}]},
+ coban:{cls:1,lvl:2,pre:[],st:[{n:'Doğrama',d:[['domates3',1],['marul2',2]]}]},
+ mevsim:{cls:2,lvl:3,pre:['coban'],st:[{n:'Yeşillik',d:[['marul3',2]]},{n:'Sos',d:[['domates2',2],['limon2',2]]}]},
+ sezar:{cls:3,lvl:5,pre:['mevsim'],st:[{n:'Marul',d:[['marul4',1]]},{n:'Tavuk ve peynir',d:[['tavuk3',1],['peynir3',1]]},{n:'Kıtır ekmek',d:[['un3',1]]}]},
+ kurabiye_cik:{cls:2,lvl:3,pre:['kurabiye'],st:[{n:'Hamur',d:[['c_kurabiye',1]]},{n:'Çikolata',d:[['kakao3',2]]}]},
+ puding_sut:{cls:1,lvl:3,pre:[],st:[{n:'Muhallebi',d:[['sut3',2],['seker3',1]]}]},
+ puding_cik:{cls:2,lvl:4,pre:['puding_sut'],st:[{n:'Süt',d:[['sut4',1]]},{n:'Kakao',d:[['kakao3',2],['seker3',1]]}]},
+ cupcake:{cls:2,lvl:4,pre:[],st:[{n:'Kek hamuru',d:[['c_kekhamuru',2],['un3',2]]},{n:'Krema',d:[['seker4',1],['sut3',2]]}]}});
+for(const r of RECIPES){const c=TK_CFG[r.id];if(!c||r.br)continue;r.lvl=c.lvl;r.def=c.cls===0;r.free=c.cls===0}
+HOT.add('kahvalti');
+// gizlenen tarifler menüden çıkar (sipariş edilmesin)
+{const _as=applyState;applyState=function(){const r=_as.apply(this,arguments);try{for(const id of ['tart','kruvasan','sandvic'])if(S.menu&&S.menu[id])delete S.menu[id]}catch(e){}return r}}
+
+// ---- 3B modeller ----
+const PM2={pink:toon(0xf5a6b8),greens:toon(0x8fc85a),cuc:toon(0x5f9e45),fish:toon(0xb8c8d6),salmon:toon(0xf08a5a),pasta:toon(0xf3cf7a),sauce:toon(0xd9442f),cream2:toon(0xf3e6c8),meatb:toon(0x7a3a24),pud:toon(0xfff1cc),pudc:toon(0x6b3c1e),chip:toon(0x3a1e0e),stick:toon(0xc9a27a),rice:toon(0xfbf3e2)};
+const bowl2=(H,col)=>{H.plate(0.05);const b=H.body();const w=mk(new THREE.CylinderGeometry(0.04,0.026,0.026,20,1,true),PM.bowl,0,0.021,0,b);w.material=PM.bowl.clone();w.material.side=THREE.DoubleSide;mk(new THREE.CylinderGeometry(0.026,0.026,0.003,16),PM.bowl,0,0.009,0,b);return b};
+const plate2=(H,r=0.058)=>{H.plate(r);return H.body()};
+const fish=(b,mat,x,z,s=1)=>{const f=mk(new THREE.SphereGeometry(0.018*s,12,10),mat,x,0.017,z,b);f.scale.set(2,0.55,0.9);const t=mk(new THREE.ConeGeometry(0.012*s,0.02*s,4),mat,x+0.042*s,0.017,z,b);t.rotation.z=Math.PI/2;
+  for(let i=0;i<3;i++)mk(new THREE.BoxGeometry(0.002,0.001,0.016*s),toon(0x4a3a2a),x-0.012*s+i*0.012*s,0.027,z,b)};
+Object.assign(NEWP,{
+ milkshake:H=>{H.saucer(0.036);H.glass(0.03,0.022,0.1,PM2.pink);const c=mk(new THREE.SphereGeometry(0.026,12,8,0,Math.PI*2,0,Math.PI/2),MAT.cream,0,0.1,0,H.g);c.scale.y=0.7;mk(new THREE.SphereGeometry(0.008,8,6),MAT.straw,0,0.118,0,H.g);
+   const st=mk(new THREE.CylinderGeometry(0.003,0.003,0.12,6),MAT.straw,0.012,0.1,0,H.g);st.rotation.z=-0.25},
+ koy_kahvalti:H=>{const b=plate2(H,0.062);for(const [x,z] of [[-0.022,0.01],[-0.004,0.022]]){mk(new THREE.CylinderGeometry(0.012,0.012,0.004,14),MAT.white,x,0.01,z,b);mk(new THREE.SphereGeometry(0.006,8,6),toon(0xf2b134),x,0.013,z,b)}
+   mk(new THREE.BoxGeometry(0.022,0.014,0.018),MAT.cheese,0.02,0.015,-0.012,b);mk(new THREE.BoxGeometry(0.016,0.012,0.014),MAT.white,0.02,0.014,0.012,b);for(const [x,z] of [[-0.02,-0.02],[0,-0.026]])mk(new THREE.SphereGeometry(0.006,8,6),MAT.olive,x,0.012,z,b);mk(new THREE.CylinderGeometry(0.01,0.01,0.006,10),MAT.red,0.036,0.011,0.026,b)},
+ serpme:H=>{H.plate(0.068);const b=H.body();const mini=(x,z,c)=>{mk(new THREE.CylinderGeometry(0.014,0.011,0.008,14),MAT.cup,x,0.012,z,b);mk(new THREE.CylinderGeometry(0.011,0.011,0.004,12),c,x,0.017,z,b)};
+   mini(-0.034,-0.02,toon(0xf2b134));mini(-0.034,0.016,toon(0xb8372f));mini(0.034,-0.02,MAT.olive);mini(0.034,0.018,toon(0xf5a6b8));
+   mk(new THREE.CylinderGeometry(0.018,0.018,0.006,16),toon(0x3a3a3a),0,0.012,0,b);for(let i=0;i<2;i++)mk(new THREE.SphereGeometry(0.006,8,6),toon(0xf2b134),-0.006+i*0.012,0.017,0,b);
+   mk(new THREE.BoxGeometry(0.02,0.012,0.014),MAT.cheese,0,0.014,0.03,b);mk(new THREE.BoxGeometry(0.02,0.01,0.014),MAT.white,0,0.013,-0.03,b)},
+ pirzola:H=>{const b=plate2(H);for(const [x,r] of [[-0.012,0.4],[0.012,-0.3]]){const c=mk(new THREE.CylinderGeometry(0.02,0.02,0.01,14),PM.meat,x,0.013,0,b);c.scale.set(1.2,1,0.8);c.rotation.y=r;
+   const bn=mk(new THREE.CylinderGeometry(0.003,0.003,0.03,6),MAT.white,x+Math.cos(r)*0.03,0.014,-Math.sin(r)*0.03,b);bn.rotation.z=Math.PI/2;bn.rotation.y=r}mk(new THREE.SphereGeometry(0.007,6,5),MAT.green,0,0.014,0.03,b).scale.set(1.6,0.4,1)},
+ tavuk_sis:H=>{const b=plate2(H);for(const z of [-0.012,0.012]){const st=mk(new THREE.CylinderGeometry(0.002,0.002,0.1,6),PM2.stick,0,0.02,z,b);st.rotation.z=Math.PI/2;
+   for(let i=0;i<4;i++)mk(new THREE.BoxGeometry(0.014,0.012,0.014),i%2?PM.fried:toon(0xe8b06a),-0.03+i*0.02,0.02,z,b);mk(new THREE.BoxGeometry(0.008,0.01,0.012),PM.tom,-0.04,0.02,z,b)}},
+ levrek:H=>{const b=plate2(H,0.06);fish(b,PM2.fish,-0.006,0,1);mk(new THREE.CylinderGeometry(0.009,0.009,0.004,12),MAT.lemonPeel,0.03,0.011,0.024,b);mk(new THREE.SphereGeometry(0.008,6,5),PM2.greens,-0.03,0.012,0.026,b).scale.y=0.5},
+ somon:H=>{const b=plate2(H,0.06);const s=mk(new THREE.BoxGeometry(0.05,0.014,0.03),PM2.salmon,0,0.015,0,b);for(let i=0;i<4;i++)mk(new THREE.BoxGeometry(0.002,0.001,0.03),toon(0xfbe0cf),-0.018+i*0.012,0.0225,0,b);
+   mk(new THREE.CylinderGeometry(0.009,0.009,0.004,12),MAT.lemonPeel,0.032,0.011,0.022,b);mk(new THREE.SphereGeometry(0.007,6,5),PM2.greens,-0.032,0.012,0.02,b).scale.y=0.5},
+ makarna_domates:H=>{const b=bowl2(H);for(let i=0;i<6;i++){const t=mk(new THREE.TorusGeometry(0.012,0.003,6,14),PM2.pasta,Math.cos(i)*0.012,0.03+i*0.002,Math.sin(i)*0.012,b);t.rotation.set(Math.PI/2+i*0.3,i,0)}
+   mk(new THREE.SphereGeometry(0.016,10,8),PM2.sauce,0,0.036,0,b).scale.y=0.4;mk(new THREE.SphereGeometry(0.005,6,4),MAT.green,0.006,0.04,0.004,b).scale.set(1.4,0.4,1)},
+ makarna_mantar:H=>{const b=bowl2(H);for(let i=0;i<6;i++){const t=mk(new THREE.TorusGeometry(0.012,0.003,6,14),PM2.pasta,Math.cos(i)*0.012,0.03+i*0.002,Math.sin(i)*0.012,b);t.rotation.set(Math.PI/2+i*0.3,i,0)}
+   mk(new THREE.SphereGeometry(0.018,10,8),PM2.cream2,0,0.035,0,b).scale.y=0.35;for(const [x,z] of [[-0.008,0.006],[0.009,-0.004]])mk(new THREE.SphereGeometry(0.006,8,6,0,Math.PI*2,0,Math.PI/2),PM.mush,x,0.04,z,b)},
+ kofte:H=>{const b=plate2(H);for(let i=0;i<5;i++){const k=mk(new THREE.CylinderGeometry(0.009,0.009,0.02,10),PM2.meatb,-0.024+i*0.012,0.014,(i%2)*0.008,b);k.rotation.z=Math.PI/2;k.rotation.y=0.3}
+   for(const [x,z] of [[0.03,0.022],[-0.03,0.024]])mk(new THREE.SphereGeometry(0.006,8,6),PM.tom,x,0.012,z,b)},
+ kofte_kasar:H=>{const b=plate2(H);for(let i=0;i<3;i++){mk(new THREE.CylinderGeometry(0.013,0.013,0.01,12),PM2.meatb,-0.022+i*0.022,0.013,0,b);mk(new THREE.CylinderGeometry(0.012,0.013,0.003,12),MAT.cheese,-0.022+i*0.022,0.0195,0,b)}
+   mk(new THREE.SphereGeometry(0.006,6,5),MAT.green,0,0.013,0.026,b).scale.set(1.6,0.4,1)},
+ coban:H=>{const b=bowl2(H);for(let i=0;i<7;i++)mk(new THREE.BoxGeometry(0.008,0.006,0.008),i%3===0?PM.tom:i%3===1?PM2.cuc:PM2.greens,Math.cos(i*1.7)*0.016,0.033,Math.sin(i*1.7)*0.016,b).rotation.y=i},
+ mevsim:H=>{const b=bowl2(H);for(let i=0;i<6;i++){const l=mk(new THREE.SphereGeometry(0.012,8,6),PM2.greens,Math.cos(i)*0.014,0.034,Math.sin(i)*0.014,b);l.scale.set(1.2,0.35,0.9);l.rotation.y=i}
+   for(const [x,z] of [[0.008,0.004],[-0.01,-0.006]])mk(new THREE.SphereGeometry(0.006,8,6),PM.tom,x,0.04,z,b)},
+ sezar:H=>{const b=bowl2(H);for(let i=0;i<6;i++){const l=mk(new THREE.SphereGeometry(0.012,8,6),PM2.greens,Math.cos(i)*0.014,0.033,Math.sin(i)*0.014,b);l.scale.set(1.2,0.35,0.9)}
+   for(let i=0;i<3;i++)mk(new THREE.BoxGeometry(0.012,0.006,0.008),PM.fried,-0.01+i*0.01,0.039,(i%2)*0.008,b);for(let i=0;i<3;i++)mk(new THREE.BoxGeometry(0.006,0.006,0.006),MAT.bread,0.012-i*0.012,0.04,-0.01,b)},
+ kurabiye_cik:H=>{H.saucer(0.046);const b=H.body();for(let i=0;i<3;i++){mk(new THREE.CylinderGeometry(0.022,0.022,0.009,14),MAT.cookie,(i-1)*0.018,0.013+i*0.009,(i%2)*0.01,b);for(let k=0;k<3;k++)mk(new THREE.SphereGeometry(0.003,5,4),PM2.chip,(i-1)*0.018+Math.cos(k*2)*0.01,0.018+i*0.009,(i%2)*0.01+Math.sin(k*2)*0.01,b)}},
+ puding_sut:H=>{H.saucer(0.04);const b=H.body();mk(new THREE.CylinderGeometry(0.026,0.02,0.03,16),MAT.glass,0,0.023,0,b);mk(new THREE.CylinderGeometry(0.024,0.02,0.026,16),PM2.pud,0,0.021,0,b);mk(new THREE.SphereGeometry(0.004,6,4),toon(0x9a5a2c),0,0.036,0,b)},
+ puding_cik:H=>{H.saucer(0.04);const b=H.body();mk(new THREE.CylinderGeometry(0.026,0.02,0.03,16),MAT.glass,0,0.023,0,b);mk(new THREE.CylinderGeometry(0.024,0.02,0.026,16),PM2.pudc,0,0.021,0,b);const c=mk(new THREE.SphereGeometry(0.01,10,8),MAT.cream,0,0.036,0,b);c.scale.y=0.6}});
+// Tarif Defteri sekmeleri 6 tane: yazılar küçülür
+{const st=document.createElement('style');st.textContent=`html.land #rbTabs .tab,html.land .mcats .mcatb{font-size:12px!important;padding-left:8px!important;padding-right:8px!important;gap:3px!important}html.land #rbTabs .tab .ic,html.land .mcats .mcatb .ic{width:16px!important;height:16px!important}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
