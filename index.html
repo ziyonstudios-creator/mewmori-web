@@ -3946,7 +3946,7 @@ function tutTick(){autoBtnVis();if(!S.tut||S.tut==='done'||S.tut==='create'||S.t
   if(st==='cafe6'){const o=orders[0];if(o&&o.paid){S.tut='cafe7';return}show('cafe6',{text:`Afiyet olsun! Misafirimiz yemeğini bitirince kasaya uğrayacak; ${N.cashier.name} ödemesini alacak.`});return}
   if(st==='cafe7'){if(customers.length)return show('cafe7w',{text:'Ödeme alındı! Misafirimiz mutlu mutlu ayrılıyor…'});
     show('cafe7',{title:'İşte bu kadar!',text:'İlk müşterini ağırlayıp uğurladın, harikaydın! Kazandığın altın ve deneyimle kafeni büyütecek, yeni tarifler keşfedeceksin.',dim:true,center:true,buttons:[{label:'Devam',green:true,onClick:()=>{S.tut='auto';markDirty();tutShown=''}}]});return}
-  if(st==='auto'){$('autoBtn').hidden=false;show('auto',{title:'Biraz da sen dinlen!',text:`Her siparişe tek tek dokunmak yorar. Şu <b>Otomatik</b> düğmesine dokunursan ${N.waiter.name} siparişleri kendisi alır, baristaya iletir ve servis eder. İstediğin an yeniden dokunup kontrolü geri alabilirsin.`,target:()=>$('autoBtn'),
+  if(st==='auto'){$('autoBtn').hidden=false;show('auto',{title:'Biraz da sen dinlen!',text:`<b>Otomatik</b>’e dokunursan ${N.waiter.name} siparişleri kendisi alır ve servis eder.`,target:()=>$('autoBtn'),
       buttons:[{label:'Şimdi değil',light:true,onClick:()=>{S.tut='stok';markDirty();tutShown=''}}]});CO.onAuto=()=>{S.tut='stok';markDirty();tutShown=''};return}
   if(st==='help'){CO.onAuto=null;show('help',{text:'Bir şeyi unutursan sağ üstteki <b>?</b> düğmesine dokun; rehberimiz kedilerin dünyasını sana yeniden anlatır. İyi eğlenceler!',target:()=>document.querySelector('button[aria-label="Rehber"]'),buttons:[{label:'Tamam',green:true,onClick:()=>{S.tut='recipes';markDirty();coachOff();tutShown=''}}]});return}
   if(st==='recipes'){show('recipes',{title:'Sırada ne var?',text:'Yeni ürünler keşfetmek için <b>Tarifler</b>’e göz at! Orada birleştirme tahtasını da öğreneceksin. Yeni tarifler daha çok altın demek.',target:()=>navBtn('book'),
@@ -15745,21 +15745,21 @@ function rh2Cafe(){const st=S.tut,N=NMs(),c=customers[0],o=orders[0];if(customer
   const W=()=>WSTAFF[0]&&rhPosOf(WSTAFF[0].ch),B=()=>BSTAFF[0]&&rhPosOf(BSTAFF[0].ch),C=()=>c&&c.char&&rhPosOf(c.char);
   if(st==='k1'){CAM.subj=c?C:()=>CAM.base.t;CAM.dist=c?6.5:9;RH2.allow=[];
     if(c&&c.state==='WAITING_TO_ORDER'&&!c.orderQueued&&els.get('take'+c.id)){S.tut='k2';markDirty();return}
-    rh2Show('k1',{title:'İlk müşterimiz geliyor!',text:'Kapı çanını duydun mu? İlk misafirimiz içeri giriyor. Bak bakalım hangi masayı seçecek…'});return}
+    rh2Show('k1',{title:'İlk müşterimiz geliyor!',text:'İlk misafirimiz geldi! Bakalım hangi masaya oturacak…'});return}
   if(st==='k2'){if(!c){S.tut='k1';return}if(c.orderQueued){S.tut='k3';markDirty();return}CAM.subj=C;CAM.dist=6;const b=()=>els.get('take'+c.id);RH2.allow=[b];
-    rh2Show('k2',{text:`Misafirimiz oturdu ve menüye göz atıyor. Masadaki <b>Sipariş al</b> düğmesine dokun; ${N.waiter.name} hemen yanına koşsun.`,target:b});return}
+    rh2Show('k2',{text:`<b>Sipariş al</b>’a dokun.`,target:b});return}
   if(st==='k3'){if(o&&o.submitQueued){S.tut='k4';markDirty();return}
     const b=()=>o&&els.get('prep'+o.id);
-    if(o&&o.state==='TAKEN'&&b()){CAM.subj=()=>PREP_ANCHOR;CAM.dist=6.5;RH2.allow=[b];rh2Show('k3',{text:`Sipariş alındı! Şimdi tezgâha bakalım: <b>Hazırla</b>’ya dokun, ${N.barista.name} kolları sıvasın.`,target:b})}
+    if(o&&o.state==='TAKEN'&&b()){CAM.subj=()=>PREP_ANCHOR;CAM.dist=6.5;RH2.allow=[b];rh2Show('k3',{text:`Şimdi <b>Hazırla</b>’ya dokun.`,target:b})}
     else{CAM.subj=W;CAM.dist=6;RH2.allow=[];rh2Show('k3w',{text:`${N.waiter.name} siparişi not alıyor…`})}return}
   if(st==='k4'){if(o&&o.state==='READY'){S.tut='k5';markDirty();return}CAM.subj=B;CAM.dist=5.5;RH2.allow=[];
-    rh2Show('k4',{text:`${N.barista.name} işe koyuldu! Başının üstündeki çubuk dolunca sipariş tezgâhın ucuna gelecek.`});return}
+    rh2Show('k4',{text:`${N.barista.name} hazırlıyor…`});return}
   if(st==='k5'){if(o&&o.pickupQueued){S.tut='k6';markDirty();return}const b=()=>o&&els.get('pick'+o.id);CAM.subj=()=>PICKUP_ANCHOR;CAM.dist=6.5;RH2.allow=[b];
-    rh2Show('k5',{text:`Mis gibi oldu! <b>Teslim al</b>’a dokun; ${N.waiter.name} tepsiyle masaya götürsün.`,target:b});return}
+    rh2Show('k5',{text:`Hazır! <b>Teslim al</b>’a dokun.`,target:b});return}
   if(st==='k6'){RH2.allow=[];if(o&&(o.state==='SERVED'||o.paid)){S.tut='k7';markDirty();camBack();return}CAM.subj=W;CAM.dist=5.5;
     rh2Show('k6',{text:`${N.waiter.name} siparişi masaya taşıyor…`});return}
   if(st==='k7'){RH2.allow=[];camBack();if(!o||o.paid){S.tut='auto';markDirty();RH2.shown='';rh2Hide();return}
-    rh2Show('k7',{text:`Afiyet olsun! Misafirimiz yemeğini bitirince kasaya uğrayacak; ${N.cashier.name} ödemesini alacak.`});return}}
+    rh2Show('k7',{text:`Afiyet olsun! Ödemeyi ${N.cashier.name} alacak.`});return}}
 
 // ---- 5) başlangıç ürünleri → birleştirme → tarifler → menü ----
 const G_REC='sicak_sut';
@@ -15770,17 +15770,17 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
   if(st==='g_urun'){if(m==='merge'){S.tut='g_mg';markDirty();RH2.shown='';return}
     if(m!=='cafe')return setMode('cafe');
     if(RH2.sub!=='nav'){RH2.ok=[];RH2.allow=[];const L=startNames();
-      rh2Show('urun',{title:'Menümüzde neler var?',dim:true,center:true,text:`Kafemiz şimdilik ${L.slice(0,-1).join(', ')} ve ${L.slice(-1)} ile açıldı; misafirlerimiz şimdilik bunları sipariş ediyor. Ama dilersen çok daha fazlasını sunabilirsin: çorbalar, ızgaralar, tatlılar… Yeni tarifleri <b>birleştirme tahtasında</b> ürettiğimiz malzemelerle açarız. Gel, ilk tarifimizi birlikte açalım!`,
+      rh2Show('urun',{title:'Yeni tarifler',dim:true,center:true,text:`Kafemiz ${L.slice(0,-1).join(', ')} ve ${L.slice(-1)} ile açıldı. Yeni tarifleri <b>birleştirme tahtasında</b> açarız. Hadi ilkini birlikte açalım!`,
         buttons:[{label:'Hadi bakalım!',green:true,icon:'merge',onClick:()=>{RH2.sub='nav';RH2.shown=''}}]});return}
-    const b=()=>navBtn('merge');RH2.ok=[b];RH2.allow=[b];rh2Show('urunnav',{text:'Birleştirme tahtası şurada. Dokun, içeri girelim!',target:b});return}
+    const b=()=>navBtn('merge');RH2.ok=[b];RH2.allow=[b];rh2Show('urunnav',{text:'Birleştir’e dokun.',target:b});return}
   if(st==='g_mg'){if(S.unlocked[G_REC]){RH2.ok=[];RH2.allow=[];if(document.querySelector('.tkanim'))return rh2Hide();
       if(m!=='merge')return setMode('merge');
-      rh2Show('mgok',{title:'İlk tarifin açıldı!',dim:true,center:true,text:`Harika iş çıkardın! <b>${RECIPE[G_REC].name}</b> artık açık ve menüne de eklendi. Malzemeleri teslim ettikçe tarifler böyle tek tek açılır. Şimdi bütün tariflerin durduğu <b>tarif defterimize</b> bakalım.`,
+      rh2Show('mgok',{title:'İlk tarifin açıldı!',dim:true,center:true,text:`<b>${RECIPE[G_REC].name}</b> açıldı ve menüne eklendi!`,
         buttons:[{label:'Tariflere bak',green:true,icon:'book',onClick:rh2Go('book',()=>{S.tut='g_rb';RH2.sub='';UI.rbTab=RECIPE[G_REC].cat;UI.rbFam=null;markDirty()})}]});return}
     if(m!=='merge'){if(m!=='cafe')return setMode('cafe');const b=()=>navBtn('merge');RH2.ok=[b];RH2.allow=[b];rh2Show('mgnav',{text:'Birleştirme tahtasına geçelim.',target:b});return}
     RH2.ok=[];if(S.tkT!==G_REC){S.tkT=G_REC;markDirty();try{const i=document.querySelector('#merge .info');if(i)i.dataset.thk='';tkHedefDraw()}catch(e){}}
     const hed=()=>document.querySelector('#merge .thd');
-    if(!RH2.mgIntro){RH2.allow=[];rh2Show('mg0',{title:'Birleştirme tahtası',text:`Burada malzeme üretir, birleştiririz. Ortadaki <b>paketlere</b> dokununca malzeme çıkar; aynı iki malzemeyi üst üste koyunca bir üst kademesi olur. <b>Hedef</b> kartı, açmak istediğimiz tarifin istediklerini gösterir. İlk tarifimiz <b>${RECIPE[G_REC].name}</b>!`,target:hed,place:'head',
+    if(!RH2.mgIntro){RH2.allow=[];rh2Show('mg0',{title:'Birleştirme tahtası',text:`Paketlere dokun, malzeme çıksın. Aynı iki malzemeyi birleştir, bir üst kademe olsun. <b>Hedef</b> kartı, tarifin istediklerini gösterir.`,target:hed,place:'head',
         buttons:[{label:'Başlayalım',green:true,onClick:()=>{RH2.mgIntro=true;RH2.shown=''}}]});return}
     const I=tkInfo(G_REC);if(!I||!I.stage)return;const need=I.stage.d.find(([it,n])=>(I.dl[it]|0)<n);if(!need)return;const [X]=need,ch=X.replace(/\d+$/,''),Y=ch+'1',bagK=BAG_OUT.drink.some(w=>w[0]===Y)&&ch!=='seker'?'bag_drink':'bag_food';
     RH2.need=Y;RH2.bag=bagK;
@@ -15791,15 +15791,15 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     const bi=S.board.indexOf(bagK);const b=()=>bi>=0?cellEl(bi):null;RH2.allow=[b];
     rh2Show('mgbag'+X+ny.length,{title:ny.length?'Bir tane daha':'Pakete dokun',text:ny.length?`Pakete bir kez daha dokun, bir <b>${ITEMS[Y].name}</b> daha çıksın.`:`<b>${ITEMS[X].name}</b> için önce <b>${ITEMS[Y].name}</b> lazım. Parlayan <b>${ITEMS[bagK].name}</b> paketine dokun. Bu ilk tarifte paketler ücretsiz!`,target:b,place:'head'});return}
   if(st==='g_rb'){if(m!=='book')return setMode('book');RH2.allow=[];RH2.ok=[];
-    if(RH2.sub!=='rb2')return rh2Show('rb1',{title:'Tarif defterimiz',text:'Kafende yapabileceğin bütün lezzetler burada! Sekmelere ayrılmışlar: içecekler, çorbalar, kahvaltı, ana yemekler, salatalar ve tatlılar. Her sekmede tarifler ailelere ayrılır; bir aileye dokununca içindeki tarifleri görürsün.',target:()=>$('rbTabs'),place:'bottom',
-      buttons:[{label:'Devam',green:true,onClick:()=>{RH2.sub='rb2';RH2.shown=''}}]});
+    if(RH2.sub!=='rb2')return rh2Show('rb1',{title:'Tarif defterimiz',text:'Bütün tariflerin burada. Bir tarifte <b>Hedefle</b>’ye dokunursan, istediği malzemeler birleştirme tahtasında hep gözünün önünde olur.',target:()=>$('rbTabs'),place:'bottom',
+      buttons:[{label:'Menüye geçelim',green:true,icon:'menu',onClick:rh2Go('menu',()=>{S.tut='g_mn';RH2.sub='';menuTab='menu';try{const f=famOf(G_REC);if(f)UI.mnFam=f.id}catch(e){}markDirty()})}]});
     return rh2Show('rb2',{title:'Yeni tarifler',text:'Tarifler seviye atladıkça sırayla açılır. Kilitli bir tarifte <b>Hedefle</b>’ye dokunursan, birleştirme tahtasında hangi malzemeleri istediği hep gözünün önünde olur. Teslimatlar bitince tarif açılır ve menüne eklenir.',dim:true,center:true,
       buttons:[{label:'Menüye geçelim',green:true,icon:'menu',onClick:rh2Go('menu',()=>{S.tut='g_mn';RH2.sub='';menuTab='menu';try{const f=famOf(G_REC);if(f)UI.mnFam=f.id}catch(e){}markDirty()})}]})}
   if(st==='g_mn'){if(m!=='menu')return setMode('menu');RH2.allow=[];RH2.ok=[];
     if(RH2.sub!=='mn2'){if(menuTab!=='menu'){menuTab='menu';renderMenu()}
-      return rh2Show('mn1',{title:'Menümüz',text:`Misafirler yalnızca <b>menündeki</b> ürünleri sipariş eder. Yeni açtığın <b>${RECIPE[G_REC].name}</b> menüye eklendi bile! Bir ürünü menüden çıkarmak ya da geri eklemek için kartındaki düğmeye dokunman yeter.`,target:()=>document.querySelector(`[data-tg="${G_REC}"]`),place:'top',
+      return rh2Show('mn1',{title:'Menümüz',text:`Misafirler yalnızca <b>menündeki</b> ürünleri ister. Bir ürünü kartındaki düğmeyle menüye ekler ya da çıkarırsın.`,target:()=>document.querySelector(`[data-tg="${G_REC}"]`),place:'top',
         buttons:[{label:'Devam',green:true,onClick:()=>{RH2.sub='mn2';RH2.shown=''}}]})}
-    return rh2Show('mn2',{title:'Fiyatlar ve depo',text:'<b>Fiyatlar</b> sekmesinden ürünlerinin fiyatını ayarlarsın; çok pahalı olursa misafirler vazgeçebilir. <b>Stok</b> sekmesi de az önce gördüğümüz depomuz. Hepsi bu kadar; artık kafe tamamen senin, şefim! Takılırsan <b>Ayarlar › Rehber</b>’den bana her zaman ulaşabilirsin. Kolay gelsin!',target:()=>document.querySelector('[data-mt="price"]'),place:'bottom',
+    return rh2Show('mn2',{title:'Hepsi bu kadar!',text:'Kafe artık senin, şefim! Takılırsan <b>Ayarlar › Rehber</b>’den bana ulaşabilirsin.',dim:true,center:true,
       buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:()=>{S.tut='done';S.tr='done';S.tur=null;S.tkT=null;RH2.sub='';RH2.shown='';menuTab='menu';rh2Hide();markDirty();try{saveNow()}catch(e){}setMode('cafe')}}]})}}
 // birleştirme dersinde paketler ücretsiz ve hep gereken malzemeyi verir
 {const _tb=tut2Bag;tut2Bag=function(bag){if(S.tut==='g_mg'&&!S.unlocked[G_REC]&&RH2.need){if(bag==='drink'&&RH2.bag==='bag_drink')return RH2.need;if(bag==='food'&&RH2.bag==='bag_food')return RH2.need}return _tb.apply(this,arguments)}}
@@ -15827,6 +15827,16 @@ rhTour=function(){if(S&&S.tur!=null){S.tur=null;RH.tour=false;if(RH.modal){RH.mo
 const rhFast=()=>{try{if(EVMODE||!S||!/^k\d$/.test(S.tut||''))return 1;const st=S.tut,o=orders[0];
   if(st==='k2'||st==='k5')return 1;if(st==='k3'&&o&&o.state==='TAKEN'&&!o.submitQueued)return 1;return 2}catch(e){return 1}};
 {const _ss=simStep;simStep=function(dt){return _ss.call(this,dt*rhFast())}}
+
+// ---- V195: depo dersi sade: yalnız toptancı seçimi (malzeme bitirme, depo ayrıntıları yok) ----
+rhStok=function(){
+  if(RH.st===0){if(UI.mode!=='cafe'||UI.modal){rhHide();return}
+    rhShow('stok0',{title:'Malzemeler nereden gelir?',dim:true,center:true,text:'Malzemelerimizi toptancıdan alırız. Gel, sana göstereyim.',
+      buttons:[{label:'Göster',green:true,icon:'box',onClick:()=>{RH.st=1;RH.shown='';menuTab='stock';setMode('menu');try{renderMenu()}catch(e){}}}]});return}
+  if(UI.mode!=='menu'){menuTab='stock';setMode('menu');return}
+  if(menuTab!=='stock'){menuTab='stock';renderMenu()}
+  rhShow('stok3',{title:'Toptancını seç',text:'<b>5 toptancıdan</b> birini seç. Ucuz olanın kalitesi düşük, pahalı olanınki yüksek. Gerisini ben hallederim; malzemeler kendiliğinden gelir.',
+    target:()=>document.querySelector('#menuList .supc[aria-pressed="true"]'),place:'bottom',buttons:[{label:'Tamam',green:true,onClick:rhStokDone}]})};
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
