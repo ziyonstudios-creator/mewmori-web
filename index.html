@@ -15978,7 +15978,7 @@ function rhMiniPlace(){const box=$('coach');if(!box||box.hidden||!box.classList.
   const cx=(r.left+r.width/2-g.left)/g.width,cy=(r.top+r.height/2-g.top)/g.height;
   box.classList.toggle('rhL',cx>=0.5);box.classList.toggle('rhR',cx<0.5);box.classList.toggle('rhB',cy<0.62);box.classList.toggle('rhT',cy>=0.62)}
 {const _s=rh2Show;rh2Show=function(key,opt){const same=RH2.shown===key&&!$('coach').hidden&&CO.owner==='rh2';const r=_s.apply(this,arguments);if(same)return r;
-  try{const box=$('coach'),mini=!!opt.target&&!opt.center&&!(opt.buttons&&opt.buttons.length);box.classList.toggle('rhmini',mini);if(!mini)box.classList.remove('rhL','rhR','rhB','rhT');else rhMiniPlace()}catch(e){}return r}}
+  try{const box=$('coach'),mini=!opt.center&&!(opt.buttons&&opt.buttons.length);box.classList.toggle('rhmini',mini);box.classList.toggle('rhnot',mini&&!opt.target);if(!mini)box.classList.remove('rhL','rhR','rhB','rhT');else if(!opt.target){box.classList.remove('rhR','rhT');box.classList.add('rhL','rhB')}else rhMiniPlace()}catch(e){}return r}}
 {const _c=coach;coach=function(o){const r=_c.apply(this,arguments);try{if(!o||o.owner!=='rh2')$('coach').classList.remove('rhmini','rhL','rhR','rhB','rhT')}catch(e){}return r}}
 {const _a=rhAvoid;rhAvoid=function(){if($('coach').classList.contains('rhmini'))return;return _a.apply(this,arguments)}}
 setInterval(()=>{try{rhMiniPlace()}catch(e){}},300);
@@ -16045,6 +16045,7 @@ setInterval(()=>{try{if(!rh2Act()||!/^k[235]$/.test(S.tut||'')||$('coach').hidde
   const off=!r||r.top<g.top+6||r.bottom>g.bottom-6||r.left<g.left+6||r.right>g.right-60;if(!off)return;
   if(!CAM.on&&CAM.lastFix&&performance.now()-CAM.lastFix<4000)return;CAM.lastFix=performance.now();
   if(!CAM.on){camStart();CAM.mid=false;camBack()}}catch(e){}},1000);
+(()=>{const st=document.createElement('style');st.textContent=`#coach.rhmini.rhnot .cbub::after{display:none}`;document.head.appendChild(st)})();
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
