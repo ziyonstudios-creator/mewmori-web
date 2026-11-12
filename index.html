@@ -14786,6 +14786,17 @@ const AD_ART={coin:`<i class="shI coin adI"></i>`,gem:`<i class="shI gem adI"></
 const AD_PHASE={claim:'Hazırlanıyor',loading:'Yükleniyor',showing:'Oynuyor',verifying:'Onaylanıyor'};   // düğmeye sığan kısa hâli
 const AD_PHASE_LONG={claim:'Ödül talebi hazırlanıyor…',loading:'Reklam yükleniyor…',showing:'Reklam oynuyor…',verifying:'Sunucu onayı bekleniyor…'};
 const AD_WON={};   // bu oturumdaki simülasyon ödülleri (yalnız gösterim)
+// ---------- GELİŞTİRME ANAHTARI (V166, kullanıcı isteği): simülasyon ödülünü oyuna uygula ----------
+// Yalnız geliştirme yapılandırmasında ve tarayıcı simülasyonunda vardır; varsayılan KAPALI. Üretimde (TABBY_ENV='production') ve mobil
+// uygulamada bu yol hiç çalışmaz (adDevOn false). Durumu oyun kaydında değil ayrı anahtarda tutulur ('tabbychef_adsim_apply').
+// Ödül biçimi sunucu planındaki `reward` alanıyla aynıdır; Aşama 2'de sunucunun döndürdüğü ödül de adApplyReward ile uygulanır.
+const AD_DEV_REWARD={GOLD:{coins:200},DIAMOND:{gems:5},ENERGY:{energy:15},FOOD_REFILL:{bag:'food'},DRINK_REFILL:{bag:'drink'}};
+try{FIN_IN.ad='Reklam ödülleri'}catch(e){}
+const adDevOn=()=>{try{return AD_ENV==='development'&&AdService.mode()==='simulation'&&localStorage.getItem('tabbychef_adsim_apply')==='1'}catch(e){return false}};
+function adDevSet(on){try{if(on)localStorage.setItem('tabbychef_adsim_apply','1');else localStorage.removeItem('tabbychef_adsim_apply')}catch(e){}}
+function adApplyReward(r){if(!r)return;if(r.coins)addCoins(r.coins,'ad');if(r.gems){S.gems+=r.gems;try{hudGems()}catch(e){}}
+  if(r.energy){energyNow();S.energy.v=Math.min(energyMax(),S.energy.v+r.energy)}if(r.bag)S.bags[r.bag]={n:0,cd:0};
+  markDirty();try{updateUI()}catch(e){}}
 function adBtn(cat){const A=AD_CATS[cat],m=AdService.mode(),ph=AdService.phase(cat),l=AdService.left(cat),lim=AdService.limit(cat),cnt=`<span class="adCnt">${l}/${lim}</span>`;
   if(m==='off')return `<button class="btn green" type="button" disabled>Uygulamada</button>`;
   if(ph!=='idle')return `<button class="btn green adBusy" type="button" disabled><span class="adSp"></span>${AD_PHASE[ph]||'Bekle'}</button>`;
@@ -14793,7 +14804,8 @@ function adBtn(cat){const A=AD_CATS[cat],m=AdService.mode(),ph=AdService.phase(c
   if(!AdService.useful(cat))return `<button class="btn green" type="button" disabled>Dolu · ${cnt}</button>`;
   return `<button class="btn green" type="button" data-ad="${cat}" ${AdService.busy()?'disabled':''}>▶ İzle · ${cnt}</button>`}
 async function adWatch(cat){const A=AD_CATS[cat];if(!A)return null;try{sfx('tap')}catch(e){}const r=await AdService.show(cat),w=`${A.t} ${A.s}`;
-  if(r.status==='rewarded'){try{sfx('goal')}catch(e){}if(r.simulated){AD_WON[cat]=(AD_WON[cat]|0)+1;toast(`<b>Simülasyon ödülü: ${w}</b><br>Tarayıcı simülasyonu · hesabına işlenmedi`,ic('check'),3200)}
+  if(r.status==='rewarded'){try{sfx('goal')}catch(e){}if(r.simulated){AD_WON[cat]=(AD_WON[cat]|0)+1;if(adDevOn()){adApplyReward(AD_DEV_REWARD[cat]);toast(`<b>Deneme ödülü: ${w}</b><br>Geliştirme anahtarı açık · bu oyuna uygulandı`,ic('check'),3200)}
+      else toast(`<b>Simülasyon ödülü: ${w}</b><br>Tarayıcı simülasyonu · hesabına işlenmedi`,ic('check'),3200)}
     else toast(`<b>${w}</b><br>Reklam ödülün hesabında · bugün ${AdService.left(cat)} hak kaldı`,ic('check'),2800)}
   else if(r.status==='limit'){try{sfx('nope')}catch(e){}toast('<b>Bugünlük hakkın bitti</b><br>Haklar yarın yenilenir',ic('lock'),2400)}
   else if(r.status==='noad')toast('<b>Şu an gösterilecek reklam yok</b><br>Biraz sonra yeniden dene',ic('close'),2800)
@@ -14815,9 +14827,10 @@ AdService.on(()=>adUiRefresh());
     const act=AD_ORDER.find(k=>AdService.phase(k)!=='idle');
     if(note&&act){note.innerHTML=`<span class="adSp adSpN"></span> ${AD_PHASE_LONG[AdService.phase(act)]||'Bekle…'}`}
     else if(note){const won=AD_ORDER.filter(k=>AD_WON[k]).map(k=>`${AD_WON[k]}× ${AD_CATS[k].t} ${AD_CATS[k].s}`).join(' · ');
-      note.innerHTML=m==='simulation'?`<b class="adSimTag">SİMÜLASYON</b> Tarayıcıda gerçek reklam gösterilmez; ödüller hesabına işlenmez.${won?` Bu oturum: ${won}.`:''} <button type="button" class="adRst" id="adRst">sayaçları sıfırla</button>`
+      const dev=adDevOn();note.innerHTML=m==='simulation'?`<b class="adSimTag">SİMÜLASYON</b> ${dev?'Geliştirme anahtarı açık: ödüller bu oyuna uygulanır.':'Tarayıcıda gerçek reklam gösterilmez; ödüller hesabına işlenmez.'}${won?` Bu oturum: ${won}.`:''} <button type="button" class="adRst" id="adRst">sayaçları sıfırla</button> <button type="button" class="adDev" id="adDev" aria-pressed="${dev}">Ödülü oyuna uygula: ${dev?'AÇIK':'KAPALI'}</button>`
         :m==='off'?'Reklam ödülleri mobil uygulamada kazanılır.':'Kısa bir reklam izle, ödülünü al. Haklar her gün yenilenir.';
-      const rs=note.querySelector('#adRst');if(rs)rs.onclick=()=>{AdSim.reset();for(const k in AD_WON)delete AD_WON[k];renderShop()}}
+      const rs=note.querySelector('#adRst');if(rs)rs.onclick=()=>{AdSim.reset();for(const k in AD_WON)delete AD_WON[k];renderShop()};
+      const dv=note.querySelector('#adDev');if(dv)dv.onclick=()=>{adDevSet(!adDevOn());try{sfx('tap')}catch(e){}renderShop()}}
   }catch(e){console.warn('reklam arayüzü',e)}}}
 {const st=document.createElement('style');st.textContent=`
 .shCard.adc .shArt{display:grid;place-items:center;height:54px}.shCard.adc .adI{width:44px;height:44px;display:block}
@@ -14828,6 +14841,7 @@ AdService.on(()=>adUiRefresh());
 @keyframes adsp{to{transform:rotate(360deg)}}
 .adSimTag{display:inline-block;margin-right:6px;padding:1px 7px;border:2px solid #5a2f12;border-radius:999px;background:#ffe590;font-size:10.5px;letter-spacing:.06em}
 .adRst{appearance:none;border:0;background:none;padding:0 2px;font:inherit;font-weight:800;color:#a0522d;text-decoration:underline;cursor:pointer}
+.adDev{appearance:none;margin-left:4px;padding:2px 9px;border:2px solid #5a2f12;border-radius:999px;background:#fff;font:inherit;font-weight:900;font-size:11px;color:#5a2f12;cursor:pointer;white-space:nowrap}.adDev[aria-pressed="true"]{background:#bfe8a8}
 #adSim{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(20,12,6,.86)}
 #adSim .adBox{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:min(86%,420px);padding:18px 20px;border:3px solid #5a2f12;border-radius:18px;background:#fff8ec;font-family:var(--font-display);color:#4a2a14;text-align:center}
 #adSim small{font-weight:900;letter-spacing:.08em;font-size:11px;color:#a0522d}#adSim b{font-size:18px;font-weight:900}#adSim p{margin:0;font-size:13px;font-weight:700;opacity:.8}
