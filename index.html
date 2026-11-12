@@ -15799,8 +15799,8 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     if(RH2.sub!=='mn2'){if(menuTab!=='menu'){menuTab='menu';renderMenu()}
       return rh2Show('mn1',{title:'Menümüz',text:`Misafirler yalnızca <b>menündeki</b> ürünleri sipariş eder. Yeni açtığın <b>${RECIPE[G_REC].name}</b> menüye eklendi bile! Bir ürünü menüden çıkarmak ya da geri eklemek için kartındaki düğmeye dokunman yeter.`,target:()=>document.querySelector(`[data-tg="${G_REC}"]`),place:'top',
         buttons:[{label:'Devam',green:true,onClick:()=>{RH2.sub='mn2';RH2.shown=''}}]})}
-    return rh2Show('mn2',{title:'Fiyatlar ve depo',text:'<b>Fiyatlar</b> sekmesinden ürünlerinin fiyatını ayarlarsın; çok pahalı olursa misafirler vazgeçebilir. <b>Stok</b> sekmesi de az önce gördüğümüz depomuz. Hepsi bu kadar; şimdi kafemize dönelim, sana ekranı kısaca tanıtayım!',target:()=>document.querySelector('[data-mt="price"]'),place:'bottom',
-      buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:()=>{S.tut='done';S.tr='done';S.tur=0;S.tkT=null;RH2.sub='';RH2.shown='';menuTab='menu';rh2Hide();markDirty();try{saveNow()}catch(e){}setMode('cafe')}}]})}}
+    return rh2Show('mn2',{title:'Fiyatlar ve depo',text:'<b>Fiyatlar</b> sekmesinden ürünlerinin fiyatını ayarlarsın; çok pahalı olursa misafirler vazgeçebilir. <b>Stok</b> sekmesi de az önce gördüğümüz depomuz. Hepsi bu kadar; artık kafe tamamen senin, şefim! Takılırsan <b>Ayarlar › Rehber</b>’den bana her zaman ulaşabilirsin. Kolay gelsin!',target:()=>document.querySelector('[data-mt="price"]'),place:'bottom',
+      buttons:[{label:'Kafeye dön',green:true,icon:'cafe',onClick:()=>{S.tut='done';S.tr='done';S.tur=null;S.tkT=null;RH2.sub='';RH2.shown='';menuTab='menu';rh2Hide();markDirty();try{saveNow()}catch(e){}setMode('cafe')}}]})}}
 // birleştirme dersinde paketler ücretsiz ve hep gereken malzemeyi verir
 {const _tb=tut2Bag;tut2Bag=function(bag){if(S.tut==='g_mg'&&!S.unlocked[G_REC]&&RH2.need){if(bag==='drink'&&RH2.bag==='bag_drink')return RH2.need;if(bag==='food'&&RH2.bag==='bag_food')return RH2.need}return _tb.apply(this,arguments)}}
 
@@ -15809,7 +15809,7 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     if(/^cafe[1-7]$/.test(S.tut||'')){S.tut='k1';RH2.spawned=false;tutCafeStart();markDirty()}
     if(/^k\d$/.test(S.tut)){if(!RH2.init){RH2.init=true;if(S.tut!=='k1'&&!customers.length){S.tut='k1';RH2.spawned=false;tutCafeStart()}}autoBtnVis();rh2Cafe();return}
     if(/^g_/.test(S.tut)){autoBtnVis();rh2Guide();return}
-    if(CAM.on&&!CAM.back)camBack();RH2.allow=S.tut==='auto'?[()=>$('autoBtn')]:[];RH2.ok=[];RH2.pair=null}}catch(e){console.warn('rehber2',e)}return _tt.apply(this,arguments)}}
+    if(CO.owner==='rh2')rh2Hide();if(CAM.on&&!CAM.back)camBack();RH2.allow=S.tut==='auto'?[()=>$('autoBtn')]:[];RH2.ok=[];RH2.pair=null}}catch(e){console.warn('rehber2',e)}return _tt.apply(this,arguments)}}
 {const _h=tutHoldArrivals;tutHoldArrivals=function(){try{if(!EVMODE&&S&&S.created){if(/^k\d$/.test(S.tut||''))return customers.length>0||RH2.spawned;if(S.tut==='auto'||/^g_/.test(S.tut||''))return true}}catch(e){}return _h.apply(this,arguments)}}
 // depo dersinin sonu: artık doğrudan başlangıç ürünleri ve birleştirme anlatımına geçilir
 rhStokDone=function(){try{lotAdd(CONFIG.stock.pack,CONFIG.stock.startQ,CONFIG.stock.unit)}catch(e){console.warn('rehber stok',e)}
@@ -15818,6 +15818,15 @@ rhStokDone=function(){try{lotAdd(CONFIG.stock.pack,CONFIG.stock.startQ,CONFIG.st
 {const _gt=giftTable;giftTable=function(){if(rh2Act()){S.giftTable=false;return}return _gt.apply(this,arguments)}}
 // rehber bitti (tur da bitti/geçildi): kamera ve arayüz tamamen serbest
 setInterval(()=>{try{if(!rh2Act()&&CAM.on&&!CAM.back)camBack()}catch(e){}},1000);
+
+// ---- V194: arayüz turu tamamen kaldırıldı (kullanıcı isteği) ----
+rhTour=function(){if(S&&S.tur!=null){S.tur=null;RH.tour=false;if(RH.modal){RH.modal=false;UI.modal=false}if(CO.owner==='rh')coachOff();RH.shown='';try{markDirty()}catch(e){}}return false};
+// ---- V194: ilk müşteri hızlı: kapının hemen içinde belirir, oyuncu beklenmeyen anlarda oyun zamanı hızlanır ----
+{const _sc=spawnCustomer;spawnCustomer=function(){const c=_sc.apply(this,arguments);try{if(c&&!EVMODE&&/^k\d$/.test(S.tut||'')){c.char.pos.set(DOOR_IN.x,0,DOOR_IN.z);c.char.o.rotation.y=Math.PI/2}}catch(e){}return c}}
+{const _cs=tutCafeStart;tutCafeStart=function(){const r=_cs.apply(this,arguments);try{if(/^k\d$/.test(S.tut||''))spawnT=Math.min(spawnT,0.6)}catch(e){}return r}}
+const rhFast=()=>{try{if(EVMODE||!S||!/^k\d$/.test(S.tut||''))return 1;const st=S.tut,o=orders[0];
+  if(st==='k2'||st==='k5')return 1;if(st==='k3'&&o&&o.state==='TAKEN'&&!o.submitQueued)return 1;return 2}catch(e){return 1}};
+{const _ss=simStep;simStep=function(dt){return _ss.call(this,dt*rhFast())}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
