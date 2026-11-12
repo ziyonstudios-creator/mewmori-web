@@ -15568,6 +15568,23 @@ Object.assign(NEWP,{
  puding_cik:H=>{H.saucer(0.04);const b=H.body();mk(new THREE.CylinderGeometry(0.026,0.02,0.03,16),MAT.glass,0,0.023,0,b);mk(new THREE.CylinderGeometry(0.024,0.02,0.026,16),PM2.pudc,0,0.021,0,b);const c=mk(new THREE.SphereGeometry(0.01,10,8),MAT.cream,0,0.036,0,b);c.scale.y=0.6}});
 // Tarif Defteri sekmeleri 6 tane: yazılar küçülür
 {const st=document.createElement('style');st.textContent=`html.land #rbTabs .tab,html.land .mcats .mcatb{font-size:12px!important;padding-left:8px!important;padding-right:8px!important;gap:3px!important}html.land #rbTabs .tab .ic,html.land .mcats .mcatb .ic{width:16px!important;height:16px!important}`;document.head.appendChild(st)}
+// ---- V183: mercimek yiyecek torbasına; açılış seviyeleri dallarda kademeli artar ----
+{const i=BAG_OUT.manav.findIndex(x=>x[0]==='mercimek1');if(i>=0)BAG_OUT.manav.splice(i,1);if(!BAG_OUT.food.some(x=>x[0]==='mercimek1'))BAG_OUT.food.push(['mercimek1',2]);
+ BAG_TXT.manav='Domates, mantar, marul';BAG_TXT.food='Un, yumurta, şeker, çilek, peynir, süt, mercimek'}
+const TK_LVL={sicak_sut:1,bitki_cay:2,espresso:2,kurabiye:2,tost:2,corba_domates:2,
+ latte:3,tarcinli_sut:3,limonata:3,omlet_peynir:3,
+ yesil_cay:4,tost_sucuk:4,kurabiye_cik:4,coban:4,
+ sicak_cik:5,meyveli_cay:5,corba_mercimek:5,omlet_sucuk:5,puding_sut:5,
+ kahvalti:6,makarna_domates:6,mevsim:6,cupcake:6,
+ milkshake:7,tost_karisik:7,kofte:7,puding_cik:7,
+ moka:8,omlet_karisik:8,kiz_tavuk:8,
+ corba_mantar:9,makarna_mantar:9,pasta:9,
+ koy_kahvalti:10,levrek:10,
+ kofte_kasar:11,sezar:11,
+ tavuk_sis:12,kiz_et:12,
+ somon:13,serpme:14,pirzola:16};
+for(const id in TK_LVL)if(TK_CFG[id])TK_CFG[id].lvl=TK_LVL[id];
+for(const r of RECIPES){const c=TK_CFG[r.id];if(c&&!r.br)r.lvl=c.lvl}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
