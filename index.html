@@ -15586,8 +15586,8 @@ const TK_LVL={sicak_sut:1,bitki_cay:2,espresso:2,kurabiye:2,tost:2,corba_domates
 for(const id in TK_LVL)if(TK_CFG[id])TK_CFG[id].lvl=TK_LVL[id];
 for(const r of RECIPES){const c=TK_CFG[r.id];if(c&&!r.br)r.lvl=c.lvl}
 
-// ---- V184: ürün görselleri (kullanıcının çizimleri) — 3D küçük resim yerine img/urun/<id>.webp ----
-const URUN_IMG=['su','cay','bitki_cay','yesil_cay','espresso','latte','moka','sicak_sut','tarcinli_sut','sicak_cik','limonata','meyveli_cay','milkshake','corba_domates','corba_mercimek','corba_mantar'];
+// ---- V184-185: ürün görselleri (kullanıcının çizimleri) — 3D küçük resim yerine img/urun/<id>.webp ----
+const URUN_IMG=['su','cay','bitki_cay','yesil_cay','espresso','latte','moka','sicak_sut','tarcinli_sut','sicak_cik','limonata','meyveli_cay','milkshake','corba_domates','corba_mercimek','corba_mantar','tost_sade','tost','tost_sucuk','tost_karisik','omlet','omlet_peynir','omlet_sucuk','omlet_karisik','kahvalti','koy_kahvalti','serpme'];
 function urunImgSet(){for(const id of URUN_IMG)TH.cache.set('p:'+id,'img/urun/'+id+'.webp')}
 urunImgSet();for(const id of URUN_IMG){const i=new Image();i.src='img/urun/'+id+'.webp'}
 
