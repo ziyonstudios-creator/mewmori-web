@@ -15063,7 +15063,7 @@ function tkMigrate(){if(!TK_ON()||!S)return;tkS();for(const id in TK_CFG)if(TK_C
     const can=unlockState(I.r).ok;card.querySelectorAll('.rbact,.rcAct').forEach(x=>x.remove());
     const html=`<small class="tklbl">Keşif · %${I.pct}</small><span class="tkbar"><i style="width:${I.pct}%"></i></span><div class="tkbtns"><button class="btn ${can?'green':''}" type="button" data-un="${I.r.id}" ${can?'':'disabled'}>${ic(can?'check':'lock')}Teslim et</button><button class="btn light tki" type="button" data-tk="${I.r.id}" aria-label="Keşif ayrıntıları">${ic('book')}</button></div>`;
     const rec=card.querySelector('.rcRec')||card.querySelector('.combo');if(rec){rec.classList.add('tkrec');rec.innerHTML=html}else{const d=document.createElement('div');d.className='rcRec tkrec';d.innerHTML=html;(card.querySelector('.tx')||card).appendChild(d)}});
-  const L=$('rbList');if(L&&!L.dataset.tk){L.dataset.tk='1';L.addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(b){e.stopPropagation();sfx('tap');openTk(b.dataset.tk)}},true)}
+  const L=$('rbList');if(L&&!L.dataset.tkb){L.dataset.tkb='1';L.addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(b){e.stopPropagation();sfx('tap');openTk(b.dataset.tk)}},true)}
  }catch(e){console.warn('tarif defteri keşif',e)}return r0}}
 
 // ---- Keşif penceresi: tüm bilgiler + malzeme başına teslim düğmesi ----
@@ -15151,7 +15151,7 @@ setInterval(()=>{try{if(UI.mode==='merge')tkHedefDraw()}catch(e){}},500);
 // Tarif Defteri: kilitli kartta ve Keşif penceresinde "Hedefle"
 {const _rb=renderBook;renderBook=function(){const r0=_rb.apply(this,arguments);try{document.querySelectorAll('#rbList .tkrec .tkbtns').forEach(b=>{const id=b.querySelector('[data-tk]').dataset.tk;
     if(!b.querySelector('[data-tkt]'))b.insertAdjacentHTML('beforeend',`<button class="btn ${S.tkT===id?'green':'light'} tkt" type="button" data-tkt="${id}" aria-pressed="${S.tkT===id}" aria-label="Hedefle">${ic('target')}</button>`)});
-  const L=$('rbList');if(L&&!L.dataset.tkt){L.dataset.tkt='1';L.addEventListener('click',e=>{const b=e.target.closest('[data-tkt]');if(b){e.stopPropagation();tkSetTarget(b.dataset.tkt);renderBook()}},true)}}catch(e){console.warn('hedefle',e)}return r0}}
+  const L=$('rbList');if(L&&!L.dataset.tktb){L.dataset.tktb='1';L.addEventListener('click',e=>{const b=e.target.closest('[data-tkt]');if(b){e.stopPropagation();tkSetTarget(b.dataset.tkt);renderBook()}},true)}}catch(e){console.warn('hedefle',e)}return r0}}
 {const _rt=renderTk;renderTk=function(){const r=_rt.apply(this,arguments);try{const W=UI.tkW;const I=W&&tkInfo(W.id);if(I&&!I.done){W.w.foot.innerHTML=`<button class="btn ${S.tkT===W.id?'green':''}" type="button" id="tkTgt">${ic('target')}${S.tkT===W.id?'Hedefte ✓':'Hedefle'}</button>`;$('tkTgt').onclick=()=>{tkSetTarget(W.id);renderTk();try{renderBook()}catch(e){}}}}catch(e){}return r}}
 // tarif açılınca hedef temizlenir
 {const _tu=tkUnlock;tkUnlock=function(id){const r=_tu.apply(this,arguments);if(S.tkT===id){S.tkT=null;markDirty()}return r}}
@@ -15332,6 +15332,80 @@ const NEWP={
 {const ORDER=['su','cay','bitki_cay','yesil_cay','espresso','moka','sicak_cik','latte','sicak_sut','meyveli_cay','limonata',
   'tost_sade','tost','tost_sucuk','tost_karisik','omlet','omlet_peynir','omlet_sucuk','omlet_karisik','corba_domates','corba_mercimek','corba_mantar','kiz_tavuk','kiz_et','sandvic','kahvalti'];
  const rank=r=>{const i=ORDER.indexOf(r.id);return r.br?2000+RECIPES.indexOf(r):i>=0?i:1000+RECIPES.indexOf(r)};const s=RECIPES.slice().sort((a,b)=>rank(a)-rank(b));RECIPES.length=0;RECIPES.push(...s)}
+
+// ================= TARİF DEFTERİ: AİLELER (V180) =================
+// Kullanıcı isteği: (1) etkinlik/ülke tarifleri ülkede açılmadan ana kafenin Tarif Defteri'nde görünmez; açılınca "Dünya mutfağı" ailesine eklenir.
+// (2) Tarifler ailelere ayrılır: sekmede önce aile kartları (ör. Süt: Ballı Süt, Tarçınlı Süt, Sıcak Çikolata), dokununca ailenin tarifleri
+// (eski kartlar, teslim/keşif/hedef düğmeleriyle). Satırın başındaki "‹ Aileler" kartı geri götürür.
+const FAMS=[
+ {id:'su',cat:'drink',n:'Su',ids:['su']},
+ {id:'cay',cat:'drink',n:'Çaylar',ids:['cay','bitki_cay','yesil_cay','meyveli_cay']},
+ {id:'kahve',cat:'drink',n:'Kahveler',ids:['espresso','latte','moka']},
+ {id:'sut',cat:'drink',n:'Sütlü içecekler',ids:['sicak_sut','tarcinli_sut','sicak_cik']},
+ {id:'soguk',cat:'drink',n:'Soğuk içecekler',ids:['limonata']},
+ {id:'kek',cat:'dessert',n:'Kurabiye ve kekler',ids:['kurabiye','cupcake','pasta','tart']},
+ {id:'firin',cat:'dessert',n:'Fırın',ids:['kruvasan']},
+ {id:'tost',cat:'main',n:'Tostlar',ids:['tost_sade','tost','tost_sucuk','tost_karisik']},
+ {id:'omlet',cat:'main',n:'Omletler',ids:['omlet','omlet_peynir','omlet_sucuk','omlet_karisik']},
+ {id:'corba',cat:'main',n:'Çorbalar',ids:['corba_domates','corba_mercimek','corba_mantar']},
+ {id:'kizartma',cat:'main',n:'Kızartmalar',ids:['kiz_tavuk','kiz_et']},
+ {id:'kahvalti',cat:'main',n:'Kahvaltılık',ids:['sandvic','kahvalti']}];
+// Tarçınlı Süt (yeni, Süt ailesi): ballı sütten sonra
+{const r={id:'tarcinli_sut',name:'Tarçınlı Süt',cat:'drink',sub:'milk',lvl:2,prep:3,price:6,station:'tea',needs:['sut'],disc:'sut3'};
+ if(!RECIPE[r.id]){const i=RECIPES.findIndex(x=>x.id==='sicak_sut');RECIPES.splice(i<0?RECIPES.length:i+1,0,r);RECIPE[r.id]=r}
+ TK_CFG.tarcinli_sut={cls:1,lvl:2,pre:['sicak_sut'],st:[{n:'Tarçınlı süt',d:[['sut3',2],['seker3',1]]}]};HOT.add('tarcinli_sut');
+ NEWP.tarcinli_sut=H=>{H.saucer(0.048);const f=(()=>{const g=H.g;const s=mk(new THREE.CylinderGeometry(0.036,0.029,0.066,16,1,true),MAT.cup.clone(),0,0.041,0,g);s.material.side=THREE.DoubleSide;
+   mk(new THREE.CylinderGeometry(0.029,0.029,0.004,16),MAT.cup,0,0.01,0,g);const fl=mk(new THREE.CylinderGeometry(0.0335,0.03,0.054,16),toon(0xf3e2c8),0,0.037,0,g);fl.userData.h=0.054;fl.userData.base=0.01;g.userData.fill=fl;
+   const hd=mk(new THREE.TorusGeometry(0.015,0.006,6,12),MAT.cup,0.046,0.044,0,g);hd.rotation.y=Math.PI/2;return fl})();
+   const st=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,0.05,6),toon(0x8a4a22));st.position.set(0.01,0.03,0);st.rotation.z=0.5;f.add(st);
+   for(let i=0;i<5;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(0.003,5,4),toon(0x9a5a2c));d.position.set(Math.cos(i*1.3)*0.015,0.027,Math.sin(i*1.3)*0.015);f.add(d)}}}
+const famOf=id=>FAMS.find(f=>f.ids.includes(id));
+const recShown=r=>!r.br||!!S.unlocked[r.id];   // ülke tarifi yalnız açıldıysa
+function famsFor(cat){const out=FAMS.filter(f=>f.cat===cat).map(f=>({...f,list:f.ids.map(i=>RECIPE[i]).filter(Boolean)}));
+  const world=RECIPES.filter(r=>r.cat===cat&&r.br&&S.unlocked[r.id]);if(world.length)out.push({id:'world_'+cat,cat,n:'Dünya mutfağı',list:world,world:true});
+  const known=new Set(out.flatMap(f=>f.list.map(r=>r.id)));const rest=RECIPES.filter(r=>r.cat===cat&&!r.br&&!known.has(r.id));if(rest.length)out.push({id:'diger_'+cat,cat,n:'Diğer',list:rest});
+  return out.filter(f=>f.list.length)}
+{const _rb=renderBook;renderBook=function(){
+  // öğretici Tarif Defteri adımlarında Ballı Süt'ün ailesi açık gelir
+  try{if(S.tr&&S.tr!=='done'&&/^(rb|mgdone)/.test(S.tr)&&UI.rbTab==='drink')UI.rbFam='sut'}catch(e){}
+  if(UI.rbFam&&!famsFor(UI.rbTab).some(f=>f.id===UI.rbFam))UI.rbFam=null;
+  const r0=_rb.apply(this,arguments);try{const L=$('rbList');if(!L)return r0;
+   L.querySelectorAll('[data-rc]').forEach(c=>{const r=RECIPE[c.dataset.rc];if(r&&!recShown(r))c.remove()});
+   L.querySelectorAll('.rfam').forEach(e=>e.remove());const F=famsFor(UI.rbTab);
+   if(!UI.rbFam){L.classList.add('famview');L.querySelectorAll('[data-rc]').forEach(c=>c.hidden=true);
+     L.insertAdjacentHTML('afterbegin',F.map(f=>{const open=f.list.filter(r=>S.unlocked[r.id]).length,menu=f.list.filter(r=>S.menu[r.id]).length,cover=(f.list.find(r=>S.unlocked[r.id])||f.list[0]).id;
+       const ready=f.list.some(r=>{try{const I=tkInfo(r.id);return I&&!I.done&&unlockState(r).ok}catch(e){return false}});
+       return `<button type="button" class="rfam rfcard${open?'':' lock'}" data-fam="${f.id}"><span class="rfimg"><img src="${productThumb(cover)}" alt="">${ready?'<i class="rfdot" title="Teslim edilebilir"></i>':''}</span><b>${f.n}</b>
+         <span class="rfmini">${f.list.slice(0,5).map(r=>`<img class="${S.unlocked[r.id]?'':'lk'}" src="${productThumb(r.id)}" alt="">`).join('')}</span>
+         <small>${open}/${f.list.length} açık${menu?` · ${menu} menüde`:''}</small><span class="rfbar"><i style="width:${Math.round(open/f.list.length*100)}%"></i></span><span class="rfgo">Tarifler ›</span></button>`}).join(''))}
+   else{L.classList.remove('famview');const f=F.find(x=>x.id===UI.rbFam);const ids=new Set(f.list.map(r=>r.id));
+     L.querySelectorAll('[data-rc]').forEach(c=>{c.hidden=!ids.has(c.dataset.rc)});
+     f.list.slice().reverse().forEach(r=>{const c=L.querySelector(`[data-rc="${r.id}"]`);if(c)L.prepend(c)});   // ailedeki sıra
+     L.insertAdjacentHTML('afterbegin',`<button type="button" class="rfam rfback" data-famback="1"><span>‹</span><b>${f.n}</b><small>Ailelere dön</small></button>`)}
+   if(!L.dataset.famb){L.dataset.famb='1';L.addEventListener('click',e=>{const a=e.target.closest('[data-fam]');if(a){e.stopPropagation();sfx('tap');UI.rbFam=a.dataset.fam;renderBook();L.scrollLeft=0;return}
+     if(e.target.closest('[data-famback]')){e.stopPropagation();sfx('tap');UI.rbFam=null;renderBook();L.scrollLeft=0}},true)}
+   const tabs=$('rbTabs');if(tabs&&!tabs.dataset.fam){tabs.dataset.fam='1';tabs.addEventListener('click',()=>{UI.rbFam=null},true)}
+  }catch(e){console.warn('tarif aileleri',e)}return r0}}
+// Menü ekranında da ülke tarifi açılmadan görünmez
+{const st=document.createElement('style');st.textContent=`
+#rbList .rfam{flex:0 0 auto;font-family:var(--font-display);color:#4a2a14;cursor:pointer}
+#rbList .rfcard{all:unset;box-sizing:border-box;flex:0 0 190px;width:190px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 10px 10px;border:3px solid #4a2a14;border-radius:20px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 4px 0 #4a2a14;cursor:pointer;font-family:var(--font-display);color:#4a2a14}
+#rbList .rfcard:active{transform:translateY(2px);box-shadow:0 2px 0 #4a2a14}
+.rfimg{position:relative;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#fff8ea,#f3d2a4);border:3px solid #4a2a14;display:grid;place-items:center}
+.rfimg img{width:64px;height:64px;object-fit:contain}.rfcard.lock .rfimg img{filter:grayscale(.6) brightness(.95)}
+.rfdot{position:absolute;right:-2px;top:-2px;width:16px;height:16px;border-radius:50%;background:#7cc35a;border:2.5px solid #fff;box-shadow:0 0 0 2px #4a2a14}
+.rfcard>b{font-size:16px;font-weight:900;text-align:center;line-height:1.1}
+.rfmini{display:flex;gap:2px;justify-content:center}.rfmini img{width:26px;height:26px;object-fit:contain;border-radius:8px;background:#f6e6cc}.rfmini img.lk{filter:grayscale(1) opacity(.5)}
+.rfcard>small{font-size:11.5px;font-weight:800;opacity:.8}
+.rfbar{display:block;width:100%;height:8px;border-radius:999px;background:#efe2c8;border:2px solid #4a2a14;overflow:hidden}.rfbar>i{display:block;height:100%;background:linear-gradient(#cdeb8b,#93cf52)}
+.rfgo{margin-top:2px;padding:4px 14px;border-radius:999px;border:2.5px solid #4a2a14;background:linear-gradient(#ffe08a,#f6b93a);font-weight:900;font-size:12.5px;box-shadow:0 2px 0 #4a2a14}
+#rbList .rfback{all:unset;box-sizing:border-box;flex:0 0 110px!important;width:110px!important;min-width:0!important;max-width:110px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:3px dashed #c9a27a;border-radius:20px;background:#fff6e6;cursor:pointer;font-family:var(--font-display);color:#4a2a14;text-align:center;padding:8px}
+.rfback>span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:3px solid #4a2a14;background:linear-gradient(#ffe08a,#f6b93a);font-size:26px;font-weight:900;line-height:1}
+.rfback>b{font-size:13px;line-height:1.1}.rfback>small{font-size:10.5px;font-weight:800;opacity:.7}
+#rbList [data-rc][hidden]{display:none!important}
+`;document.head.appendChild(st)}
+// Menü: açılmamış ülke tarifleri listede görünmez (zaten yalnız açılanlar gösteriliyorsa etkisiz)
+{const _rm=typeof renderMenu==='function'?renderMenu:null;if(_rm)renderMenu=function(){const r=_rm.apply(this,arguments);try{document.querySelectorAll('#menuList [data-rc],#menuList [data-m]').forEach(c=>{const id=c.dataset.rc||c.dataset.m;const R=RECIPE[id];if(R&&!recShown(R))c.remove()})}catch(e){}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
