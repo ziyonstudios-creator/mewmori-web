@@ -15059,7 +15059,7 @@ function tkMigrate(){if(!TK_ON()||!S)return;tkS();for(const id in TK_CFG)if(TK_C
     card.classList.add('tkLocked');card.classList.remove('unk');const q=card.querySelector('.th .q');if(q)q.remove();
     const st=card.querySelector('.status');if(st){st.className='status lv tkst';st.innerHTML=`<i class="tkcls" style="--c:${TK_CLS[I.c.cls].c}">${TK_CLS[I.c.cls].n}</i>${I.ready?`Aşama ${I.si+1}/${I.c.st.length} · %${I.pct}`:(!I.lvlOk?`Seviye ${I.c.lvl} gerekli`:`Önce: ${I.preMiss.map(p=>RECIPE[p].name).join(', ')}`)}`}
     const can=unlockState(I.r).ok;card.querySelectorAll('.rbact,.rcAct').forEach(x=>x.remove());
-    const html=`<small class="tklbl">Keşif · %${I.pct}</small><span class="tkbar"><i style="width:${I.pct}%"></i></span><div class="tkbtns"><button class="btn ${can?'green':''}" type="button" data-un="${I.r.id}" ${can?'':'disabled'}>${ic(can?'check':'lock')}Teslim et</button><button class="btn light" type="button" data-tk="${I.r.id}">${ic('book')}Keşif</button></div>`;
+    const html=`<small class="tklbl">Keşif · %${I.pct}</small><span class="tkbar"><i style="width:${I.pct}%"></i></span><div class="tkbtns"><button class="btn ${can?'green':''}" type="button" data-un="${I.r.id}" ${can?'':'disabled'}>${ic(can?'check':'lock')}Teslim et</button><button class="btn light tki" type="button" data-tk="${I.r.id}" aria-label="Keşif ayrıntıları">${ic('book')}</button></div>`;
     const rec=card.querySelector('.rcRec')||card.querySelector('.combo');if(rec){rec.classList.add('tkrec');rec.innerHTML=html}else{const d=document.createElement('div');d.className='rcRec tkrec';d.innerHTML=html;(card.querySelector('.tx')||card).appendChild(d)}});
   const L=$('rbList');if(L&&!L.dataset.tk){L.dataset.tk='1';L.addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(b){e.stopPropagation();sfx('tap');openTk(b.dataset.tk)}},true)}
  }catch(e){console.warn('tarif defteri keşif',e)}return r0}}
@@ -15121,6 +15121,65 @@ setInterval(()=>{try{if(UI.tkW&&!UI.tkW.w.m.hidden){const k=S.board.join(',');if
 .tkpad{position:absolute;top:44px;left:50%;width:46px;height:46px;margin-left:-23px;display:grid;place-items:center;border-radius:50%;background:#f0a52e;border:3px solid #4a2a14;animation:tkPad 1.2s .35s forwards}
 .tkpad .ic{width:26px;height:26px}
 @keyframes tkPad{0%{transform:rotate(0)}15%{transform:rotate(-14deg)}30%{transform:rotate(12deg)}45%{transform:rotate(-8deg)}60%{transform:scale(1.15) rotate(0);opacity:1}100%{transform:translateY(-60px) scale(.6);opacity:0}}
+`;document.head.appendChild(st)}
+
+// ================= BİRLEŞTİR: geniş Bilgi kartı + tarif HEDEFİ (V175) =================
+// Kullanıcı isteği: Bilgi kartı daha geniş; Tarif Defteri'nden bir kilitli tarif "hedef" seçilir, Birleştir tahtasında
+// hedef tarif ve bulunduğu aşamanın malzemeleri (teslim/gereken, tahtada kaç tane) görünür; malzeme hazırsa oradan teslim edilir,
+// son teslimatta tarif orada açılır. Hedef: S.tkT (tarif kimliği). Tarif açılınca hedef temizlenir.
+// Yerleşim (yatay, sanal 844×390): Enerji kartı daralır (136), sağdaki kart iki bölmeli (310): solda "Hedef", sağda eski "Bilgi".
+const tkT=()=>{const id=S.tkT;if(!id)return null;const I=tkInfo(id);if(!I||I.done){S.tkT=null;markDirty();return null}return I};
+function tkSetTarget(id){S.tkT=S.tkT===id?null:id;markDirty();sfx('tap');toast(S.tkT?`<b>Hedef: ${RECIPE[id].name}</b><br>Birleştir tahtasında malzemelerini takip et`:'Hedef kaldırıldı',ic('target'),2200)}
+function tkHedefHTML(){const I=tkT();
+  if(!I)return `<div class="thd empty"><span class="thlbl">Hedef</span><p>Henüz hedefin yok.</p><small>Tarif Defteri'nde kilitli bir tarifte <b>Hedefle</b>'ye dokun.</small><button class="thgo" type="button" data-thbook>${ic('book')}Tarifler</button></div>`;
+  const rows=I.stage?I.stage.d.map(([it,n])=>{const g=Math.min(n,I.dl[it]|0),have=tkOnBoard(it).length,full=g>=n,can=I.ready&&!full&&have>0;
+    return `<div class="thr${full?' full':''}${can?' can':''}"><span class="tha">${itemArt(it)}</span><span class="thn"><b>${ITEMS[it].name}</b><small>${full?'tamam':`tahtada ${have}`}</small></span><span class="thc">${g}/${n}</span>${full?`<i class="thok">${ic('check')}</i>`:`<button type="button" class="thdv" data-thdv="${it}" ${can?'':'disabled'} aria-label="Teslim et">${ic('check')}</button>`}</div>`}).join(''):'';
+  return `<div class="thd"><span class="thlbl">Hedef</span><div class="thtop"><img src="${productThumb(I.r.id)}" alt=""><span><b>${I.r.name}</b><small>${I.ready?`Aşama ${I.si+1}/${I.c.st.length} · ${I.stage.n}`:(!I.lvlOk?`Seviye ${I.c.lvl} gerekli`:`Önce: ${I.preMiss.map(p=>RECIPE[p].name).join(', ')}`)}</small></span></div>
+    <span class="tkbar"><i style="width:${I.pct}%"></i></span><div class="thrs">${rows}</div>
+    <div class="thbtns"><button class="thgo" type="button" data-thall ${unlockState(I.r).ok?'':'disabled'}>${ic('check')}Hepsini teslim et</button><button class="thx" type="button" data-thoff aria-label="Hedefi kaldır">${ic('close')}</button></div></div>`}
+function tkHedefDraw(){const info=document.querySelector('#merge .info');if(!info||UI.mode!=='merge')return;let h=info.querySelector('.thd');const html=tkHedefHTML();
+  const key=html.length+'|'+S.board.join(',')+'|'+JSON.stringify(S.tk&&S.tk.dl&&S.tkT?S.tk.dl[S.tkT]:0)+S.tkT;if(h&&info.dataset.thk===key)return;info.dataset.thk=key;
+  if(h)h.remove();info.insertAdjacentHTML('afterbegin',html);h=info.querySelector('.thd');
+  h.onclick=e=>{const d=e.target.closest('[data-thdv]');if(d&&!d.disabled){if(tkDeliver(S.tkT,d.dataset.thdv)){info.dataset.thk='';tkHedefDraw()}return}
+    if(e.target.closest('[data-thall]')){const id=S.tkT;if(id){tkDeliverAll(id);info.dataset.thk='';tkHedefDraw()}return}
+    if(e.target.closest('[data-thoff]')){S.tkT=null;markDirty();sfx('tap');info.dataset.thk='';tkHedefDraw();return}
+    if(e.target.closest('[data-thbook]')){sfx('tap');setMode('book')}}}
+{const _ri=renderInfo;renderInfo=function(){const r=_ri.apply(this,arguments);try{const info=document.querySelector('#merge .info');if(info)info.dataset.thk='';tkHedefDraw()}catch(e){console.warn('hedef',e)}return r}}
+setInterval(()=>{try{if(UI.mode==='merge')tkHedefDraw()}catch(e){}},500);
+// Tarif Defteri: kilitli kartta ve Keşif penceresinde "Hedefle"
+{const _rb=renderBook;renderBook=function(){const r0=_rb.apply(this,arguments);try{document.querySelectorAll('#rbList .tkrec .tkbtns').forEach(b=>{const id=b.querySelector('[data-tk]').dataset.tk;
+    if(!b.querySelector('[data-tkt]'))b.insertAdjacentHTML('beforeend',`<button class="btn ${S.tkT===id?'green':'light'} tkt" type="button" data-tkt="${id}" aria-pressed="${S.tkT===id}" aria-label="Hedefle">${ic('target')}</button>`)});
+  const L=$('rbList');if(L&&!L.dataset.tkt){L.dataset.tkt='1';L.addEventListener('click',e=>{const b=e.target.closest('[data-tkt]');if(b){e.stopPropagation();tkSetTarget(b.dataset.tkt);renderBook()}},true)}}catch(e){console.warn('hedefle',e)}return r0}}
+{const _rt=renderTk;renderTk=function(){const r=_rt.apply(this,arguments);try{const W=UI.tkW;const I=W&&tkInfo(W.id);if(I&&!I.done){W.w.foot.innerHTML=`<button class="btn ${S.tkT===W.id?'green':''}" type="button" id="tkTgt">${ic('target')}${S.tkT===W.id?'Hedefte ✓':'Hedefle'}</button>`;$('tkTgt').onclick=()=>{tkSetTarget(W.id);renderTk();try{renderBook()}catch(e){}}}}catch(e){}return r}}
+// tarif açılınca hedef temizlenir
+{const _tu=tkUnlock;tkUnlock=function(id){const r=_tu.apply(this,arguments);if(S.tkT===id){S.tkT=null;markDirty()}return r}}
+{const M='html.land #game#game #merge.skin',INK='#4a2a14';const st=document.createElement('style');st.textContent=`
+${M} .skwin>.scroll{grid-template-columns:auto auto auto!important;justify-content:center!important;column-gap:12px!important}
+${M}{--mwe:clamp(96px,calc(14*var(--vw)),116px);--mwi:clamp(250px,calc(42*var(--vw)),350px);--mc:min(64px,calc((100*var(--vh) - 124px)/6),calc((100*var(--vw) - 106px - var(--mwe) - var(--mwi))/6))!important}
+${M} .mtop,${M} .mtop .energy{--mw:var(--mwe);width:var(--mwe)!important}
+${M} .info{--mw:var(--mwi);width:var(--mwi)!important;display:flex!important;flex-direction:row!important;gap:8px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+${M} .info>.box{--mw:calc(var(--mwi)*.43);flex:0 0 calc(var(--mwi)*.43)!important;min-width:0!important;width:calc(var(--mwi)*.43)!important;max-width:none!important;height:100%!important;box-sizing:border-box}
+${M} .info>.thd{flex:1 1 0;min-width:0}
+.thd{position:relative;display:flex;flex-direction:column;gap:5px;height:100%;box-sizing:border-box;padding:40px 8px 8px;border:3px solid ${INK};border-radius:18px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 3px 0 ${INK};font-family:var(--font-display);color:${INK};overflow:hidden}
+.thlbl{position:absolute;left:50%;top:8px;transform:translateX(-50%);padding:2px 14px;border:2.5px solid ${INK};border-radius:999px;background:linear-gradient(#ffe08a,#f6b93a);font-weight:800;font-size:13px}
+.thd.empty{align-items:center;justify-content:center;text-align:center;gap:8px}.thd.empty .thgo{flex:none;width:100%}.thd.empty p{margin:0;font-weight:800;font-size:13px}.thd.empty small{font-size:11px;font-weight:700;line-height:1.3;opacity:.8}
+.thtop{display:flex;align-items:center;gap:6px}.thtop img{width:40px;height:40px;flex:none;border-radius:10px;background:#f6e6cc;border:2px solid ${INK};object-fit:contain}
+.thtop span{display:flex;flex-direction:column;min-width:0;line-height:1.1}.thtop b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.thtop small{font-size:10px;font-weight:700;opacity:.8}
+.thrs{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:4px;overflow:auto;scrollbar-width:none}
+.thr{display:flex;align-items:center;gap:4px;padding:2px 4px;border:2px solid ${INK};border-radius:10px;background:#fff}
+.thr.full{background:#eef7e4}.thr.can{background:#fff6cf;box-shadow:0 0 0 2px #ffd24a}
+.tha{width:28px;height:28px;flex:none;display:grid;place-items:center}.tha>*{width:100%;height:100%}
+.thn{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.05}.thn b{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.thn small{font-size:9px;font-weight:700;opacity:.75}
+.thc{font-size:12px;font-weight:800}
+.thdv,.thok{all:unset;flex:none;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;border:2px solid ${INK};background:linear-gradient(#cdeb8b,#93cf52);cursor:pointer;box-sizing:border-box}
+.thdv[disabled]{background:#e8dcc6;opacity:.6;cursor:default}.thok{background:#e3f2d6}.thdv .ic,.thok .ic{width:14px;height:14px}
+.thbtns{display:flex;gap:4px}
+.thgo{all:unset;flex:1;height:32px;display:flex;align-items:center;justify-content:center;gap:3px;border:2.5px solid ${INK};border-radius:999px;background:linear-gradient(#cdeb8b,#93cf52);font-weight:800;font-size:11.5px;cursor:pointer;box-shadow:0 2px 0 ${INK};box-sizing:border-box;padding:0 6px}
+.thgo[disabled]{background:#e8dcc6;color:#8a6a4a;cursor:default}.thgo .ic{width:14px;height:14px}
+.thx{all:unset;flex:none;width:32px;height:32px;display:grid;place-items:center;border:2.5px solid ${INK};border-radius:50%;background:#fff;cursor:pointer;box-sizing:border-box}.thx .ic{width:14px;height:14px}
+${M} .enplus{font-size:13px!important;padding:2px 4px 0!important}
+${M} .enplus::after{padding-left:16px!important;background-size:13px!important}
+.tkbtns .btn.tkt,.tkbtns .btn.tki{flex:0 0 40px!important;width:40px!important;min-width:40px!important;padding:0!important}.tkbtns .btn.tkt .ic,.tkbtns .btn.tki .ic{margin:0!important}
 `;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
