@@ -14902,6 +14902,45 @@ async function lvrLoad(force){if(LVR.busy)return;if(!force&&LVR.list&&Date.now()
   sc.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>visitCafe(b.dataset.visit))}}
 {const st=document.createElement('style');st.textContent=`.lvlist .lvb{font-family:var(--font-display);font-weight:900;padding:2px 9px;border-radius:999px;background:linear-gradient(#ffe590,#f0b52e);border:2px solid var(--ink);white-space:nowrap}`;document.head.appendChild(st)}
 
+// ================= AYARLAR › HESABIMI SİL (V171) =================
+// Mağaza kuralı: uygulama içinden hesap silme. Yalnız giriş yapmış oyuncuda görünür. Sayfa içi onay: kutuya SİL yazılır.
+// Sunucu: delete_my_account() kafe, beğeniler, bulut kaydı, reklam kayıtları, profil ve hesabın kendisini siler.
+// Sonra bu cihazdaki oyun kaydı da silinir, oturum kapanır ve oyun baştan açılır (giriş kartı).
+{const _os=openSettings;openSettings=function(){const r=_os.apply(this,arguments);try{hsRow()}catch(e){console.warn('hesap sil',e)}return r}}
+function hsRow(){const W=$('skSet');if(!W||!SB.user||W.querySelector('#setDel'))return;const ac=W.querySelector('#setAcc');if(!ac)return;
+  const b=document.createElement('button');b.type='button';b.className='skbtn hsdel hsmini';b.id='setDel';b.textContent='Hesabımı sil';ac.after(b);   // Hesap satırında "Aç"ın yanında
+  b.onclick=()=>{sfx('tap');openDelAcc()}}
+// ayar penceresi her çizildiğinde (sekme/düğme) satır yeniden eklenir
+setInterval(()=>{try{const W=$('skSet');if(W&&!W.hidden)hsRow()}catch(e){}},600);
+function openDelAcc(){const w=skWin('skDel','Hesabı sil','cat_sleep');let busy=false;
+  let val='';const draw=(msg)=>{w.body.innerHTML=`<div class="hsWrap"><p class="hsT"><b>Bu işlem geri alınamaz.</b></p>
+      <p class="hsP">Hesabın (<b class="hsMail"></b>) ve ona bağlı her şey kalıcı olarak silinir: buluttaki oyun kaydın, yayımlanmış kafen, aldığın ve verdiğin beğeniler. Bu cihazdaki kayıt da silinir ve oyun baştan açılır.</p>
+      <label class="hsL"><span>Onaylamak için kutuya <b>SİL</b> yaz</span><input id="hsIn" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SİL"></label>
+      ${msg?`<p class="hsErr">${msg}</p>`:''}
+      <div class="hsBtns"><button class="skbtn cream" type="button" id="hsNo">Vazgeç</button><button class="skbtn hsdel" type="button" id="hsYes" disabled>${busy?'Siliniyor…':'Hesabımı kalıcı olarak sil'}</button></div></div>`;
+    w.body.querySelector('.hsMail').textContent=(SB.user&&SB.user.email)||'';
+    const inp=$('hsIn'),yes=$('hsYes');inp.value=val;const ok=()=>{val=inp.value;const v=(inp.value||'').trim().toLocaleUpperCase('tr-TR');yes.disabled=busy||!(v==='SİL'||v==='SIL')};inp.oninput=ok;ok();
+    $('hsNo').onclick=()=>{sfx('tap');w.close()};
+    yes.onclick=async()=>{if(yes.disabled)return;busy=true;draw();
+      try{const sb=await sbClient();const r=await sb.rpc('delete_my_account');if(r.error)throw r.error;
+        try{await sb.auth.signOut()}catch(e){}SB.user=null;
+        RESETTING=true;clearTimeout(saveTimer);try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(SB.guestKey)}catch(e){}
+        toast('<b>Hesabın silindi</b><br>Oyun baştan açılıyor',ic('check'),2500);setTimeout(()=>location.reload(),1600)}
+      catch(e){console.warn('hesap silme',e);busy=false;draw('Silinemedi: bağlantı kurulamadı ya da oturum süresi doldu. Biraz sonra tekrar dene.')}}};
+  draw()}
+{const st=document.createElement('style');st.textContent=`
+.skbtn.hsdel{background:linear-gradient(#f37d70,#d9534f)!important;color:#fff!important;border:3px solid #7a2a22!important;border-radius:999px!important;box-shadow:0 2px 0 #7a2a22!important}
+.skbtn.hsdel[disabled]{opacity:.5;filter:grayscale(.4)}
+.hsWrap{grid-column:1/-1;width:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px;text-align:center}
+.hsT{margin:0;font-family:var(--font-display);font-size:17px;color:#9e2f26}
+.hsP{margin:0;font-size:12.5px;font-weight:800;line-height:1.4;color:#5a3a22}
+.hsL{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12.5px;font-weight:800}
+.hsL input{width:160px;text-align:center;font:inherit;font-size:18px;font-weight:900;letter-spacing:.15em;padding:6px 10px;border:3px solid var(--ink);border-radius:12px;background:#fff}
+.hsErr{margin:0;font-size:12px;font-weight:800;color:#9e2f26;background:#fbe3df;border:2px solid #9e2f26;border-radius:10px;padding:6px 8px}
+.hsBtns{display:flex;gap:10px;justify-content:center}.hsBtns .skbtn{flex:none!important;width:auto!important;padding:0 18px!important;height:40px}
+.skbtn.hsmini{flex:none!important;width:auto!important;padding:0 12px!important;margin-left:6px;font-size:12px!important}
+`;document.head.appendChild(st)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
