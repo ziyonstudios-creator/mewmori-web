@@ -15229,7 +15229,7 @@ for(const [ch,d] of Object.entries(NEW_CHAINS)){CHAINS[ch]=d.n.slice();CHAIN_FAM
   d.n.forEach((nm,i)=>{const id=ch+(i+1);ITEMS[id]={id,name:nm,chain:ch,lv:i+1,max:d.n.length,fam:d.fam,next:i+1<d.n.length?ch+(i+2):null};
     ITEM_ART[id]=NEW_IMG.includes(id)?`<img src="img/items/${id}.webp" alt="" draggable="false">`:`<span class="kt kt${Math.min(7,i+3)} ktn">${SV(NC_SVG[ch])}<b>${i+1}</b></span>`})}
 // ---- 2) üreticiler ----
-ITEMS.bag_manav={id:'bag_manav',name:'Manav sandığı',fam:'bag',bag:'manav',lv:0};
+ITEMS.bag_manav={id:'bag_manav',name:'Manav paketi',fam:'bag',bag:'manav',lv:0};
 ITEMS.bag_kasap={id:'bag_kasap',name:'Kasap paketi',fam:'bag',bag:'kasap',lv:0};
 BAG_OUT.manav=[['domates1',3],['mercimek1',2],['mantar1',2]];
 BAG_OUT.kasap=[['sucuk1',3],['tavuk1',2],['et1',1]];
@@ -15587,9 +15587,12 @@ for(const id in TK_LVL)if(TK_CFG[id])TK_CFG[id].lvl=TK_LVL[id];
 for(const r of RECIPES){const c=TK_CFG[r.id];if(c&&!r.br)r.lvl=c.lvl}
 
 // ---- V184-185: ürün görselleri (kullanıcının çizimleri) — 3D küçük resim yerine img/urun/<id>.webp ----
-const URUN_IMG=['su','cay','bitki_cay','yesil_cay','espresso','latte','moka','sicak_sut','tarcinli_sut','sicak_cik','limonata','meyveli_cay','milkshake','corba_domates','corba_mercimek','corba_mantar','tost_sade','tost','tost_sucuk','tost_karisik','omlet','omlet_peynir','omlet_sucuk','omlet_karisik','kahvalti','koy_kahvalti','serpme','kofte','kofte_kasar','makarna_domates','makarna_mantar','levrek','somon','kiz_tavuk','tavuk_sis','kiz_et','pirzola'];
+const URUN_IMG=['su','cay','bitki_cay','yesil_cay','espresso','latte','moka','sicak_sut','tarcinli_sut','sicak_cik','limonata','meyveli_cay','milkshake','corba_domates','corba_mercimek','corba_mantar','tost_sade','tost','tost_sucuk','tost_karisik','omlet','omlet_peynir','omlet_sucuk','omlet_karisik','kahvalti','koy_kahvalti','serpme','kofte','kofte_kasar','makarna_domates','makarna_mantar','levrek','somon','kiz_tavuk','tavuk_sis','kiz_et','pirzola','coban','mevsim','sezar','kurabiye','kurabiye_cik','puding_sut','puding_cik','cupcake','pasta'];
 function urunImgSet(){for(const id of URUN_IMG)TH.cache.set('p:'+id,'img/urun/'+id+'.webp')}
 urunImgSet();for(const id of URUN_IMG){const i=new Image();i.src='img/urun/'+id+'.webp'}
+// yeni üretici paketlerinin gerçek görselleri
+ITEM_ART.bag_manav='<img src="img/bag_manav.webp" alt="" draggable="false">';ITEM_ART.bag_kasap='<img src="img/bag_kasap.webp" alt="" draggable="false">';
+for(const b of ['bag_manav','bag_kasap']){const i=new Image();i.src='img/'+b+'.webp'}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
