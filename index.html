@@ -1432,6 +1432,34 @@ const ITEM_IMG=['un1','un2','un3','un4','yum1','yum2','yum3','seker1','seker2','
 for(const id of ITEM_IMG)ITEM_ART[id]=`<img src="img/items/${id}.webp" alt="" draggable="false">`;
 const itemArt=id=>ITEM_ART[id]||SV(`<circle cx="32" cy="32" r="20" fill="#efe3d0"/><text x="32" y="40" text-anchor="middle" font-size="22" fill="${INK}" stroke="none">?</text>`);
 
+// ================= MALZEME KADEMELERİ 6'YA ÇIKAR (V173) =================
+// Tarif keşif sistemi (p91) daha yüksek kademeler ister: her zincir 6 kademeye uzar (iki aynı → bir üst kademe kuralı aynı).
+// Yeni kademelerin çizimi gelene kadar geçici görsel: zincirin en üst eski görseli + kademe rozeti + kademeye göre parıltı.
+// Kullanıcı görsel ürettikçe dosya img/items/<id>.webp olarak eklenir ve KADEME_IMG listesine yazılır (geçici görselin yerine geçer).
+const KADEME_EK={
+ un:['Örgülü çörek','Fırın sepeti'],
+ yum:['Yumurta sepeti','Çiftlik kasası','Altın yumurta'],
+ seker:['Şeker şurubu','Karamel','Şekerleme kavanozu'],
+ cilek:['Çilek sepeti','Çilek reçeli','Çilek kasası'],
+ peynir:['Peynir tekeri','Peynir kalıbı','Olgun peynir dolabı'],
+ kahve:['Kahve kavanozu','Kahve çuvalı','Özel harman'],
+ cay:['Çay kutusu','Çay sandığı','Altın çay'],
+ sut:['Krema şişesi','Tereyağı','Süt güğümü'],
+ kakao:['Çikolata tableti','Çikolata kutusu','Pralin kutusu'],
+ limon:['Limon sepeti','Limon şurubu','Limon fidanı']};
+const KADEME_IMG=[];   // gerçek görseli gelmiş yeni kademeler (ör. 'un5')
+const KADEME_TOP={};   // zincir → eski en üst kademe kimliği (geçici görsel kaynağı)
+for(const [ch,add] of Object.entries(KADEME_EK)){const names=CHAINS[ch];if(!names)continue;KADEME_TOP[ch]=ch+names.length;names.push(...add);
+  names.forEach((n,i)=>{ITEMS[ch+(i+1)]={id:ch+(i+1),name:n,chain:ch,lv:i+1,max:names.length,fam:CHAIN_FAM[ch],next:i+1<names.length?ch+(i+2):null}})}
+for(const ch in KADEME_TOP){const top=+KADEME_TOP[ch].slice(ch.length);for(let lv=top+1;lv<=CHAINS[ch].length;lv++){const id=ch+lv;
+  ITEM_ART[id]=KADEME_IMG.includes(id)?`<img src="img/items/${id}.webp" alt="" draggable="false">`:`<span class="kt kt${lv}"><img src="img/items/${KADEME_TOP[ch]}.webp" alt="" draggable="false"><b>${lv}</b></span>`}}
+{const st=document.createElement('style');st.textContent=`
+.kt{position:relative;display:block;width:100%;height:100%}
+.kt>img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 3px var(--kg))}
+.kt>b{position:absolute;right:2%;bottom:2%;min-width:34%;height:34%;display:grid;place-items:center;border-radius:999px;background:var(--kg);border:2px solid #4a2a14;color:#fff;font:900 clamp(8px,calc(1.6*var(--vh)),13px)/1 var(--font-display,system-ui);text-shadow:0 1px 0 #4a2a14;box-sizing:border-box}
+.kt4{--kg:#7cc35a}.kt5{--kg:#4fa3d9}.kt6{--kg:#b46be0}.kt7{--kg:#f0a52e}
+`;document.head.appendChild(st)}
+
 // ================= ÜRÜNLER (3B, masaya/tepsiye konan) =================
 const MAT={cup:toon(0xfff8ec),coffee:toon(0x5a3a22),latte:toon(0xc89a6a),milk:toon(0xfffaf2),choc:toon(0x6b3c1e),moka:toon(0x7a4a2a),
   tea:new THREE.MeshPhysicalMaterial({color:0xb5401f,transparent:true,opacity:0.9,roughness:0.2}),fruitTea:new THREE.MeshPhysicalMaterial({color:0xe05a4a,transparent:true,opacity:0.9,roughness:0.2}),
@@ -3961,7 +3989,7 @@ function tut2Tick(){const m=UI.mode;
   if(tr==='done'||UI.modal){if(t2Shown&&t2Shown!=='team')t2Hide();return}
   const R=RECIPE[T2_RECIPE];
   if(S.tr==='rb1'){if(m!=='book')return t2Hide();
-    t2Show('rb1',{title:'Tarif defterimiz',text:'Kafende yapabileceğin bütün lezzetler burada! Her ürün üç adımda menüne girer: <b>keşfet</b> → <b>ürünü aç</b> → <b>menüye ekle</b>. Kilitli tarifler hangi seviyede açılacağını, alttaki çizim de hangi malzemelerden yapıldığını gösterir.',dim:true,center:true,
+    t2Show('rb1',{title:'Tarif defterimiz',text:'Kafende yapabileceğin bütün lezzetler burada! Her yeni ürün üç adımda menüne girer: <b>malzemeyi üret</b> → <b>teslim et</b> → <b>menüye ekle</b>. Zor tariflerin birkaç teslimat aşaması vardır. Kilitli tarifler hangi seviyede açılacağını, alttaki çizim de hangi malzemelerden yapıldığını gösterir.',dim:true,center:true,
       buttons:[{label:'Devam',green:true,onClick:()=>{S.tr=S.recipes[T2_RECIPE]?(S.unlocked[T2_RECIPE]?'menu1':'rbopen'):'rb2';markDirty();t2Shown=''}}]});return}
   if(S.tr==='rb2'){if(m!=='book')return t2Hide();if(UI.rbTab!=='drink'){UI.rbTab='drink';renderBook()}
     const card=()=>document.querySelector(`[data-rc="${T2_RECIPE}"]`);if(t2Shown!=='rb2'){const c=card();if(c){scrollToEl(c,0.7);c.classList.add('tutfocus')}}
@@ -3984,7 +4012,7 @@ function tut2Tick(){const m=UI.mode;
     if(m!=='book'){if(m==='cafe'||m==='merge')t2Show('rbnav',{text:'<b>Tarifler</b>’e git ve yeni ürünü aç.',target:()=>navBtn('book'),buttons:[{label:'Tarifler’e git',green:true,icon:'book',onClick:()=>setMode('book')}]});else t2Hide();return}
     if(UI.rbTab!=='drink'){UI.rbTab='drink';renderBook()}const btn=()=>document.querySelector(`[data-un="${T2_RECIPE}"]`);
     if(t2Shown!=='rbopen'){const b=btn();scrollToEl(b,0.7)}
-    t2Show('rbopen',{text:`Tarif keşfedildi, <b>Ürünü aç</b> düğmesi artık aktif! Dokun ve <b>Ballı Süt</b>’ü aç. Bu ilk ürün ücretsiz.`,target:btn});return}
+    t2Show('rbopen',{text:`Süt köpüğün hazır! <b>Malzeme teslim et</b>’e dokun: köpük tahtadan alınır ve <b>Ballı Süt</b> açılır.`,target:btn});return}
   if(S.tr==='menu1'){if(m==='menu'){S.tr='menu2';markDirty();t2Shown='';return}
     if(['book','cafe','merge'].includes(m))t2Show('menu1',{title:'Ürün açıldı!',text:'Harika! Şimdi bu lezzeti menümüze nasıl ekleyeceğimize bakalım. <b>Menü</b>’ye geçelim.',target:()=>navBtn('menu'),buttons:[{label:'Menü’ye git',green:true,icon:'menu',onClick:()=>setMode('menu')}]});else t2Hide();return}
   if(S.tr==='menu2'){if(S.menu[T2_RECIPE]){S.tr='menu3';markDirty();t2Shown='';return}
@@ -14948,6 +14976,151 @@ function openDelAcc(){const w=skWin('skDel','Hesabı sil','cat_sleep');let busy=
 #clShop .cswin{width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;border-radius:0!important;border-width:0!important;box-shadow:none!important;
   padding:calc(10px + var(--sat,0px)) calc(12px + var(--sar,0px)) calc(12px + var(--sab,0px)) calc(12px + var(--sal,0px))!important}
 #clShop .csx{right:2px!important;top:2px!important}
+`;document.head.appendChild(st)}
+
+// ================= KADEMELİ TARİF KEŞFİ (V173) =================
+// Bir malzemeyi ilk kez üretmek tarifi artık AÇMAZ (yalnız "keşfedildi" işareti koyar). Kilitli her tarif:
+//   seviye şartı + ön koşul tarifler + sırayla tamamlanan teslimat aşamaları. Aşamadaki malzemeler tahtadan tek tek teslim edilir
+//   (tahtadan silinir), teslim sayısı kalıcı kaydedilir, tamamlanan aşama tekrar istenmez. Tüm aşamalar bitince tarif kalıcı açılır
+//   ve menüye eklenir (müşteriler sipariş eder). Etkinlik tarifleri (r.br) ve etkinlik kafesi (EVMODE) bu sistemin dışında.
+// Kayıt: S.tk = {st:{tarif:aşamaNo}, dl:{tarif:{malzeme:adet}}, log:{tarif:tamamlanmaZamanı}}. Eski kayıtta açılmış tarifler açık kalır.
+
+// ---- MERKEZİ TARİF YAPILANDIRMASI (dengeleme burada) ----
+// cls: 0 Başlangıç · 1 Kolay · 2 Orta · 3 Zor · 4 Gurme · 5 Efsanevi   lvl: kafe seviyesi   pre: ön koşul tarifler
+// st: aşamalar [{n:'aşama adı', d:[[malzeme, adet], …]}]   (malzeme kimlikleri p5 CHAINS/COMBOS + p6b kademeleri)
+const TK_CLS=[{n:'Başlangıç',c:'#9fd06a'},{n:'Kolay',c:'#7cc35a'},{n:'Orta',c:'#4fa3d9'},{n:'Zor',c:'#f0a52e'},{n:'Gurme',c:'#b46be0'},{n:'Efsanevi',c:'#e2574c'}];
+const TK_CFG={
+ // başlangıç: 3 içecek + 3 yemek (doğrudan açık)
+ cay:{cls:0,lvl:1}, espresso:{cls:0,lvl:1}, limonata:{cls:0,lvl:1},
+ kurabiye:{cls:0,lvl:1}, tost:{cls:0,lvl:1}, omlet:{cls:0,lvl:1},
+ // --- süt ve çikolata dalı ---
+ sicak_sut:{cls:1,lvl:1,pre:[],st:[{n:'Süt köpüğü',d:[['sut3',1]]}]},                       // öğretici tarifi (ilk teslimat)
+ sicak_cik:{cls:2,lvl:3,pre:['sicak_sut'],st:[{n:'Kakao hazırlığı',d:[['kakao3',2],['kakao2',2]]},{n:'Kremalı süt',d:[['sut4',1],['seker3',2]]}]},
+ // --- kahve dalı ---
+ latte:{cls:1,lvl:2,pre:['espresso'],st:[{n:'Kahve ve köpük',d:[['kahve3',1],['sut2',2]]}]},
+ moka:{cls:4,lvl:7,pre:['latte','sicak_cik'],st:[{n:'Harman',d:[['kahve5',1],['kahve3',3]]},{n:'Çikolata',d:[['kakao5',1],['kakao3',2]]},{n:'Köpük',d:[['sut5',1],['c_latte',1]]},{n:'Son dokunuş',d:[['c_moka',1],['seker4',2]]}]},
+ // --- çay dalı ---
+ meyveli_cay:{cls:2,lvl:3,pre:['cay'],st:[{n:'Demleme',d:[['cay4',1],['cay2',3]]},{n:'Meyve',d:[['cilek3',2],['c_meyvecay',1]]}]},
+ // --- tatlı dalı ---
+ cupcake:{cls:2,lvl:4,pre:['kurabiye'],st:[{n:'Kek hamuru',d:[['c_kekhamuru',2],['un3',2]]},{n:'Krema',d:[['seker4',1],['sut3',2]]}]},
+ pasta:{cls:3,lvl:5,pre:['cupcake'],st:[{n:'Pandispanya',d:[['un4',2],['yum3',2]]},{n:'Çilek katı',d:[['cilek4',2],['c_pasta',1]]},{n:'Süsleme',d:[['seker5',1],['sut4',1]]}]},
+ tart:{cls:4,lvl:7,pre:['pasta','meyveli_cay'],st:[{n:'Tart tabanı',d:[['un5',1],['seker4',2]]},{n:'Meyve',d:[['cilek5',1],['cilek3',3]]},{n:'Krema',d:[['sut5',1],['yum4',1]]},{n:'Sırlama',d:[['c_tart',1],['seker5',1]]}]},
+ // --- fırın ve kahvaltı dalı ---
+ sandvic:{cls:2,lvl:4,pre:['tost','omlet'],st:[{n:'Ekmek',d:[['un4',1],['un2',3]]},{n:'İç harç',d:[['yum3',2],['peynir3',2]]}]},
+ kruvasan:{cls:3,lvl:6,pre:['sandvic'],st:[{n:'Kat hamuru',d:[['un5',1],['un3',2]]},{n:'Tereyağı',d:[['sut4',2]]},{n:'Fırınlama',d:[['yum4',1],['seker3',3]]}]},
+ kahvalti:{cls:5,lvl:9,pre:['kruvasan','sandvic'],st:[{n:'Yumurtalar',d:[['yum5',2],['yum3',2]]},{n:'Peynir tabağı',d:[['peynir5',2],['peynir3',2]]},{n:'Ekmek sepeti',d:[['un6',1]]},{n:'Reçel ve bal',d:[['cilek5',2],['seker4',2]]},{n:'Servis',d:[['c_kahvalti',1],['cay4',2]]}]}};
+const TK_ON=()=>!EVMODE;
+const tkCfg=id=>TK_ON()?TK_CFG[id]:null;
+// başlangıç/seviye bilgisini katalogda da güncelle (Tarif Defteri ve "seviye atlayınca açılanlar" aynı sayıları göstersin)
+for(const r of RECIPES){const c=TK_CFG[r.id];if(!c||r.br)continue;r.lvl=c.lvl;r.def=c.cls===0;if(c.cls===0)r.free=true}
+
+// ---- durum ----
+function tkS(){if(!S.tk||typeof S.tk!=='object')S.tk={st:{},dl:{},log:{}};const T=S.tk;T.st=T.st||{};T.dl=T.dl||{};T.log=T.log||{};return T}
+const tkNeedUnits=c=>c.st.reduce((a,s)=>a+s.d.reduce((b,x)=>b+x[1],0),0);
+function tkInfo(id){const r=RECIPE[id],c=tkCfg(id);if(!r||!c||r.br)return null;const T=tkS();
+  if(S.unlocked[id])return {r,c,done:true,pct:100};
+  const preMiss=(c.pre||[]).filter(p=>!S.unlocked[p]),lvlOk=S.lvl>=c.lvl;
+  const si=Math.min(T.st[id]|0,c.st.length),stage=c.st[si]||null,dl=T.dl[id]||{};
+  let got=0;c.st.forEach((s,k)=>s.d.forEach(([it,n])=>{got+=k<si?n:k===si?Math.min(n,dl[it]|0):0}));
+  const pct=Math.floor(got/Math.max(1,tkNeedUnits(c))*100);
+  return {r,c,done:false,preMiss,lvlOk,ready:!preMiss.length&&lvlOk,si,stage,dl,pct,complete:si>=c.st.length}}
+const tkOnBoard=it=>S.board.reduce((a,v,i)=>(v===it&&a.push(i),a),[]);
+// tek malzeme teslimi: tahtadan bir tane siler, sayacı artırır. Koruma: koşul yoksa, aşama bu malzemeyi istemiyorsa, sayı dolduysa, tahtada yoksa → reddedilir.
+function tkDeliver(id,it){const I=tkInfo(id);if(!I||I.done||!I.ready||!I.stage)return false;const need=(I.stage.d.find(x=>x[0]===it)||[])[1]|0;if(!need)return false;
+  const T=tkS(),dl=T.dl[id]||(T.dl[id]={});if((dl[it]|0)>=need)return false;const cells=tkOnBoard(it);if(!cells.length)return false;
+  const i=cells[cells.length-1];S.board[i]=null;if(UI.mgSel===i)UI.mgSel=null;try{refreshCell(i)}catch(e){}
+  dl[it]=Math.min(need,(dl[it]|0)+1);sfx('place');tkAdvance(id);markDirty();saveNow();return true}
+function tkAdvance(id){const T=tkS();for(;;){const I=tkInfo(id);if(!I||I.done)return;if(I.complete){tkUnlock(id);return}
+  if(I.stage.d.every(([it,n])=>(I.dl[it]|0)>=n)){T.st[id]=I.si+1;T.dl[id]={};if(I.si+1<I.c.st.length){sfx('goal');toast(`<b>${I.r.name}</b><br>Aşama ${I.si+1} tamam: ${I.stage.n}`,ic('check'),2200)}continue}return}}
+function tkUnlock(id){const r=RECIPE[id];if(S.unlocked[id])return;S.recipes[id]=true;S.unlocked[id]=true;S.menu[id]=true;const T=tkS();T.log[id]=Date.now();delete T.dl[id];
+  try{addXP(CONFIG.xp.discover)}catch(e){}sfx('levelup');markDirty();saveNow();
+  toast(`<b>Yeni tarif açıldı: ${r.name}!</b><br>Menüne eklendi, müşteriler artık sipariş edebilir`,`<img src="${productThumb(id)}" alt="">`,3800);
+  tkUnlockAnim(id);try{checkObj()}catch(e){}try{hudDots()}catch(e){}}
+// Tarif Defteri'ndeki tek düğme (ve öğretici): teslim edilebilen her şeyi teslim et
+function tkDeliverAll(id){let n=0;for(let guard=0;guard<60;guard++){const I=tkInfo(id);if(!I||I.done||!I.ready||!I.stage)break;
+  const it=I.stage.d.find(([x,k])=>(I.dl[x]|0)<k&&tkOnBoard(x).length);if(!it)break;if(tkDeliver(id,it[0]))n++;else break}return n}
+
+// ---- eski sistemin yerine ----
+{const _us=unlockState;unlockState=function(r){const I=tkInfo(r.id);if(!I)return _us.apply(this,arguments);if(I.done)return {ok:false,done:true};
+  if(!I.lvlOk)return {ok:false,why:`Seviye ${I.c.lvl} gerekli`};if(I.preMiss.length)return {ok:false,why:`Önce: ${I.preMiss.map(p=>RECIPE[p].name).join(', ')}`};
+  const can=I.stage&&I.stage.d.some(([x,k])=>(I.dl[x]|0)<k&&tkOnBoard(x).length);return {ok:!!can,cost:0,why:can?'':'Tahtada teslim edilecek malzeme yok'}}}
+{const _ur=unlockRecipe;unlockRecipe=function(id){if(!tkInfo(id))return _ur.apply(this,arguments);tkDeliverAll(id);return !!S.unlocked[id]}}
+discoverItem=function(id){if(S.items[id])return;S.items[id]=true;addXP(CONFIG.xp.newItem);const r=recipeByDisc[id];
+  if(r&&!S.recipes[r.id]&&!S.unlocked[r.id]){S.recipes[r.id]=true;S.stats.disc++;addXP(CONFIG.xp.discover);sfx('discover');
+    toast(`<b>Tarif ipucu: ${r.name}</b><br>Tarif Defteri'nde keşif aşamalarını tamamla`,`<img src="${productThumb(r.id)}" alt="">`,3200);try{checkObj()}catch(e){}}markDirty()};
+{const _ua=unlocksAt;unlocksAt=function(L){return _ua.apply(this,arguments).map(o=>o.kind==='recipe'&&tkInfo(o.r.id)?{...o,text:`Yeni tarif keşfi: ${o.r.name} · Tarif Defteri'nden`}:o)}}
+// kayıt geçişi: başlangıç tarifleri herkese açık; daha önce açılmış tarifler açık kalır
+function tkMigrate(){if(!TK_ON()||!S)return;tkS();for(const id in TK_CFG)if(TK_CFG[id].cls===0&&RECIPE[id]&&!S.unlocked[id]){S.recipes[id]=true;S.unlocked[id]=true;S.menu[id]=true}}
+{const _as=applyState;applyState=function(){try{tkMigrate()}catch(e){console.warn('tarif geçişi',e)}return _as.apply(this,arguments)}}
+
+// ---- Tarif Defteri: kilitli kartlarda keşif özeti + "Keşif" düğmesi ----
+{const _rb=renderBook;renderBook=function(){const r0=_rb.apply(this,arguments);try{
+  document.querySelectorAll('#rbList [data-rc]').forEach(card=>{const I=tkInfo(card.dataset.rc);if(!I||I.done)return;
+    card.classList.add('tkLocked');card.classList.remove('unk');const q=card.querySelector('.th .q');if(q)q.remove();
+    const st=card.querySelector('.status');if(st){st.className='status lv tkst';st.innerHTML=`<i class="tkcls" style="--c:${TK_CLS[I.c.cls].c}">${TK_CLS[I.c.cls].n}</i>${I.ready?`Aşama ${I.si+1}/${I.c.st.length} · %${I.pct}`:(!I.lvlOk?`Seviye ${I.c.lvl} gerekli`:`Önce: ${I.preMiss.map(p=>RECIPE[p].name).join(', ')}`)}`}
+    const can=unlockState(I.r).ok;card.querySelectorAll('.rbact,.rcAct').forEach(x=>x.remove());
+    const html=`<small class="tklbl">Keşif · %${I.pct}</small><span class="tkbar"><i style="width:${I.pct}%"></i></span><div class="tkbtns"><button class="btn ${can?'green':''}" type="button" data-un="${I.r.id}" ${can?'':'disabled'}>${ic(can?'check':'lock')}Teslim et</button><button class="btn light" type="button" data-tk="${I.r.id}">${ic('book')}Keşif</button></div>`;
+    const rec=card.querySelector('.rcRec')||card.querySelector('.combo');if(rec){rec.classList.add('tkrec');rec.innerHTML=html}else{const d=document.createElement('div');d.className='rcRec tkrec';d.innerHTML=html;(card.querySelector('.tx')||card).appendChild(d)}});
+  const L=$('rbList');if(L&&!L.dataset.tk){L.dataset.tk='1';L.addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(b){e.stopPropagation();sfx('tap');openTk(b.dataset.tk)}},true)}
+ }catch(e){console.warn('tarif defteri keşif',e)}return r0}}
+
+// ---- Keşif penceresi: tüm bilgiler + malzeme başına teslim düğmesi ----
+function openTk(id){const w=skWin('tkWin',RECIPE[id].name,'cat_peek');UI.tkW={w,id};renderTk()}
+function renderTk(){const W=UI.tkW;if(!W||W.w.m.hidden)return;const I=tkInfo(W.id);if(!I){W.w.close();return}const w=W.w;
+  if(I.done){w.body.innerHTML=`<div class="tkwrap tkdone"><img class="tkimg" src="${productThumb(I.r.id)}" alt=""><b>${I.r.name} açıldı!</b><p>Menüne eklendi. Müşteriler artık sipariş edebilir.</p></div>`;w.foot.innerHTML='';return}
+  const cls=TK_CLS[I.c.cls],chip=(ok,t)=>`<span class="tkchip ${ok?'ok':'no'}">${ic(ok?'check':'lock')}${t}</span>`;
+  const rows=I.stage?I.stage.d.map(([it,n])=>{const g=Math.min(n,I.dl[it]|0),have=tkOnBoard(it).length,full=g>=n,can=I.ready&&!full&&have>0,itm=ITEMS[it];
+    return `<div class="tkrow${full?' full':''}"><span class="tkart">${itemArt(it)}</span><span class="tkname"><b>${itm.name}</b><small>${itm.lv?`Kademe ${itm.lv}`:'Karışım'} · tahtada ${have}</small></span>
+      <span class="tkcnt"><b>${g}/${n}</b><small>${full?'tamam':`${n-g} eksik`}</small></span><button class="btn ${can?'green':''}" type="button" data-dv="${it}" ${can?'':'disabled'}>${full?ic('check')+'Tamam':'Teslim et'}</button></div>`}).join(''):'';
+  w.body.innerHTML=`<div class="tkwrap"><div class="tkhead"><img class="tkimg" src="${productThumb(I.r.id)}" alt=""><div class="tkmeta"><div><b>${I.r.name}</b> <span class="tklock">${ic('lock')}KİLİTLİ</span></div>
+      <div class="tkchips"><span class="tkcls" style="--c:${cls.c}">${cls.n}</span>${chip(I.lvlOk,`Seviye ${I.c.lvl}`)}${(I.c.pre||[]).map(p=>chip(!!S.unlocked[p],RECIPE[p].name)).join('')}</div>
+      <div class="tkprog"><span class="tkbar big"><i style="width:${I.pct}%"></i></span><b>%${I.pct}</b></div></div></div>
+    <div class="tkstages">${I.c.st.map((s,k)=>`<span class="tkstg ${k<I.si?'ok':k===I.si?'cur':''}">${k<I.si?ic('check'):k+1}<small>${s.n}</small></span>`).join('')}</div>
+    ${I.stage?`<div class="tkcur"><b>Aşama ${I.si+1}/${I.c.st.length}: ${I.stage.n}</b>${I.ready?'':`<small>${!I.lvlOk?`Teslimat için Seviye ${I.c.lvl} gerekli`:`Teslimat için önce aç: ${I.preMiss.map(p=>RECIPE[p].name).join(', ')}`}</small>`}</div><div class="tkrows">${rows}</div>`:''}
+    <p class="tknote">Malzemeyi Birleştir tahtasında üret; teslim edilen malzeme tahtadan alınır ve sayılır. Bütün aşamalar bitince tarif açılır.</p></div>`;
+  w.foot.innerHTML='';
+  w.body.querySelectorAll('[data-dv]').forEach(b=>b.onclick=()=>{if(tkDeliver(W.id,b.dataset.dv)){renderTk();try{if(UI.mode==='book')renderBook()}catch(e){}}})}
+function tkUnlockAnim(id){const d=document.createElement('div');d.className='tkanim';d.innerHTML=`<div class="tkbox"><img src="${productThumb(id)}" alt=""><span class="tkpad">${ic('lock')}</span><b>Yeni tarif!</b><small>${RECIPE[id].name}</small></div>`;
+  $('game').appendChild(d);setTimeout(()=>d.classList.add('go'),30);setTimeout(()=>d.classList.add('out'),2300);setTimeout(()=>{d.remove();renderTk()},2800)}
+// tahtada malzeme değişince açık keşif penceresi güncellenir
+setInterval(()=>{try{if(UI.tkW&&!UI.tkW.w.m.hidden){const k=S.board.join(',');if(k!==UI.tkW.k){UI.tkW.k=k;renderTk()}}}catch(e){}},700);
+{const st=document.createElement('style');st.textContent=`
+.tkcls{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;background:var(--c);color:#fff;font-style:normal;font-weight:900;font-size:10.5px;border:2px solid #4a2a14;margin-right:5px;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.tkst{display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.tkbar{display:block;width:100%;height:9px;border-radius:999px;background:#efe2c8;border:2px solid #4a2a14;overflow:hidden}.tkbar>i{display:block;height:100%;background:linear-gradient(#ffd86b,#f0a52e)}
+.tkbar.big{height:14px}
+.tkrec{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important}.tklbl{text-align:center;font-weight:900;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#a0704a}
+.tkbtns{display:flex;gap:4px;justify-content:center}.tkbtns .btn{flex:1 1 0;min-width:0;height:30px!important;padding:0 6px!important;font-size:12px!important;display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap}.tkbtns .btn .ic{width:14px;height:14px}
+.rc.tkLocked .th img{filter:grayscale(.55) brightness(.92)}
+.tkwrap{grid-column:1/-1;width:100%;display:flex;flex-direction:column;gap:8px}
+.tkhead{display:flex;gap:12px;align-items:center}.tkimg{width:76px;height:76px;object-fit:contain;flex:none;border-radius:16px;background:#f6e6cc;border:3px solid #4a2a14}
+.tkmeta{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}.tkmeta b{font-family:var(--font-display);font-size:18px}
+.tklock{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:900;color:#9e2f26}.tklock .ic{width:14px;height:14px}
+.tkchips{display:flex;flex-wrap:wrap;gap:4px}.tkchip{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:900;border:2px solid #4a2a14}.tkchip .ic{width:13px;height:13px}
+.tkchip.ok{background:#e3f2d6}.tkchip.no{background:#fbe3df;color:#8a2a22}
+.tkprog{display:flex;align-items:center;gap:8px}.tkprog b{font-size:14px!important}
+.tkstages{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.tkstg{display:flex;align-items:center;gap:4px;padding:2px 10px 2px 3px;border-radius:999px;border:2px solid #c9b090;background:#f7ecd8;font-weight:900;font-size:12px;color:#8a6a4a}
+.tkstg::first-letter{}.tkstg{counter-increment:none}.tkstg>small{font-size:10.5px}
+.tkstg.ok{background:#e3f2d6;border-color:#4a7a2a;color:#2f5a1c}.tkstg.cur{background:#ffe590;border-color:#4a2a14;color:#4a2a14}.tkstg .ic{width:14px;height:14px}
+.tkcur{text-align:center;display:flex;flex-direction:column;gap:2px}.tkcur b{font-family:var(--font-display);font-size:15px}.tkcur small{font-size:11.5px;font-weight:800;color:#9e2f26}
+.tkrows{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px}
+.tkrow{display:flex;align-items:center;gap:8px;padding:5px 8px;border:2.5px solid #4a2a14;border-radius:14px;background:var(--paper,#fffaf0);box-shadow:0 2px 0 #4a2a14}
+.tkrow.full{background:#eef7e4}
+.tkart{width:44px;height:44px;flex:none;display:grid;place-items:center}.tkart>img,.tkart>svg,.tkart>.kt{width:100%;height:100%}
+.tkname{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15}.tkname b{font-size:13px;font-family:var(--font-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tkname small{font-size:10.5px;font-weight:800;opacity:.75}
+.tkcnt{display:flex;flex-direction:column;align-items:center;line-height:1.1}.tkcnt b{font-family:var(--font-display);font-size:16px}.tkcnt small{font-size:10px;font-weight:800;opacity:.75}
+.tkrow .btn{flex:none;height:34px;padding:0 10px;font-size:12.5px;display:flex;align-items:center;gap:3px}
+.tknote{margin:0;text-align:center;font-size:11px;font-weight:800;opacity:.7}
+.tkdone{align-items:center;text-align:center}.tkdone b{font-family:var(--font-display);font-size:20px}
+.tkanim{position:absolute;inset:0;z-index:90;display:grid;place-items:center;background:rgba(40,22,8,0);transition:background .3s;pointer-events:none}
+.tkanim.go{background:rgba(40,22,8,.45)}.tkanim.out{opacity:0;transition:opacity .45s}
+.tkbox{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 26px;border:4px solid #4a2a14;border-radius:24px;background:linear-gradient(#fff8ea,#f5dcb4);box-shadow:0 5px 0 #4a2a14;transform:scale(.4);opacity:0;transition:transform .45s cubic-bezier(.3,1.6,.5,1),opacity .3s}
+.tkanim.go .tkbox{transform:scale(1);opacity:1}
+.tkbox img{width:110px;height:110px;object-fit:contain}.tkbox b{font-family:var(--font-display);font-size:22px;color:#4a2a14}.tkbox small{font-weight:900;font-size:14px}
+.tkpad{position:absolute;top:44px;left:50%;width:46px;height:46px;margin-left:-23px;display:grid;place-items:center;border-radius:50%;background:#f0a52e;border:3px solid #4a2a14;animation:tkPad 1.2s .35s forwards}
+.tkpad .ic{width:26px;height:26px}
+@keyframes tkPad{0%{transform:rotate(0)}15%{transform:rotate(-14deg)}30%{transform:rotate(12deg)}45%{transform:rotate(-8deg)}60%{transform:scale(1.15) rotate(0);opacity:1}100%{transform:translateY(-60px) scale(.6);opacity:0}}
 `;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
