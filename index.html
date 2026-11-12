@@ -15406,6 +15406,34 @@ function famsFor(cat){const out=FAMS.filter(f=>f.cat===cat).map(f=>({...f,list:f
 `;document.head.appendChild(st)}
 // Menü: açılmamış ülke tarifleri listede görünmez (zaten yalnız açılanlar gösteriliyorsa etkisiz)
 {const _rm=typeof renderMenu==='function'?renderMenu:null;if(_rm)renderMenu=function(){const r=_rm.apply(this,arguments);try{document.querySelectorAll('#menuList [data-rc],#menuList [data-m]').forEach(c=>{const id=c.dataset.rc||c.dataset.m;const R=RECIPE[id];if(R&&!recShown(R))c.remove()})}catch(e){}return r}}
+// ================= MENÜ: aynı aile düzeni (V181) =================
+// Menü ve Fiyatlar sekmelerinde önce açık tarifi olan aileler; karta dokununca ailenin ürünleri + "‹ Ailelere dön".
+function famsOpen(cat){return famsFor(cat).map(f=>({...f,list:f.list.filter(r=>S.unlocked[r.id])})).filter(f=>f.list.length)}
+{const _rm=renderMenu;renderMenu=function(){
+  try{if(S.tr==='menu2'&&RECIPE[T2_RECIPE])UI.mnFam=famOf(T2_RECIPE)?famOf(T2_RECIPE).id:UI.mnFam}catch(e){}
+  if(UI.mnCat!==UI.mnFamCat){UI.mnFam=null;UI.mnFamCat=UI.mnCat}
+  const r0=_rm.apply(this,arguments);try{if(menuTab==='stock')return r0;const box=$('mnCards');if(!box)return r0;
+   const cards=[...box.querySelectorAll('[data-mi],[data-pi]')];if(!cards.length)return r0;const cat=UI.mnCat||RCAT[0].id,F=famsOpen(cat);
+   if(UI.mnFam&&!F.some(f=>f.id===UI.mnFam))UI.mnFam=null;
+   if(!UI.mnFam){cards.forEach(c=>c.remove());box.insertAdjacentHTML('afterbegin',F.map(f=>{const on=f.list.filter(r=>S.menu[r.id]).length;
+       return `<button type="button" class="mfam" data-mfam="${f.id}"><span class="rfimg"><img src="${productThumb((f.list.find(r=>S.menu[r.id])||f.list[0]).id)}" alt=""></span><b>${f.n}</b>
+         <span class="rfmini">${f.list.slice(0,5).map(r=>`<img class="${S.menu[r.id]?'':'lk'}" src="${productThumb(r.id)}" alt="">`).join('')}</span><small>${menuTab==='price'?`${f.list.length} ürün`:`${on}/${f.list.length} menüde`}</small><span class="rfgo">${menuTab==='price'?'Fiyatlar':'Ürünler'} ›</span></button>`}).join(''))}
+   else{const f=F.find(x=>x.id===UI.mnFam),ids=f.list.map(r=>r.id);cards.forEach(c=>{if(!ids.includes(c.dataset.mi||c.dataset.pi))c.remove()});
+     ids.slice().reverse().forEach(id=>{const c=box.querySelector(`[data-mi="${id}"],[data-pi="${id}"]`);if(c)box.prepend(c)});
+     box.insertAdjacentHTML('afterbegin',`<button type="button" class="mfam mback" data-mfback="1"><span>‹</span><b>${f.n}</b><small>Ailelere dön</small></button>`)}
+   const L=$('menuList');if(L&&!L.dataset.mfamb){L.dataset.mfamb='1';L.addEventListener('click',e=>{const a=e.target.closest('[data-mfam]');if(a){e.stopPropagation();sfx('tap');UI.mnFam=a.dataset.mfam;renderMenu();return}
+     if(e.target.closest('[data-mfback]')){e.stopPropagation();sfx('tap');UI.mnFam=null;renderMenu()}},true)}
+  }catch(e){console.warn('menü aileleri',e)}return r0}}
+{const st=document.createElement('style');st.textContent=`
+#mnCards [hidden]{display:none!important}
+#mnCards .mfam{all:unset;box-sizing:border-box;flex:0 0 170px;width:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:10px 8px;border:3px solid #4a2a14;border-radius:20px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 4px 0 #4a2a14;cursor:pointer;font-family:var(--font-display);color:#4a2a14;text-align:center}
+#mnCards .mfam:active{transform:translateY(2px);box-shadow:0 2px 0 #4a2a14}
+#mnCards .mfam>b{font-size:15px;font-weight:900;line-height:1.1}#mnCards .mfam>small{font-size:11.5px;font-weight:800;opacity:.8}
+#mnCards .mfam .rfimg{width:64px;height:64px}#mnCards .mfam .rfimg img{width:52px;height:52px}
+#mnCards .mback{flex:0 0 104px;width:104px;border:3px dashed #c9a27a;background:#fff6e6;box-shadow:none}
+#mnCards .mback>span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:3px solid #4a2a14;background:linear-gradient(#ffe08a,#f6b93a);font-size:24px;font-weight:900;line-height:1}
+#mnCards .mback>b{font-size:13px}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
