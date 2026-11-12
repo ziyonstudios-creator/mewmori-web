@@ -15915,6 +15915,39 @@ setInterval(()=>{try{if(UI.mode==='merge')packDraw()}catch(e){}},1000);
 // etkinlik kafeleri eski tahta paketlerini kullanır: raf yalnız ana kafede
 setInterval(()=>{try{const r=$('pkRaf');if(r)r.hidden=!!EVMODE}catch(e){}},1500);
 
+// ================= V197: enerji Hedef kartının altına taşındı; raf paketlerinin adları solda =================
+(()=>{const M='html.land #game#game #merge.skin',INK='#4a2a14';const st=document.createElement('style');st.textContent=`
+${M} .skwin>.scroll>.mtop{display:none!important}
+${M}{--mwe:0px!important}
+#pkRaf{--pkl:66px}
+${M} #pkRaf{width:calc(var(--mws,64px) + var(--pkl))!important;padding-left:calc(var(--pkl) + 5px)!important}
+#pkRaf .pk i{position:absolute;right:calc(100% + 6px);top:50%;transform:translateY(-50%);width:calc(var(--pkl) - 4px);text-align:right;font:900 11px/1.05 var(--font-display,inherit);font-style:normal;color:#fff8ec;text-shadow:0 1.5px 0 ${INK},0 0 3px ${INK},0 0 2px ${INK};pointer-events:none;white-space:normal}
+#enBox{flex:none;margin-top:auto;display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:6px;row-gap:5px;padding:6px 7px 7px;border:2.5px solid ${INK};border-radius:14px;background:#fff6e0;box-shadow:inset 0 -3px 0 rgba(180,110,40,.15)}
+#enBox .eb0{width:28px;height:28px;box-sizing:border-box;border:2.5px solid ${INK};border-radius:50%;background:linear-gradient(#cdeb8b,#93cf52);display:grid;place-items:center}
+#enBox .eb0 svg{width:16px;height:16px}
+#enBox .eb1{display:flex;flex-direction:column;gap:1px;min-width:0}
+#enBox .eb1 b{font:900 15px/1 var(--font-display,inherit);color:${INK};white-space:nowrap}
+#enBox .eb1 small{font:800 9.5px/1.1 var(--font-display,inherit);color:#7a5236;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#enBox .eb2{grid-column:1/4;height:11px;border:2px solid ${INK};border-radius:999px;background:#f0dfc2;overflow:hidden;position:relative}
+#enBox .eb2 i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#bfe58a,#7fc24a);border-radius:999px;transition:width .3s}
+#enBox .eb3{appearance:none;border:2.5px solid ${INK};border-radius:11px;background:linear-gradient(#cdeb8b,#93cf52);box-shadow:0 2px 0 ${INK};font:900 11.5px/1 var(--font-display,inherit);color:${INK};padding:5px 7px;display:flex;align-items:center;gap:2px;cursor:pointer;white-space:nowrap}
+#enBox .eb3 .ic{width:12px;height:12px;display:inline-grid}#enBox .eb3 .ic svg{width:100%;height:100%}#enBox .eb3[hidden]{display:none}
+.thd.empty #enBox{position:absolute;left:8px;right:8px;bottom:8px}
+#pkRaf::before{display:none!important}
+`;document.head.appendChild(st)})();
+for(const P of PACKS){const b=document.querySelector(`#pkRaf [data-pk="${P.k}"]`);if(b&&!b.querySelector('i'))b.insertAdjacentHTML('afterbegin',`<i>${P.n}</i>`)}
+{const _pe=packEnsure;packEnsure=function(){const r=_pe.apply(this,arguments);if(r)for(const P of PACKS){const b=r.querySelector(`[data-pk="${P.k}"]`);if(b&&!b.querySelector('i'))b.insertAdjacentHTML('afterbegin',`<i>${P.n}</i>`)}return r}}
+function enBoxDraw(){if(UI.mode!=='merge'||EVMODE)return;const thd=document.querySelector('#merge .info .thd');if(!thd)return;let e=$('enBox');
+  if(!e){e=document.createElement('div');e.id='enBox';e.innerHTML=`<span class="eb0">${UI_IC.bolt||ic('bolt')}</span><span class="eb1"><b></b><small></small></span><button type="button" class="eb3" aria-label="Enerjiyi doldur">+<svg viewBox="0 0 64 64" style="width:13px;height:13px"><path d="M18 12h28l12 14l-26 28L6 26z" fill="#ff8fb3" stroke="#4a2a14" stroke-width="5" stroke-linejoin="round"/></svg><span></span></button><span class="eb2"><i></i></span>`;
+    e.querySelector('.eb3').onclick=ev=>{ev.stopPropagation();const p=$('enPlus');if(p)p.click()}}
+  if(e.parentElement!==thd||e.nextElementSibling!==thd.querySelector('.thbtns')){const bt=thd.querySelector('.thbtns');bt?thd.insertBefore(e,bt):thd.appendChild(e)}
+  const E=energyNow(),MX=energyMax();e.querySelector('.eb1 b').textContent=`${E.v} / ${MX}`;
+  const sm=E.v>=MX?'Enerji dolu':`Sonraki: ${fmtT(E.next)}`;const s=e.querySelector('.eb1 small');if(s.textContent!==sm)s.textContent=sm;
+  e.querySelector('.eb2 i').style.width=(E.v/MX*100).toFixed(1)+'%';const btn=e.querySelector('.eb3');btn.hidden=E.v>=MX;btn.querySelector('span').textContent=CONFIG.gemCost.energy}
+{const _re=renderEnergy;renderEnergy=function(){const r=_re.apply(this,arguments);try{enBoxDraw()}catch(x){}return r}}
+{const _hd=tkHedefDraw;tkHedefDraw=function(){const r=_hd.apply(this,arguments);try{enBoxDraw()}catch(x){}return r}}
+setInterval(()=>{try{enBoxDraw()}catch(x){}},1000);
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
