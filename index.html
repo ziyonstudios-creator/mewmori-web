@@ -14631,58 +14631,19 @@ function oWinGroup(c){const g=new THREE.Group();
 // satın almalar 0,99 $'dan başlasın, TL yazılsın; Royal Pass 4,99 $ (TL); kayıt: Apple, Google, e-posta; dünya sıralaması ve diğer sunucu işleri.
 // Bu dosya İSTEMCİ tarafını ve bağlantı sözleşmelerini kurar. Gerçek reklam ağı, mağaza ödemesi ve Apple/Google anahtarları kullanıcının
 // kendi hesaplarından bağlanır (anahtar/şifre bu oturumda girilmez):
-//  • Reklam: window.TabbyAds.showRewarded(tur) → Promise<boolean> (uygulama sarmalayıcısı / reklam SDK'sı sağlar). Yoksa "deneme reklamı"
-//    (5 sn sayaç, açıkça etiketli) gösterilir → YAYINDAN ÖNCE gerçek sağlayıcı bağlanmalı, yoksa ödül karşılıksız verilir.
-//    Günlük sınır: S.ads (cihaz günü) + girişliyse sunucuda ad_claim() (İstanbul günü; sunucu/v163_*.sql). İşlev yoksa yerel sınır geçerli.
+//  • Reklam: V165'te ayrı modüle taşındı → p87_adservice.js (AdService; tarayıcıda simülasyon, ödül kayda işlenmez).
 //  • Satın alma: window.TabbyIAP.purchase(urunId) → {ok,store,receipt}; sonra Edge Function 'iap-verify' makbuzu doğrular (yazılacak),
 //    ancak o zaman iapGrant() ödülü verir. Köprü yokken düğmeler "yakında" der, hiçbir şey verilmez.
 //  • Apple / Google: Supabase Auth sağlayıcıları panelden açılınca çalışır (/auth/v1/settings ile denetlenir); kapalıyken "yakında".
 // Kur (9 Kasım 2026): 1 $ ≈ 50,18 TL → 0,99 $ = ₺49,99 · 4,99 $ = ₺249,99 · 9,99 $ = ₺499,99 · 19,99 $ = ₺999,99 · 49,99 $ = ₺2.499,99.
 {const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.ads=null;return s}}
-try{FIN_IN.ad='Reklam ödülleri'}catch(e){}
-// ---------- 1) ÖDÜLLÜ REKLAM ----------
-const AD_LIMIT=2,AD={busy:false};
-const AD_KINDS={coin:{t:'+200',s:'altın',n:200},gem:{t:'+5',s:'elmas',n:5},energy:{t:'+15',s:'enerji',n:15},bag:{t:'Torbalar',s:'anında dolar'}};
-const AD_ORDER=['coin','gem','energy','bag'];
-const adDay=()=>{const d=new Date(nowT());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-function adS(){const d=adDay();if(!S.ads||S.ads.d!==d)S.ads={d,c:{}};return S.ads}
-const adLeft=k=>Math.max(0,AD_LIMIT-(adS().c[k]|0));
-function adUseful(k){try{if(k==='energy')return energyNow().v<energyMax();if(k==='bag')return Object.keys(S.bags||{}).some(b=>{const s=bagState(b);return s.cool>0||s.left<CONFIG.bag.limit})}catch(e){}return true}
-function adGive(k){const A=AD_KINDS[k];
-  if(k==='coin')addCoins(A.n,'ad');else if(k==='gem'){S.gems+=A.n;try{hudGems()}catch(e){}}
-  else if(k==='energy'){energyNow();S.energy.v=Math.min(energyMax(),S.energy.v+A.n)}
-  else if(k==='bag'){for(const b in S.bags){S.bags[b].n=0;S.bags[b].cd=0}}
-  adS().c[k]=(adS().c[k]|0)+1;markDirty();try{saveNow()}catch(e){}try{updateUI()}catch(e){}}
-// deneme reklamı: gerçek reklam sağlayıcısı bağlanana dek yer tutar
-function adTest(k,done){const o=document.createElement('div');o.id='adTest';let t=5,fin=false;const end=ok=>{if(fin)return;fin=true;clearInterval(iv);o.remove();done(ok)};
-  o.innerHTML=`<div class="adBox"><small>REKLAM · deneme</small><b>Burada ödüllü reklam oynayacak</b><p>Gerçek reklam ağı bağlanınca bu ekranın yerini alır.</p><i id="adT">5</i><button type="button" class="btn light" id="adX">Kapat (ödülsüz)</button></div>`;
-  $('game').appendChild(o);o.querySelector('#adX').onclick=()=>end(false);const iv=setInterval(()=>{t--;const e=o.querySelector('#adT');if(e)e.textContent=Math.max(0,t);if(t<=0)end(true)},1000)}
-function adShow(k){return new Promise(res=>{try{const P=window.TabbyAds;if(P&&typeof P.showRewarded==='function'){Promise.resolve(P.showRewarded(k)).then(ok=>res(!!ok),()=>res(false));return}}catch(e){}adTest(k,res)})}
-async function adWatch(k){const A=AD_KINDS[k];if(!A||AD.busy)return false;
-  if(adLeft(k)<=0){sfx('nope');toast('<b>Bugünlük hakkın bitti</b><br>Yarın 2 hak daha gelir',ic('lock'),2400);return false}
-  if(!adUseful(k)){sfx('nope');toast(k==='energy'?'<b>Enerjin zaten dolu</b>':'<b>Torbaların zaten dolu</b>',ic('check'),2000);return false}
-  AD.busy=true;try{const ok=await adShow(k);if(!ok){toast('Reklam tamamlanmadı, ödül verilmedi',ic('close'),2200);return false}
-    if(cloudOn()){try{const sb=await sbClient(),r=await sb.rpc('ad_claim',{p_kind:k});if(!r.error&&r.data&&r.data.ok===false){adS().c[k]=AD_LIMIT;markDirty();toast('<b>Bugünlük hakkın bitti</b><br>Yarın 2 hak daha gelir',ic('lock'),2400);return false}}catch(e){}}
-    adGive(k);sfx('goal');toast(`<b>${A.t} ${A.s}</b><br>Reklam ödülün hesabında · bugün ${adLeft(k)} hak kaldı`,ic(k==='coin'?'coin':k==='gem'?'gem':'check'),2600);return true}
-  finally{AD.busy=false;try{renderShop()}catch(e){}}}
-const AD_ART={coin:`<i class="shI coin adI"></i>`,gem:`<i class="shI gem adI"></i>`,
-  energy:`<svg class="adI" viewBox="0 0 48 48" aria-hidden="true"><path d="M27 4 L10 27 H22 L19 44 L38 19 H26 Z" fill="#ffd34d" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/></svg>`,
-  bag:`<svg class="adI" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 18 H36 L40 42 H8 Z" fill="#e9b872" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/><path d="M18 18 Q18 7 24 7 Q30 7 30 18" fill="none" stroke="#5a2f12" stroke-width="3"/><path d="M24 25 v10 M19 30 h10" stroke="#fff8ec" stroke-width="3.5" stroke-linecap="round"/></svg>`};
+// ---------- 1) ÖDÜLLÜ REKLAM → p87_adservice.js (V165: AdService; burada reklam kodu kalmadı) ----------
 // Mağaza: üçüncü sekme "Ücretsiz" + elmas paketlerinin TL fiyatları
 const IAP_PRODUCTS={gems_80:{usd:0.99,tl:'₺49,99',gems:80},gems_500:{usd:4.99,tl:'₺249,99',gems:500},gems_1200:{usd:9.99,tl:'₺499,99',gems:1200},gems_2600:{usd:19.99,tl:'₺999,99',gems:2600},gems_6500:{usd:49.99,tl:'₺2.499,99',gems:6500},
   royalpass:{usd:4.99,tl:'₺249,99',royal:true}};
 SHOP_GEM.length=0;SHOP_GEM.push({n:80,p:'₺49,99',b:0,id:'gems_80'},{n:500,p:'₺249,99',b:20,id:'gems_500'},{n:1200,p:'₺499,99',b:45,tag:'En popüler',id:'gems_1200'},{n:2600,p:'₺999,99',b:60,id:'gems_2600'},{n:6500,p:'₺2.499,99',b:60,tag:'En iyi değer',id:'gems_6500'});
-{const _rs=renderShop;renderShop=function(){const free=UI.shopTab==='free';_rs.apply(this,arguments);const w=UI.shopW;if(!w||w.m.hidden)return;try{
-    const tabs=w.body.querySelector('.shTabs'),bal=tabs&&tabs.querySelector('.shBal');if(!tabs)return;
-    const b=document.createElement('button');b.type='button';b.dataset.st='free';b.setAttribute('aria-pressed',String(free));b.innerHTML=`<svg class="shI" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4 L20 12 L5 20 Z" fill="#7cc86a" stroke="#5a2f12" stroke-width="2.5" stroke-linejoin="round"/></svg>Ücretsiz`;
-    tabs.insertBefore(b,bal);b.onclick=()=>{UI.shopTab='free';sfx('tap');renderShop()};
-    if(free){tabs.querySelectorAll('[data-st]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.st==='free')));const row=w.body.querySelector('.shRow'),note=w.body.querySelector('.shNote');
-      row.innerHTML=AD_ORDER.map(k=>{const A=AD_KINDS[k],l=adLeft(k),use=adUseful(k);return `<div class="shCard adc"><div class="shArt">${AD_ART[k]}</div><b>${A.t}</b><small>${A.s}</small>
-        <button class="btn green" type="button" data-ad="${k}" ${l>0&&use?'':'disabled'}>${l>0?(use?`▶ İzle · ${l}/${AD_LIMIT}`:'Dolu'):'Yarın'}</button></div>`}).join('');
-      if(note)note.textContent='Kısa bir reklam izle, ödülünü al. Her ödül için günde 2 hak; haklar gece yarısı yenilenir.';
-      row.querySelectorAll('[data-ad]').forEach(x=>x.onclick=()=>{sfx('tap');adWatch(x.dataset.ad)})}
-    else if(UI.shopTab==='gem'){w.body.querySelectorAll('[data-bm]').forEach(x=>x.onclick=()=>iapBuy(SHOP_GEM[+x.dataset.bm].id))}
-  }catch(e){console.warn('mağaza',e)}}}
+{const _rs=renderShop;renderShop=function(){_rs.apply(this,arguments);const w=UI.shopW;if(!w||w.m.hidden)return;try{
+    if(UI.shopTab==='gem')w.body.querySelectorAll('[data-bm]').forEach(x=>x.onclick=()=>iapBuy(SHOP_GEM[+x.dataset.bm].id))}catch(e){console.warn('mağaza',e)}}}
 // ---------- 2) SATIN ALMA (köprü + sunucu doğrulaması bağlanınca çalışır) ----------
 function iapGrant(id){const p=IAP_PRODUCTS[id];if(!p)return;if(p.gems){S.gems+=p.gems;try{hudGems()}catch(e){}}if(p.royal){rpS().royal=true;try{renderPass();rpDot()}catch(e){}}markDirty();try{saveNow()}catch(e){}sfx('levelup');
   toast(p.royal?'<b>Royal Pass açıldı!</b><br>Royal ödüller artık senin':`<b>+${p.gems.toLocaleString('tr-TR')} elmas</b><br>Teşekkürler!`,ic('gem'),3000);try{renderShop()}catch(e){}}
@@ -14706,11 +14667,6 @@ function oaFix(){try{const A=$('auth'),card=A&&A.querySelector('.acard'),tabs=ca
     d.onclick=e=>{const b=e.target.closest('[data-oa]');if(b){e.preventDefault();try{sfx('tap')}catch(_){}oaSign(b.dataset.oa)}}}catch(e){}}
 oaFix();setInterval(oaFix,700);
 {const st=document.createElement('style');st.textContent=`
-.shCard.adc .shArt{display:grid;place-items:center;height:58px}.shCard.adc .adI{width:46px;height:46px;display:block}.shCard.adc .btn{font-size:13px;padding:6px 10px;white-space:nowrap}
-#adTest{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(20,12,6,.86)}
-#adTest .adBox{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:min(86%,420px);padding:18px 20px;border:3px solid #5a2f12;border-radius:18px;background:#fff8ec;font-family:var(--font-display);color:#4a2a14;text-align:center}
-#adTest small{font-weight:900;letter-spacing:.08em;font-size:11px;color:#a0522d}#adTest b{font-size:18px;font-weight:900}#adTest p{margin:0;font-size:13px;font-weight:700;opacity:.8}
-#adTest i{font-style:normal;font-weight:900;font-size:34px;line-height:1;width:64px;height:64px;display:grid;place-items:center;border-radius:50%;border:4px solid #5a2f12;background:#ffe590}
 #auth .aoauth{display:flex;gap:8px}#auth .aoauth button{flex:1;appearance:none;height:38px;border:3px solid var(--ink);border-radius:999px;background:#fff;box-shadow:0 2px 0 var(--ink);font-family:var(--font-display);font-weight:800;font-size:13.5px;color:var(--ink);cursor:pointer;white-space:nowrap;padding:0 8px}
 html.land #auth .aoauth button{height:34px;font-size:12.5px}
 `;document.head.appendChild(st)}
@@ -14749,6 +14705,134 @@ const SOFT_STAT={n:0,last:0};
      if(d>0.7){const Q=softAstar(sx,sz,tx,tz);if(Q.length){const q=Q[Q.length-1];if(Math.hypot(q.x-tx,q.z-tz)+0.3<d){SOFT_STAT.n++;return Q}}}}catch(err){console.warn('yumuşak yol',err)}
    return P}}
 try{buildGrid()}catch(e){}
+
+// ================= REKLAM SERVİSİ: AdService (V165 · AdMob ödüllü reklam · AŞAMA 1: tarayıcı simülasyonu) =================
+// Kullanıcı belgesi "TabbyChef — AdMob Entegrasyonu / Aşama 1" (12 Kasım 2026). Bu dosya bağımsız bir modüldür: oyunun ekonomisine,
+// grafiklerine, düzenine dokunmaz; yalnız Mağaza › Ücretsiz sekmesini çizer.
+//  ORTAM (AdService.mode):
+//   • 'admob'      : iOS / Android Capacitor kabuğu + AdMob eklentisi var → gerçek ödüllü reklam.  ⟶ AŞAMA 2 (burada yalnız iskelet: _admob)
+//   • 'simulation' : tarayıcı + geliştirme yapılandırması → gerçek reklam YOK, akışın tamamı taklit edilir (AdSim).
+//   • 'off'        : tarayıcı + üretim yapılandırması (window.TABBY_ENV==='production') → reklam yok, simülasyon da yok.
+//   Capacitor ya da eklenti yoksa kendiliğinden tarayıcı moduna düşer.
+//  KATEGORİLER (günlük hak): GOLD 3 · DIAMOND 3 · ENERGY 2 · FOOD_REFILL 2 · DRINK_REFILL 2 = 12 reklam/gün.
+//   Enerji sistemi oyunda duruyor (birleştirme tahtası, S.energy) → ENERGY kategorisi geçerli.
+//  GÜVENLİK MODELİ (gerçek ortamda zorunlu; plan: sunucu/ADMOB_SSV_PLANI.md):
+//   1) Reklam istenmeden ÖNCE sunucuda tek kullanımlık ödül talebi açılır (tahmin edilemez kimlik) → 2) reklam bu kimlikle (SSV custom_data)
+//   gösterilir → 3) Google sunucumuzu çağırır (SSV), imza doğrulanır, her transaction_id bir kez işlenir → 4) istemci onayı bekler →
+//   5) ödülün TÜRÜ ve MİKTARI talep kaydından/sunucudan gelir, istemcinin söylediğine güvenilmez. Günlük sınırı sunucu sayar.
+//   Doğrulanmamış reklam kalıcı ödül vermez.
+//  SİMÜLASYON KURALI: AdSim bu akışı yerelde taklit eder ama ÖDÜLÜ OYUN KAYDINA İŞLEMEZ (S.coins/S.gems/enerji/torbalar değişmez, sunucuya
+//   hiçbir şey gitmez). Simülasyon sayaçları oyun kaydından ayrı bir anahtarda durur (localStorage 'tabbychef_adsim_v1', eşitlenmez).
+//  KİMLİKLER: AdMob uygulama/reklam birimi kimlikleri gizli değildir. Geliştirmede Google'ın resmî test birimleri, gerçek kimlikler yalnız
+//   üretim yapılandırmasında (AdService.ids). Test kimlikleri Aşama 2'de Google belgelerinden yeniden doğrulanacak. Android üretim kimlikleri henüz yok.
+const AD_ENV=(()=>{try{return window.TABBY_ENV==='production'?'production':'development'}catch(e){return 'development'}})();
+const AD_IDS={test:{ios:{app:'ca-app-pub-3940256099942544~1458002511',rewarded:'ca-app-pub-3940256099942544/1712485313'},android:{app:'ca-app-pub-3940256099942544~3347511713',rewarded:'ca-app-pub-3940256099942544/5224354917'}},
+  prod:{ios:{app:'ca-app-pub-6420818155001879~9755687545',rewarded:'ca-app-pub-6420818155001879/9512290758'},android:{app:null,rewarded:null}}};
+// t/s yalnız GÖSTERİM içindir; gerçek ortamda miktar sunucudan gelir
+const AD_CATS={GOLD:{limit:3,t:'+200',s:'altın',art:'coin'},DIAMOND:{limit:3,t:'+5',s:'elmas',art:'gem'},ENERGY:{limit:2,t:'+15',s:'enerji',art:'energy'},
+  FOOD_REFILL:{limit:2,t:'Yiyecek torbası',s:'anında dolar',art:'food',bag:'food'},DRINK_REFILL:{limit:2,t:'İçecek torbası',s:'anında dolar',art:'drink',bag:'drink'}};
+const AD_ORDER=['GOLD','DIAMOND','ENERGY','FOOD_REFILL','DRINK_REFILL'];
+// ---------- sunucunun yerel taklidi (yalnız simülasyon) ----------
+const AdSim={KEY:'tabbychef_adsim_v1',claims:new Map(),tx:new Set(),force:null,   // force: 'noad' | 'cancel' | 'unverified' (deneme için bir kerelik)
+  day(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},
+  load(){let L=null;try{L=JSON.parse(localStorage.getItem(this.KEY)||'null')}catch(e){}if(!L||L.d!==this.day())L={d:this.day(),c:{}};return L},
+  save(L){try{localStorage.setItem(this.KEY,JSON.stringify(L))}catch(e){}},
+  used(cat){return this.load().c[cat]|0},
+  rid(){const a=new Uint8Array(24);crypto.getRandomValues(a);return [...a].map(x=>x.toString(16).padStart(2,'0')).join('')},
+  wait(ms){return new Promise(r=>setTimeout(r,ms))},
+  async createClaim(cat){await this.wait(350);if(!AD_CATS[cat])return {ok:false,why:'category'};if(this.used(cat)>=AD_CATS[cat].limit)return {ok:false,why:'limit'};
+    const id=this.rid();this.claims.set(id,{cat,status:'pending',t:Date.now()});return {ok:true,claim:id}},
+  async ssv(claim){await this.wait(900);const c=this.claims.get(claim);if(!c||c.status!=='pending')return false;const tx='sim-'+this.rid().slice(0,16);if(this.tx.has(tx))return false;this.tx.add(tx);c.status='verified';c.tx=tx;return true},
+  async consume(claim){await this.wait(250);const c=this.claims.get(claim);if(!c||c.status!=='verified')return {ok:false};c.status='granted';const L=this.load();L.c[c.cat]=(L.c[c.cat]|0)+1;this.save(L);return {ok:true,category:c.cat}},
+  reset(){try{localStorage.removeItem(this.KEY)}catch(e){}this.claims.clear();this.tx.clear()}};
+// simülasyon reklamı: açıkça etiketli sayaç ekranı (gerçek reklam değildir)
+function adSimPlay(cat){return new Promise(done=>{const A=AD_CATS[cat],o=document.createElement('div');o.id='adSim';let t=5,fin=false;const end=ok=>{if(fin)return;fin=true;clearInterval(iv);o.remove();done(ok)};
+  o.innerHTML=`<div class="adBox"><small>SİMÜLASYON · gerçek reklam değil</small><b>Burada ödüllü reklam oynayacak</b><p>${A.t} ${A.s} · mobil uygulamada bu ekranın yerini AdMob reklamı alır.</p><i id="adSimT">5</i><button type="button" class="btn light" id="adSimX">Kapat (ödülsüz)</button></div>`;
+  $('game').appendChild(o);o.querySelector('#adSimX').onclick=()=>end(false);const iv=setInterval(()=>{t--;const e=o.querySelector('#adSimT');if(e)e.textContent=Math.max(0,t);if(t<=0)end(true)},1000)})}
+// ---------- AdService ----------
+const AdService={state:{},listeners:[],_srv:null,
+  platform(){try{const C=window.Capacitor;if(C&&typeof C.getPlatform==='function'&&(typeof C.isNativePlatform!=='function'||C.isNativePlatform())){const p=C.getPlatform();if(p==='ios'||p==='android')return p}}catch(e){}return 'browser'},
+  plugin(){try{const C=window.Capacitor;return (C&&C.Plugins&&C.Plugins.AdMob)||null}catch(e){return null}},
+  mode(){return this.platform()!=='browser'&&this.plugin()?'admob':AD_ENV==='production'?'off':'simulation'},
+  ids(){const p=this.platform();return p==='browser'?null:(AD_ENV==='production'?AD_IDS.prod:AD_IDS.test)[p]},   // gerçek kimlikler yalnız üretimde
+  limit(cat){return AD_CATS[cat]?AD_CATS[cat].limit:0},
+  used(cat){return this.mode()==='simulation'?AdSim.used(cat):((this._srv&&this._srv[cat])|0)},
+  left(cat){return Math.max(0,this.limit(cat)-this.used(cat))},
+  phase(cat){return this.state[cat]||'idle'},
+  busy(){return Object.values(this.state).some(p=>p&&p!=='idle')},
+  on(fn){this.listeners.push(fn)},
+  _set(cat,ph){this.state[cat]=ph;for(const f of this.listeners){try{f(cat,ph)}catch(e){}}},
+  // ödül şu an işe yarar mı (enerji doluyken, torba doluyken reklam gösterme)
+  useful(cat){try{if(cat==='ENERGY')return energyNow().v<energyMax();const b=AD_CATS[cat]&&AD_CATS[cat].bag;if(b){const s=bagState(b);return s.cool>0||s.left<CONFIG.bag.limit}}catch(e){}return true},
+  // sonuç: {ok, status:'rewarded'|'limit'|'noad'|'cancelled'|'unverified'|'unavailable'|'busy'|'error', category, simulated, reward?}
+  async show(cat){const m=this.mode(),R=(status,x)=>({ok:status==='rewarded',status,category:cat,simulated:m==='simulation',...x});
+    if(!AD_CATS[cat])return R('error');if(m==='off')return R('unavailable');if(this.busy())return R('busy');if(this.left(cat)<=0)return R('limit');
+    try{return m==='simulation'?await this._sim(cat,R):await this._admob(cat,R)}catch(e){console.warn('reklam',e);return R('error')}finally{this._set(cat,'idle')}},
+  async _sim(cat,R){this._set(cat,'claim');const c=await AdSim.createClaim(cat);if(!c.ok)return R(c.why==='limit'?'limit':'error');
+    this._set(cat,'loading');await AdSim.wait(900);if(AdSim.force==='noad'){AdSim.force=null;return R('noad')}
+    this._set(cat,'showing');const cancel=AdSim.force==='cancel';const done=await adSimPlay(cat);if(!done||cancel){AdSim.force=null;return R('cancelled')}
+    this._set(cat,'verifying');if(AdSim.force==='unverified'){AdSim.force=null;await AdSim.wait(1200);return R('unverified')}
+    if(!await AdSim.ssv(c.claim))return R('unverified');const g=await AdSim.consume(c.claim);if(!g.ok)return R('unverified');
+    return R('rewarded',{reward:AD_CATS[g.category]})},   // tür talep kaydından gelir; simülasyonda oyun kaydına İŞLENMEZ
+  // AŞAMA 2: sunucuda talep aç (ad_claim_create) → AdMob.prepareRewardVideoAd({adId:this.ids().rewarded,ssv:{customData:talep,userId}}) → göster →
+  // sunucu onayını bekle (ad_claim_status) → tüket (ad_claim_consume) → sunucunun döndürdüğü ödülü uygula.
+  async _admob(cat,R){return R('unavailable')}};
+try{window.TabbyAdService=AdService}catch(e){}
+// ---------- arayüz: Mağaza › Ücretsiz ----------
+const AD_ART={coin:`<i class="shI coin adI"></i>`,gem:`<i class="shI gem adI"></i>`,
+  energy:`<svg class="adI" viewBox="0 0 48 48" aria-hidden="true"><path d="M27 4 L10 27 H22 L19 44 L38 19 H26 Z" fill="#ffd34d" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/></svg>`,
+  food:`<svg class="adI" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 18 H36 L40 42 H8 Z" fill="#e9b872" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/><path d="M18 18 Q18 7 24 7 Q30 7 30 18" fill="none" stroke="#5a2f12" stroke-width="3"/><circle cx="24" cy="30" r="6.5" fill="#f08a4b" stroke="#5a2f12" stroke-width="2.5"/></svg>`,
+  drink:`<svg class="adI" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 18 H36 L40 42 H8 Z" fill="#bfe3f2" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/><path d="M18 18 Q18 7 24 7 Q30 7 30 18" fill="none" stroke="#5a2f12" stroke-width="3"/><path d="M19 25 H29 L27.5 37 H20.5 Z" fill="#fff8ec" stroke="#5a2f12" stroke-width="2.5" stroke-linejoin="round"/></svg>`};
+const AD_PHASE={claim:'Hazırlanıyor',loading:'Yükleniyor',showing:'Oynuyor',verifying:'Onaylanıyor'};   // düğmeye sığan kısa hâli
+const AD_PHASE_LONG={claim:'Ödül talebi hazırlanıyor…',loading:'Reklam yükleniyor…',showing:'Reklam oynuyor…',verifying:'Sunucu onayı bekleniyor…'};
+const AD_WON={};   // bu oturumdaki simülasyon ödülleri (yalnız gösterim)
+function adBtn(cat){const A=AD_CATS[cat],m=AdService.mode(),ph=AdService.phase(cat),l=AdService.left(cat),lim=AdService.limit(cat),cnt=`<span class="adCnt">${l}/${lim}</span>`;
+  if(m==='off')return `<button class="btn green" type="button" disabled>Uygulamada</button>`;
+  if(ph!=='idle')return `<button class="btn green adBusy" type="button" disabled><span class="adSp"></span>${AD_PHASE[ph]||'Bekle'}</button>`;
+  if(l<=0)return `<button class="btn green" type="button" disabled>Yarın · ${cnt}</button>`;
+  if(!AdService.useful(cat))return `<button class="btn green" type="button" disabled>Dolu · ${cnt}</button>`;
+  return `<button class="btn green" type="button" data-ad="${cat}" ${AdService.busy()?'disabled':''}>▶ İzle · ${cnt}</button>`}
+async function adWatch(cat){const A=AD_CATS[cat];if(!A)return null;try{sfx('tap')}catch(e){}const r=await AdService.show(cat),w=`${A.t} ${A.s}`;
+  if(r.status==='rewarded'){try{sfx('goal')}catch(e){}if(r.simulated){AD_WON[cat]=(AD_WON[cat]|0)+1;toast(`<b>Simülasyon ödülü: ${w}</b><br>Tarayıcı simülasyonu · hesabına işlenmedi`,ic('check'),3200)}
+    else toast(`<b>${w}</b><br>Reklam ödülün hesabında · bugün ${AdService.left(cat)} hak kaldı`,ic('check'),2800)}
+  else if(r.status==='limit'){try{sfx('nope')}catch(e){}toast('<b>Bugünlük hakkın bitti</b><br>Haklar yarın yenilenir',ic('lock'),2400)}
+  else if(r.status==='noad')toast('<b>Şu an gösterilecek reklam yok</b><br>Biraz sonra yeniden dene',ic('close'),2800)
+  else if(r.status==='cancelled')toast('<b>Reklam tamamlanmadı</b><br>Ödül verilmedi',ic('close'),2400)
+  else if(r.status==='unverified')toast('<b>Ödül doğrulanamadı</b><br>Sunucu onayı gelmedi, ödül verilmedi',ic('close'),3000)
+  else if(r.status==='unavailable')toast('<b>Reklamlar mobil uygulamada</b><br>Tarayıcıda reklam gösterilmez',ic('lock'),2800)
+  else if(r.status==='error')toast('<b>Reklam başlatılamadı</b><br>Biraz sonra yeniden dene',ic('close'),2600);
+  adUiRefresh();return r}
+function adUiRefresh(){try{const w=UI.shopW;if(w&&!w.m.hidden&&UI.shopTab==='free')renderShop()}catch(e){}}
+AdService.on(()=>adUiRefresh());
+{const _rs=renderShop;renderShop=function(){const free=UI.shopTab==='free';_rs.apply(this,arguments);const w=UI.shopW;if(!w||w.m.hidden)return;try{
+    const tabs=w.body.querySelector('.shTabs'),bal=tabs&&tabs.querySelector('.shBal');if(!tabs||tabs.querySelector('[data-st="free"]'))return;
+    const b=document.createElement('button');b.type='button';b.dataset.st='free';b.setAttribute('aria-pressed',String(free));b.innerHTML=`<svg class="shI" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4 L20 12 L5 20 Z" fill="#7cc86a" stroke="#5a2f12" stroke-width="2.5" stroke-linejoin="round"/></svg>Ücretsiz`;
+    tabs.insertBefore(b,bal);b.onclick=()=>{UI.shopTab='free';try{sfx('tap')}catch(e){}renderShop()};
+    if(!free)return;tabs.querySelectorAll('[data-st]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.st==='free')));
+    const row=w.body.querySelector('.shRow'),note=w.body.querySelector('.shNote'),m=AdService.mode();
+    row.innerHTML=AD_ORDER.map(k=>{const A=AD_CATS[k];return `<div class="shCard adc" data-adc="${k}"><div class="shArt">${AD_ART[A.art]}</div><b>${A.t}</b><small>${A.s}</small>${adBtn(k)}</div>`}).join('');
+    row.querySelectorAll('[data-ad]').forEach(x=>x.onclick=()=>adWatch(x.dataset.ad));
+    const act=AD_ORDER.find(k=>AdService.phase(k)!=='idle');
+    if(note&&act){note.innerHTML=`<span class="adSp adSpN"></span> ${AD_PHASE_LONG[AdService.phase(act)]||'Bekle…'}`}
+    else if(note){const won=AD_ORDER.filter(k=>AD_WON[k]).map(k=>`${AD_WON[k]}× ${AD_CATS[k].t} ${AD_CATS[k].s}`).join(' · ');
+      note.innerHTML=m==='simulation'?`<b class="adSimTag">SİMÜLASYON</b> Tarayıcıda gerçek reklam gösterilmez; ödüller hesabına işlenmez.${won?` Bu oturum: ${won}.`:''} <button type="button" class="adRst" id="adRst">sayaçları sıfırla</button>`
+        :m==='off'?'Reklam ödülleri mobil uygulamada kazanılır.':'Kısa bir reklam izle, ödülünü al. Haklar her gün yenilenir.';
+      const rs=note.querySelector('#adRst');if(rs)rs.onclick=()=>{AdSim.reset();for(const k in AD_WON)delete AD_WON[k];renderShop()}}
+  }catch(e){console.warn('reklam arayüzü',e)}}}
+{const st=document.createElement('style');st.textContent=`
+.shCard.adc .shArt{display:grid;place-items:center;height:54px}.shCard.adc .adI{width:44px;height:44px;display:block}
+.shCard.adc b{font-size:15px;line-height:1.1;text-align:center}.shCard.adc .btn{font-size:12.5px;padding:6px 8px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:0}
+.shCard.adc .adCnt{font-weight:900;opacity:.85}.shCard.adc .btn.adBusy{opacity:1;filter:saturate(.7);font-size:11.5px;padding:6px 6px}
+.adSp.adSpN{display:inline-block;vertical-align:-1px;margin-right:4px}
+.adSp{width:11px;height:11px;flex:none;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:adsp .7s linear infinite}
+@keyframes adsp{to{transform:rotate(360deg)}}
+.adSimTag{display:inline-block;margin-right:6px;padding:1px 7px;border:2px solid #5a2f12;border-radius:999px;background:#ffe590;font-size:10.5px;letter-spacing:.06em}
+.adRst{appearance:none;border:0;background:none;padding:0 2px;font:inherit;font-weight:800;color:#a0522d;text-decoration:underline;cursor:pointer}
+#adSim{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(20,12,6,.86)}
+#adSim .adBox{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:min(86%,420px);padding:18px 20px;border:3px solid #5a2f12;border-radius:18px;background:#fff8ec;font-family:var(--font-display);color:#4a2a14;text-align:center}
+#adSim small{font-weight:900;letter-spacing:.08em;font-size:11px;color:#a0522d}#adSim b{font-size:18px;font-weight:900}#adSim p{margin:0;font-size:13px;font-weight:700;opacity:.8}
+#adSim i{font-style:normal;font-weight:900;font-size:34px;line-height:1;width:64px;height:64px;display:grid;place-items:center;border-radius:50%;border:4px solid #5a2f12;background:#ffe590}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
