@@ -5613,7 +5613,10 @@ async function cloudSync(){if(!cloudOn()||CLOUD.syncing)return;const uid=SB.user
     // sahipsiz (misafirken oynanmış) cihaz kafesi ile hesaptaki kafe ikisi de doluysa: oyuncuya sorulur
     if(!other&&!fresh&&!S.owner&&row.data&&row.data.created){const pick=await cloudAsk(row.data);if(pick==='cloud'){CLOUD.synced=uid;cloudApply(row.data);return}
       CLOUD.synced=uid;S.owner=uid;CLOUD.syncing=false;return cloudPush(true)}
-    if(other||fresh||ct>lt+3000){if(row.data&&typeof row.data==='object'){CLOUD.synced=uid;cloudApply(row.data);return}}
+    // V202: döngü düzeltmesi — "taze" cihaz kaydı yalnız kafe kurulmamışsa buluttakiyle değiştirilir (lvl 1 rehber oyuncusu sürekli yeniden yükleniyordu);
+    // ayrıca 60 sn içinde ikinci kez buluttan yükleme yapılmaz
+    let again=false;try{again=Date.now()-(+sessionStorage.getItem('tcCloudAp')||0)<60000}catch(e){}
+    if(!again&&(other||(fresh&&!S.created)||ct>lt+3000)){if(row.data&&typeof row.data==='object'){CLOUD.synced=uid;try{sessionStorage.setItem('tcCloudAp',String(Date.now()))}catch(e){}cloudApply(row.data);return}}
     CLOUD.synced=uid;S.owner=uid;if(lt>ct+3000){CLOUD.syncing=false;return cloudPush(true)}}
   catch(e){console.warn('bulut eşitleme',e);CLOUD.ok=false}
   finally{CLOUD.syncing=false}}
