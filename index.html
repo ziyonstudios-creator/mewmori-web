@@ -16132,6 +16132,86 @@ addEventListener('resize',()=>{try{mnAfit()}catch(e){}});setInterval(()=>{try{mn
 (()=>{const st=document.createElement('style');st.textContent=`#menuList.mnA2 .mtabs{margin-bottom:0}html.land #game#game #menuList.mnA2 .mtabs button{min-height:0!important;height:34px!important;padding-top:0!important;padding-bottom:0!important}
 .mnA .mside{overflow-y:auto}.mnA .mside button{min-height:34px}`;document.head.appendChild(st)})();
 
+// ================= V207: REHBER MENÜSÜ — solda konu listesi, sağda dikey kayan kısa anlatım; yatay kaydırma ve sayfa çevirme yok =================
+function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonun',b=(N.barista&&N.barista.name)||'Baristan',c=(N.cashier&&N.cashier.name)||'Kasiyerin';
+  const li=(i,t)=>`<li>${i}<span>${t}</span></li>`,I=k=>ic(k),img=id=>`<img class="gimg" src="${productThumb(id)}" alt="">`,it=id=>`<span class="gimg">${itemArt(id)}</span>`;
+  return [
+  {t:'Başlarken',i:'paw',art:img('latte')+img('kofte')+img('pasta'),b:[
+    li(I('paw'),'TabbyChef’te kedilerin kafesini işletiyorsun: misafirlere servis yap, para kazan, yeni tarifler aç ve kafeni büyüt.'),
+    li(I('clock'),'Acele yok. Menü, Tarifler, Birleştir gibi pencereler açıkken kafede zaman durur.')]},
+  {t:'Servis',i:'tray',art:`${I('menu')}<b class="ar">→</b>${I('chef')}<b class="ar">→</b>${I('tray')}<b class="ar">→</b>${I('coin')}`,b:[
+    li('<span class="n">1</span>',`Misafir oturunca masadaki ${tagb('menu','Sipariş al')}’a dokun; ${w} siparişi alır.`),
+    li('<span class="n">2</span>',`Tezgâhtaki ${tagb('chef','Hazırla','l')}’ya dokun; ${b} hazırlar.`),
+    li('<span class="n">3</span>',`Hazır olunca ${tagb('tray','Teslim al','g')}’a dokun; ${w} masaya götürür.`),
+    li('<span class="n">4</span>',`Misafir yiyip kasaya gider, ${c} ödemeyi alır.`),
+    li(I('auto'),`${tagb('auto','Otomatik','l')} açıksa ${w} bu işleri kendisi yapar.`)]},
+  {t:'Birleştirme',i:'merge',art:`${it('sut1')}<b class="ar">+</b>${it('sut1')}<b class="ar">=</b>${it('sut2')}`,b:[
+    li(I('box'),'Tahtanın solundaki <b>paketlere</b> dokun, malzeme çıksın: Fırın, Mandıra, Meyve, Kahve & Çay, Manav, Kasap.'),
+    li(I('merge'),'Aynı iki malzemeyi üst üste sürükle; bir üst kademe olur.'),
+    li(I('target'),'<b>Hedef</b> kartı, açmak istediğin tarifin istediği malzemeleri gösterir. Malzeme hazır olunca yanındaki onaya dokunup teslim et.'),
+    li(I('bolt'),'Her dokunuş enerji harcar; enerji Hedef kartının altında, zamanla dolar. Her paket 15 üretimden sonra kısa bir mola verir.')]},
+  {t:'Tarifler',i:'book',art:img('corba_mercimek')+img('omlet')+img('sezar'),b:[
+    li(I('star'),'Yeni tarifler seviye atladıkça sırayla açılmaya hazır olur.'),
+    li(I('target'),`Tarif Defteri’nde bir tarifte ${tagb('target','Hedefle','l')}’ye dokun; birleştirmede ne istediği hep görünür.`),
+    li(I('check'),'İstenen malzemeleri teslim edince tarif açılır ve menüne eklenir.')]},
+  {t:'Menü ve fiyat',i:'menu',art:img('su')+img('cay')+img('espresso'),b:[
+    li(I('menu'),'Misafirler yalnızca <b>menündeki</b> ürünleri sipariş eder.'),
+    li(I('check'),'Menü ekranında solda kategoriyi seç; ürünün yanındaki anahtarla menüye ekle ya da çıkar.'),
+    li(I('coin'),'− / + ile fiyatı ayarla. Ucuz fiyat çok misafir getirir; pahalı fiyat kârı artırır ama misafir kalite bekler.')]},
+  {t:'Malzeme',i:'box',art:`${it('kahve1')}${I('box')}${it('un1')}`,b:[
+    li(I('box'),'Satılan her ürün depodan malzeme harcar. Depo azalınca malzeme kendiliğinden gelir.'),
+    li(I('market'),'Menü › <b>Stok</b>’ta 5 toptancıdan birini seç: ucuz olanın kalitesi düşük, pahalı olanınki yüksek.')]},
+  {t:'Kafeni büyüt',i:'market',art:`${I('table')}${I('chair')}${I('plant')}${I('paint')}`,b:[
+    li(I('market'),'<b>Market</b>’te masa, sandalye, dekor ve ekipman al.'),
+    li(I('pencil'),'<b>Düzenle</b> ile eşyaları taşı ve döndür; yeşil kareler uygun.'),
+    li(I('up'),'Seviye atladıkça daha çok masa koyabilir, kafeni genişletebilirsin.')]},
+  {t:'Ekip',i:'paw',art:`${I('tray')}${I('chef')}${I('coin')}${I('shirt')}`,b:[
+    li(I('pencil'),'<b>Ekip</b> menüsünde kedilerinin görünümünü ve adını değiştir.'),
+    li(I('plus'),'<b>İşçi bul</b> ile ekibini büyüt; her çalışanın hızı ve maaşı farklıdır.'),
+    li(I('shirt'),'Market’teki <b>Kıyafet</b> bölümünde önce dene, sonra satın al.')]},
+  {t:'Puan ve misafirler',i:'star',art:`${UI_IC.starF||I('star')}${I('heart')}${I('clock')}`,b:[
+    li(I('star'),'Kafe puanı yükseldikçe daha çok misafir gelir. Hızlı servis puanı artırır.'),
+    li(I('clock'),'Masadaki halka misafirin sabrıdır; kırmızıya dönmeden yetiş.'),
+    li(I('heart'),'Özel istekler, VIP gurmeler ve müdavimler ekstra ödül getirir. Kaçan misafiri görürsen <b>Yakala!</b>’ya dokun.')]},
+  {t:'Gün ve dükkân',i:'sun',art:`${I('sun')}${I('lock')}${I('coin')}`,b:[
+    li(I('sun'),'Gün sabahtan akşama akar; gece dükkân kapanır ve günün özeti çıkar.'),
+    li(I('lock'),'Üstteki AÇIK/KAPALI tabelasıyla dükkânı istediğin an kapatabilirsin.'),
+    li(I('coin'),'Sen yokken dükkân açıksa ekibin çalışır; dönünce hasılatı toplarsın.')]},
+  {t:'Hesap ve kayıt',i:'lock',acct:true,b:[
+    li(I('box'),'Oyunun otomatik kaydedilir. Giriş yaparsan kafen hesabında da saklanır.')]}]}
+guidePages=function(){return guideTopics()};
+(()=>{const INK='#4a2a14',G='html.land #game#game';const st=document.createElement('style');st.textContent=`
+#guide .scroll,${G} #guide .scroll{columns:auto!important;column-width:auto!important;column-rule:none!important;overflow-x:hidden!important;overflow-y:hidden!important;padding:10px 12px 12px!important;display:block!important;height:calc(100% - 46px)!important;box-sizing:border-box!important}
+#guide .hxarr,#guide .hxa,#guide [class*="hxbtn"]{display:none!important}
+#guide .gwrap+.gwrap,html.land #game#game #guide .gwrap+.gwrap,#guide .gnav,#guide .gdots{display:none!important}
+#guide #gdBody,${G} #guide #gdBody{display:flex!important;flex-direction:row!important;align-items:stretch!important;gap:12px;height:100%;max-width:none!important;padding:0!important;margin:0!important}
+.gdside{flex:none;width:170px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;overflow-y:auto;overscroll-behavior:contain;padding:2px 4px 4px 2px}
+.gdside button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:7px;padding:5px 8px;border:2.5px solid ${INK};border-radius:12px;background:#fdf0d8;font:800 13px/1.1 var(--font-display,inherit);color:${INK};cursor:pointer;box-shadow:0 2px 0 ${INK};flex:none}
+.gdside button .ic{width:22px;height:22px;flex:none}
+.gdside button[aria-selected="true"]{background:linear-gradient(#ffe48a,#ffd05a)}
+.gdmain{flex:1 1 auto;min-width:0;height:100%;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:#fffaf0;border:2.5px solid #e2c49a;border-radius:16px;padding:10px 14px 12px}
+.gdmain h3{margin:0 0 6px!important;font:800 20px/1.1 var(--font-display,inherit);color:${INK};text-align:left!important}
+.gdmain .gart2{display:flex;align-items:center;gap:8px;background:#f6e6cc;border-radius:12px;padding:6px 10px;margin-bottom:8px;width:max-content;max-width:100%}
+.gdmain .gart2 .ic{width:34px;height:34px}.gdmain .gart2 .gimg{width:44px;height:44px;object-fit:contain;display:inline-grid}.gdmain .gart2 .gimg>*{width:100%;height:100%}
+.gdmain .gart2 .ar{font:900 16px/1 var(--font-display,inherit);opacity:.5}
+.gdmain ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.gdmain li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;font-weight:700;line-height:1.4;color:${INK}}
+.gdmain li>.ic{width:26px;height:26px;flex:none}
+.gdmain li .n{width:24px;height:24px;flex:none;border-radius:50%;background:var(--gold,#ffd05a);border:2.5px solid ${INK};display:grid;place-items:center;font:800 13px/1 var(--font-display,inherit)}
+.gdmain .gacct{margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.gdmain .gacct .acct{width:100%;display:flex!important;align-items:center;gap:10px;flex-wrap:wrap}.gdmain .gacct .acct>span:first-child,.gdmain .gacct .acct .ic{width:40px!important;height:40px!important;flex:none}.gdmain .gacct .acct svg{max-width:40px;max-height:40px}
+`;document.head.appendChild(st)})();
+openGuide=function(i=0){if(typeof authBadge==='function')authBadge();GD.prev=UI.mode==='guide'?GD.prev:UI.mode;GD.t=Math.max(0,Math.min(guideTopics().length-1,i|0));setMode('guide');renderGuide()};
+renderGuide=function(){const T=guideTopics();if(GD.t==null)GD.t=0;const p=T[GD.t]||T[0],B=$('gdBody');if(!B)return;
+  const hold=$('gdAcct')&&$('gdAcct').parentElement;
+  B.innerHTML=`<div class="gdside" role="tablist">${T.map((x,k)=>`<button type="button" role="tab" data-gt="${k}" aria-selected="${k===GD.t}">${ic(x.i)}${x.t}</button>`).join('')}</div>
+    <div class="gdmain"><h3>${p.t}</h3>${p.art?`<div class="gart2">${p.art}</div>`:''}<ul>${p.b.join('')}</ul>${p.acct?'<div class="gacct"></div>':''}</div>`;
+  if(p.acct){const g=B.querySelector('.gacct');const a=$('gdAcct'),r=$('gdReset');if(a)g.appendChild(a);if(r)g.appendChild(r)}
+  else if(hold&&hold!==B&&!hold.closest('#gdBody')){} else{const w=document.querySelector('#guide .gwrap+.gwrap');if(w){const a=$('gdAcct'),r=$('gdReset');if(a&&a.closest('#gdBody'))w.appendChild(a);if(r&&r.closest('#gdBody'))w.appendChild(r)}}
+  B.onclick=e=>{const t=e.target.closest('[data-gt]');if(!t)return;sfx('tap');GD.t=+t.dataset.gt;renderGuide();const m=B.querySelector('.gdmain');if(m)m.scrollTop=0}};
+// eski sayfa çevirme (kaydırma) etkisiz: GD.i artık kullanılmaz
+{const g=$('guide');if(g)for(const t of ['pointerdown','pointerup'])g.addEventListener(t,e=>{if(t==='pointerup')GD.i=0},true)}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
