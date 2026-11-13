@@ -16136,6 +16136,9 @@ addEventListener('resize',()=>{try{mnAfit()}catch(e){}});setInterval(()=>{try{mn
 #menuList.mnA2,.mnA,.mnA .mlist,.mnA .mside{touch-action:pan-y!important;max-width:100%!important;min-width:0!important}
 .mnA .mrw{min-width:0;max-width:100%}.mnA .mrw .nm{overflow:hidden}`;document.head.appendChild(st)})();
 setInterval(()=>{try{if(UI.mode!=='menu')return;for(const el of [document.querySelector('#menuScr .scroll'),$('menuList'),document.querySelector('.mnA .mlist')])if(el&&el.scrollLeft)el.scrollLeft=0}catch(e){}},300);
+// V211: Poşa tablosu, Yosun tablosu ve Kedi yatağı marketten kaldırıldı (kullanıcı isteği). Daha önce alınmış/yerleştirilmiş olanlar bozulmaz.
+const DECOR_OFF=new Set(['p_posa','p_yosun','d_catbed']);
+{const _cs=catShown;catShown=function(c){if(c&&DECOR_OFF.has(c.id)&&!(S.owned&&S.owned[c.id]))return false;return _cs.apply(this,arguments)}}
 
 // ================= V207: REHBER MENÜSÜ — solda konu listesi, sağda dikey kayan kısa anlatım; yatay kaydırma ve sayfa çevirme yok =================
 function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonun',b=(N.barista&&N.barista.name)||'Baristan',c=(N.cashier&&N.cashier.name)||'Kasiyerin';
