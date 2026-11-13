@@ -16131,6 +16131,11 @@ function mnAfit(){const L=$('menuList'),A=L&&L.querySelector('.mnA');if(!A||UI.m
 addEventListener('resize',()=>{try{mnAfit()}catch(e){}});setInterval(()=>{try{mnAfit()}catch(e){}},800);
 (()=>{const st=document.createElement('style');st.textContent=`#menuList.mnA2 .mtabs{margin-bottom:0}html.land #game#game #menuList.mnA2 .mtabs button{min-height:0!important;height:34px!important;padding-top:0!important;padding-bottom:0!important}
 .mnA .mside{overflow-y:auto}.mnA .mside button{min-height:34px}`;document.head.appendChild(st)})();
+// V208: menü penceresinde yatay kaydırma kesinlikle kapalı (yalnız liste yukarı-aşağı kayar)
+(()=>{const st=document.createElement('style');st.textContent=`#menuScr,#menuScr .scroll,#menuList,#menuList.mnA2,.mnA,.mnA .mlist,.mnA .mside{overflow-x:hidden!important;overscroll-behavior-x:none!important}
+#menuList.mnA2,.mnA,.mnA .mlist,.mnA .mside{touch-action:pan-y!important;max-width:100%!important;min-width:0!important}
+.mnA .mrw{min-width:0;max-width:100%}.mnA .mrw .nm{overflow:hidden}`;document.head.appendChild(st)})();
+setInterval(()=>{try{if(UI.mode!=='menu')return;for(const el of [document.querySelector('#menuScr .scroll'),$('menuList'),document.querySelector('.mnA .mlist')])if(el&&el.scrollLeft)el.scrollLeft=0}catch(e){}},300);
 
 // ================= V207: REHBER MENÜSÜ — solda konu listesi, sağda dikey kayan kısa anlatım; yatay kaydırma ve sayfa çevirme yok =================
 function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonun',b=(N.barista&&N.barista.name)||'Baristan',c=(N.cashier&&N.cashier.name)||'Kasiyerin';
