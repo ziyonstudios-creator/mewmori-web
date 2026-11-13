@@ -16245,6 +16245,106 @@ function wallFixAll(){if(EVMODE||!S||!Array.isArray(S.furniture)||S.wallFix)retu
   S.wallFix=1;if(n){markDirty();try{saveNow()}catch(e){}try{for(const [u,R] of [...FURN]){scene.remove(R.group);FURN.delete(u)}for(const r of S.furniture)if(!r.stored)spawnFurn(r);refreshWorld()}catch(e){console.warn('duvar düzeltme',e)}}}
 {let t=setInterval(()=>{try{if(typeof started!=='undefined'&&started&&S&&S.created){clearInterval(t);wallFixAll()}}catch(e){}},1500)}
 
+// ================= V217: ZİNCİRLER HAM MADDEYE GİDER =================
+// Kullanıcı isteği: üst kademeler "daha çok yumurta / sepet / kasa" olmasın; her kademe tarifte kullanılan bir ham madde olsun,
+// gerektiğinde bir ham maddeden ötekine geçsin (Süt → … → Tereyağı → Peynir …). Kimlikler zincir+kademe olarak kalır; adlar ve
+// görseller yeniden atanır. Kalkan kademeler tahtada en yakın yeni kademeye çevrilir. Farklı malzeme birleşimleri (eski combo) kapalı.
+const ZIMG=s=>`<img src="img/items/${s}.webp" alt="" draggable="false">`;
+const ZSVG={
+ butter:SV(`<rect x="12" y="38" width="40" height="10" rx="4" fill="#f2e6cf"/><path d="M16 38 L20 24 H46 L50 38 Z" fill="#ffe27a"/><path d="M20 24 H46 L50 38 H16 Z" fill="none"/><path d="M24 30 H40" stroke="#f6c94a" stroke-width="3"/>`),
+ jam:SV(`<rect x="18" y="24" width="28" height="28" rx="7" fill="#e8435a"/><rect x="16" y="16" width="32" height="10" rx="3" fill="#f6e3c4"/><path d="M16 21 h32" stroke="#e8435a" stroke-width="3" stroke-dasharray="4 3"/><circle cx="27" cy="36" r="3" fill="#ff8a9b" stroke="none"/>`)};
+const ZCH={
+ un:[['Un'],['Hamur topu'],['Somun ekmek'],['Kat kat hamur']],
+ yum:[['Yumurta'],['Çırpılmış yumurta'],['Omlet']],
+ seker:[['Şeker'],['Şeker küpleri'],['Krema']],
+ sut:[['Süt','sut1'],['Süt sürahisi','sut2'],['Tereyağı',ZSVG.butter],['Peynir','peynir1'],['Peynir dilimleri','peynir2'],['Peynir tabağı','peynir3']],
+ kahve:[['Kahve çekirdeği'],['Çekilmiş kahve'],['Espresso shot']],
+ cay:[['Çay yaprağı'],['Kuru çay'],['Demlik çay']],
+ kakao:[['Kakao çekirdeği'],['Kakao tozu'],['Çikolata']],
+ bitki:[['Nane yaprağı'],['Ihlamur'],['Bitki demeti']],
+ cilek:[['Çilek'],['Çilek kâsesi'],['Meyve tabağı'],['Çilek reçeli',ZSVG.jam]],
+ limon:[['Limon'],['Limon dilimleri'],['Limon suyu']],
+ domates:[['Domates','domates1'],['Domates dilimleri','domates2'],['Domates sosu','domates4']],
+ mantar:[['Mantar','mantar1'],['Mantar dilimleri','mantar2'],['Mantar sote','mantar4']],
+ marul:[['Marul yaprağı'],['Marul'],['Karışık yeşillik']],
+ patates:[['Patates','patates1'],['Patates dilimleri','patates2'],['Fırın patates','patates4']],
+ mercimek:[['Mercimek'],['Mercimek kâsesi']],
+ sucuk:[['Sucuk','sucuk2'],['Sucuk dilimleri','sucuk1'],['Pişmiş sucuk','sucuk3']],
+ tavuk:[['Tavuk but'],['Tavuk göğsü'],['Tavuk şiş']],
+ et:[['Et parçası'],['Biftek'],['Et tabağı']],
+ balik:[['Balık'],['Balık fileto'],['Balık tabağı']]};
+// eski kimlik → yeni kimlik (tahtadaki eşyalar için)
+const ZMIG={sut3:'sut2',sut4:'sut3',sut5:'sut3',sut6:'sut4',peynir1:'sut4',peynir2:'sut5',peynir3:'sut6',peynir4:'sut6',peynir5:'sut6',peynir6:'sut6',
+ un5:'un4',un6:'un4',yum4:'yum3',yum5:'yum3',yum6:'yum3',seker4:'seker3',seker5:'seker3',seker6:'seker3',cilek5:'cilek4',cilek6:'cilek4',
+ kahve4:'kahve3',kahve5:'kahve3',kahve6:'kahve3',cay4:'cay3',cay5:'cay3',cay6:'cay3',kakao4:'kakao3',kakao5:'kakao3',kakao6:'kakao3',limon4:'limon3',limon5:'limon3',limon6:'limon3',
+ bitki4:'bitki3',domates3:'domates2',domates4:'domates3',mantar3:'mantar2',mantar4:'mantar3',marul4:'marul3',patates3:'patates2',patates4:'patates3',
+ mercimek3:'mercimek2',mercimek4:'mercimek2',sucuk1:'sucuk2',sucuk2:'sucuk1',sucuk4:'sucuk3',tavuk4:'tavuk3',et4:'et3',balik4:'balik3'};
+{const keepArt={};for(const ch in ZCH)ZCH[ch].forEach((d,i)=>{keepArt[ch+(i+1)]=ITEM_ART[ch+(i+1)]});
+ for(const [ch,L] of Object.entries(ZCH)){const n=L.length,fam=CHAIN_FAM[ch]||'food';CHAINS[ch]=L.map(d=>d[0]);
+   L.forEach(([nm,src],i)=>{const id=ch+(i+1);ITEMS[id]={...(ITEMS[id]||{}),id,name:nm,chain:ch,lv:i+1,max:n,fam,next:i+1<n?ch+(i+2):null};
+     ITEM_ART[id]=src?(src.startsWith('<')?src:(ITEM_ART[src]&&/src=/.test(keepArt[src]||ITEM_ART[src])&&!/class="kt/.test(keepArt[src]||ITEM_ART[src])?ZIMG(src):(keepArt[src]||ITEM_ART[src]))):keepArt[id]});
+   for(let k=n+1;k<=8;k++){const id=ch+k;if(ITEMS[id])ITEMS[id]={...ITEMS[id],next:null,gone:true}}}
+ delete CHAINS.peynir;for(let k=1;k<=6;k++)if(ITEMS['peynir'+k])ITEMS['peynir'+k]={...ITEMS['peynir'+k],next:null,gone:true};
+ COMBOS.length=0}
+// görsel düzeltme: sut2/sut1 kendi resimleri, kademe görseli olmayan eski 1–3. kademeler zaten resimli
+// paketler: Süt ürünleri süt ve (doğrudan) peynir verir
+try{const P=PACKS.find(x=>x.k==='mandira');P.out=[['sut1',3],['sut4',1]];BAG_OUT.mandira=P.out.map(x=>x.slice())}catch(e){console.warn('zincir paket',e)}
+// tarif teslimatları (yeni kimliklerle)
+const TK_ST3={
+ bitki_cay:[{n:'Demleme',d:[['bitki2',1],['bitki1',2]]}],
+ yesil_cay:[{n:'Yapraklar',d:[['cay2',2]]},{n:'Demleme',d:[['cay3',1],['limon2',1]]}],
+ espresso:[{n:'Çekim',d:[['kahve2',2]]}],
+ latte:[{n:'Espresso',d:[['kahve3',1]]},{n:'Süt',d:[['sut2',2]]}],
+ moka:[{n:'Espresso',d:[['kahve3',1],['kakao3',1]]},{n:'Süt ve krema',d:[['sut2',2],['seker3',1]]}],
+ sicak_sut:[{n:'Ballı süt',d:[['sut2',2],['seker2',1]]}],
+ tarcinli_sut:[{n:'Tarçınlı süt',d:[['sut2',1],['sut1',2],['seker2',1]]}],
+ sicak_cik:[{n:'Çikolata',d:[['kakao3',2]]},{n:'Sıcak süt',d:[['sut2',2],['seker3',1]]}],
+ limonata:[{n:'Limon',d:[['limon3',1],['limon2',1],['seker2',2]]}],
+ meyveli_cay:[{n:'Demleme',d:[['cay3',1]]},{n:'Çilek',d:[['cilek2',2],['seker2',1]]}],
+ milkshake:[{n:'Çilek',d:[['cilek2',2]]},{n:'Süt ve krema',d:[['sut2',2],['seker3',1]]}],
+ tost:[{n:'Ekmek ve peynir',d:[['un3',1],['sut5',2]]}],
+ tost_sucuk:[{n:'Ekmek ve peynir',d:[['un3',1],['sut5',1]]},{n:'Sucuk',d:[['sucuk2',2]]}],
+ tost_karisik:[{n:'Ekmek ve peynir',d:[['un3',1],['sut5',1]]},{n:'İç malzeme',d:[['sucuk2',1],['domates2',1]]}],
+ omlet_peynir:[{n:'Peynirli harç',d:[['yum2',2],['sut5',1]]}],
+ omlet_sucuk:[{n:'Yumurta',d:[['yum2',2]]},{n:'Sucuk',d:[['sucuk2',2]]}],
+ omlet_karisik:[{n:'Yumurta ve peynir',d:[['yum2',2],['sut5',1]]},{n:'İç malzeme',d:[['sucuk2',1],['domates2',1],['mantar2',1]]}],
+ kahvalti:[{n:'Yumurta ve peynir',d:[['yum3',1],['sut6',1]]},{n:'Sebzeler',d:[['domates2',1],['marul1',1]]}],
+ koy_kahvalti:[{n:'Yumurta',d:[['yum3',1]]},{n:'Peynir ve tereyağı',d:[['sut4',1],['sut3',1]]},{n:'Reçel',d:[['cilek4',1]]}],
+ serpme:[{n:'Yumurtalar',d:[['yum3',2]]},{n:'Peynirler',d:[['sut6',1]]},{n:'Reçel ve tereyağı',d:[['cilek4',1],['sut3',1]]},{n:'Sıcaklar',d:[['sucuk3',1],['domates2',1]]},{n:'Çay',d:[['cay3',1]]}],
+ corba_domates:[{n:'Domates',d:[['domates3',1],['domates2',2]]},{n:'Süt',d:[['sut2',1]]}],
+ corba_mercimek:[{n:'Mercimek',d:[['mercimek2',2],['mercimek1',1]]},{n:'Servis',d:[['limon2',1],['sut3',1]]}],
+ corba_mantar:[{n:'Mantar',d:[['mantar3',1],['mantar2',2]]},{n:'Krema',d:[['seker3',1],['un1',1]]}],
+ kiz_tavuk:[{n:'Tavuk',d:[['tavuk2',2]]},{n:'Garnitür',d:[['patates2',2],['domates2',1]]}],
+ tavuk_sis:[{n:'Şiş',d:[['tavuk3',2]]},{n:'Garnitür',d:[['domates2',2],['marul2',1]]}],
+ kiz_et:[{n:'Biftek',d:[['et2',2]]},{n:'Marine',d:[['bitki1',1],['et1',2]]},{n:'Garnitür',d:[['patates2',2],['domates2',1]]}],
+ pirzola:[{n:'Et',d:[['et3',1],['et2',1]]},{n:'Otlar',d:[['bitki3',1]]},{n:'Garnitür',d:[['patates3',1],['domates2',1]]}],
+ levrek:[{n:'Balık',d:[['balik3',1]]},{n:'Garnitür',d:[['limon2',1],['patates2',1],['marul1',1]]}],
+ somon:[{n:'Fileto',d:[['balik2',2]]},{n:'Sos',d:[['limon2',1],['bitki1',1]]},{n:'Garnitür',d:[['patates3',1],['domates2',1]]}],
+ makarna_domates:[{n:'Makarna',d:[['un2',2]]},{n:'Sos',d:[['domates3',1],['sut4',1]]}],
+ makarna_mantar:[{n:'Makarna',d:[['un2',2]]},{n:'Mantar',d:[['mantar2',2]]},{n:'Krema',d:[['seker3',1],['sut4',1]]}],
+ kofte:[{n:'Kıyma',d:[['et1',3]]},{n:'Harç',d:[['un2',1],['yum1',1]]},{n:'Garnitür',d:[['domates2',1]]}],
+ kofte_kasar:[{n:'Kıyma',d:[['et3',1],['et1',1]]},{n:'Kaşar',d:[['sut5',2]]},{n:'Garnitür',d:[['domates2',1]]}],
+ coban:[{n:'Doğrama',d:[['domates2',2],['marul1',1],['limon2',1]]}],
+ mevsim:[{n:'Yeşillik',d:[['marul2',1],['marul1',2]]},{n:'Sos',d:[['domates2',1],['limon2',1]]}],
+ sezar:[{n:'Marul',d:[['marul2',2]]},{n:'Tavuk ve peynir',d:[['tavuk2',1],['sut4',1]]},{n:'Kıtır ekmek',d:[['un3',1]]}],
+ kurabiye:[{n:'Hamur',d:[['un2',2],['seker2',1],['yum1',1]]}],
+ kurabiye_cik:[{n:'Hamur',d:[['un2',2],['seker2',1]]},{n:'Çikolata',d:[['kakao3',1]]}],
+ puding_sut:[{n:'Muhallebi',d:[['sut2',2],['seker2',1],['un1',1]]}],
+ puding_cik:[{n:'Muhallebi',d:[['sut2',2],['seker2',1]]},{n:'Kakao',d:[['kakao2',1],['seker3',1]]}],
+ cupcake:[{n:'Kek hamuru',d:[['un2',2],['yum2',1],['sut3',1]]},{n:'Krema',d:[['seker3',1],['cilek1',1]]}],
+ pasta:[{n:'Pandispanya',d:[['un2',2],['yum2',2]]},{n:'Çilek ve krema',d:[['cilek2',2],['seker3',2]]},{n:'Çikolata',d:[['kakao3',1]]}]};
+for(const id in TK_ST3)if(TK_CFG[id])TK_CFG[id].st=TK_ST3[id];
+// kalan tariflerde (ülke vb.) kalkmış kimlik varsa en yakın yeniye çevrilir
+for(const id in TK_CFG){const c=TK_CFG[id];if(!c||!c.st)continue;for(const s of c.st)if(s.d)s.d=s.d.map(([it,n])=>[ITEMS[it]&&ITEMS[it].gone&&ZMIG[it]?ZMIG[it]:it,n])}
+// kayıt geçişi: tahtadaki kalkmış kademeler yeni karşılığına; açılmamış tariflerin yarım teslimatları sıfırlanır
+function zincirMigrate(){if(EVMODE||!S||S.zv>=1)return;try{if(Array.isArray(S.board))S.board=S.board.map(v=>v&&ZMIG[v]&&(ITEMS[v].gone||v.startsWith('sucuk')||v.startsWith('domates')||v.startsWith('mantar')||v.startsWith('patates')||v.startsWith('sut'))?ZMIG[v]:v);
+  const T=tkS();for(const id in TK_ST3)if(!S.unlocked[id]){delete T.st[id];delete T.dl[id]}}catch(e){console.warn('zincir geçişi',e)}S.zv=1;markDirty()}
+{const _as=applyState;applyState=function(){const r=_as.apply(this,arguments);try{zincirMigrate()}catch(e){}return r}}
+setTimeout(()=>{try{if(S&&S.created)zincirMigrate()}catch(e){}},3000);
+// V217 hata düzeltmesi: tarif teslimat ilerlemesi (S.tk), hedef (S.tkT) ve geçiş sürümleri kayda yazılıyordu ama geri okunmuyordu
+// (loadState yalnız defaultState'teki anahtarları alır) → her açılışta teslimatlar ve hedef sıfırlanıyordu.
+{const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.tk=null;s.tkT=null;s.tkv=0;s.zv=0;return s}}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
