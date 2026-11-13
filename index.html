@@ -3828,7 +3828,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Yosun'},barista:{name:'Po�
      <li>${ic('paw')}<span><b>Kaçak müşteri:</b> bazıları ödemeden kapıya koşar! Kasiyerin fark ederse koşup yakalar; fark etmezse kaçağın üstündeki ${tagb('paw','Yakala!')} düğmesine dokun.</span></li></ul>`},
    {t:'Geliştirmeler',art:`${ic('up')}${ic('coin')}${ic('chef')}${ic('bolt')}`,body:`<p>${tagb('market','Market','l')} → ${tagb('up','Geliştir','l')} sekmesinde kalıcı yükseltmeler var: ürünleri daha pahalıya sat, baristaları hızlandır, bahşişleri artır, enerji deposunu büyüt.</p><p>Oyun kapalıyken de ekibin çalışır: geri döndüğünde biriken altını toplarsın (en fazla 2 saatlik).</p>`},
    {t:'Ekip ve kıyafetler',art:`${ic('paw')}${ic('shirt')}<span class="ic">${clothIcon('bow_red')}</span><span class="ic">${clothIcon('hat_beret')}</span>`,body:`<p>${tagb('paw','Ekip','l')} menüsünde kedilerini düzenle: kürk, desen, göz, kulak, yüz, vücut ve isim. Her kedinin <b>bir ücretsiz görünüm değişikliği</b> var; sonrası ${CONFIG.edit.coins} altın ya da ${CONFIG.edit.gems} elmas. Önizleme ve vazgeçmek her zaman ücretsiz, isim değiştirmek de.</p>
-     <p>${tagb('plus','İşçi bul','g')} ile ekibini büyüt ya da birini daha iyisiyle değiştir: en fazla 3 garson, 2 barista, 2 kasiyer. Her çalışanın hız, dayanıklılık ve ustalık yıldızı, bir de günlük maaşı vardır; maaşlar gün sonunda hasılattan düşülür. Yorulan çalışan kısa bir mola verir, işleri diğerleri üstlenir.</p>
+     <p>${tagb('plus','İşçi bul','g')} ile ekibini büyüt ya da birini daha iyisiyle değiştir: en fazla 3 garson, 2 barista, 2 kasiyer. Her çalışanın hız ve ustalık yıldızı, bir de günlük maaşı vardır; maaşlar gün sonunda hasılattan düşülür. Yorulan çalışan kısa bir mola verir, işleri diğerleri üstlenir.</p>
      <p>Market’teki ${tagb('shirt','Kıyafet','l')} sekmesinde önlük, üst, şort, papyon, atkı, şapka ve takımlar var. Önce kedinin üstünde dene, sonra satın al; aldığın kıyafet kalıcı olarak senin.</p>`},
    {t:'Küçük ipuçları',art:`${ic('heart')}${ic('music')}${ic('speaker')}`,body:`<ul class="gsteps"><li>${ic('clock')}<span>Menü, Market, Tarifler, Birleştir ya da Ekip açıkken kafede zaman durur; telaşlanma.</span></li>
      <li>${ic('table')}<span>Kafen 2 dört kişilik ve 2 iki kişilik masayla (12 kişi) açılır; müşteriler tek, 2, 3 ya da 4 kişilik gruplar halinde gelir; seviye atladıkça daha fazla masa koyabilirsin.</span></li><li>${ic('music')}<span>Sağ üstteki düğmelerle müziği ve sesleri açıp kapatabilirsin.</span></li>
@@ -3981,7 +3981,7 @@ function tut2Tick(){const m=UI.mode;
   // --- Ekip: ilk açılışta işe alım bilgisi ---
   if(m==='team'&&S.created&&!(S.seen&&S.seen.team)&&!UI.modal){const btn=$('tmHire');if(btn){if(t2Shown!=='team'){scrollToEl(btn,0.85)}
       const f=r=>{const h=HIRE[r][0];return `${ROLE_NAME[r]}: Seviye ${h.lv} · ${h.c} altın`};
-      t2Show('team',{title:'Ekibini büyütelim mi?',text:`<b>İşçi bul</b>’da her gün yeni adaylar seni bekler. Her çalışanın 3 özelliği (hız, dayanıklılık, ustalık) ve günlük bir <b>maaşı</b> olur; maaşlar gün sonunda hasılattan düşülür. Yıldızı düşük çalışan çabuk yorulur ve molaya çıkar. Daha iyi adaylar için gazete ya da ajans ilanı ver; ekibi büyütmek için seviye gerekir.`,target:()=>$('tmHire'),place:'top',
+      t2Show('team',{title:'Ekibini büyütelim mi?',text:`<b>İşçi bul</b>’da her gün yeni adaylar seni bekler. Her çalışanın 2 özelliği (hız ve ustalık) ve günlük bir <b>maaşı</b> olur; maaşlar gün sonunda hasılattan düşülür. Yıldızı düşük çalışan çabuk yorulur ve molaya çıkar. Daha iyi adaylar için gazete ya da ajans ilanı ver; ekibi büyütmek için seviye gerekir.`,target:()=>$('tmHire'),place:'top',
         buttons:[{label:'Anladım',green:true,onClick:()=>{S.seen={...(S.seen||{}),team:true};markDirty();t2Hide()}}]});return}}
   if(t2Shown==='team'&&(m!=='team'||UI.modal)){t2Hide();return}
   // --- Tarif → Birleştir → Tarif → Menü ---
@@ -6267,8 +6267,8 @@ const ST_SPC={waiter:'Güler yüz',barista:'Ustalık',cashier:'Dikkat'};
 const ST_TXT={spd:['Ağır aksak','Telaşsız','Çevik','Hızlı','Şimşek gibi'],sta:['Çabuk yorulur','Sık mola verir','Dengeli','Az yorulur','Yorulmak bilmez'],
   waiter:['Biraz soğuk','Nazik','Güler yüzlü','Müşteriler bayılır','Bahşişleri bol'],barista:['Acemi','Özenli','Usta eller','Ustalar ustası','Şef dokunuşu'],cashier:['Dalgın','Dikkatli','Hesabı kuvvetli','Çok seri','Göz açıp kapayıncaya']};
 const ST_NAMES=['Pamuk','Tarçın','Fıstık','Mocha','Zencefil','Bal','Lokum','Kestane','Duman','Leo','Mia','Simba','Luna','Badem','Susam','Kurabiye','Fındık','Biber','Çilek','Limon','Mırmır','Paşa','Boncuk','Tombik','Yumak','Maviş','Sütlaç','Kuki'];
-const stAvg=st=>(st.spd+st.sta+st.spc)/3;
-const stWage=st=>Math.round(2+(st.spd+st.sta+st.spc-3)*3);
+const stAvg=st=>(st.spd+st.spc)/2;
+const stWage=st=>Math.round(2+(st.spd+st.spc-2)*4.5);
 const stSign=st=>stWage(st)*2;                                  // işe alım (imza) ücreti
 function stOf(key){const c=S.chars&&S.chars[key];if(!c)return {spd:2,sta:2,spc:2,en:100};if(!c.st){const up=S.upg||{},role=roleOfKey(key),b=S.created?2:1;   // mevcut oyuncular 2★, yeni başlayan 1★
     c.st={spd:Math.min(5,b+(S.created?(up.speed|0):0)),sta:b,spc:Math.min(5,b+(S.created&&role==='waiter'?(up.tip|0):0)),en:100}}return c.st}
@@ -6287,10 +6287,10 @@ function stTipBonus(){if(!WSTAFF.length)return 0;return WSTAFF.reduce((a,w)=>a+0
 // ---- yorgunluk ----
 const stDrainAmt=st=>9-1.6*st.sta;                                 // 1★ ≈ 14 iş, 3★ ≈ 24 iş, 5★ ≈ 100 iş
 const stRestSec=st=>30-4*st.sta;                                   // 1★ 26 sn, 3★ 18 sn, 5★ 10 sn
-function stDrain(o){if(!o||!S.created||S.tut!=='done')return;const st=stByObj(o);st.en=Math.max(0,(st.en??100)-stDrainAmt(st));
+function stDrain(o){return;const st=stByObj(o);st.en=Math.max(0,(st.en??100)-stDrainAmt(st));
   if(st.en<=0&&o.ch&&CSTAFF.includes(o)&&!o.resting)cashRest(o)}
 // yorgun çalışan, işi devralacak bir arkadaşı yoksa önce eldeki işleri bitirir, ilk boş anında molaya çıkar
-const stTired=o=>{const st=stByObj(o);if((st.en??100)>0)return false;const W=WSTAFF.includes(o),L=W?WSTAFF:BSTAFF,pend=W?jobs.length:baristaQ.length;
+const stTired=o=>{return false;const st=stByObj(o);if((st.en??100)>0)return false;const W=WSTAFF.includes(o),L=W?WSTAFF:BSTAFF,pend=W?jobs.length:baristaQ.length;
   return !pend||L.some(x=>x!==o&&!x.resting)};
 async function staffRest(o,P,yaw){const st=stByObj(o),ch=o.ch,dur=stRestSec(st);o.resting=true;try{await ch.standUp()}catch(e){}
   try{if(P&&!atSpot(ch,P,0.2))await ch.walkTo(P.x,P.z);if(yaw!=null)await ch.face(yaw)}catch(e){}
@@ -6310,7 +6310,7 @@ function payWages(){const F=dayFlags();if(F.wage||!S.created||S.tut!=='done')ret
 {const _d=dayEndTick;dayEndTick=function(){try{const F=dayFlags(),t=dayPhase();if(F.nc&&!inNight(t)&&t<CONFIG.day.lastCall&&!dayRepOpen&&!F.wage)payWages()}catch(e){}return _d()}}
 // ---- yıldız gösterimi ----
 const stStars=(v,cls='')=>{let h='';for(let i=1;i<=5;i++)h+=`<i class="ss${v>=i-0.25?' on':v>=i-0.75?' half':''}"></i>`;return `<span class="sstars ${cls}" aria-label="${v.toFixed(1)} yıldız">${h}</span>`};
-function stRows(role,st){return [['spd','Hız'],['sta','Dayanıklılık'],['spc',ST_SPC[role]]].map(([k,n])=>`<div class="srow"><span>${n}</span>${stStars(st[k])}<em>${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</em></div>`).join('')}
+function stRows(role,st){return [['spd','Hız'],['spc',ST_SPC[role]]].map(([k,n])=>`<div class="srow"><span>${n}</span>${stStars(st[k])}<em>${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</em></div>`).join('')}
 // ---- ekip ekranı: yıldızlar, enerji, maaş ----
 {const _rt=renderTeam;renderTeam=function(){_rt();if(!S.created)return;const l=$('teamList');
   l.querySelectorAll('[data-ed]').forEach(b=>{const key=b.dataset.ed,tc=b.closest('.tc');if(!tc||tc.querySelector('.sbox'))return;const st=stOf(key),role=roleOfKey(key);const o=[...WSTAFF,...BSTAFF,...CSTAFF].find(x=>x.key===key);
@@ -6416,7 +6416,7 @@ function layApplyLive(){layBase();buildCash();layApply();S.layout={k:{...KP},c:{
 function buildTable(){const T=START_TABLES[0];const rec={uid:++S.uid,id:T[2],x:T[0],z:T[1],rot:T[3],chair:'c_cushion',col:0};S.owned[T[2]]=true;
   setMode('cafe');startPlacement({rec,isNew:true,price:0})}
 // aday seçimi: iki ücretsiz 1★ aday; seçince görünüm düzenleyicisi açılır
-function buildHire(role){const m=$('lvModal');UI.modal=true;const C=[makeCand(role,'free'),makeCand(role,'free')].map(c=>({...c,st:{spd:1,sta:1,spc:1,en:100}}));C[1].st[['spd','sta','spc'][Math.floor(Math.random()*3)]]=2;
+function buildHire(role){const m=$('lvModal');UI.modal=true;const C=[makeCand(role,'free'),makeCand(role,'free')].map(c=>({...c,st:{spd:1,sta:1,spc:1,en:100}}));C[1].st[['spd','spc'][Math.floor(Math.random()*2)]]=2;
   const R=ROLES.find(x=>x.id===role);
   m.innerHTML=`<div class="lvcard hirecard2" role="dialog" aria-label="${R.name} adayları"><h3>${R.name} adayları</h3><p>İlk ekibin imza ücreti yok. Maaşlar her gün sonunda hasılattan düşülür.</p>
     <div class="clist">${C.map(c=>`<div class="cand"><div class="cth"><img src="${candThumb(c)}" alt=""></div><div class="ctx"><b>${c.name} <small>${R.name}</small></b>${stStars(stAvg(c.st),'big')}${stRows(role,c.st)}
@@ -6559,7 +6559,7 @@ renderTeam=function(){const l=$('teamList'),tabs=$('tmTabs'),foot=$('tmFoot');if
     $('tmSetup').onclick=()=>{UI.backTo='cafe';openEditor('waiter','create')};return}
   const keys=allStaffKeys().filter(k=>T==='all'||roleOfKey(k)===T);const all=[...WSTAFF,...BSTAFF,...CSTAFF];
   l.innerHTML=keys.map((key,i)=>{const c=S.chars[key],role=roleOfKey(key),R=ROLES.find(x=>x.id===role),st=stOf(key),o=all.find(x=>x.key===key);
-    const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,n,ic2])=>`<div class="skrow">${uiIc(ic2)}<span>${n}</span>${skStars(st[k])}<span class="sktag">${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</span></div>`).join('');
+    const rows=[['spd','Hız','i_bolt'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,n,ic2])=>`<div class="skrow">${uiIc(ic2)}<span>${n}</span>${skStars(st[k])}<span class="sktag">${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</span></div>`).join('');
     const lead=keys.indexOf(key)===0&&T==='all';
     return `<div class="skcard"><div class="skport"><img class="bg" src="${UIIMG('portrait_bg')}" alt=""><img class="cat" src="${charThumb(key)}" alt=""><img class="fr" src="${UIIMG('portrait_frame')}" alt="">${lead?uiIc('i_crown','crown'):''}${o&&o.resting?'<span class="rest">Molada</span>':''}</div>
       <div class="skbody"><div class="sktop"><b>${c.name}</b>${uiIc(ROLE_DECO[role])}<span class="skwage">${uiIc('i_coin')}${stWage(st)}/gün</span></div>
@@ -6614,7 +6614,7 @@ openHire=function(only){let m=$('skHire');if(!m){m=document.createElement('div')
     const TB=[['waiter','Garson','i_cloche'],['barista','Barista','i_cup'],['cashier','Kasiyer','i_register']];
     const adsH=ADS.slice(1).map(a=>`<button class="skbtn cream" type="button" data-ad="${a.id}" ${S.coins<a.cost?'disabled':''}>${a.name}<small>${uiIc('i_coin')}${a.cost}</small></button>`).join('');
     const detail=sel?(()=>{const st=sel.st,sign=stSign(st);
-      const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,nm,i2])=>`<div class="skhrow">${uiIc(i2)}<span>${nm}</span>${skStars(st[k],'big')}<span class="sktag">${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</span></div>`).join('');
+      const rows=[['spd','Hız','i_bolt'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,nm,i2])=>`<div class="skhrow">${uiIc(i2)}<span>${nm}</span>${skStars(st[k],'big')}<span class="sktag">${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st[k]-1]}</span></div>`).join('');
       const btns=(n<cap?`<button class="skbtn green" type="button" data-hire="${sel.id}">${uiIc('i_paw')}İşe al · ${uiIc('i_coin')}${sign}</button>`:'')+
         same.map(k=>`<button class="skbtn cream" type="button" data-swap="${sel.id}:${k}">${S.chars[k].name} yerine</button>`).join('');
       const note=n>=cap?(n<HIRE_MAX[role]?`<span class="sknote">Yeni ${R.name.toLowerCase()} kadrosu Seviye ${HIRE[role].find(h=>S.lvl<h.lv).lv}’de açılır</span>`:`<span class="sknote">${R.name} kadrosu dolu: biriyle değiştirebilirsin</span>`):'';
@@ -9495,7 +9495,7 @@ ${G} #team .tmbtn .skbtn .uic{width:16px!important;height:16px!important}
    foot.innerHTML='';
    const keys=allStaffKeys().filter(k=>T==='all'||roleOfKey(k)===T);const all=[...WSTAFF,...BSTAFF,...CSTAFF];
    l.innerHTML=keys.map((key,i)=>{const c=S.chars[key],role=roleOfKey(key),R=ROLES.find(x=>x.id===role),stt=stOf(key),o=all.find(x=>x.key===key);
-     const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,n,ic2])=>`<div class="tmrow" title="${(k==='spc'?ST_TXT[role]:ST_TXT[k])[stt[k]-1]||''}">${uiIc(ic2)}<b>${n}</b>${skStars(stt[k])}</div>`).join('');
+     const rows=[['spd','Hız','i_bolt'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,n,ic2])=>`<div class="tmrow" title="${(k==='spc'?ST_TXT[role]:ST_TXT[k])[stt[k]-1]||''}">${uiIc(ic2)}<b>${n}</b>${skStars(stt[k])}</div>`).join('');
      const lead=i===0&&T==='all';
      return `<div class="tmc" data-key="${key}"><div class="tmp"><img class="tmi" src="${charBig(key)}" alt="${c.name}" draggable="false">${lead?uiIc('i_crown','crown'):''}${o&&o.resting?'<span class="rest">Molada</span>':''}<span class="tmw">${uiIc('i_coin')}${stWage(stt)}/gün</span></div>
       <div class="tmb"><b class="tmn">${c.name}${uiIc(ROLE_DECO[role])}</b>
@@ -9511,7 +9511,7 @@ ${G} #team .tmbtn .skbtn .uic{width:16px!important;height:16px!important}
      const TB=[['waiter','Garson','i_cloche'],['barista','Barista','i_cup'],['cashier','Kasiyer','i_register']];
      const adsH=ADS.slice(1).map(a=>`<button class="skbtn cream" type="button" data-ad="${a.id}" ${S.coins<a.cost?'disabled':''}>${a.name} · ${uiIc('i_coin')}${a.cost}</button>`).join('');
      const cards=L.map(c=>{const st2=c.st,on=!!(sel&&c.id===sel.id);
-       const rows=[['spd','Hız','i_bolt'],['sta','Dayanıklılık','i_heart'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,nm,i2])=>`<span class="tmrow" title="${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st2[k]-1]||''}">${uiIc(i2)}<b>${nm}</b>${skStars(st2[k])}</span>`).join('');
+       const rows=[['spd','Hız','i_bolt'],['spc',ST_SPC[role],SPC_IC[role]]].map(([k,nm,i2])=>`<span class="tmrow" title="${(k==='spc'?ST_TXT[role]:ST_TXT[k])[st2[k]-1]||''}">${uiIc(i2)}<b>${nm}</b>${skStars(st2[k])}</span>`).join('');
        return `<button class="hrc" type="button" data-cs="${c.id}" aria-current="${on}"><span class="tmp"><img class="tmi" src="${candBig(c)}" alt="" draggable="false"></span>
         <span class="hrb"><b class="tmn">${c.name}${uiIc(ROLE_DECO[role])}</b>${skStars(stAvg(st2),'big')}<span class="tmrows">${rows}</span><span class="hrm"><span>Maaş <b>${stWage(st2)}</b>/gün</span><span>İmza ${uiIc('i_coin')}<b>${stSign(st2)}</b></span></span></span>${on?uiIc('d_check','ok'):''}</button>`}).join('');
      const acts=sel?(n<cap?`<button class="skbtn green" type="button" data-hire="${sel.id}">${uiIc('i_paw')}${sel.name}: işe al · ${uiIc('i_coin')}${stSign(sel.st)}</button>`:'')+same.map(k=>`<button class="skbtn cream" type="button" data-swap="${sel.id}:${k}">${S.chars[k].name} yerine</button>`).join(''):'';
