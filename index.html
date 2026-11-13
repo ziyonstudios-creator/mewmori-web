@@ -4332,7 +4332,7 @@ function openRecover(kind,bag){if($('recModal'))return;UI.modal=true;const md=do
         <div class="recopt"><div>${ic('clock')}<span><b>Bekle</b>${full?'Enerjin dolu.':`Tamamen dolması ${fmtT(E.next+(MX-E.v-1)*CONFIG.energy.regenSec)}`}</span></div>
         <div>${ic('gem')}<span><b>Hemen doldur</b>${c} elmas · enerji ${MX} olur</span><button class="btn green" type="button" id="recGem" ${full||S.gems<c?'disabled':''}>${ic('gem')}${c}</button></div></div>`}
     else{const it=ITEMS['bag_'+bag],b=bagState(bag);if(!b.cool)return null;const c=bagResetCost(b.cool);
-      h=`<div class="star"><span class="ic">${itemArt(it.id)}</span></div><h3>${it.name} dinleniyor</h3><p>${CONFIG.bag.limit} üretim bitti. Kalan süre: <b>${fmtT(b.cool)}</b></p>
+      h=`<div class="star"><span class="ic">${itemArt(it.id)}</span></div><h3>${it.name}: üretiliyor</h3><p>Yeni ${CONFIG.bag.limit} ürün hazırlanıyor. Kalan süre: <b>${fmtT(b.cool)}</b></p>
         <div class="recopt"><div>${ic('clock')}<span><b>Bekle</b>Süre bitince yeniden ${CONFIG.bag.limit} üretim (oyun kapalıyken de sayar)</span></div>
         <div>${ic('gem')}<span><b>Hemen yenile</b>${c} elmas · torba yeniden ${CONFIG.bag.limit} üretim verir</span><button class="btn green" type="button" id="recGem" ${S.gems<c?'disabled':''}>${ic('gem')}${c}</button></div></div>`}
     return `<div class="lvcard reccard" role="dialog" aria-label="Hızlandır">${h}<p class="recgems">Elmasın: ${S.gems}</p><button class="btn light" type="button" id="recNo">${ic('check')}Tamam</button></div>`};
@@ -15857,7 +15857,7 @@ const PACKS=[
  {k:'meyve',n:'Meyve',out:[['cilek1',3],['limon1',2]],img:null,tmp:'cilek2'},
  {k:'manav',n:'Sebze',out:[['domates1',3],['mantar1',2],['marul1',2],['patates1',2],['mercimek1',2]],img:'img/bag_manav.webp'},
  {k:'kasap',n:'Kasap',out:[['sucuk1',3],['tavuk1',2],['et1',2],['balik1',2]],img:'img/bag_kasap.webp'}];
-const PACK_IMG=['firin'];   // gerçek görseli gelen raf paketleri (img/packs/<k>.webp)
+const PACK_IMG=['firin','mandira','kafe','meyve','manav','kasap'];   // gerçek görseli gelen raf paketleri (img/packs/<k>.webp)
 for(const P of PACKS){BAG_OUT[P.k]=P.out.map(x=>x.slice());const id='bag_'+P.k;
   ITEMS[id]={...(ITEMS[id]||{}),id,name:P.n+' paketi',fam:'bag',bag:P.k,lv:0};
   ITEM_ART[id]=PACK_IMG.includes(P.k)?`<img src="img/packs/${P.k}.webp" alt="" draggable="false">`:P.img?`<img src="${P.img}" alt="" draggable="false">`:`<span class="pktmp">${ITEM_ART[P.tmp]||''}</span>`}
@@ -15883,7 +15883,7 @@ function packTap(k){const P=PACKS.find(x=>x.k===k);if(!P)return;const b=bagState
   const W=BAG_OUT[k];let s=W.reduce((a,x)=>a+x[1],0)*Math.random(),out=W[0][0];for(const [id,w] of W){s-=w;if(s<=0){out=id;break}}
   if(tutOut)out=tutOut;else{const tb=targetBases();if(tb){const opt=W.filter(x=>tb.has(x[0]));if(opt.length&&Math.random()<CONFIG.targetBias)out=opt[Math.floor(Math.random()*opt.length)][0]}
     const MX=energyMax();S.energy.v-=CONFIG.energy.cost;if(S.energy.v<MX&&S.energy.v+CONFIG.energy.cost>=MX)S.energy.ts=nowT();
-    const B=S.bags[k]||(S.bags[k]={n:0,cd:0});B.n++;if(B.n>=CONFIG.bag.limit){B.cd=nowT()+CONFIG.bag.cooldownSec*1000;setTimeout(()=>toast(`<b>${ITEMS['bag_'+k].name} dinlenmeye geçti</b><br>${CONFIG.bag.cooldownSec/60} dakika sonra yeniden ${CONFIG.bag.limit} üretim`,`<span class="ic">${itemArt('bag_'+k)}</span>`,2800),300)}}
+    const B=S.bags[k]||(S.bags[k]={n:0,cd:0});B.n++;if(B.n>=CONFIG.bag.limit){B.cd=nowT()+CONFIG.bag.cooldownSec*1000;setTimeout(()=>toast(`<b>${ITEMS['bag_'+k].name}: yeni ürünler üretiliyor</b><br>${CONFIG.bag.cooldownSec/60} dakika sonra ${CONFIG.bag.limit} ürün hazır`,`<span class="ic">${itemArt('bag_'+k)}</span>`,2800),300)}}
   S.board[t]=out;sfx('pop');discoverItem(out);markDirty();refreshCell(t,'pop');renderEnergy();packDraw();
   if(el){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}}
 // eski kod tahtadaki pakete dokunursa (olmamalı) rafa yönlendir
@@ -15955,6 +15955,10 @@ function enBoxDraw(){if(UI.mode!=='merge'||EVMODE)return;const thd=document.quer
 {const _re=renderEnergy;renderEnergy=function(){const r=_re.apply(this,arguments);try{enBoxDraw()}catch(x){}return r}}
 {const _hd=tkHedefDraw;tkHedefDraw=function(){const r=_hd.apply(this,arguments);try{enBoxDraw()}catch(x){}return r}}
 setInterval(()=>{try{enBoxDraw()}catch(x){}},1000);
+// V216: paket görselleri (fırın tarzı mini binalar) daha büyük görünsün; üretimdeyken altında "Üretiliyor"
+(()=>{const st=document.createElement('style');st.textContent=`#pkRaf .pk>img{width:112%;height:112%;margin:-6%}
+#pkRaf .pk.cool::after{content:'Üretiliyor';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff6e0;border:2px solid #4a2a14;border-radius:999px;padding:1px 5px;font:900 8.5px/1.1 var(--font-display,inherit);color:#4a2a14;white-space:nowrap;pointer-events:none}
+#pkRaf .pk.cool{filter:saturate(.55) brightness(.97)}`;document.head.appendChild(st)})();
 
 // ================= V199: yakın kamera, düğmeyi örtmeyen küçük rehber balonu, isimsiz başlangıç ekibi =================
 // ---- 1) müşteri oturunca kamera genel görünümün ~%60 uzaklığına gelir ve orada kalır ----
@@ -16159,7 +16163,7 @@ function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonu
     li(I('box'),'Tahtanın solundaki <b>paketlere</b> dokun, malzeme çıksın: Fırın, Süt ürünleri, İçecekler, Meyve, Sebze, Kasap.'),
     li(I('merge'),'Aynı iki malzemeyi üst üste sürükle; bir üst kademe olur.'),
     li(I('target'),'<b>Hedef</b> kartı, açmak istediğin tarifin istediği malzemeleri gösterir. Malzeme hazır olunca yanındaki onaya dokunup teslim et.'),
-    li(I('bolt'),'Her dokunuş enerji harcar; enerji Hedef kartının altında, zamanla dolar. Her paket 15 üretimden sonra kısa bir mola verir.')]},
+    li(I('bolt'),'Her dokunuş enerji harcar; enerji Hedef kartının altında, zamanla dolar. Her paket 15 üründen sonra kısa bir süre yeni ürün üretir.')]},
   {t:'Tarifler',i:'book',art:img('corba_mercimek')+img('omlet')+img('sezar'),b:[
     li(I('star'),'Yeni tarifler seviye atladıkça sırayla açılmaya hazır olur.'),
     li(I('target'),`Tarif Defteri’nde bir tarifte ${tagb('target','Hedefle','l')}’ye dokun; birleştirmede ne istediği hep görünür.`),
