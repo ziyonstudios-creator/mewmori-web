@@ -16530,7 +16530,6 @@ function k2StairWhy(rec){const g=k2Geo(rec),b=g.box,e=0.01;
   if(fz.minX<RM.x0-e||fz.maxX>RM.x1+e||fz.minZ<RM.z0-e||fz.maxZ>RM.z1+e)return 'Merdivenin önünde bir kare boşluk kalmalı';
   if(xz.minX<RM.x0-e||xz.maxX>RM.x1+e||xz.minZ<RM.z0-e||xz.maxZ>RM.z1+e)return 'Üst uç duvara dayanmasın: üst katta çıkış için bir kare gerekir';
   for(const o of OBST)if(o!==K2.ob1&&ovl(fz,o,-0.02))return 'Merdivenin önü kapalı';
-  for(const z of NO_BUILD)if(z!==K2.nb1&&ovl(fz,z,-0.02))return 'Merdivenin önü yürüme yoluna denk geliyor';
   const hole=k2Shift(b,K2.dx),ex2=k2Shift(xz,K2.dx);
   for(const [u,R] of FURN){if(u===rec.uid)continue;const up=k2X(R.rec.x);let bs=R.boxes&&R.boxes.length?R.boxes:null;if(!bs){try{bs=recBoxes(R.rec)}catch(er){bs=[]}}
     for(const q of bs){if(!up&&ovl(q,fz,-0.02))return 'Merdivenin önü kapalı';if(up&&(ovl(q,hole,-0.02)||ovl(q,ex2,-0.02)))return 'Üst katta bu yerde eşya var: önce onu taşı'}}
