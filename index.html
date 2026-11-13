@@ -15857,7 +15857,7 @@ const PACKS=[
  {k:'meyve',n:'Meyve',out:[['cilek1',3],['limon1',2]],img:null,tmp:'cilek2'},
  {k:'manav',n:'Sebze',out:[['domates1',3],['mantar1',2],['marul1',2],['patates1',2],['mercimek1',2]],img:'img/bag_manav.webp'},
  {k:'kasap',n:'Kasap',out:[['sucuk1',3],['tavuk1',2],['et1',2],['balik1',2]],img:'img/bag_kasap.webp'}];
-const PACK_IMG=[];   // gerçek görseli gelen raf paketleri (img/packs/<k>.webp)
+const PACK_IMG=['firin'];   // gerçek görseli gelen raf paketleri (img/packs/<k>.webp)
 for(const P of PACKS){BAG_OUT[P.k]=P.out.map(x=>x.slice());const id='bag_'+P.k;
   ITEMS[id]={...(ITEMS[id]||{}),id,name:P.n+' paketi',fam:'bag',bag:P.k,lv:0};
   ITEM_ART[id]=PACK_IMG.includes(P.k)?`<img src="img/packs/${P.k}.webp" alt="" draggable="false">`:P.img?`<img src="${P.img}" alt="" draggable="false">`:`<span class="pktmp">${ITEM_ART[P.tmp]||''}</span>`}
