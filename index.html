@@ -1875,7 +1875,7 @@ function defaultState(){const owned={};for(const c of CATALOG)if(c.own)owned[c.i
     objDone:[],upg:{price:0,speed:0,tip:0,energy:0},target:null,req:null,reqCd:90,visits:{},giftTable:true,dlv:{on:false,intro:false},closed:false,dayOff:0,dayN:1,dayStart:0,dayFlags:{},room:null,owner:null,saveT:0,expand:0,cafeName:null,likeDay:null,stock:null,led:null,fin:null,afk:{rate:0,cust:0,acc:0,accC:0,t:0},prices:{},rep:{hist:[],reviews:[],lost:0,unhappy:0,served:0,comp:[]},
     // V150: bu alanlar kayda yazılıyor ama burada olmadıkları için geri OKUNMUYORDU (loadState yalnız bu listedeki anahtarları alır) →
     // her açılışta sıfırlanıyorlardı: Royal Pass ilerlemesi, günlük görevler, posta ödülleri, günün adayları, ödenmemiş maaş, kurulum adımı, tanıtım filmi
-    rp:null,daily:null,mail:null,cand:null,unpaid:0,build:null,cine:0,lastSeen:Date.now()}}
+    wallFix:0,rp:null,daily:null,mail:null,cand:null,unpaid:0,build:null,cine:0,lastSeen:Date.now()}}
 let S=defaultState();
 // kayıt bozulursa (yarım yazılmış/elle değişmiş) otomatik yedekten açılır
 const AUTO_BAK=EVMODE?'mewmori-etkinlik-yedek':'posa-yosun-kafe-oto-yedek';let autoBakT=0;
@@ -16219,6 +16219,25 @@ renderGuide=function(){const T=guideTopics();if(GD.t==null)GD.t=0;const p=T[GD.t
   B.onclick=e=>{const t=e.target.closest('[data-gt]');if(!t)return;sfx('tap');GD.t=+t.dataset.gt;renderGuide();const m=B.querySelector('.gdmain');if(m)m.scrollTop=0}};
 // eski sayfa çevirme (kaydırma) etkisiz: GD.i artık kullanılmaz
 {const g=$('guide');if(g)for(const t of ['pointerdown','pointerup'])g.addEventListener(t,e=>{if(t==='pointerup')GD.i=0},true)}
+
+// ================= V212: eşyalar duvara yapışmaz — masa/sandalye/dekor kutuları duvar yüzeyinden en az WALL_GAP uzakta =================
+// Önceden kutular duvar çizgisine kadar (hatta 5 cm içine) gelebiliyordu; sandalye sırtları duvarın içine geçmiş görünüyordu.
+// İç duvarlar: sol (x0), arka (z0); bahçe açıksa sağ (x1) ve ön (z1) duvarlar da iki yanından korunur. Kilim gibi düz eşyalar hariç.
+const WALL_GAP=0.2;
+function wallTooClose(rec){const c=CAT[rec.id];if(!c||c.kind==='walldecor'||c.flat)return false;let boxes;try{boxes=candidateInfo(rec).boxes}catch(e){return false}
+  if(!boxes||!boxes.length)return false;const g=WALL_GAP,s=(a,b,lo,hi)=>a<hi&&b>lo;
+  for(const b of boxes){if(b.minX<RM.x0+g||b.minZ<RM.z0+g)return true;
+    if(s(b.minX,b.maxX,RM.x1-g,RM.x1+g)&&b.minZ<RM.z1+g)return true;
+    if(s(b.minZ,b.maxZ,RM.z1-g,RM.z1+g)&&b.minX<RM.x1+g)return true}
+  return false}
+{const _v=validatePlacement;validatePlacement=function(rec,exUid){const r=_v.apply(this,arguments);if(r)return r;try{if(wallTooClose(rec))return 'Duvara çok yakın; biraz içeri al'}catch(e){}return null}}
+// mevcut kayıtlar: duvara yapışık eşyalar 30 cm'ye kadar içeri kaydırılır (yer uygunsa); yeniden çizim için sayfa açılışında bir kez
+function wallFixAll(){if(EVMODE||!S||!Array.isArray(S.furniture)||S.wallFix)return;let n=0;
+  for(const rec of S.furniture){if(rec.stored)continue;const c=CAT[rec.id];if(!c||c.kind==='walldecor'||c.flat||!wallTooClose(rec))continue;const x0=rec.x,z0=rec.z;let ok=false;
+    for(let d=0.05;d<=0.31&&!ok;d+=0.05)for(const [dx,dz] of [[1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,1]]){rec.x=+(x0+dx*d).toFixed(2);rec.z=+(z0+dz*d).toFixed(2);if(!wallTooClose(rec)&&!validatePlacement(rec,rec.uid)){ok=true;break}}
+    if(ok)n++;else{rec.x=x0;rec.z=z0}}
+  S.wallFix=1;if(n){markDirty();try{saveNow()}catch(e){}try{for(const [u,R] of [...FURN]){scene.remove(R.group);FURN.delete(u)}for(const r of S.furniture)if(!r.stored)spawnFurn(r);refreshWorld()}catch(e){console.warn('duvar düzeltme',e)}}}
+{let t=setInterval(()=>{try{if(typeof started!=='undefined'&&started&&S&&S.created){clearInterval(t);wallFixAll()}}catch(e){}},1500)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
