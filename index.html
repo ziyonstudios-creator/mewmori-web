@@ -1762,6 +1762,7 @@ const WALL_SLOTS=[{x:-0.65,z:-ROOM_D/2+0.004,ry:0},{x:0.1,z:-ROOM_D/2+0.004,ry:0
   // genişleme ve taşınan kapı/pencere için ek yerler (duvarın dışında kalanlar kapalı sayılır)
   ...[-2.35,-3.25,-4.1,5.5,6.4,7.3,8.2,-5.5,-6.4,-7.3,-8.2].map(x=>({x,z:-ROOM_D/2+0.004,ry:0})),
   ...[-1.9,-2.9,-3.6,1.15,2.45,4.7,5.6,6.5,7.4,-4.7,-5.6,-6.5,-7.4].map(z=>({x:-ROOM_W/2+0.004,z,ry:Math.PI/2}))].map(s=>({...s,y:1.85}));   // son üçü: pencere/tezgâh taşınınca açılan arka duvar yerleri
+const WALL_N1=WALL_SLOTS.length;WALL_SLOTS.push(...WALL_SLOTS.map(s=>({...s,k2:true,x:s.x+400})));   // (V224) 2. kat duvar yerleri: aynı dizilim, 400 m sağda (dizin = 1. kat dizini + WALL_N1)
 
 // --- yüzeyler: duvar boyası ve zemin ---
 function floorTex(pat,c1,c2){const cv=document.createElement('canvas');cv.width=cv.height=256;const x=cv.getContext('2d');const C=c=>'#'+c.toString(16).padStart(6,'0');
@@ -2953,7 +2954,7 @@ function renderDetail(){const d=$('mkDetail');const sel=UI.sel;if(!sel){d.hidden
   d.innerHTML=`<div class="th"><img src="${itemThumb(c.id)}" alt=""></div><div class="tx"><b>${c.name}</b><p>${note}</p><div class="row">${btn}</div></div>`;
   const a=$('dAct');if(a)a.onclick=()=>buy(c)}
 function firstXP(id){if(!S.first[id]){S.first[id]=true;addXP(CONFIG.xp.firstPlace)}}
-function freeSlot(ex){const used=new Set(S.furniture.filter(f=>!f.stored&&CAT[f.id].kind==='walldecor'&&f.uid!==ex).map(f=>f.slot));for(let i=0;i<WALL_SLOTS.length;i++)if(!used.has(i)&&!slotBlocked(i))return i;return -1}
+function freeSlot(ex){const used=new Set(S.furniture.filter(f=>!f.stored&&CAT[f.id].kind==='walldecor'&&f.uid!==ex).map(f=>f.slot));for(let i=0;i<WALL_SLOTS.length;i++)if(!used.has(i)&&!!WALL_SLOTS[i].k2===k2Up()&&!slotBlocked(i))return i;return -1}   // (V224) görünen katın duvarı
 function buy(c){if(S.lvl<c.lvl)return;
   if(c.kind==='table'){if(placedTables()>=tableCap(S.lvl))return;if(S.coins<c.price)return;
     if(c.chair&&!S.owned[c.chair]){S.owned[c.chair]=true;markDirty()}   // masa kendi takım sandalyeleriyle gelir
@@ -2992,7 +2993,7 @@ function renderPlacebar(){const pb=$('placebar');pb.hidden=false;const c=CAT[PL.
   $('plNo').onclick=cancelPlacement;$('plOk').onclick=confirmPlacement;
   if($('plRot'))$('plRot').onclick=()=>{PL.rec.rot=((PL.rec.rot||0)+1)%4;updateGhost()};
   if(wall){const cyc=d=>{for(let k=1;k<=WALL_SLOTS.length;k++){const s=(PL.rec.slot+d*k+WALL_SLOTS.length*3)%WALL_SLOTS.length;if(freeSlotOk(s)){PL.rec.slot=s;break}}updateGhost()};$('plPrev').onclick=()=>cyc(-1);$('plNext').onclick=()=>cyc(1)}}
-const freeSlotOk=s=>!slotBlocked(s)&&!S.furniture.some(f=>!f.stored&&f.uid!==PL.rec.uid&&CAT[f.id].kind==='walldecor'&&f.slot===s);
+const freeSlotOk=s=>!!WALL_SLOTS[s].k2===k2Up()&&!slotBlocked(s)&&!S.furniture.some(f=>!f.stored&&f.uid!==PL.rec.uid&&CAT[f.id].kind==='walldecor'&&f.slot===s);
 function endPlacement(){if(PL&&PL.ghost)scene.remove(PL.ghost);const back=PL&&PL.fromEdit;PL=null;$('placebar').hidden=true;setMode(back?'edit':'cafe');if(back)enterEdit(true)}
 function cancelPlacement(){if(!PL)return;if(!PL.isNew&&!PL.fromStore){Object.assign(PL.rec,PL.orig);spawnFurn(PL.rec);refreshWorld()}endPlacement()}
 function confirmPlacement(){if(!PL)return;const why=validatePlacement(PL.rec,PL.rec.uid);if(why){PL.why=why;renderPlacebar();return}
@@ -6251,7 +6252,8 @@ function opCheck(){const D=OP_DIM();for(const q in OP){const o=OP[q],[a,b]=wallS
   try{if(GATE.wall)for(const q in OP)if(OP[q].wall===GATE.wall&&Math.abs(OP[q].t-GATE.t)<D[q].w/2+GT_W+0.25)return `${OP_NAME[q]} bahçe kapısıyla üst üste geliyor`}catch(e){}
   return null}
 // duvardaki süs yeri: duvarın dışında, bir açıklığın üstünde ya da tezgâh raflarının arkasında mı?
-function slotBlocked(i,kp){const sl=WALL_SLOTS[i];if(!sl)return 'out';const wall=sl.ry?'left':'back',t=sl.ry?sl.z:sl.x,[a,b]=wallSpan(wall);if(t<a+0.35||t>b-0.35)return 'out';
+function slotBlocked(i,kp){const sl=WALL_SLOTS[i];if(!sl)return 'out';if(sl.k2)return k2SlotBlocked(sl);   // (V224) 2. kat duvarı: kendi pencereleri (p107)
+  const wall=sl.ry?'left':'back',t=sl.ry?sl.z:sl.x,[a,b]=wallSpan(wall);if(t<a+0.35||t>b-0.35)return 'out';
   const sw=shelfWall(kp);if(sw&&sw.wall===wall&&t>(wall==='back'?sw.b.minX:sw.b.minZ)-0.3&&t<(wall==='back'?sw.b.maxX:sw.b.maxZ)+0.3)return 'shelf';
   const D=OP_DIM();for(const q in OP)if(OP[q].wall===wall&&Math.abs(t-OP[q].t)<D[q].w/2+(q==='door'?0.3:0.35))return 'win';return false}
 {const _v=validatePlacement;validatePlacement=function(rec,...a){const r=_v(rec,...a);if(r)return r;const c=CAT[rec.id];if(c&&c.kind==='walldecor'){const b=slotBlocked(rec.slot);if(b==='shelf')return 'Burası tezgâh raflarının arkasında kalıyor';if(b==='win')return 'Burası kapı ya da pencerenin üstü';if(b)return 'Duvarda boş yer yok'}return null}}
@@ -6470,7 +6472,7 @@ function opDerived(){const o=OP.door,P=opPose('door'),n={x:-wallIn(o.wall).x,z:-
   try{if(SUPBOX)SUPBOX.position.set(SUP_DROP.x,0,SUP_DROP.z)}catch(e){}
   try{wallSlotsSync()}catch(e){}}
 // duvar süsleri: sol duvardakiler RM.x0'da, arka duvardakiler RM.z0'da durur
-function wallSlotsSync(){for(const s of WALL_SLOTS){if(s.ry)s.x=RM.x0+0.004;else s.z=RM.z0+0.004}
+function wallSlotsSync(){for(const s of WALL_SLOTS){if(s.ry)s.x=RM.x0+(s.k2?400:0)+0.004;else s.z=RM.z0+0.004}
   try{for(const [u,R] of FURN)if(CAT[R.rec.id].kind==='walldecor'&&WALL_SLOTS[R.rec.slot])placeGroup(R.group,R.rec)}catch(e){}}
 // kapı kanatları: yaklaşan biri varsa açılır (kapının yerel ekseninde)
 doorTick=function(dt){if(!DOORA.leaves.length)return;const P=[];for(const c of customers)if(c.char)P.push(c.char.pos);for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)P.push(k.ch.pos);
@@ -9730,7 +9732,7 @@ function vmOpening(b){vmEnsure();const items=[],hw=OP_DIM()[b].w/2;
 const WS={g:null};
 function wsHide(){if(WS.g){scene.remove(WS.g);disposeTree(WS.g);WS.g=null}}
 function wsShow(){wsHide();if(!PL||CAT[PL.rec.id].kind!=='walldecor')return;const G=new THREE.Group();WS.g=G;scene.add(G);
-  WALL_SLOTS.forEach((s,i)=>{let ok=false;try{ok=i===PL.rec.slot?!PL.why:freeSlotOk(i)}catch(e){}if(slotBlocked(i)==='out')return;
+  WALL_SLOTS.forEach((s,i)=>{let ok=false;try{ok=i===PL.rec.slot?!PL.why:freeSlotOk(i)}catch(e){}if(slotBlocked(i)==='out'||!!s.k2!==k2Up())return;
     const m=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5),new THREE.MeshBasicMaterial({color:ok?0x58cd68:0xe84e46,transparent:true,opacity:i===PL.rec.slot?0.2:0.5,depthWrite:false}));
     m.position.set(s.x+(s.ry?0.012:0),s.y,s.z+(s.ry?0:0.012));m.rotation.y=s.ry;m.renderOrder=4;G.add(m)})}
 // yerleştirme modu (taşıma ve yeni alınan eşya): eşya kareye oturtulur, harita gösterilir; döndürünce yeniden hesaplanır
@@ -9812,7 +9814,7 @@ function mvMove(e){const D=MV.d,b=MV.b;if(!D||!b||D.id!==e.pointerId)return;
 // taşıma sürerken başka şeye dokunulmaz; yalnızca seçiliyken başka yere dokununca seçim bırakılır
 {const _t=editTap;editTap=function(x,y){if(MV.b)return;UI.edAll=0;if(LAY.on&&!layMoved())layCancel();return _t(x,y)}}
 // V139 "Hepsini kaldır": bütün eşyalar (masa, dekor, duvar süsü) depoya; tezgâh ve kasa yerinde kalır. Oyuncu sonra Depo'dan istediğini yerleştirir.
-function edAllStore(){let n=0;for(const R of [...FURN.values()]){if(R.table&&R.table.occupant)continue;if(R.rec.id==='d_stairs'||k2X(R.rec.x)!==k2Up())continue;   // (V219) yalnız görünen kat; merdiven kalır
+function edAllStore(){let n=0;for(const R of [...FURN.values()]){if(R.table&&R.table.occupant)continue;if(R.rec.id==='d_stairs'||k2RecUp(R.rec)!==k2Up())continue;   // (V219) yalnız görünen kat; merdiven kalır
     R.rec.stored=true;despawnFurn(R.rec.uid);n++}
   UI.edit=null;UI.edAll=0;if(n){refreshWorld();markDirty();try{sfx('place')}catch(e){}toast(`<b>${n} eşya depoya kaldırıldı</b><br>Depo’dan istediğini seçip yerleştir`,ic('box'),2800)}drawEditBar()}
 function openDepo(){setMode('market');try{const s=mkSecOf('store');if(s){UI.mkSec=s;UI.tab='store';UI.mkTab0=null;UI.sel=null;renderMarket()}}catch(e){console.warn('depo',e)}}
@@ -9823,7 +9825,7 @@ function openDepo(){setMode('market');try{const s=mkSecOf('store');if(s){UI.mkSe
 // ---- işaretçi olayları ----
 {const cv=renderer.domElement;let tap=null;
  const slotAt=e=>{const r=cv.getBoundingClientRect();let best=-1,bd=90;const v=new THREE.Vector3();
-   WALL_SLOTS.forEach((s,i)=>{if(slotBlocked(i)==='out')return;v.set(s.x,s.y,s.z).project(camera);const d=Math.hypot((v.x+1)/2*r.width+r.left-e.clientX,(1-v.y)/2*r.height+r.top-e.clientY);if(d<bd){bd=d;best=i}});return best};
+   WALL_SLOTS.forEach((s,i)=>{if(slotBlocked(i)==='out'||!!s.k2!==k2Up())return;v.set(s.x,s.y,s.z).project(camera);const d=Math.hypot((v.x+1)/2*r.width+r.left-e.clientX,(1-v.y)/2*r.height+r.top-e.clientY);if(d<bd){bd=d;best=i}});return best};
  const wallPick=e=>{if(UI.mode!=='place'||!PL||CAT[PL.rec.id].kind!=='walldecor')return;const s=slotAt(e);if(s>=0&&s!==PL.rec.slot){PL.rec.slot=s;updateGhost()}};
  cv.addEventListener('pointerdown',e=>{if(e.button>0)return;
    if(UI.mode==='edit'&&MV.b&&!MV.d){try{mvDown(e);if(MV.d)cv.setPointerCapture(e.pointerId)}catch(er){}return}
@@ -16495,6 +16497,10 @@ function k2Rec(){try{if(k2Vis()){const L=VISIT.cafe&&VISIT.cafe.layout;return ((
 {const _by=buy;buy=function(c){if(c&&c.id==='d_stairs'&&k2Rec()){toast('2. kat zaten açık',ic('check'));return}return _by.apply(this,arguments)}}
 
 // ---- merdivenin ölçüleri: yerel −Z yönünde yükselir (rot 0: arka duvara doğru) ----
+// üst kat pencerelerinin duvar boyunca yeri (1. kat koordinatında; arka duvar için çizimde +400) ve duvar süsü yuvasının durumu
+function k2Wins(){const W=RM.x1-RM.x0;return {back:W>=9?[RM.x0+W*0.27,RM.x0+W*0.73]:[(RM.x0+RM.x1)/2],left:[(RM.z0+RM.z1)/2]}}
+function k2SlotBlocked(sl){if(!K2||!K2.on)return 'out';const wall=sl.ry?'left':'back',t=sl.ry?sl.z:sl.x-400,[a,b]=wallSpan(wall);if(t<a+0.35||t>b-0.35)return 'out';for(const w of k2Wins()[wall])if(Math.abs(t-w)<WIN.w/2+0.35)return 'win';return false}
+function k2RecUp(rec){const c=CAT[rec.id];if(c&&c.kind==='walldecor'){const s=WALL_SLOTS[rec.slot];return !!(s&&s.k2)}return k2X(rec.x)}   // kayıt üst katta mı (duvar süsünde yuvaya bakılır)
 const K2U=[[0,-1],[-1,0],[0,1],[1,0]];
 function k2Geo(rec){const r=(((rec.rot||0)%4)+4)%4,[ux,uz]=K2U[r],odd=r%2,hx=odd?1.25:0.5,hz=odd?0.5:1.25;
   const lo={x:rec.x-ux*1.25,z:rec.z-uz*1.25},hi={x:rec.x+ux*1.25,z:rec.z+uz*1.25};
@@ -16540,7 +16546,7 @@ function k2StairWhy(rec){const g=k2Geo(rec),b=g.box,e=0.01;
   {const F=g.foot,m=0.36;if(F.x<RM.x0+m||F.x>RM.x1-m||F.z<RM.z0+m||F.z>RM.z1-m)return 'Merdivenin önü kenara çok yakın: önünde bir kare daha boşluk bırak'}   // ayak noktası yürüme alanında olmalı (yoksa karakter merdivene yandan girer)
   for(const o of OBST)if(o!==K2.ob1&&ovl(fz,o,-0.02))return 'Merdivenin önü kapalı';
   const hole=k2Shift(b,K2.dx),ex2=k2Shift(xz,K2.dx);
-  for(const [u,R] of FURN){if(u===rec.uid)continue;const up=k2X(R.rec.x);let bs=R.boxes&&R.boxes.length?R.boxes:null;if(!bs){try{bs=recBoxes(R.rec)}catch(er){bs=[]}}
+  for(const [u,R] of FURN){if(u===rec.uid||CAT[R.rec.id].kind==='walldecor')continue;const up=k2X(R.rec.x);let bs=R.boxes&&R.boxes.length?R.boxes:null;if(!bs){try{bs=recBoxes(R.rec)}catch(er){bs=[]}}
     for(const q of bs){if(!up&&ovl(q,fz,-0.02))return 'Merdivenin önü kapalı';if(up&&(ovl(q,hole,-0.02)||ovl(q,ex2,-0.02)))return 'Üst katta bu yerde eşya var: önce onu taşı'}}
   return null}
 {const _v=validatePlacement;validatePlacement=function(rec,ex){
@@ -16563,7 +16569,7 @@ function k2Build(){k2Drop();if(!K2.on||!K2.geo){if(K2.view===2)k2View(1,true);k2
    for(let i=0;i<Math.floor(D/0.43);i++){const z=R.z0+0.22+i*0.43,segs=(z>hb.minZ-0.02&&z<hb.maxZ+0.02)?[[R.x0+0.01,hb.minX],[hb.maxX,R.x1-0.01]]:[[R.x0+0.01,R.x1-0.01]];
      for(const [a,b] of segs){if(b-a<0.05)continue;const s=mk(new THREE.BoxGeometry(b-a,0.01,0.02),M.floorDark,(a+b)/2,0.005,z);s.visible=!!SHELL.strips;K2.strips.push(s);floorStrips.push(s)}}}
   // iki duvar (arka, sol): 1. kattaki kuruluşun aynısı; pencereler seçili pencere tarzında
-  const wins={back:W>=9?[R.x0+W*0.27,R.x0+W*0.73]:[cx],left:[cz]};
+  const kw=k2Wins(),wins={back:kw.back.map(v=>v+K2.dx),left:kw.left};
   for(const wall of ['back','left']){const WG=new THREE.Group();WG.userData.wall=wall;G.add(WG);const [a,b]=wall==='back'?[R.x0,R.x1]:[R.z0,R.z1];
     const sh=new THREE.Shape();sh.moveTo(a-0.2,-0.2);sh.lineTo(b+0.2,-0.2);sh.lineTo(b+0.2,WALL_H);sh.lineTo(a-0.2,WALL_H);sh.lineTo(a-0.2,-0.2);
     for(const t of wins[wall])sh.holes.push(archHole(new THREE.Path(),t,WIN.y,WIN.w,WIN.h));
@@ -16642,7 +16648,7 @@ k2Btn();setInterval(k2Btn,900);
 // ziyaret çubuğunda Kat düğmesi (ziyarette ana ekran düğmeleri gizlidir)
 {const _vb=visitBar;visitBar=function(){const r=_vb.apply(this,arguments);try{const top=document.querySelector('#visitBar .vtop');if(top&&K2.on&&!$('vKat')){const b=document.createElement('button');b.type='button';b.id='vKat';b.className='btn light';
       const lab=()=>{b.innerHTML=K2_ICON+(K2.view===2?'2. Kat':'1. Kat')};lab();b.onclick=()=>{try{sfx('tap')}catch(e){}k2View(K2.view===2?1:2,true);lab()};top.appendChild(b)}}catch(e){console.warn('kat2 ziyaret',e)}return r}}
-{const _sp=startPlacement;startPlacement=function(o){try{const c=o&&o.rec&&CAT[o.rec.id];if(K2.view===2&&c&&(c.kind==='walldecor'||c.id==='d_stairs'))k2View(1,true)}catch(e){}return _sp.apply(this,arguments)}}   // duvar süsleri şimdilik yalnız 1. katta
+{const _sp=startPlacement;startPlacement=function(o){try{const c=o&&o.rec&&CAT[o.rec.id];if(K2.view===2&&c&&c.id==='d_stairs')k2View(1,true)}catch(e){}return _sp.apply(this,arguments)}}   // merdiven 1. kata konur
 {const _de=drawEditBar;drawEditBar=function(){const r=_de.apply(this,arguments);try{const R=UI.edit!=null?FURN.get(UI.edit):null;if(R&&R.rec.id==='d_stairs'){const b=$('edStore');if(b)b.remove()}}catch(e){}return r}}
 {const _cp=confirmPlacement;confirmPlacement=function(){const st=!!(PL&&PL.rec&&PL.rec.id==='d_stairs'&&PL.isNew),had=!!k2Rec();const r=_cp.apply(this,arguments);
   try{if(st&&!had&&k2Rec())setTimeout(()=>toast('<b>2. kat açıldı!</b><br>Sol alttaki <b>Kat</b> düğmesiyle üst kata geç; oraya da masa ve dekor koyabilirsin.',`<img src="${itemThumb('d_stairs')}" alt="">`,5200),900)}catch(e){}return r}}
@@ -16718,7 +16724,7 @@ function k2MoveStairs(){const r=k2Rec();if(!r||!edCan())return;closeExpandMode()
 {const _xt=xmTip;xmTip=function(){const ov=$('expOv'),t=ov&&ov.querySelector('.xmTip');if(!t||XM.sel!=='k2'){if(t)t.classList.remove('k2');return _xt.apply(this,arguments)}
   const s=k2XmState(),c=CAT.d_stairs,li=x=>`<li>${ic('check')}<span>${x}</span></li>`;t.classList.add('k2');
   t.innerHTML=`<div class="k2top"><div class="k2im"><img src="${itemThumb('d_stairs')}" alt=""></div><div class="k2tx"><em>${s.has?'AÇIK':'YENİ KAT'}</em><b>2. Kat</b><p>${s.has?'Üst katın hazır. Merdiveni dilediğin zaman başka yere alabilirsin.':'Kafene bir üst kat ekle; merdiveni istediğin yere koy.'}</p></div></div>
-    <ul>${li('+6 masa yeri')}${li('Üst kata masa ve dekor')}${li('Müşteriler ve garsonlar merdivenle çıkar')}</ul>`+
+    <ul>${li('+6 masa yeri')}${li('Üst kata masa, dekor ve duvar süsü')}${li('Müşteriler ve garsonlar merdivenle çıkar')}</ul>`+
     (s.has?`<div class="k2row"><button class="btn green" type="button" id="k2Go">${K2_ICON}Üst kata git</button><button class="btn light" type="button" id="k2Mv">${ic('move')}Merdiveni taşı</button></div>`
       :s.ok?`<button class="btn green" type="button" id="xmBuy">${ic('coin')}${c.price.toLocaleString('tr-TR')} · Satın al ve yerleştir</button>`:`<p class="why">${ic('lock')}${s.why} · ${ic('coin')}${c.price.toLocaleString('tr-TR')}</p>`);
   t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{try{sfx('tap')}catch(e){}k2XmBuy()};
@@ -16744,7 +16750,8 @@ function k2MoveStairs(){const r=k2Rec();if(!r||!edCan())return;closeExpandMode()
 .xmTip.k2 .k2row{display:flex;gap:7px}.xmTip.k2 .k2row .btn{flex:1;width:auto;font-size:12.5px;padding:0 8px;gap:4px;white-space:nowrap}
 .xmTip.k2 .btn svg{width:18px;height:18px;flex:none}
 .xmTip.k2 p.why{margin:2px 0 0;font-size:12.5px}`;document.head.appendChild(st)}
-
+// (V224) üst kattaki duvar süsleri duvarıyla birlikte gizlenir (kamera duvarın arkasına geçince): gruba duvar etiketi
+{const _sf=spawnFurn;spawnFurn=function(rec){const R=_sf.apply(this,arguments);try{const c=CAT[rec.id],s=c&&c.kind==='walldecor'&&WALL_SLOTS[rec.slot];if(s&&s.k2&&R&&R.group)R.group.userData.wall=s.ry?'left':'back'}catch(e){}return R}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
