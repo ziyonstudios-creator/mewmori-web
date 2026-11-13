@@ -16063,6 +16063,75 @@ function rhFix(){const box=$('coach');if(!box)return;const bub=box.querySelector
   if(mg){S2('left','auto');S2('right','calc(max(10px, var(--sar, 0px)) + 6px)')}else{S2('right','auto');S2('left','calc(max(12px, var(--sal, 0px)) + 6px)')}}
 (function rhFixLoop(){try{rhFix()}catch(e){}requestAnimationFrame(rhFixLoop)})();
 
+// ================= V206: MENÜ ŞABLON A — tek ekran: solda kategoriler, sağda ailelere göre liste (fiyat −/+ ve menü anahtarı aynı satırda) =================
+// Kullanıcı seçimi (şablon A). "Fiyatlar" sekmesi kalktı: fiyat her satırda. Stok sekmesi aynen kalır.
+mtabsHTML=function(){const low=stockN()<=CONFIG.stock.low||stockS().arr.length>0;
+  return `<div class="mtabs">${[['menu','Menü'],['stock','Stok']].map(([id,n])=>`<button type="button" data-mt="${id}" aria-pressed="${(menuTab==='price'?'menu':menuTab)===id}">${n}${id==='stock'&&low?'<i class="mdot"></i>':''}</button>`).join('')}</div>`};
+(()=>{const INK='#4a2a14';const st=document.createElement('style');st.textContent=`
+#menuList.mnA2{display:flex!important;flex-direction:column!important;min-height:0}
+.mnA{flex:1 1 auto;min-height:0;display:flex;gap:10px;margin-top:6px}
+.mnA .mside{flex:none;width:136px;display:flex;flex-direction:column;gap:5px;min-height:0}
+.mnA .mside button{all:unset;box-sizing:border-box;flex:1 1 0;min-height:30px;max-height:52px;display:flex;align-items:center;gap:6px;padding:0 7px;border:2.5px solid ${INK};border-radius:13px;background:#fdf0d8;font:800 12.5px/1.05 var(--font-display,inherit);color:${INK};cursor:pointer;box-shadow:0 2px 0 ${INK}}
+.mnA .mside button img{width:30px;height:30px;object-fit:contain;flex:none}
+.mnA .mside button small{margin-left:auto;font-size:10px;opacity:.65;flex:none}
+.mnA .mside button[aria-selected="true"]{background:linear-gradient(#ffe48a,#ffd05a)}
+.mnA .mlist{flex:1 1 auto;min-width:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:5px;padding:0 4px 8px 0}
+.mnA h4{font:800 13px/1 var(--font-display,inherit);color:#9a6436;margin:5px 4px 0;display:flex;gap:6px;align-items:baseline}
+.mnA h4 small{font-size:10.5px;opacity:.75}
+.mnA .mrw{display:flex;align-items:center;gap:9px;background:#fff;border:2.5px solid #e2c49a;border-radius:13px;padding:3px 9px 3px 4px;flex:none}
+.mnA .mrw>img{width:36px;height:36px;object-fit:contain;flex:none}
+.mnA .mrw .nm{flex:1;min-width:0;font:800 14px/1.1 var(--font-display,inherit);color:${INK}}
+.mnA .mrw .nm small{display:block;font-size:10.5px;color:#9a6436;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mnA .mrw .nm small i{font-style:normal;font-weight:900}
+.mnA .mrw.off>img,.mnA .mrw.off .nm{opacity:.55}
+.mnA .mrw.lock{background:#faf3e6;border-style:dashed}.mnA .mrw.lock>img{filter:grayscale(1);opacity:.45}.mnA .mrw.lock .nm{opacity:.55}
+.mnA .mst{display:flex;align-items:center;gap:5px;flex:none}
+.mnA .mst button{all:unset;box-sizing:border-box;width:26px;height:26px;border-radius:9px;border:2.5px solid ${INK};background:linear-gradient(#ffe48a,#ffd05a);display:grid;place-items:center;font:900 16px/1 var(--font-display,inherit);color:${INK};cursor:pointer}
+.mnA .mst button:disabled{opacity:.35;cursor:default}
+.mnA .mst b{min-width:34px;text-align:center;font:900 14.5px/1 var(--font-display,inherit);color:${INK};display:flex;align-items:center;justify-content:center;gap:2px}
+.mnA .mst b .ic{width:14px;height:14px;display:inline-grid}
+.mnA .msw{all:unset;box-sizing:border-box;flex:none;width:42px;height:24px;border-radius:999px;border:2.5px solid ${INK};background:#e9d7b8;position:relative;cursor:pointer}
+.mnA .msw::after{content:'';position:absolute;top:1.5px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;border:2px solid ${INK};transition:left .15s}
+.mnA .msw[aria-pressed="true"]{background:#8fcf55}.mnA .msw[aria-pressed="true"]::after{left:18px}
+.mnA .mempty3{margin:auto;text-align:center;font:800 13px/1.4 var(--font-display,inherit);color:#9a6436}
+#menuList.mnA2 .mfoot2{flex:none;margin:4px 0 0;text-align:center;font:700 10.5px/1.2 var(--font-display,inherit);color:#9a6436}
+`;document.head.appendChild(st)})();
+const mnAcatImg=c=>{const r=RECIPES.find(x=>x.cat===c.id&&S.unlocked[x.id]&&recShown(x))||RECIPES.find(x=>x.cat===c.id&&!x.hidden&&recShown(x));return r?`<img src="${productThumb(r.id)}" alt="">`:ic(c.icon)};
+function mnAmenu(L){if(!RCAT.some(c=>c.id===UI.mnCat))UI.mnCat=RCAT[0].id;
+  const old=L.querySelector('.mlist'),sy=old&&L._mcat===UI.mnCat?old.scrollTop:0;L._mcat=UI.mnCat;
+  const F=famsFor(UI.mnCat),pi=priceIndex();
+  const row=r=>{const u=!!S.unlocked[r.id];if(!u)return `<div class="mrw lock"><img src="${productThumb(r.id)}" alt=""><div class="nm">${r.name}<small>🔒 ${r.br?EVENTS[r.br].country:'Seviye '+(r.lvl||1)} · Tarifler’de aç</small></div></div>`;
+    const m=!!S.menu[r.id],R=priceRange(r),p=priceOf(r),[lb,col]=priceLabel(r),tags=[machineOk(r)?'':`${CATALOG.find(x=>x.elv===1&&x.slot===EQUIP_OF[r.station]).name} yok`,stockTag(r)?'Malzeme yok':'',S.req&&S.req.rid===r.id?'Özel istek':''].filter(Boolean);
+    return `<div class="mrw ${m?'':'off'}" data-mi="${r.id}" data-pi="${r.id}"><img src="${productThumb(r.id)}" alt=""><div class="nm">${r.name}<small>${m?'Menüde':'Menüde değil'} · <i style="color:${col}">${lb}</i>${tags.length?' · <i style="color:#d0453c">'+tags.join(' · ')+'</i>':''}</small></div>
+      <div class="mst"><button type="button" data-pd="-1" aria-label="${r.name} fiyatını düşür" ${p<=R.min?'disabled':''}>−</button><b>${ic('coin')}${p}</b><button type="button" data-pd="1" aria-label="${r.name} fiyatını artır" ${p>=R.max?'disabled':''}>+</button></div>
+      <button type="button" class="msw" data-tg="${r.id}" aria-pressed="${m}" aria-label="${r.name} menüde"></button></div>`};
+  const body=F.map(f=>{const on=f.list.filter(r=>S.menu[r.id]).length,un=f.list.filter(r=>S.unlocked[r.id]).length;
+    return `<h4>${f.n}<small>${un?on+'/'+un+' menüde':'kilitli'}</small></h4>`+f.list.slice().sort((a,b)=>(!!S.unlocked[b.id])-(!!S.unlocked[a.id])).map(row).join('')}).join('');
+  L.classList.add('mnA2');
+  L.innerHTML=`${mtabsHTML()}<div class="mnA"><div class="mside" role="tablist">${RCAT.map(c=>{const a=RECIPES.filter(r=>r.cat===c.id&&S.unlocked[r.id]);
+      return `<button type="button" role="tab" data-mc="${c.id}" aria-selected="${UI.mnCat===c.id}">${mnAcatImg(c)}<span>${c.name}</span><small>${a.filter(r=>S.menu[r.id]).length}/${a.length}</small></button>`}).join('')}</div>
+    <div class="mlist">${body||'<div class="mempty3">Bu bölümde henüz tarif yok.</div>'}</div></div>
+    <p class="mfoot2">Fiyat düzeyi %${Math.round(pi*100)} · Ucuz menü daha çok müşteri çeker, pahalı menüde kâr artar · yeni ürünleri <b>Tarifler</b>’de açarsın</p>`;
+  const nl=L.querySelector('.mlist');if(nl)nl.scrollTop=sy;
+  L.onclick=e=>{const t=e.target.closest('[data-mt]');if(t){menuTab=t.dataset.mt;sfx('tap');renderMenu();return}
+    const c=e.target.closest('[data-mc]');if(c){UI.mnCat=c.dataset.mc;sfx('tap');renderMenu();return}
+    const d=e.target.closest('[data-pd]');if(d){const id=d.closest('[data-pi]').dataset.pi;if(setPrice(id,priceOf(RECIPE[id])+(+d.dataset.pd))){sfx('tap');renderMenu()}else sfx('nope');return}
+    const b=e.target.closest('[data-tg]');if(!b)return;const id=b.dataset.tg,want=!S.menu[id];
+    if(!setMenu(id,want)){sfx('nope');toast('Menüde en az bir ürün kalmalı',ic('menu'),2000);return}
+    sfx(want?'place':'tap');toast(want?`${RECIPE[id].name} menüye eklendi`:`${RECIPE[id].name} menüden çıkarıldı`,`<img src="${productThumb(id)}" alt="">`,1600);renderMenu();if(typeof tut2Event==='function')tut2Event('menu',id)}}
+{const _rm=renderMenu;renderMenu=function(){const L=$('menuList');if(!L)return _rm.apply(this,arguments);if(menuTab==='price')menuTab='menu';
+  if(menuTab==='stock'){L.classList.remove('mnA2');return _rm.apply(this,arguments)}
+  try{return mnAmenu(L)}catch(e){console.warn('menü A',e);L.classList.remove('mnA2');return _rm.apply(this,arguments)}}}
+// yükseklik: liste pencerenin altına kadar uzanır, kendi içinde kayar (6 kategori de sığar)
+function mnAfit(){const L=$('menuList'),A=L&&L.querySelector('.mnA');if(!A||UI.mode!=='menu')return;const k=(window.__U&&window.__U.k)||1;
+  let w=L.parentElement;while(w&&w!==document.body){const cs=getComputedStyle(w);if(/(auto|scroll|hidden)/.test(cs.overflowY)&&w.clientHeight>100)break;w=w.parentElement}
+  const win=(L.closest('.skwin')||w||L.parentElement).getBoundingClientRect(),at=A.getBoundingClientRect().top,f=L.querySelector('.mfoot2'),fh=f?f.getBoundingClientRect().height+8*k:0;
+  const h=Math.max(110,(win.bottom-at-fh-12*k)/k);if(Math.abs((parseFloat(A.style.height)||0)-h)>1)A.style.height=h.toFixed(0)+'px'}
+{const _r=renderMenu;renderMenu=function(){const r=_r.apply(this,arguments);try{mnAfit();requestAnimationFrame(mnAfit)}catch(e){}return r}}
+addEventListener('resize',()=>{try{mnAfit()}catch(e){}});setInterval(()=>{try{mnAfit()}catch(e){}},800);
+(()=>{const st=document.createElement('style');st.textContent=`#menuList.mnA2 .mtabs{margin-bottom:0}html.land #game#game #menuList.mnA2 .mtabs button{min-height:0!important;height:34px!important;padding-top:0!important;padding-bottom:0!important}
+.mnA .mside{overflow-y:auto}.mnA .mside button{min-height:34px}`;document.head.appendChild(st)})();
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
