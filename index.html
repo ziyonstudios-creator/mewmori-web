@@ -298,8 +298,10 @@ var EVMODE=(()=>{try{const f=JSON.parse(localStorage.getItem(EV_FLAG)||'null');i
 // Arka duvar (RM.z0) ve sol duvar (RM.x0) duvarlıdır; sağ (RM.x1) ve ön (RM.z1) açık kesittir. Kafe her kenardan 2 m'lik iki kademeyle büyür.
 // Kapı ve büyük pencere iki duvardan istenene, istenen yere taşınabilir (OP). (Kapı yanındaki küçük cam V160'ta kaldırıldı.) Zemin, duvarlar ve süpürgelikler buildShell() ile kurulur.
 var GDN={r:0,f:0};
-var SHELL={g:null,strips:true,plants:[],outer:[],base:{x0:-6.75,z0:-6,x1:6.75,z1:6}};   // (V226) temel kafe her yöne +2 m: 13,5 × 12 m (eski kayıtlar p109'da dönüştürülür)
-const ROOM_MAX={x0:-12.75,x1:12.75,z0:-12,z1:12};   // (V226) +2 m: bahçe yine 6 m, sol/arka genişleme yine +4 m   // arsa sınırı (V171: bahçe 6 m; sol/arka iç genişleme EXP_MAXS ile yine 2 kademe = +4 m)
+var SHELL={g:null,strips:true,plants:[],outer:[],base:{x0:-4.75,z0:-4,x1:4.75,z1:4}};   // (V227) başlangıç yine 9,5 × 8 m; her yöne +2 m 'Büyük salon' genişletme paketiyle (p109)
+// (V227) arsa sınırı: 'Büyük salon' paketi alınmışsa her yöne +2 m (bahçe yine 6 m). Sokak/arsa sayfa açılırken kurulduğu için paket kayıttan erkenden okunur.
+const SALON_PRE=(()=>{try{const d=JSON.parse(localStorage.getItem(EVMODE?EV_SAVE:'posa-yosun-kafe-kayit-v3')||'null');return !!(d&&((d.exp&&d.exp.a)||(d.seen&&d.seen.big2)))}catch(e){return false}})();
+const ROOM_MAX=SALON_PRE?{x0:-12.75,x1:12.75,z0:-12,z1:12}:{x0:-10.75,x1:10.75,z0:-10,z1:10};   // arsa sınırı (V171: bahçe 6 m; sol/arka iç genişleme EXP_MAXS ile yine 2 kademe = +4 m)
 const LOT={x0:ROOM_MAX.x0-0.3,x1:ROOM_MAX.x1+0.3,z0:ROOM_MAX.z0-0.3,z1:ROOM_MAX.z1+0.3};   // genişleme arsası: içinde hiçbir şey yok
 // açıklıklar: duvar ('left' | 'back') ve duvar boyunca konum t (sol duvarda z, arka duvarda x)
 var OP={door:{wall:'left',t:1.8},win:{wall:'back',t:1.6}};   // V160: kapının yanındaki küçük cam ('side') oyundan kaldırıldı
@@ -1092,7 +1094,7 @@ const CONFIG={
   tipChanceBase:0.15,
   targetBias:0.6};           // hedef tarif seçiliyken torbadan o tarifin malzemesinin çıkma olasılığı
 const pickBand=(arr,lv)=>{let r=arr[0];for(const a of arr)if(lv>=a.lv)r=a;return r};
-const tableCap=lv=>pickBand(CONFIG.tableCap,lv).n+(typeof expandCap==='function'?expandCap():0)+(typeof k2Cap==='function'?k2Cap():0);   // genişlemeler +2'şer
+const tableCap=lv=>pickBand(CONFIG.tableCap,lv).n+(typeof expandCap==='function'?expandCap():0)+(typeof k2Cap==='function'?k2Cap():0)+(typeof salonCap==='function'?salonCap():0);   // genişlemeler +2'şer
 
 // ================= TARİFLER =================
 // station: coffee | tea | dessert | main  •  disc: bu birleştirme ürünü ilk kez yapılınca tarif keşfedilir  •  def: başta açık
@@ -7638,7 +7640,7 @@ const XM={on:false,g:null,raf:0,sel:null,cam:null,last:''};
 function expArea(e){const r=expRect(e);if(e.key==='x1')return [RM.x1,r.x1,RM.z0,RM.z1];if(e.key==='x0')return [r.x0,RM.x0,RM.z0,RM.z1];if(e.key==='z1')return [RM.x0,RM.x1,RM.z1,r.z1];return [RM.x0,RM.x1,r.z0,RM.z0]}
 function xmSides(){return EXP_SIDES.map(e=>({e,s:expandState(e.id)})).filter(o=>!o.s.done)}
 function openExpandMode(){if(XM.on)return;const list=xmSides();
-  if(!list.length&&!(typeof k2XmOn==='function'&&k2XmOn())){toast('Kafen olabileceği en büyük boyutta!',ic('check'),2600);return}   // (V222) 2. Kat girişi varsa kip yine açılır (p107)
+  if(!list.length&&!(typeof k2XmOn==='function'&&k2XmOn())&&!(typeof salonState==='function'&&!salonState().done)){toast('Kafen olabileceği en büyük boyutta!',ic('check'),2600);return}   // (V222) 2. Kat girişi varsa kip yine açılır (p107)
   XM.on=true;XM.sel=null;document.documentElement.classList.add('xmode');
   // kamera biraz geri: yeni alanlar görünsün
   XM.cam={p:camera.position.clone(),t:controls.target.clone()};const v=camera.position.clone().sub(controls.target).multiplyScalar(1.28);camera.position.copy(controls.target).add(v);controls.update();
@@ -16845,21 +16847,46 @@ function k2PickOrder(o){o.pickupQueued=true;
 {const _pl=place;const V=new THREE.Vector3();place=function(e,wp,dy){try{if(wp===PICKUP_ANCHOR&&e&&e.__k&&e.__k.startsWith('pick')){const id=+e.__k.slice(4),o=orders.find(x=>x.id===id),R=k2tRec();
       if(o&&o.k2up&&R){const p=k2tW(R.rec,-0.36,0.05);V.set(p.x,1.3,p.z);return _pl.call(this,e,V,dy)}}}catch(er){}return _pl.apply(this,arguments)}}
 
-// ================= V226: DAHA BÜYÜK KAFE (her yöne +2 m) =================
-// Kullanıcı isteği (13 Kasım 16:55): genel görünüm ve arka plan korunarak kafe büyüsün, bahçe küçülmesin. Seçim: zemin her yöne +2 m.
-// Temel oda 9,5 × 8 → 13,5 × 12 m (p0 SHELL.base), arsa sınırı her yöne +2 m (ROOM_MAX; bahçe yine 6 m). Eski kayıtlar bir kez dönüştürülür
-// (S.seen.big2): oda her kenardan 2 m büyür (genişletme kademeleri korunur), tezgâh ve kasa sol-arka köşeyle birlikte (−2, −2) kayar,
-// bahçedeki eşyalar bahçeyle birlikte dışa (+2) kayar; içerideki masalar yerinde kalır, duvarlarla aralarında yer açılır.
-function bigMigrate(){if(!S||!S.seen)S.seen=S.seen||{};if(S.seen.big2)return;S.seen.big2=1;
-  try{expandMigrate()}catch(e){}
-  const R0=S.room?{x0:S.room.x0??-4.75,x1:S.room.x1??4.75,z0:S.room.z0??-4,z1:S.room.z1??4}:{x0:-4.75,x1:4.75,z0:-4,z1:4};
-  S.room={x0:R0.x0-2,x1:R0.x1+2,z0:R0.z0-2,z1:R0.z1+2};
-  const L=S.layout||(S.layout={});const sh=p=>{const q=typeof p==='number'?{x:p,z:0,r:0}:(p||{x:0,z:0,r:0});return {x:(q.x||0)-2,z:(q.z||0)-2,r:q.r||0}};
-  L.k=sh(L.k);L.c=sh(L.c);
+// ================= V226/V227: BÜYÜK SALON (her yöne +2 m) — Yapı Market › Genişlet paketi =================
+// V226'da kafe doğrudan 13,5 × 12 m yapılmıştı; kullanıcı (13 Kasım 17:10) bunun genişletme paketi olmasını ve başlangıcın eski 9,5 × 8 m görünüme
+// dönmesini istedi. Paket ('Büyük salon', S.exp.a=1): odanın dört kenarı 2 m dışa alınır, arsa sınırı (ROOM_MAX, p0) +2 m olur (bahçe yine 6 m),
+// duvara yaslı tezgâh/kasa duvarla birlikte kayar, bahçedeki eşyalar dışa kayar; sayfa yeniden açılır (sokak/arsa yeni sınırla kurulsun). Masa sınırı +2.
+// V226'da otomatik büyütülmüş kayıtlar (S.seen.big2) paketi almış sayılır.
+const SALON={lv:8,c:6000};
+const salonHas=()=>!!(S&&S.exp&&S.exp.a);
+const salonCap=()=>salonHas()?2:0;
+function salonState(){if(EVMODE)return {done:true};if(salonHas())return {done:true};if(S.lvl<SALON.lv)return {ok:false,why:`Seviye ${SALON.lv} gerekli`,lv:SALON.lv,c:SALON.c};if(S.coins<SALON.c)return {ok:false,why:'Altın yetmiyor',lv:SALON.lv,c:SALON.c};return {ok:true,lv:SALON.lv,c:SALON.c}}
+{const _as=applyState;applyState=function(){try{if(S.seen&&S.seen.big2&&!salonHas()){S.exp={...(S.exp||{}),a:1};markDirty()}
+  if(salonHas()&&ROOM_MAX.x1<12)Object.assign(ROOM_MAX,{x0:-12.75,x1:12.75,z0:-12,z1:12})}catch(e){console.warn('salon',e)}return _as.apply(this,arguments)}}
+function salonBuy(){const s=salonState();if(!s.ok){try{sfx('nope')}catch(e){}return}
+  const x0=RM.x0,x1=RM.x1,z0=RM.z0,z1=RM.z1;
+  // duvara yaslı blok (tezgâh/kasa) o duvarla birlikte kayar
+  const sh=(P,piv,base)=>{const bs=base.map(b=>boxW(b,P,piv)),q={...P};if(bs.some(b=>b.minX<x0+0.25))q.x-=2;if(bs.some(b=>b.minZ<z0+0.25))q.z-=2;if(bs.some(b=>b.maxX>x1-0.25))q.x+=2;if(bs.some(b=>b.maxZ>z1-0.25))q.z+=2;return q};
+  const k=sh(KP,K_PIV,KOBST_BASE);let c=sh(CP,C_PIV,COBST_BASE);
+  // kasa duvara yaslı değilse ama arka duvara yakınsa (varsayılan düzen) tezgâhla aynı kayar: ikisinin arası korunur
+  if(c.x===CP.x&&c.z===CP.z&&COBST_BASE.map(b=>boxW(b,CP,C_PIV)).some(b=>b.minZ<z0+2.2)){c={x:CP.x+(k.x-KP.x),z:CP.z+(k.z-KP.z),r:CP.r}}
   for(const f of S.furniture||[]){if(!f||!CAT[f.id]||CAT[f.id].kind==='walldecor')continue;const up=f.x>200,x=up?f.x-400:f.x;
-    if(x>R0.x1+0.01)f.x+=2;if(f.z>R0.z1+0.01)f.z+=2}
-  try{markDirty()}catch(e){}}
-{const _as=applyState;applyState=function(){try{bigMigrate()}catch(e){console.warn('büyük kafe',e)}return _as.apply(this,arguments)}}
+    if(x>x1+0.01)f.x+=2;if(f.z>z1+0.01)f.z+=2}
+  addCoins(-s.c,'decor');S.exp={...(S.exp||{}),a:1};S.room={x0:x0-2,x1:x1+2,z0:z0-2,z1:z1+2};
+  S.layout={...(S.layout||{}),k,c,op:JSON.parse(JSON.stringify(OP))};
+  try{bump('expand')}catch(e){}try{sfx('levelup')}catch(e){}
+  toast('<b>Büyük salon açıldı!</b><br>Kafen her yönden 2 m büyüyor…',ic('plus'),2600);
+  try{clearTimeout(saveTimer)}catch(e){}saveNow();RESETTING=true;setTimeout(()=>gameReload(),1300)}
+// ---- genişletme kipinde balon + kart ----
+function salonAdd(){const ov=$('expOv'),B=ov&&ov.querySelector('.xmBtns');if(!B||B.querySelector('[data-x="salon"]'))return;const s=salonState();if(s.done)return;
+  B.insertAdjacentHTML('beforeend',`<button type="button" class="xmPlus sal${s.ok?'':' lock'}" data-x="salon" aria-label="Büyük salon"><i class="${s.ok||S.lvl>=s.lv?'pl':''}">${s.ok||S.lvl>=s.lv?'':ic('lock')}</i><span>${s.ok||S.lvl>=s.lv?ic('coin')+s.c.toLocaleString('tr-TR'):'Sv '+s.lv}</span></button>`)}
+{const _ox=openExpandMode;openExpandMode=function(){const r=_ox.apply(this,arguments);try{if(XM.on){salonAdd();if(XM.g&&!salonState().done){const w=0.5,x0=RM.x0-2,x1=RM.x1+2,z0=RM.z0-2,z1=RM.z1+2,s=salonState();
+      const mat=new THREE.MeshBasicMaterial({color:s.ok?0xf2c14a:0xd8c9a8,transparent:true,opacity:0.32,depthWrite:false});
+      for(const [a,b,c,d] of [[x0,x1,z0,RM.z0],[x0,x1,RM.z1,z1],[x0,RM.x0,RM.z0,RM.z1],[RM.x1,x1,RM.z0,RM.z1]]){const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,d-c),mat);m.rotation.x=-Math.PI/2;m.position.set((a+b)/2,0.065,(c+d)/2);m.renderOrder=5;m.visible=false;m.userData.sal=1;XM.g.add(m)}}}}catch(e){console.warn('salon',e)}return r}}
+{const _xf=xmFrame;const V=new THREE.Vector3();xmFrame=function(){const r=_xf.apply(this,arguments);try{const ov=$('expOv'),b=ov&&ov.querySelector('[data-x="salon"]');if(b){const q=renderer.domElement.getBoundingClientRect();
+      V.set(RM.x1+0.2,0.3,RM.z1+0.2).project(camera);b.style.transform=`translate(${((V.x+1)/2*q.width).toFixed(1)}px,${((1-V.y)/2*q.height).toFixed(1)}px) translate(-50%,-50%)`;b.classList.toggle('sel',XM.sel==='salon')}
+    if(XM.g)XM.g.children.forEach(m=>{if(m.userData.sal)m.visible=XM.sel==='salon'})}catch(e){}return r}}
+{const _xt=xmTip;xmTip=function(){const ov=$('expOv'),t=ov&&ov.querySelector('.xmTip');if(!t||XM.sel!=='salon'){if(t)t.classList.remove('sal');return _xt.apply(this,arguments)}
+  t.classList.remove('k2');t.classList.add('sal');const s=salonState(),W=(RM.x1-RM.x0+4).toFixed(1).replace('.',','),D=(RM.z1-RM.z0+4).toFixed(1).replace('.',',');
+  t.innerHTML=`<b>Büyük salon</b><p>Kafe her yönden 2 m büyür: ${W} × ${D} m · masa sınırı +2. Bahçe aynı kalır; tezgâh ve kasa duvarla birlikte kayar.</p>`+
+    (s.ok?`<button class="btn green" type="button" id="salBuy">${ic('coin')}${s.c.toLocaleString('tr-TR')} · Büyüt</button>`:`<p class="why">${ic('lock')}${s.why}</p>`);
+  t.hidden=false;XM.last='';const b=$('salBuy');if(b)b.onclick=()=>{closeExpandMode();salonBuy()}}}
+{const st=document.createElement('style');st.textContent=`.xmPlus.sal i{background:radial-gradient(circle at 40% 35%,#ffe7a0,#f2b134);border-color:#8a4a12;box-shadow:0 3px 0 #8a4a12,0 0 0 4px rgba(255,255,255,.8),0 6px 14px rgba(0,0,0,.3)}.xmPlus.sal.sel i{box-shadow:0 3px 0 #8a4a12,0 0 0 5px #ffd24a,0 6px 14px rgba(0,0,0,.3)}.xmPlus.sal.lock i{background:radial-gradient(circle at 40% 35%,#efe2c8,#c9b28a);border-color:#7a5a36}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
