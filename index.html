@@ -300,7 +300,7 @@ var EVMODE=(()=>{try{const f=JSON.parse(localStorage.getItem(EV_FLAG)||'null');i
 var GDN={r:0,f:0};
 var SHELL={g:null,strips:true,plants:[],outer:[],base:{x0:-4.75,z0:-4,x1:4.75,z1:4}};   // (V227) başlangıç yine 9,5 × 8 m; her yöne +2 m 'Büyük salon' genişletme paketiyle (p109)
 // (V227) arsa sınırı: 'Büyük salon' paketi alınmışsa her yöne +2 m (bahçe yine 6 m). Sokak/arsa sayfa açılırken kurulduğu için paket kayıttan erkenden okunur.
-const SALON_PRE=(()=>{try{const d=JSON.parse(localStorage.getItem(EVMODE?EV_SAVE:'posa-yosun-kafe-kayit-v3')||'null');return !!(d&&((d.exp&&d.exp.a)||(d.seen&&d.seen.big2)))}catch(e){return false}})();
+const SALON_PRE=(()=>{try{const d=JSON.parse(localStorage.getItem(EVMODE?EV_SAVE:'posa-yosun-kafe-kayit-v3')||'null');return !!(d&&d.exp&&d.exp.a&&!(d.seen&&d.seen.big2&&!d.seen.salonBuy))}catch(e){return false}})();
 const ROOM_MAX=SALON_PRE?{x0:-12.75,x1:12.75,z0:-12,z1:12}:{x0:-10.75,x1:10.75,z0:-10,z1:10};   // arsa sınırı (V171: bahçe 6 m; sol/arka iç genişleme EXP_MAXS ile yine 2 kademe = +4 m)
 const LOT={x0:ROOM_MAX.x0-0.3,x1:ROOM_MAX.x1+0.3,z0:ROOM_MAX.z0-0.3,z1:ROOM_MAX.z1+0.3};   // genişleme arsası: içinde hiçbir şey yok
 // açıklıklar: duvar ('left' | 'back') ve duvar boyunca konum t (sol duvarda z, arka duvarda x)
@@ -16856,7 +16856,13 @@ const SALON={lv:8,c:6000};
 const salonHas=()=>!!(S&&S.exp&&S.exp.a);
 const salonCap=()=>salonHas()?2:0;
 function salonState(){if(EVMODE)return {done:true};if(salonHas())return {done:true};if(S.lvl<SALON.lv)return {ok:false,why:`Seviye ${SALON.lv} gerekli`,lv:SALON.lv,c:SALON.c};if(S.coins<SALON.c)return {ok:false,why:'Altın yetmiyor',lv:SALON.lv,c:SALON.c};return {ok:true,lv:SALON.lv,c:SALON.c}}
-{const _as=applyState;applyState=function(){try{if(S.seen&&S.seen.big2&&!salonHas()){S.exp={...(S.exp||{}),a:1};markDirty()}
+// (V228) V226'da kendiliğinden büyütülmüş kayıtlar küçük başlangıca geri alınır (paketi satın almamışlarsa): oda −2 m, tezgâh/kasa +2, bahçe eşyaları −2
+function bigUndo(){const s=S.seen||{};if(!s.big2||s.salonBuy||s.big2undo)return;s.big2undo=1;if(S.exp)delete S.exp.a;
+  const R=S.room;if(R)S.room={x0:Math.min(-4.75,(R.x0??-6.75)+2),x1:Math.max(4.75,(R.x1??6.75)-2),z0:Math.min(-4,(R.z0??-6)+2),z1:Math.max(4,(R.z1??6)-2)};
+  const L=S.layout||{};for(const k of ['k','c'])if(L[k]&&typeof L[k]==='object'){L[k].x=(L[k].x||0)+2;L[k].z=(L[k].z||0)+2}
+  const R2=S.room||{x1:4.75,z1:4};for(const f of S.furniture||[]){if(!f||!CAT[f.id]||CAT[f.id].kind==='walldecor')continue;const up=f.x>200,x=up?f.x-400:f.x;if(x>R2.x1+2.01)f.x-=2;if(f.z>R2.z1+2.01)f.z-=2}
+  try{markDirty()}catch(e){}}
+{const _as=applyState;applyState=function(){try{bigUndo()
   if(salonHas()&&ROOM_MAX.x1<12)Object.assign(ROOM_MAX,{x0:-12.75,x1:12.75,z0:-12,z1:12})}catch(e){console.warn('salon',e)}return _as.apply(this,arguments)}}
 function salonBuy(){const s=salonState();if(!s.ok){try{sfx('nope')}catch(e){}return}
   const x0=RM.x0,x1=RM.x1,z0=RM.z0,z1=RM.z1;
@@ -16867,7 +16873,7 @@ function salonBuy(){const s=salonState();if(!s.ok){try{sfx('nope')}catch(e){}ret
   if(c.x===CP.x&&c.z===CP.z&&COBST_BASE.map(b=>boxW(b,CP,C_PIV)).some(b=>b.minZ<z0+2.2)){c={x:CP.x+(k.x-KP.x),z:CP.z+(k.z-KP.z),r:CP.r}}
   for(const f of S.furniture||[]){if(!f||!CAT[f.id]||CAT[f.id].kind==='walldecor')continue;const up=f.x>200,x=up?f.x-400:f.x;
     if(x>x1+0.01)f.x+=2;if(f.z>z1+0.01)f.z+=2}
-  addCoins(-s.c,'decor');S.exp={...(S.exp||{}),a:1};S.room={x0:x0-2,x1:x1+2,z0:z0-2,z1:z1+2};
+  addCoins(-s.c,'decor');S.exp={...(S.exp||{}),a:1};S.seen=S.seen||{};S.seen.salonBuy=1;S.room={x0:x0-2,x1:x1+2,z0:z0-2,z1:z1+2};
   S.layout={...(S.layout||{}),k,c,op:JSON.parse(JSON.stringify(OP))};
   try{bump('expand')}catch(e){}try{sfx('levelup')}catch(e){}
   toast('<b>Büyük salon açıldı!</b><br>Kafen her yönden 2 m büyüyor…',ic('plus'),2600);
