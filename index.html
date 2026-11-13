@@ -16345,6 +16345,116 @@ setTimeout(()=>{try{if(S&&S.created)zincirMigrate()}catch(e){}},3000);
 // (loadState yalnız defaultState'teki anahtarları alır) → her açılışta teslimatlar ve hedef sıfırlanıyordu.
 {const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.tk=null;s.tkT=null;s.tkv=0;s.zv=0;return s}}
 
+// ================= V218: GERÇEK HAYAT ZİNCİRLERİ =================
+// Kullanıcı isteği: eski bütün zincir ve eşleştirmeler kalkar. Paketler yalnız en ham maddeyi verir; aynı iki malzeme birleşince
+// gerçek hayattaki bir sonraki ürüne dönüşür (Süt → Lor → Peynir → Kaşar, Yağ → Tereyağı → Margarin …). Tarifler bu ürünleri ister.
+// Kimlikler yeni önekli (bug1, st3 …); eski kimlikler "gone" olur, tahtadakiler yeni karşılığına çevrilir.
+const GZC={
+ // Fırın
+ bug:{f:'food',L:[['Buğday',null,'🌾'],['Un','un1'],['Hamur','un2'],['Ekmek','un3']]},
+ ymr:{f:'food',L:[['Yumurta','yum1'],['Çırpılmış yumurta','yum2']]},
+ sek:{f:'food',L:[['Şeker pancarı',null,'🌱'],['Şeker','seker1'],['Karamel',null,'🍮']]},
+ bal:{f:'food',L:[['Petek',null,'🐝'],['Bal',null,'🍯']]},
+ // Süt ürünleri
+ st:{f:'food',L:[['Süt','sut1'],['Lor',null,'🥣'],['Peynir','peynir1'],['Kaşar',null,'🧀']]},
+ yg:{f:'food',L:[['Yağ',null,'🫒'],['Tereyağı',null,'🧈'],['Margarin',null,'🧈']]},
+ // İçecekler
+ khv:{f:'drink',L:[['Yeşil kahve çekirdeği',null,'🫘'],['Kavrulmuş kahve','kahve1'],['Çekilmiş kahve','kahve2']]},
+ cy:{f:'drink',L:[['Taze çay yaprağı','cay1'],['Kuru çay','cay2']]},
+ kak:{f:'drink',L:[['Kakao meyvesi',null,'🥭'],['Kakao çekirdeği','kakao1'],['Kakao tozu','kakao2'],['Çikolata','kakao3']]},
+ btk:{f:'drink',L:[['Taze nane',null,'🌿'],['Kuru nane',null,'🍂'],['Bitki çayı karışımı',null,'🍵']]},
+ trc:{f:'drink',L:[['Tarçın kabuğu',null,'🪵'],['Tarçın tozu',null,'🟤']]},
+ // Meyve
+ clk:{f:'food',L:[['Çilek','cilek1'],['Doğranmış çilek','cilek2'],['Çilek reçeli',null,'🫙']]},
+ lmn:{f:'drink',L:[['Limon','limon1'],['Limon dilimi','limon2'],['Limon suyu','limon3']]},
+ // Sebze
+ dmt:{f:'food',L:[['Domates','domates1'],['Doğranmış domates','domates2'],['Domates sosu','domates4']]},
+ mnt:{f:'food',L:[['Mantar','mantar1'],['Dilimlenmiş mantar','mantar2']]},
+ mrl:{f:'food',L:[['Marul','marul2'],['Doğranmış marul','marul1']]},
+ slt:{f:'food',L:[['Salatalık',null,'🥒'],['Doğranmış salatalık',null,'🥗']]},
+ pts:{f:'food',L:[['Patates','patates1'],['Patates dilimleri','patates2']]},
+ mrc:{f:'food',L:[['Mercimek',null,'🫘'],['Haşlanmış mercimek',null,'🥣']]},
+ // Kasap
+ dna:{f:'food',L:[['Dana eti','et4'],['Biftek','et2']]},
+ kym:{f:'food',L:[['Et parçası','et1'],['Kıyma',null,'🥩'],['Köfte harcı',null,'🧆']]},
+ kzu:{f:'food',L:[['Kuzu eti',null,'🍖'],['Pirzola',null,'🍖']]},
+ tvk:{f:'food',L:[['Bütün tavuk','tavuk4'],['Tavuk göğsü','tavuk2'],['Tavuk şiş','tavuk3']]},
+ sck:{f:'food',L:[['Sucuk','sucuk2'],['Sucuk dilimleri','sucuk1']]},
+ blk:{f:'food',L:[['Balık','balik1'],['Balık fileto','balik2']]}};
+const GZ_PACK={firin:[['bug1',3],['ymr1',2],['sek1',2],['bal1',1]],mandira:[['st1',3],['yg1',2]],
+ kafe:[['khv1',3],['cy1',3],['kak1',2],['btk1',1],['trc1',1]],meyve:[['clk1',3],['lmn1',2]],
+ manav:[['dmt1',3],['mnt1',2],['mrl1',2],['slt1',2],['pts1',2],['mrc1',2]],kasap:[['dna1',1],['kym1',2],['kzu1',1],['tvk1',2],['sck1',2],['blk1',2]]};
+const GZ_IMG=[];   // gerçek görseli gelen yeni kimlikler (img/items/<id>.webp)
+const gzEmoji=e=>`<span class="gze"><i>${e}</i></span>`;
+(()=>{const st=document.createElement('style');st.textContent=`.gze{display:grid;place-items:center;width:100%;height:100%}.gze i{font-style:normal;display:grid;place-items:center;width:78%;aspect-ratio:1;border-radius:50%;background:#fff4dd;border:2.5px dashed #c9a27a;font-size:min(30px,calc(var(--mc,60px)*.48));line-height:1;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}`;document.head.appendChild(st)})();
+// eski zincir anahtarları (kalkar)
+const GZ_OLD=['un','yum','seker','sut','peynir','kahve','cay','kakao','limon','cilek','bitki','domates','mantar','marul','patates','mercimek','sucuk','tavuk','et','balik','su'];
+const GZ_OLDMAP={un:['bug',1],yum:['ymr',0],seker:['sek',1],sut:['st',0],peynir:['st',2],kahve:['khv',1],cay:['cy',0],kakao:['kak',1],limon:['lmn',0],cilek:['clk',0],bitki:['btk',0],
+ domates:['dmt',0],mantar:['mnt',0],marul:['mrl',0],patates:['pts',0],mercimek:['mrc',0],sucuk:['sck',0],tavuk:['tvk',0],et:['kym',0],balik:['blk',0]};
+{const oldArt={};for(const k in ITEM_ART)oldArt[k]=ITEM_ART[k];
+ for(const ch of GZ_OLD){for(let k=1;k<=8;k++){const id=ch+k;if(ITEMS[id])ITEMS[id]={...ITEMS[id],next:null,gone:true}}delete CHAINS[ch]}
+ for(const [ch,D] of Object.entries(GZC)){const n=D.L.length;CHAINS[ch]=D.L.map(d=>d[0]);CHAIN_FAM[ch]=D.f;
+   D.L.forEach(([nm,src,em],i)=>{const id=ch+(i+1);ITEMS[id]={id,name:nm,chain:ch,lv:i+1,max:n,fam:D.f,next:i+1<n?ch+(i+2):null};
+     const real=src&&oldArt[src]&&/src=/.test(oldArt[src])&&!/class="kt/.test(oldArt[src]);
+     ITEM_ART[id]=GZ_IMG.includes(id)?`<img src="img/items/${id}.webp" alt="" draggable="false">`:real?oldArt[src]:gzEmoji(em||'❔')})}
+ COMBOS.length=0}
+for(const P of PACKS)if(GZ_PACK[P.k]){P.out=GZ_PACK[P.k].map(x=>x.slice());BAG_OUT[P.k]=P.out.map(x=>x.slice())}
+// ---- tarifler: gerçek malzemeler ----
+const TK_ST4={
+ bitki_cay:[{n:'Bitki çayı',d:[['btk3',1]]}],
+ yesil_cay:[{n:'Çay',d:[['cy2',2]]},{n:'Limon',d:[['lmn2',1]]}],
+ espresso:[{n:'Kahve',d:[['khv3',2]]}],
+ latte:[{n:'Kahve',d:[['khv3',1]]},{n:'Süt',d:[['st1',2]]}],
+ moka:[{n:'Kahve ve çikolata',d:[['khv3',1],['kak4',1]]},{n:'Süt',d:[['st1',2]]}],
+ sicak_sut:[{n:'Ballı süt',d:[['st1',2],['bal2',1]]}],
+ tarcinli_sut:[{n:'Tarçınlı süt',d:[['st1',2],['trc2',1]]}],
+ sicak_cik:[{n:'Çikolata',d:[['kak4',2]]},{n:'Süt',d:[['st1',2],['sek2',1]]}],
+ limonata:[{n:'Limonata',d:[['lmn3',2],['sek2',1]]}],
+ meyveli_cay:[{n:'Çay',d:[['cy2',1]]},{n:'Çilek',d:[['clk2',2],['sek2',1]]}],
+ milkshake:[{n:'Çilek',d:[['clk2',2]]},{n:'Süt',d:[['st1',2],['sek2',1]]}],
+ tost:[{n:'Peynirli tost',d:[['bug4',1],['st3',2]]}],
+ tost_sucuk:[{n:'Ekmek ve peynir',d:[['bug4',1],['st3',1]]},{n:'Sucuk',d:[['sck2',2]]}],
+ tost_karisik:[{n:'Ekmek ve kaşar',d:[['bug4',1],['st4',1]]},{n:'İç malzeme',d:[['sck2',1],['dmt2',1]]}],
+ omlet_peynir:[{n:'Peynirli omlet',d:[['ymr2',2],['st3',1]]}],
+ omlet_sucuk:[{n:'Yumurta',d:[['ymr2',2]]},{n:'Sucuk',d:[['sck2',2],['yg2',1]]}],
+ omlet_karisik:[{n:'Yumurta ve kaşar',d:[['ymr2',2],['st4',1]]},{n:'İç malzeme',d:[['sck2',1],['dmt2',1],['mnt2',1]]}],
+ kahvalti:[{n:'Yumurta ve peynir',d:[['ymr1',2],['st3',1]]},{n:'Sebzeler',d:[['dmt2',1],['slt2',1]]}],
+ koy_kahvalti:[{n:'Yumurta',d:[['ymr1',2]]},{n:'Peynir ve tereyağı',d:[['st3',1],['yg2',1]]},{n:'Bal',d:[['bal2',1]]}],
+ serpme:[{n:'Yumurta',d:[['ymr1',2]]},{n:'Peynirler',d:[['st4',1],['st3',1]]},{n:'Reçel, bal, tereyağı',d:[['clk3',1],['bal2',1],['yg2',1]]},{n:'Sıcaklar ve sebze',d:[['sck2',1],['dmt2',1],['slt2',1]]},{n:'Çay',d:[['cy2',1]]}],
+ corba_domates:[{n:'Domates',d:[['dmt3',1],['dmt2',2]]},{n:'Tereyağı',d:[['yg2',1]]}],
+ corba_mercimek:[{n:'Mercimek',d:[['mrc2',2]]},{n:'Servis',d:[['yg2',1],['lmn2',1]]}],
+ corba_mantar:[{n:'Mantar',d:[['mnt2',2]]},{n:'Kremalı baz',d:[['st1',1],['yg2',1],['bug2',1]]}],
+ kiz_tavuk:[{n:'Tavuk',d:[['tvk2',2]]},{n:'Garnitür',d:[['pts2',2],['dmt2',1]]}],
+ tavuk_sis:[{n:'Şiş',d:[['tvk3',2]]},{n:'Garnitür',d:[['dmt2',1],['mrl2',1]]}],
+ kiz_et:[{n:'Biftek',d:[['dna2',2]]},{n:'Marine',d:[['btk1',1],['yg2',1]]},{n:'Garnitür',d:[['pts2',2]]}],
+ pirzola:[{n:'Pirzola',d:[['kzu2',2]]},{n:'Otlar',d:[['btk1',1]]},{n:'Garnitür',d:[['pts2',1],['dmt2',1]]}],
+ levrek:[{n:'Balık',d:[['blk1',2]]},{n:'Garnitür',d:[['lmn2',1],['mrl2',1]]}],
+ somon:[{n:'Fileto',d:[['blk2',2]]},{n:'Sos',d:[['lmn2',1],['btk1',1]]},{n:'Garnitür',d:[['pts2',1]]}],
+ makarna_domates:[{n:'Makarna',d:[['bug3',2]]},{n:'Sos',d:[['dmt3',1],['st3',1]]}],
+ makarna_mantar:[{n:'Makarna',d:[['bug3',2]]},{n:'Mantar',d:[['mnt2',2]]},{n:'Krema',d:[['st1',1],['yg2',1]]}],
+ kofte:[{n:'Köfte',d:[['kym3',2]]},{n:'Garnitür',d:[['dmt2',1],['pts2',1]]}],
+ kofte_kasar:[{n:'Köfte',d:[['kym3',2]]},{n:'Kaşar',d:[['st4',1]]},{n:'Garnitür',d:[['dmt2',1]]}],
+ coban:[{n:'Çoban salata',d:[['dmt2',2],['slt2',1],['lmn2',1]]}],
+ mevsim:[{n:'Yeşillik',d:[['mrl2',2]]},{n:'Sebzeler',d:[['dmt2',1],['slt2',1]]}],
+ sezar:[{n:'Marul',d:[['mrl2',2]]},{n:'Tavuk ve kaşar',d:[['tvk2',1],['st4',1]]},{n:'Kıtır ekmek',d:[['bug4',1]]}],
+ kurabiye:[{n:'Kurabiye hamuru',d:[['bug2',2],['sek2',1],['yg2',1]]}],
+ kurabiye_cik:[{n:'Hamur',d:[['bug2',2],['yg2',1]]},{n:'Çikolata',d:[['kak4',1]]}],
+ puding_sut:[{n:'Muhallebi',d:[['st1',2],['sek2',1],['bug2',1]]}],
+ puding_cik:[{n:'Muhallebi',d:[['st1',2],['sek2',1]]},{n:'Kakao',d:[['kak3',1]]}],
+ cupcake:[{n:'Kek hamuru',d:[['bug2',2],['ymr1',1],['yg3',1]]},{n:'Süsleme',d:[['sek3',1],['clk1',1]]}],
+ pasta:[{n:'Pandispanya',d:[['bug2',2],['ymr2',2]]},{n:'Çilek katı',d:[['clk2',2],['sek2',1]]},{n:'Çikolata',d:[['kak4',1]]}]};
+for(const id in TK_ST4)if(TK_CFG[id])TK_CFG[id].st=TK_ST4[id];
+// kapsam dışında kalan tarifler (ülke vb.): eski kimlikleri en yakın yeniye çevir
+const gzMap=old=>{const it=ITEMS[old];if(!it||!it.gone)return old;const m=/^([a-z]+)(\d+)$/.exec(old);const M=m&&GZ_OLDMAP[m[1]];if(!M)return 'bug1';const D=GZC[M[0]];const lv=Math.min(D.L.length,Math.max(1,+m[2]+M[1]));return M[0]+lv};
+for(const id in TK_CFG){const c=TK_CFG[id];if(!c||!c.st||TK_ST4[id])continue;for(const s of c.st)if(s.d)s.d=s.d.map(([it,n])=>[gzMap(it),n])}
+// ---- kayıt geçişi (bir kez): tahtadaki eski malzemeler yeni karşılığına, açılmamış tariflerin yarım teslimatı sıfır ----
+function gzMigrate(){if(EVMODE||!S||S.zv>=2)return;try{if(Array.isArray(S.board))S.board=S.board.map(v=>v&&ITEMS[v]&&ITEMS[v].gone?gzMap(v):v);
+  const T=tkS();for(const id in TK_ST4)if(!S.unlocked[id]){delete T.st[id];delete T.dl[id]}}catch(e){console.warn('gerçek zincir geçişi',e)}S.zv=2;markDirty();try{if(UI.mode==='merge')renderMerge()}catch(e){}}
+{const _as=applyState;applyState=function(){const r=_as.apply(this,arguments);try{gzMigrate()}catch(e){}return r}}
+setTimeout(()=>{try{if(S&&S.created)gzMigrate()}catch(e){}},3500);
+// tahtada kalmış "gone" bir şey olursa (eski kayıt, etkinlik dönüşü) yeniden çevir
+setInterval(()=>{try{if(EVMODE||!started||!Array.isArray(S.board)||mgDrag)return;let ch=false;S.board=S.board.map(v=>{if(v&&ITEMS[v]&&ITEMS[v].gone&&ITEMS[v].chain){ch=true;return gzMap(v)}return v});if(ch){markDirty();if(UI.mode==='merge')renderMerge()}}catch(e){}},3000);
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
