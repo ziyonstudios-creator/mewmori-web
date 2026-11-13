@@ -622,6 +622,7 @@ const ENV_N0=scene.children.length;
  for(const [x,y,z,sc] of [[-14,11,-24,1.6],[8,13,-30,2],[26,11,-10,1.4],[-28,10,6,1.6],[6,13,26,1.8],[28,12,16,1.5]]){for(let i=0;i<4;i++){const c=sph(sc*(0.7+(i%3)*0.18),new THREE.MeshBasicMaterial({color:0xffffff,fog:false}),x+i*sc*0.85,y+(i%2)*0.35,z);c.castShadow=false}}
  for(let i=0;i<3;i++){const g=new THREE.Group();const m=new THREE.MeshBasicMaterial({color:0xffffff});for(const s of [-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.03,0.12),m);w.position.x=s*0.24;w.rotation.z=s*0.35;g.add(w)}scene.add(g);ENV.gulls.push({g,r:7+i*3,h:9+i*0.8,sp:0.15+i*0.04,ph:i*2.1,cx:-24-i*6,cz:-26+i*5})}
 }
+const ENV_OBJS=scene.children.slice(ENV_N0);   // (V221) sabit çevre nesneleri: 2. kata bakılırken topluca 400 m sağa ve bir kat aşağı kaydırılır (p107 k2EnvInit)
 // dokuyu dünya ölçeğinde döşe: kutunun boyu ne olursa olsun taşlar aynı büyüklükte kalır (s = bir doku tekrarının metre cinsinden boyu)
 function envUV(m,s){const p=m.geometry.attributes.position,u=m.geometry.attributes.uv;for(let i=0;i<p.count;i++)u.setXY(i,(p.getX(i)+m.position.x)/s,(p.getZ(i)+m.position.z)/s);u.needsUpdate=true;return m}
 // dış süsler artık sabit (genişleme arsasının dışında): kaydırılmaz
@@ -2929,7 +2930,7 @@ function renderMarket(){const tabs=$('mkTabs');tabs.innerHTML=MK_TABS.map(t=>`<b
   if(UI.tab==='upg'){renderUpg(g);return}
   if(UI.tab==='expand'){renderExpand(g);return}
   if(UI.tab==='store'){const st=S.furniture.filter(f=>f.stored);g.innerHTML=st.length?st.map(f=>`<button class="card" type="button" data-uid="${f.uid}" aria-current="${UI.sel==='u'+f.uid}"><div class="th"><img src="${itemThumb(f.id)}" alt=""></div><b>${CAT[f.id].name}</b><span class="price">Ücretsiz yerleştir</span></button>`).join(''):'<div class="empty">Depon boş. Düzenle modunda eşyaları depoya kaldırabilirsin.</div>'}
-  else{items=CATALOG.filter(c=>catTab(c)===UI.tab&&catShown(c)&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>a.lvl-b.lvl||a.price-b.price);
+  else{items=CATALOG.filter(c=>catTab(c)===UI.tab&&catShown(c)&&!(c.elv===1&&(S.equip[c.slot]|0)>=1&&!S.owned[c.id])).sort((a,b)=>(b.once?1:0)-(a.once?1:0)||a.lvl-b.lvl||a.price-b.price);   // (V221) tek seferlik büyük eşyalar (2. kat merdiveni) listenin başında
     g.innerHTML=items.map(c=>{const lock=S.lvl<c.lvl;const owned=S.owned[c.id];const using=(c.kind==='wall'&&S.wall===c.id)||(c.kind==='floor'&&S.floor===c.id)||(c.kind==='equip'&&owned)||catUsing(c);
       return `<button class="card${lock?' locked':''}" type="button" data-id="${c.id}" aria-current="${UI.sel===c.id}"><div class="th"><img src="${itemThumb(c.id)}" alt=""></div>${lock?`<span class="tag">${ic('lock')}Sv ${c.lvl}</span>`:''}${using?'<span class="own">Kullanımda</span>':owned&&c.kind!=='table'&&c.kind!=='decor'&&c.kind!=='walldecor'?'<span class="own">Sende</span>':''}<b>${c.name}</b><span class="price">${c.price?ic('coin')+c.price:'Ücretsiz'}</span></button>`}).join('')}
   g.onclick=e=>{const b=e.target.closest('.card');if(!b)return;if(b.dataset.uid){UI.sel='u'+b.dataset.uid}else{UI.sel=b.dataset.id;previewSurface(UI.sel)}renderMarket()};
@@ -16575,14 +16576,12 @@ function k2Build(){k2Drop();if(!K2.on||!K2.geo){if(K2.view===2)k2View(1,true);k2
    for(const s of [-1,1]){rb(0.05,0.05,2.06,M.woodDark,s*0.54,0.5,0.25);for(const z of [-0.74,-0.08,0.58,1.27])rb(0.045,0.5,0.045,M.cream,s*0.54,0.25,z)}
    rb(1.13,0.05,0.05,M.woodDark,0,0.5,1.27);rb(0.045,0.5,0.045,M.cream,0,0.25,1.27);try{mergeStatic(rl);mergeStatic(well)}catch(e){}}
   // alt katın cephesi + kat silmesi + çevre zemini (üst kattan bakınca aşağıda)
-  {const fc=toon(0xf1dfc4),FH=H+0.2,sub=new THREE.Group();G.add(sub);
+  {const fc=toon(0xf1dfc4),FH=H+0.6,sub=new THREE.Group();G.add(sub);
    mk(new THREE.BoxGeometry(W+0.2,FH,0.2),fc,cx-0.1,-FH/2-0.012,R.z1-0.1,sub);mk(new THREE.BoxGeometry(0.2,FH,D+0.2),fc,R.x1-0.1,-FH/2-0.012,cz-0.1,sub);
    mk(new THREE.BoxGeometry(W+0.4,FH-0.2,0.2),fc,cx-0.1,-FH/2-0.1,R.z0-0.1,sub);mk(new THREE.BoxGeometry(0.2,FH-0.2,D+0.2),fc,R.x0-0.1,-FH/2-0.1,cz-0.1,sub);
    mk(new THREE.BoxGeometry(W+0.34,0.14,0.14),M.woodDark,cx-0.03,-0.09,R.z1+0.05,sub);mk(new THREE.BoxGeometry(0.14,0.14,D+0.34),M.woodDark,R.x1+0.05,-0.09,cz-0.03,sub);
-   for(const t of [0.25,0.75]){mk(new THREE.BoxGeometry(1.5,1.3,0.05),M.glass,R.x0+W*t,-FH+1.75,R.z1+0.01,sub);mk(new THREE.BoxGeometry(0.05,1.3,1.5),M.glass,R.x1+0.01,-FH+1.75,R.z0+D*t,sub)}
-   try{mergeStatic(sub)}catch(e){}
-   // çevre zemini: PARÇALI düzlem. Tek dev dörtgende (köşeleri kameranın arkasında) sis derinliği yanlış ara değerleniyor, zemin sis rengine boyanıyordu
-   const gr=mk(new THREE.PlaneGeometry(160,160,16,16),toon(0x9ccf7a),cx,-FH-0.01,cz);gr.rotation.x=-Math.PI/2;gr.receiveShadow=false}
+   for(const t of [0.25,0.75]){mk(new THREE.BoxGeometry(1.5,1.3,0.05),M.glass,R.x0+W*t,-H+1.55,R.z1+0.01,sub);mk(new THREE.BoxGeometry(0.05,1.3,1.5),M.glass,R.x1+0.01,-H+1.55,R.z0+D*t,sub)}
+   try{mergeStatic(sub)}catch(e){}}   // çevre zemini yok: gerçek sokak/arsa aşağıda görünür (k2EnvPos). Not: tek dev dörtgen düzlemde sis derinliği yanlış ara değerlenir; gerekirse PARÇALI düzlem kullan
   k2Btn();k2Lamps();try{buildGrid()}catch(e){}}   // merdivenin kutusu değişti: 1. kat ızgarası ve üst kat ızgarası (buildGrid sarmalı) yenilenir
 
 // ---- kat değiştirme: kamera, güneş ve gökyüzü 400 m kayar ----
@@ -16590,10 +16589,16 @@ function k2Lamps(){try{const up=k2Up(),ts=[...FURN.values()].filter(R=>R.table&&
 function k2View(n,quiet){n=(n===2&&K2.on)?2:1;if(n===K2.view)return;const d=(n===2?1:-1)*K2.dx;K2.view=n;
   camera.position.x+=d;controls.target.x+=d;try{controls.update()}catch(e){}
   try{sun.position.x+=d;sun.target.position.x+=d;sun.target.updateMatrixWorld()}catch(e){}
-  try{if(!K2.sky)K2.sky=scene.children.find(o=>o.isMesh&&o.material===ENV.skyMat)||null;if(K2.sky)K2.sky.position.x=n===2?K2.dx:0}catch(e){}
+  try{if(n===2)k2EnvInit();k2EnvPos();if(K2.sky)K2.sky.position.x=n===2?K2.dx:0}catch(e){console.warn('kat2 çevre',e)}
   try{ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}
   try{gridRebuild()}catch(e){}
   k2Lamps();k2Btn();if(!quiet){try{sfx('tap')}catch(e){}}}
+// çevre (sokak, binalar, deniz, arsa): ilk üst kat bakışında sabit çevre nesneleri tek gruba alınır; grup ve arsa kabuğu (ENV.shell, oda büyüyünce
+// yeniden kurulduğu için ayrı) 2. kata bakılırken +400 m / −(kat yüksekliği) kaydırılır → üst kattan aşağıdaki sokak görünür
+function k2EnvInit(){if(K2.env)return;const root=new THREE.Group();root.name='k2env';root.userData.merged=true;scene.add(root);K2.env=root;
+  if(!K2.sky)K2.sky=scene.children.find(o=>o.isMesh&&o.material===ENV.skyMat)||null;
+  for(const o of ENV_OBJS)if(o.parent===scene&&o!==K2.sky)root.add(o);if(ENV.out&&ENV.out.parent===scene)root.add(ENV.out)}
+function k2EnvPos(){const up=k2Up(),x=up?K2.dx:0,y=up?-(K2.H+0.2):0;if(K2.env)K2.env.position.set(x,y,0);if(ENV.shell)ENV.shell.position.set(x,y,0)}
 function k2Fade(){let f=$('k2fade');if(!f){f=document.createElement('div');f.id='k2fade';$('game').appendChild(f)}return f}
 function k2Toggle(){if(!K2.on||K2.busy||UI.mode!=='cafe'||UI.modal)return;const f=k2Fade();K2.busy=true;f.classList.add('on');
   setTimeout(()=>{try{k2View(K2.view===2?1:2)}catch(e){console.warn('kat',e)}setTimeout(()=>{f.classList.remove('on');K2.busy=false},70)},180)}
@@ -16683,7 +16688,7 @@ const k2Foot=()=>new THREE.Vector3(K2.geo.foot.x,0,K2.geo.foot.z),k2Head=()=>new
   const y0=this._k2y||0;if(y0)this.pos.y-=y0;const st=!!(n&&n.k2st);let sp,cr;if(st){sp=this.speed;cr=this.canRun;this.speed=Math.min(sp,1)*0.8;this.canRun=false}
   try{_u.call(this,dt)}finally{if(st){this.speed=sp;this.canRun=cr}}
   const y=this._k2on?k2Ground(this.pos.x,this.pos.z):0;this._k2y=y;if(y){this.pos.y+=y;if(this.carry)this.carry.position.y+=y}}}
-
+{const _es=envShell;envShell=function(){const r=_es.apply(this,arguments);try{k2EnvPos()}catch(e){}return r}}   // arsa kabuğu yeniden kurulunca (oda büyümesi) üst kat bakışındaki yerine döner
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
