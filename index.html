@@ -14518,7 +14518,7 @@ const RH_TOUR=[
   {t:()=>{const b=document.querySelector('button.plus[aria-label="Elmas"]');return b&&b.parentElement},h:'Elmasların',x:'<b>Elmas</b> daha nadir bulunur; özel kıyafetlere ve Royal Pass’e yarar. Görevlerden ve ödüllerden kazanırsın.'},
   {t:rhQ('#shopBtn'),h:'Dükkânın tabelası',x:'Kafe <b>açık</b> mı kapalı mı, buradan görürsün. Dokunursan kapatırsın, yeni misafir gelmez; yeniden dokununca kapılar açılır.'},
   {t:rhQ('#dailyBtn'),h:'Görevler',x:'Her gün yeni görevler seni bekler. Tamamladıkça altın ve ödül kazanırsın; günde bir uğramayı unutma!'},
-  {t:rhQ('#evBtn'),h:'Etkinlikler',x:`Başka ülkelere yolculuk buradan başlar! <b>${RH_EV_LVL}. seviyede</b> açılacak; o gün geldiğinde ben sana haber veririm.`},
+  {t:rhQ('#evBtn'),h:'Etkinlikler',x:`Özel etkinlikler burada! <b>${RH_EV_LVL}. seviyede</b> açılacak; o gün geldiğinde ben sana haber veririm.`},
   {t:rhQ('#rpBtn'),h:'Royal Pass',x:'Oynadıkça puan toplarsın; her ay kademe kademe altın, elmas ve <b>özel eşyalar</b> kazanırsın.'},
   {t:rhQ('#mailBtn'),h:'Duyurular',x:'Hediyeler ve haberler buraya düşer. Üstünde kırmızı nokta görürsen bir bak derim.'},
   {t:()=>navBtn('book'),h:'Tarifler',x:'Tarif defterimiz! Yapabileceğin bütün lezzetler burada; keşfettiklerini buradan açarsın.'},
@@ -14552,7 +14552,7 @@ addEventListener('keydown',e=>{if(rhTourUp()&&(e.key==='Enter'||e.key===' ')&&!e
 
 // ---- 4) Etkinlikler 8. seviyede açılır ----
 const rhEvOpen=()=>{try{return !!EVMODE||S.lvl>=RH_EV_LVL||Object.keys(S.evs||{}).length>0}catch(e){return true}};
-{const _oe=openEvents;openEvents=function(){if(!rhEvOpen()){try{sfx('nope')}catch(e){}toast(`<b>Etkinlikler ${RH_EV_LVL}. seviyede açılıyor</b><br>Başka ülkelere yolculuk için biraz daha büyüyelim!`,ic('lock'),3000);return}return _oe.apply(this,arguments)};openMap=openEvents}
+{const _oe=openEvents;openEvents=function(){if(!rhEvOpen()){try{sfx('nope')}catch(e){}toast(`<b>Etkinlikler ${RH_EV_LVL}. seviyede açılıyor</b><br>Biraz daha büyüyelim, yeni etkinlikler seni bekliyor!`,ic('lock'),3000);return}return _oe.apply(this,arguments)};openMap=openEvents}
 function rhEvSync(){const b=$('evBtn');if(!b)return;const lock=!rhEvOpen();if(b.classList.contains('rhlock')!==lock)b.classList.toggle('rhlock',lock);let k=b.querySelector('.rhlk');
   if(lock&&!k){k=document.createElement('span');k.className='rhlk';k.innerHTML=`${ic('lock')}Sv ${RH_EV_LVL}`;b.appendChild(k)}else if(!lock&&k)k.remove();
   if(!lock&&!b.dataset.rhc){b.dataset.rhc='1';b.addEventListener('click',()=>{if(S.seen&&!S.seen.ev8){S.seen={...S.seen,ev8:true};markDirty()}},true)}}
@@ -14561,7 +14561,7 @@ function rhEv8(){if(EVMODE||!started||(S.seen&&S.seen.ev8)||!rhEvOpen()||S.tut!=
   if(Object.keys(S.evs||{}).length){S.seen={...(S.seen||{}),ev8:true};markDirty();return false}   // etkinliğe zaten katılmış
   if(UI.mode!=='cafe'||UI.modal||lvQueue.length||document.querySelector('#game .modal:not([hidden])')||!$('evBtn')||$('coach').hidden===false&&CO.owner!=='rh'){if(RH.ev){RH.ev=false;rhHide()}return false}
   RH.ev=true;const done=()=>{S.seen={...(S.seen||{}),ev8:true};RH.ev=false;coachOff();RH.shown='';markDirty();try{saveNow()}catch(e){}};
-  rhShow('ev8',{title:'Dünya seni bekliyor!',dim:true,target:rhQ('#evBtn'),text:`${(S.lvl|0)===RH_EV_LVL?`Tebrikler, ${RH_EV_LVL}. seviyeye ulaştın ve <b>Etkinlikler</b> açıldı!`:'<b>Etkinlikler</b> artık açık!'} Artık başka ülkelere yolculuk edebilirsin: her durakta sıfırdan bir kafe kurar, o ülkenin tariflerini ve eşyalarını ana kafene getirirsin. Ana kafen sen yokken de yerinde durur. İlk durağımız <b>İtalya</b>!`,
+  rhShow('ev8',{title:'Etkinlikler açıldı!',dim:true,target:rhQ('#evBtn'),text:`${(S.lvl|0)===RH_EV_LVL?`Tebrikler, ${RH_EV_LVL}. seviyeye ulaştın ve <b>Etkinlikler</b> açıldı!`:'<b>Etkinlikler</b> artık açık!'} Burada zaman zaman farklı etkinlikler olacak. İlk etkinliğimiz bir <b>İtalya</b> yolculuğu: orada sıfırdan bir kafe kurup İtalyan tariflerini ana kafene getireceksin. Ana kafen sen yokken de yerinde durur.`,
     buttons:[{label:'Sonra',light:true,onClick:done},{label:'Etkinliklere bak',green:true,icon:'event',onClick:()=>{done();openEvents()}}]});
   const box=$('coach'),r=targetRect(rhQ('#evBtn')),g=$('game').getBoundingClientRect();box.classList.add(r&&(r.top-g.top+r.height/2)<g.height*0.5?'rhb':'rht');return true}
 
