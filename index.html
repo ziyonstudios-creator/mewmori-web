@@ -4488,7 +4488,7 @@ function dlvUI(){const hp=new THREE.Vector3();
   if(DLV.call)h=`${ic('bell')}<span><b>Telefon çalıyor!</b> Dokun</span><em>${fmtT(DLV.call.left)}</em>`;
   else if(d&&d.state==='PREP')h=`${ic('box')}<span>Paket hazırlanıyor</span><em>${d.orders.filter(o=>o.state==='READY').length}/${d.orders.length}</em>`;
   else if(d&&d.state==='PACK')h=`${ic('box')}<span>Paketleniyor</span>`;
-  else if(d&&d.state==='TRIP')h=`${UI_IC.bike?`<span class="ic">${UI_IC.bike}</span>`:ic('paw')}<span>Kurye yolda · ${d.who}</span><em>${fmtT(Math.max(0,d.tripT))}</em>`;
+  else if(d&&d.state==='TRIP')h=`${UI_IC.bike?`<span class="ic">${UI_IC.bike}</span>`:ic('paw')}<span>Kurye yolda · ${d.who}</span><em>${fmtT(Math.max(0,d.tripT||0))}</em>`;
   else if(d&&d.state==='BACK')h=`${ic('coin')}<span>Kurye dönüyor</span>`;
   e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',!!DLV.call)}
 UI_IC.bell=SV(`<path d="M32 10c-9 0-15 7-15 16v10l-5 8h40l-5-8V26c0-9-6-16-15-16z" fill="#f6c453"/><circle cx="32" cy="50" r="5" fill="#d9534f"/>`);
@@ -16472,8 +16472,10 @@ setInterval(()=>{try{if(EVMODE||!started||!Array.isArray(S.board)||mgDrag)return
 //  · Merdivenin ayak izi üst katta gerçek bir deliktir: aynı merdiven modeli 3,2 m aşağıya konur, çevresinde korkuluk. Deliğin kutusu (K2.ob) ve
 //    merdivenin kendi kutusu (K2.ob1) OBST'ta; merdivenin önü (K2.nb1) ve üst kattaki çıkış karesi (K2.nb2) NO_BUILD'de durur.
 //  · Üst kattayken alt kat, zeminin altında düz bir cephe olarak görünür (canlı değildir).
-//  · 1. AŞAMA (V219): yapı + Kat düğmesi + üst kata eşya yerleştirme. Üst kat masaları henüz müşteri almaz (refreshWorld sarmalı TABLES'tan süzer);
-//    2. aşamada merdiven yolu (yol bulma + karakterlerin katlar arası geçişi) eklenecek ve süzgeç kalkacak.
+//  · 1. AŞAMA (V219): yapı + Kat düğmesi + üst kata eşya yerleştirme.
+//  · 2. AŞAMA (V220, dosyanın sonu): merdiven yolu. Üst katın kendi yol ızgarası (K2NAV) ve A*'ı var; astar() sarmalı katlar arası yolu
+//    [1. kat yolu → merdiven → ışınlanma → merdivenin üst kısmı → 2. kat yolu] diye birleştirir. Karakter merdivende yükselir (k2Ground),
+//    1. katta tepeye varınca 2. kattaki boşluğun içine (zeminin altına) ışınlanır ve oradan yukarı çıkar; inişte tersi. Üst kat masaları müşteri alır.
 var K2={dx:400,H:3.2,on:false,view:1,g:null,sig:'',geo:null,ob:null,ob1:null,nb1:null,nb2:null,strips:[],sky:null,busy:false,boot:false};
 const K2FAR={minX:1e6,maxX:1e6,minZ:1e6,maxZ:1e6};
 function k2X(x){return x>200}                                     // bu x 2. kat bölgesinde mi
@@ -16529,6 +16531,7 @@ function k2StairWhy(rec){const g=k2Geo(rec),b=g.box,e=0.01;
   const fz=g.footZone,xz=g.exitZone;
   if(fz.minX<RM.x0-e||fz.maxX>RM.x1+e||fz.minZ<RM.z0-e||fz.maxZ>RM.z1+e)return 'Merdivenin önünde bir kare boşluk kalmalı';
   if(xz.minX<RM.x0-e||xz.maxX>RM.x1+e||xz.minZ<RM.z0-e||xz.maxZ>RM.z1+e)return 'Üst uç duvara dayanmasın: üst katta çıkış için bir kare gerekir';
+  {const F=g.foot,m=0.36;if(F.x<RM.x0+m||F.x>RM.x1-m||F.z<RM.z0+m||F.z>RM.z1-m)return 'Merdivenin önü kenara çok yakın: önünde bir kare daha boşluk bırak'}   // ayak noktası yürüme alanında olmalı (yoksa karakter merdivene yandan girer)
   for(const o of OBST)if(o!==K2.ob1&&ovl(fz,o,-0.02))return 'Merdivenin önü kapalı';
   const hole=k2Shift(b,K2.dx),ex2=k2Shift(xz,K2.dx);
   for(const [u,R] of FURN){if(u===rec.uid)continue;const up=k2X(R.rec.x);let bs=R.boxes&&R.boxes.length?R.boxes:null;if(!bs){try{bs=recBoxes(R.rec)}catch(er){bs=[]}}
@@ -16580,7 +16583,7 @@ function k2Build(){k2Drop();if(!K2.on||!K2.geo){if(K2.view===2)k2View(1,true);k2
    try{mergeStatic(sub)}catch(e){}
    // çevre zemini: PARÇALI düzlem. Tek dev dörtgende (köşeleri kameranın arkasında) sis derinliği yanlış ara değerleniyor, zemin sis rengine boyanıyordu
    const gr=mk(new THREE.PlaneGeometry(160,160,16,16),toon(0x9ccf7a),cx,-FH-0.01,cz);gr.rotation.x=-Math.PI/2;gr.receiveShadow=false}
-  k2Btn();k2Lamps()}
+  k2Btn();k2Lamps();try{buildGrid()}catch(e){}}   // merdivenin kutusu değişti: 1. kat ızgarası ve üst kat ızgarası (buildGrid sarmalı) yenilenir
 
 // ---- kat değiştirme: kamera, güneş ve gökyüzü 400 m kayar ----
 function k2Lamps(){try{const up=k2Up(),ts=[...FURN.values()].filter(R=>R.table&&k2X(R.rec.x)===up);LAMP_POOL.forEach((pl,i)=>{const R=ts[i];if(R){pl.position.set(R.rec.x,WALL_H-0.7,R.rec.z);pl.intensity=4}else{pl.intensity=0;pl.position.set(0,-5,0)}})}catch(e){}}
@@ -16617,7 +16620,7 @@ k2Btn();setInterval(k2Btn,900);
 
 // ---- oyuna kancalar ----
 {const _as=applyState;applyState=function(){try{k2State()}catch(e){console.warn('kat2 durum',e)}K2.boot=true;try{return _as.apply(this,arguments)}finally{K2.boot=false;try{k2Sync()}catch(e){console.warn('kat2',e)}}}}
-{const _rw=refreshWorld;refreshWorld=function(){const r=_rw.apply(this,arguments);try{k2Sync();if(K2.on)TABLES=TABLES.filter(t=>!k2X(t.center.x));k2Lamps()}catch(e){console.warn('kat2',e)}return r}}   // 1. aşama: üst kat masaları müşteri almaz
+{const _rw=refreshWorld;refreshWorld=function(){const r=_rw.apply(this,arguments);try{k2Sync();k2Lamps()}catch(e){console.warn('kat2',e)}return r}}
 {const _sr=setRoom;setRoom=function(){const r=_sr.apply(this,arguments);try{k2Sync()}catch(e){console.warn('kat2',e)}return r}}
 {const _bs=buildShell;buildShell=function(){const r=_bs.apply(this,arguments);try{for(const s of K2.strips){if(!floorStrips.includes(s))floorStrips.push(s);s.visible=!!SHELL.strips}}catch(e){}return r}}
 {const _cf=camFit;camFit=function(){const r=_cf.apply(this,arguments);try{if(K2.view===2){camera.position.x+=K2.dx;controls.target.x+=K2.dx;controls.update()}}catch(e){}return r}}
@@ -16627,6 +16630,60 @@ k2Btn();setInterval(k2Btn,900);
 {const _de=drawEditBar;drawEditBar=function(){const r=_de.apply(this,arguments);try{const R=UI.edit!=null?FURN.get(UI.edit):null;if(R&&R.rec.id==='d_stairs'){const b=$('edStore');if(b)b.remove()}}catch(e){}return r}}
 {const _cp=confirmPlacement;confirmPlacement=function(){const st=!!(PL&&PL.rec&&PL.rec.id==='d_stairs'&&PL.isNew),had=!!k2Rec();const r=_cp.apply(this,arguments);
   try{if(st&&!had&&k2Rec())setTimeout(()=>toast('<b>2. kat açıldı!</b><br>Sol alttaki <b>Kat</b> düğmesiyle üst kata geç; oraya da masa ve dekor koyabilirsin.',`<img src="${itemThumb('d_stairs')}" alt="">`,5200),900)}catch(e){}return r}}
+
+// ================= 2. AŞAMA (V220): MERDİVEN YOLU — müşteri ve garsonlar katlar arasında yürür =================
+// Üst katın yol ızgarası: 0 boş · 1 eşya (yumuşak: başka yol yoksa içinden geçilir, 5 kat pahalı; p86'daki yumuşak yolun karşılığı) · 2 duvar payı / merdiven boşluğu (sert)
+const K2NAV={g:null,nx:0,nz:0,x0:0,z0:0},K2CELL=0.2,K2PAD=0.28,K2SA=1.0,K2SB=0.6;   // K2SA: 1. katta ışınlanma noktası (tepe) · K2SB: 2. katta belirme noktası (boşluğun içi)
+function k2NavBuild(){if(!K2.on||!K2.geo){K2NAV.g=null;return}
+  const R=k2Rect(),nx=Math.round((R.x1-R.x0)/K2CELL),nz=Math.round((R.z1-R.z0)/K2CELL),g=new Uint8Array(nx*nz),m=0.35,hard=[K2.ob],soft=[];
+  for(const Rr of FURN.values())if(k2X(Rr.rec.x)&&Rr.boxes)soft.push(...Rr.boxes);
+  const hit=(L,x,z)=>{for(const o of L)if(x>o.minX-K2PAD&&x<o.maxX+K2PAD&&z>o.minZ-K2PAD&&z<o.maxZ+K2PAD)return true;return false};
+  for(let k=0;k<nz;k++)for(let i=0;i<nx;i++){const x=R.x0+(i+0.5)*K2CELL,z=R.z0+(k+0.5)*K2CELL;g[k*nx+i]=(x<R.x0+m||x>R.x1-m||z<R.z0+m||z>R.z1-m||hit(hard,x,z))?2:hit(soft,x,z)?1:0}
+  Object.assign(K2NAV,{g,nx,nz,x0:R.x0,z0:R.z0})}
+function k2Cell(x,z){const N=K2NAV;return [Math.min(N.nx-1,Math.max(0,Math.floor((x-N.x0)/K2CELL))),Math.min(N.nz-1,Math.max(0,Math.floor((z-N.z0)/K2CELL)))]}
+function k2Near(i,k,lim){const N=K2NAV,ok=(a,b)=>a>=0&&b>=0&&a<N.nx&&b<N.nz&&N.g[b*N.nx+a]<lim;if(ok(i,k))return [i,k];
+  for(let r=1;r<14;r++)for(let dk=-r;dk<=r;dk++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dk))!==r)continue;if(ok(i+di,k+dk))return [i+di,k+dk]}return null}
+function k2Astar(sx,sz,tx,tz){const N=K2NAV;if(!N.g)return [];const cs=k2Cell(sx,sz),ct=k2Cell(tx,tz),s=k2Near(cs[0],cs[1],1)||k2Near(cs[0],cs[1],2),t=k2Near(ct[0],ct[1],1)||k2Near(ct[0],ct[1],2);if(!s||!t)return [];
+  const nx=N.nx,nz=N.nz,g=N.g,key=(i,k)=>k*nx+i,cost=new Float32Array(nx*nz).fill(Infinity),came=new Int32Array(nx*nz).fill(-1),closed=new Uint8Array(nx*nz),hard=(i,k)=>i<0||k<0||i>=nx||k>=nz||g[k*nx+i]===2;
+  const open=[[0,s[0],s[1]]];cost[key(s[0],s[1])]=0;let found=false;
+  while(open.length){let bi=0;for(let j=1;j<open.length;j++)if(open[j][0]<open[bi][0])bi=j;const [,i,k]=open.splice(bi,1)[0],c=key(i,k);if(closed[c])continue;closed[c]=1;if(i===t[0]&&k===t[1]){found=true;break}
+    for(let dk=-1;dk<=1;dk++)for(let di=-1;di<=1;di++){if(!di&&!dk)continue;const ni=i+di,nk=k+dk;if(hard(ni,nk))continue;if(di&&dk&&(hard(i+di,k)||hard(i,k+dk)))continue;
+      const n=key(ni,nk),ng=cost[c]+Math.hypot(di,dk)*(g[n]===1?5:1);if(ng<cost[n]){cost[n]=ng;came[n]=c;open.push([ng+Math.hypot(ni-t[0],nk-t[1]),ni,nk])}}}
+  if(!found)return [];const cells=[];for(let c=key(t[0],t[1]);c>=0;c=came[c])cells.push(c);cells.reverse();
+  const pts=cells.map(c=>new THREE.Vector3(N.x0+(c%nx+0.5)*K2CELL,0,N.z0+(Math.floor(c/nx)+0.5)*K2CELL));
+  const free=(x,z)=>{const q=k2Cell(x,z);return g[q[1]*nx+q[0]]===0},los=(a,b)=>{const n=Math.ceil(a.distanceTo(b)/(K2CELL*0.5));for(let q=0;q<=n;q++)if(!free(a.x+(b.x-a.x)*q/n,a.z+(b.z-a.z)*q/n))return false;return true};
+  const out=[pts[0]];let cur=0;while(cur<pts.length-1){let nxt=cur+1;for(let j=pts.length-1;j>cur+1;j--)if(los(pts[cur],pts[j])){nxt=j;break}out.push(pts[nxt]);cur=nxt}
+  return out}
+// merdiven üstünde bir nokta (ilerleme s: 0 alt uç … 1 üst uç; dx: 2. kat için 400)
+function k2P(s,dx,flag){const g=K2.geo,v=new THREE.Vector3(g.lo.x+g.ux*2.5*s+(dx||0),0,g.lo.z+g.uz*2.5*s);if(flag)v[flag]=true;return v}
+function k2Prog(x,z){const g=K2.geo;return ((x-g.lo.x)*g.ux+(z-g.lo.z)*g.uz)/2.5}
+function k2On(x,z){const g=K2.geo;if(!g)return 0;const up=k2X(x),bx=up?x-K2.dx:x,b=g.box,m=0.03;if(bx<b.minX-m||bx>b.maxX+m||z<b.minZ-m||z>b.maxZ+m)return 0;return up?2:1}   // 1: 1. katta merdivende · 2: 2. katta boşlukta
+function k2Ground(x,z){const w=k2On(x,z);if(!w)return 0;const s=Math.min(1,Math.max(0,k2Prog(w===2?x-K2.dx:x,z)));return w===1?K2.H*s:K2.H*(s-1)}
+const k2Foot=()=>new THREE.Vector3(K2.geo.foot.x,0,K2.geo.foot.z),k2Head=()=>new THREE.Vector3(K2.geo.hi.x+K2.geo.ux*0.3+K2.dx,0,K2.geo.hi.z+K2.geo.uz*0.3);
+// katlar arası yol: en dıştaki astar sarmalı. Düğüm işaretleri: k2st = merdiven parçasının hedefi (yavaş yürünür), k2tp = bu noktaya ışınlan
+{const _as=astar;astar=function(sx,sz,tx,tz){
+  if(!K2.on||!K2.geo||!K2NAV.g)return _as(sx,sz,tx,tz);
+  const a=k2X(sx),b=k2X(tx),on=k2On(sx,sz);if(!a&&!b&&!on)return _as(sx,sz,tx,tz);
+  const F=k2Foot(),Hd=k2Head(),cur=new THREE.Vector3(sx,0,sz),dx=K2.dx;
+  const up=()=>[k2P(K2SA,0,'k2st'),k2P(K2SB,dx,'k2tp'),k2P(1,dx,'k2st'),Hd].concat(k2Astar(Hd.x,Hd.z,tx,tz));        // 1. kat merdiveni → 2. kat → hedef
+  const down=()=>[k2P(K2SA,0,'k2tp'),k2P(0,0,'k2st'),F].concat(_as(F.x,F.z,tx,tz));                                    // (2. kat boşluğundan) 1. kat tepesi → aşağı → hedef
+  if(on===1)return b?[cur].concat(up()):[cur,k2P(0,0,'k2st'),F].concat(_as(F.x,F.z,tx,tz));                               // 1. katta merdivenin üstündeyken
+  if(on===2){const s=k2Prog(sx-dx,sz);return b?[cur,k2P(1,dx,'k2st'),Hd].concat(k2Astar(Hd.x,Hd.z,tx,tz)):[cur].concat(s>K2SB+0.01?[k2P(K2SB,dx,'k2st')]:[],down())}   // 2. katta boşluğun içindeyken
+  if(a&&b)return k2Astar(sx,sz,tx,tz);
+  if(!a&&b)return _as(sx,sz,F.x,F.z).concat([F,k2P(0)],up());   // ayak noktasından geçip merdivene önden girer
+  return k2Astar(sx,sz,Hd.x,Hd.z).concat([k2P(1,dx),k2P(K2SB,dx,'k2st')],down())}}
+{const _pr=pointReachable;pointReachable=function(g,seen,p){if(p&&k2X(p.x))return !!(K2&&K2.on);return _pr.apply(this,arguments)}}   // üst kat noktaları merdivenle ulaşılır (1. kat ızgarasında aranmaz)
+{const _bg=buildGrid;buildGrid=function(){const r=_bg.apply(this,arguments);try{k2NavBuild()}catch(e){console.warn('kat2 yol',e)}return r}}
+// karakter: merdivende yükseklik, katlar arası ışınlanma, merdivende yavaş yürüyüş (koşma yok)
+{const _u=Char.prototype.update;Char.prototype.update=function(dt){
+  if(!K2.on||!K2.geo)return _u.call(this,dt);
+  let n=this.path&&this.path[0];
+  if(n&&n.k2tp&&!this.trans){this.pos.x=n.x;this.pos.z=n.z;this.path.shift();n=this.path[0];this._k2on=true}
+  if(n&&(n.k2st||n.k2tp))this._k2on=true;else if(this._k2on&&!k2On(this.pos.x,this.pos.z))this._k2on=false;
+  const y0=this._k2y||0;if(y0)this.pos.y-=y0;const st=!!(n&&n.k2st);let sp,cr;if(st){sp=this.speed;cr=this.canRun;this.speed=Math.min(sp,1)*0.8;this.canRun=false}
+  try{_u.call(this,dt)}finally{if(st){this.speed=sp;this.canRun=cr}}
+  const y=this._k2on?k2Ground(this.pos.x,this.pos.z):0;this._k2y=y;if(y){this.pos.y+=y;if(this.carry)this.carry.position.y+=y}}}
+
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
