@@ -7714,16 +7714,18 @@ function buyGarden(side){const s=gardenState(side);if(!s.ok){sfx('nope');return 
   toast(`<b>${GARDEN[side].name} açıldı!</b><br>Buraya masa ve dekor koyabilirsin.`,ic('plus'),3600);return true}
 // ---- görünüm: taş döşemeli çim zemin + beyaz çit + köşede çalı ----
 let GARDEN_TEX=null;
-function gardenTex(){if(GARDEN_TEX)return GARDEN_TEX;const S2=256,cv=document.createElement('canvas');cv.width=cv.height=S2;const c=cv.getContext('2d');
-  c.fillStyle='#8cbf5c';c.fillRect(0,0,S2,S2);for(let i=0;i<500;i++){c.fillStyle=Math.random()<.5?'rgba(70,130,50,.35)':'rgba(180,220,120,.35)';c.fillRect(Math.random()*S2,Math.random()*S2,2,5)}
-  const tile=(x,y,w,h)=>{c.fillStyle='#d9cbb0';c.beginPath();c.roundRect(x,y,w,h,10);c.fill();c.fillStyle='#e9dcc2';c.beginPath();c.roundRect(x+3,y+3,w-8,h-8,8);c.fill()};
-  for(let r=0;r<4;r++)for(let k=0;k<4;k++){const off=(r%2)*32;tile(((k*64+off)%S2)+5,r*64+5,54,54);if(off&&k===3)tile(-27,r*64+5,54,54)}
+// V213: bahçe zemini düz çim (önceki kareli taş döşeme kaldırıldı); dıştaki arsa çimiyle aynı desen, biraz daha canlı yeşil
+function gardenTex(){if(GARDEN_TEX)return GARDEN_TEX;const cv=document.createElement('canvas');cv.width=cv.height=256;const x=cv.getContext('2d');x.fillStyle='#95c868';x.fillRect(0,0,256,256);
+  for(let i=0;i<4;i++){x.fillStyle='rgba(235,250,190,.16)';x.fillRect(0,i*64,256,32)}
+  let s=11;const rnd=()=>(s=(s*9301+49297)%233280)/233280;
+  for(let i=0;i<700;i++){x.fillStyle=i%3?'rgba(105,160,70,.38)':'rgba(205,235,150,.42)';x.fillRect(rnd()*256,rnd()*256,2,5)}
+  for(let i=0;i<18;i++){const fx=10+rnd()*236,fy=10+rnd()*236,k=i%3;x.fillStyle=k===0?'#ffffff':k===1?'#f7a8c8':'#fbe36a';for(let p=0;p<5;p++){const a=p*1.257;x.beginPath();x.arc(fx+Math.cos(a)*2.6,fy+Math.sin(a)*2.6,1.9,0,7);x.fill()}x.fillStyle=k===2?'#f2a03a':'#f7d04a';x.beginPath();x.arc(fx,fy,1.5,0,7);x.fill()}
   const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;GARDEN_TEX=t;return t}
 let GARDEN_G=null;
 function buildGarden(){if(GARDEN_G){scene.remove(GARDEN_G);disposeTree(GARDEN_G);GARDEN_G=null}if(!GDN.r&&!GDN.f)return;
   const G=new THREE.Group();G.name='garden';scene.add(G);GARDEN_G=G;const P0=PARENT;PARENT=G;
   try{const X1=RM.x1+GDN.r,Z1=RM.z1+GDN.f;const rects=[];if(GDN.r)rects.push([RM.x1,X1,RM.z0,Z1]);if(GDN.f)rects.push([RM.x0,RM.x1,RM.z1,Z1]);
-    for(const [x0,x1,z0,z1] of rects){const tex=gardenTex().clone();tex.needsUpdate=true;tex.repeat.set((x1-x0)/1.0,(z1-z0)/1.0);
+    for(const [x0,x1,z0,z1] of rects){const tex=gardenTex().clone();tex.needsUpdate=true;tex.repeat.set((x1-x0)/5,(z1-z0)/5);
       const m=new THREE.Mesh(new THREE.BoxGeometry(x1-x0,0.2,z1-z0),new THREE.MeshToonMaterial({color:0xffffff,map:tex,gradientMap:grad}));m.position.set((x0+x1)/2,-0.1,(z0+z1)/2);m.receiveShadow=true;G.add(m)}
     const wood=toon(0xfbf3e2),rail=toon(0xeadcc0);
     const fence=(ax,az,bx,bz)=>{const L=Math.hypot(bx-ax,bz-az);if(L<0.1)return;const n=Math.max(1,Math.round(L/0.42));const along=Math.abs(bx-ax)>Math.abs(bz-az);
