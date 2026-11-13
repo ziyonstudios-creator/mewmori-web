@@ -5737,7 +5737,7 @@ async function visitCafe(uid){try{const sb=await sbClient();const {data,error}=a
 function visitEnter(c){const L=c.layout||{};VISIT.on=true;VISIT.cafe=c;VISIT.liked=false;VISIT.groups=[];
   for(const R of FURN.values())R.group.visible=false;scene.traverse(o=>{if(o.userData&&o.userData.isChar&&o.visible){o.visible=false;(VISIT.hid=VISIT.hid||[]).push(o)}});
   const rm=L.room||{x1:4.75,z1:4};VISIT.room={x0:RM.x0,x1:RM.x1,z0:RM.z0,z1:RM.z1};setRoom({x0:rm.x0??-4.75,x1:rm.x1,z0:rm.z0??-4,z1:rm.z1},true);applyWall(CAT[L.wall]?L.wall:'w_cream');applyFloor(CAT[L.floor]?L.floor:'f_classic');
-  const tabs=[];for(const f of (L.f||[]).slice(0,120)){if(!CAT[f.id])continue;const rec={...f,uid:900000+VISIT.groups.length,chair:CAT[f.chair]?f.chair:'c_cushion'};try{const G=buildFurnGroup(rec);placeGroup(G,rec);scene.add(G);VISIT.groups.push(G);if(CAT[f.id].kind==='table')tabs.push(rec)}catch(e){}}
+  const tabs=[];for(const f of (L.f||[]).slice(0,220)){if(!CAT[f.id])continue;const rec={...f,uid:900000+VISIT.groups.length,chair:CAT[f.chair]?f.chair:'c_cushion'};try{const G=buildFurnGroup(rec);placeGroup(G,rec);scene.add(G);VISIT.groups.push(G);if(CAT[f.id].kind==='table')tabs.push(rec)}catch(e){}}
   LAMP_POOL.forEach((pl,i)=>{const t=tabs[i];if(t){pl.position.set(t.x,WALL_H-0.7,t.z);pl.intensity=4}else{pl.intensity=0;pl.position.set(0,-5,0)}});
   setMode('visit');$('game').classList.add('visiting');visitBar()}
 function visitLeave(){if(!VISIT.on)return;for(const G of VISIT.groups){scene.remove(G);disposeTree(G)}VISIT.groups=[];for(const R of FURN.values())R.group.visible=true;(VISIT.hid||[]).forEach(o=>o.visible=true);VISIT.hid=[];
@@ -16485,7 +16485,8 @@ function k2N(){return {nx:Math.round((RM.x1-RM.x0)/0.5),nz:Math.round((RM.z1-RM.
 function k2Rect(){return {x0:RM.x0+400,x1:RM.x1+400,z0:RM.z0,z1:RM.z1}}
 function rmOf(x){if(k2X(x))return K2&&K2.on?k2Rect():null;return {x0:RM.x0,x1:RM.x1+GDN.r,z0:RM.z0,z1:RM.z1+GDN.f}}   // x'in bulunduğu katın yerleştirme dikdörtgeni
 function k2Cap(){return K2&&K2.on?6:0}                             // 2. kat +6 masa (tableCap, p5)
-function k2Rec(){try{return (S.furniture||[]).find(f=>f&&f.id==='d_stairs'&&!f.stored)||null}catch(e){return null}}
+const k2Vis=()=>typeof VISIT!=='undefined'&&!!VISIT.on;   // (V223) ziyaret: gösterilen kafe başkasının
+function k2Rec(){try{if(k2Vis()){const L=VISIT.cafe&&VISIT.cafe.layout;return ((L&&L.f)||[]).find(f=>f&&f.id==='d_stairs')||null}return (S.furniture||[]).find(f=>f&&f.id==='d_stairs'&&!f.stored)||null}catch(e){return null}}
 
 // ---- katalog: tek seferlik eşya ----
 {const c={id:'d_stairs',kind:'decor',name:'2. Kat merdiveni',price:7500,lvl:10,half:[0.5,1.25],rot:true,once:true,desc:'Kafene ikinci katı açar: +6 masa yeri. Merdiveni içeride bir yere yerleştir; üst kata “Kat” düğmesiyle geçersin.'};
@@ -16527,7 +16528,7 @@ function k2State(){const r=k2Rec();K2.on=!!r;
   if(!r){for(const k of ['ob','ob1','nb1','nb2'])Object.assign(K2[k],K2FAR);K2.geo=null;return}
   const g=K2.geo=k2Geo(r);Object.assign(K2.ob1,g.box);Object.assign(K2.ob,k2Shift(g.box,K2.dx));Object.assign(K2.nb1,g.footZone);Object.assign(K2.nb2,k2Shift(g.exitZone,K2.dx))}
 function k2Sig(){const r=k2Rec();return r?[r.x,r.z,r.rot||0,RM.x0,RM.x1,RM.z0,RM.z1,S.oWin||''].join('|'):''}
-function k2Sync(){const r=k2Rec();if(r&&!FURN.has(r.uid)&&K2.g)return;   // merdiven taşınıyor: bırakılana dek eski hâl kalır
+function k2Sync(){const r=k2Rec();if(r&&!k2Vis()&&!FURN.has(r.uid)&&K2.g)return;   // merdiven taşınıyor: bırakılana dek eski hâl kalır (ziyarette merdiven FURN'da olmaz)
   k2State();const s=k2Sig();if(s===K2.sig)return;K2.sig=s;k2Build()}
 
 // ---- merdivenin yerleştirme kuralları ----
@@ -16551,7 +16552,7 @@ function k2StairWhy(rec){const g=k2Geo(rec),b=g.box,e=0.01;
 
 // ---- 2. katın kabuğu ----
 function k2Drop(){if(K2.g){scene.remove(K2.g);try{disposeTree(K2.g)}catch(e){}K2.g=null}for(const s of K2.strips){const i=floorStrips.indexOf(s);if(i>=0)floorStrips.splice(i,1)}K2.strips=[]}
-function k2Build(){k2Drop();if(!K2.on||!K2.geo){if(K2.view===2)k2View(1,true);k2Btn();return}
+function k2Build(){k2Drop();if(!K2.on||!K2.geo){if(K2.view===2)k2View(1,true);k2Btn();try{buildGrid()}catch(e){}return}
   const G=new THREE.Group();G.name='kat2';G.userData.merged=true;scene.add(G);K2.g=G;   // merged: p36 mergeFar bu grubu ezmesin (duvar etiketleri ve şeritler korunur)
   const R=k2Rect(),W=R.x1-R.x0,D=R.z1-R.z0,cx=(R.x0+R.x1)/2,cz=(R.z0+R.z1)/2,q=K2.geo,hb=K2.ob,H=K2.H;
   const mk=(geo,mat,x,y,z,par)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.receiveShadow=true;(par||G).add(m);return m};
@@ -16589,7 +16590,8 @@ function k2Build(){k2Drop();if(!K2.on||!K2.geo){if(K2.view===2)k2View(1,true);k2
   k2Btn();k2Lamps();try{buildGrid()}catch(e){}}   // merdivenin kutusu değişti: 1. kat ızgarası ve üst kat ızgarası (buildGrid sarmalı) yenilenir
 
 // ---- kat değiştirme: kamera, güneş ve gökyüzü 400 m kayar ----
-function k2Lamps(){try{const up=k2Up(),ts=[...FURN.values()].filter(R=>R.table&&k2X(R.rec.x)===up);LAMP_POOL.forEach((pl,i)=>{const R=ts[i];if(R){pl.position.set(R.rec.x,WALL_H-0.7,R.rec.z);pl.intensity=4}else{pl.intensity=0;pl.position.set(0,-5,0)}})}catch(e){}}
+function k2Lamps(){try{const up=k2Up(),ts=k2Vis()?(((VISIT.cafe&&VISIT.cafe.layout)||{}).f||[]).filter(f=>CAT[f.id]&&CAT[f.id].kind==='table'&&k2X(f.x)===up):[...FURN.values()].filter(R=>R.table&&k2X(R.rec.x)===up).map(R=>R.rec);
+  LAMP_POOL.forEach((pl,i)=>{const r=ts[i];if(r){pl.position.set(r.x,WALL_H-0.7,r.z);pl.intensity=4}else{pl.intensity=0;pl.position.set(0,-5,0)}})}catch(e){}}
 function k2View(n,quiet){n=(n===2&&K2.on)?2:1;if(n===K2.view)return;const d=(n===2?1:-1)*K2.dx;K2.view=n;
   camera.position.x+=d;controls.target.x+=d;try{controls.update()}catch(e){}
   try{sun.position.x+=d;sun.target.position.x+=d;sun.target.updateMatrixWorld()}catch(e){}
@@ -16624,7 +16626,8 @@ ${Y} #katBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
 ${G}[data-nb="1"] #katBtn,${G}[data-nb="2"] #katBtn{display:none!important}
 ${G}.nonav #katBtn${NX}{visibility:hidden!important;pointer-events:none!important}
 #game #k2fade{position:absolute;inset:0;z-index:3;background:#fff3df;opacity:0;pointer-events:none;transition:opacity .16s}
-#game #k2fade.on{opacity:1}`;document.head.appendChild(st)}
+#game #k2fade.on{opacity:1}
+#visitBar #vKat{margin-left:auto;flex:none;gap:5px;padding:6px 12px;font-size:13px}#visitBar #vKat svg{width:20px;height:20px;flex:none}`;document.head.appendChild(st)}
 k2Btn();setInterval(k2Btn,900);
 
 // ---- oyuna kancalar ----
@@ -16634,7 +16637,11 @@ k2Btn();setInterval(k2Btn,900);
 {const _bs=buildShell;buildShell=function(){const r=_bs.apply(this,arguments);try{for(const s of K2.strips){if(!floorStrips.includes(s))floorStrips.push(s);s.visible=!!SHELL.strips}}catch(e){}return r}}
 {const _cf=camFit;camFit=function(){const r=_cf.apply(this,arguments);try{if(K2.view===2){camera.position.x+=K2.dx;controls.target.x+=K2.dx;controls.update()}}catch(e){}return r}}
 {const _ox=openExpandMode;openExpandMode=function(){try{k2View(1,true)}catch(e){}return _ox.apply(this,arguments)}}
-{const _ve=visitEnter;visitEnter=function(){try{k2View(1,true)}catch(e){}return _ve.apply(this,arguments)}}
+{const _ve=visitEnter;visitEnter=function(){try{k2View(1,true)}catch(e){}const r=_ve.apply(this,arguments);try{k2Sync();k2Lamps()}catch(e){console.warn('kat2 ziyaret',e)}return r}}   // (V223) ziyaret edilen kafenin merdiveni varsa üst katı da kurulur
+{const _vl=visitLeave;visitLeave=function(){const was=k2Vis();try{if(was&&K2.view===2)k2View(1,true)}catch(e){}const r=_vl.apply(this,arguments);try{if(was){k2Sync();k2Lamps()}}catch(e){console.warn('kat2 ziyaret',e)}return r}}   // kendi kafenin katı geri kurulur
+// ziyaret çubuğunda Kat düğmesi (ziyarette ana ekran düğmeleri gizlidir)
+{const _vb=visitBar;visitBar=function(){const r=_vb.apply(this,arguments);try{const top=document.querySelector('#visitBar .vtop');if(top&&K2.on&&!$('vKat')){const b=document.createElement('button');b.type='button';b.id='vKat';b.className='btn light';
+      const lab=()=>{b.innerHTML=K2_ICON+(K2.view===2?'2. Kat':'1. Kat')};lab();b.onclick=()=>{try{sfx('tap')}catch(e){}k2View(K2.view===2?1:2,true);lab()};top.appendChild(b)}}catch(e){console.warn('kat2 ziyaret',e)}return r}}
 {const _sp=startPlacement;startPlacement=function(o){try{const c=o&&o.rec&&CAT[o.rec.id];if(K2.view===2&&c&&(c.kind==='walldecor'||c.id==='d_stairs'))k2View(1,true)}catch(e){}return _sp.apply(this,arguments)}}   // duvar süsleri şimdilik yalnız 1. katta
 {const _de=drawEditBar;drawEditBar=function(){const r=_de.apply(this,arguments);try{const R=UI.edit!=null?FURN.get(UI.edit):null;if(R&&R.rec.id==='d_stairs'){const b=$('edStore');if(b)b.remove()}}catch(e){}return r}}
 {const _cp=confirmPlacement;confirmPlacement=function(){const st=!!(PL&&PL.rec&&PL.rec.id==='d_stairs'&&PL.isNew),had=!!k2Rec();const r=_cp.apply(this,arguments);
