@@ -16753,6 +16753,98 @@ function k2MoveStairs(){const r=k2Rec();if(!r||!edCan())return;closeExpandMode()
 // (V224) üst kattaki duvar süsleri duvarıyla birlikte gizlenir (kamera duvarın arkasına geçince): gruba duvar etiketi
 {const _sf=spawnFurn;spawnFurn=function(rec){const R=_sf.apply(this,arguments);try{const c=CAT[rec.id],s=c&&c.kind==='walldecor'&&WALL_SLOTS[rec.slot];if(s&&s.k2&&R&&R.group)R.group.userData.wall=s.ry?'left':'back'}catch(e){}return R}}
 
+// ================= V225: 2. KAT SERVİS TEZGÂHI + YEMEK ASANSÖRÜ =================
+// Kullanıcı isteği (13 Kasım 16:39): "2. tezgâhı markette Tezgâh bölümüne ekle; seviye şartı biraz daha yüksek olsun".
+// Tam ikinci mutfak (ayrı barista + makineler) yerine, üst kata konan bir SERVİS TEZGÂHI: içindeki yemek asansörüyle, alt katta hazırlanan
+// ÜST KAT siparişleri bu tezgâha çıkar; garson tabağı yukarıdan alır (mutfağa inmez). Tek seferlik; 2. kat açık olmalı. Sv 14, 12.000 altın.
+//  · Asansör: k2LiftTick (simStep sarmalı) her adımda üst kat masasının HAZIR siparişini (sırası alınmamış) tezgâhın 4 tabak yerinden birine taşır
+//    (alt kat tabak yeri boşalır). pickupOrder sarmalı da (otomatik modda ilk sırayı o alabilir) önce asansörü dener.
+//  · k2PickOrder: pickupOrder'ın üst kat sürümü — garson tezgâhın önündeki duruş noktasına yürür (merdiven yolu), asansörde hazır olan grup tabaklarını
+//    tepsiye alır ve servis eder. Henüz asansöre binmemiş kardeş tabaklar ayrıca götürülür.
+//  · "Teslim al" balonu asansördeki siparişlerde tezgâhın üstünde durur (place sarmalı).
+const K2T={id:'d_k2bar',used:[null,null,null,null],sig:''};
+const K2T_SLOT=[[-0.78,0.04],[-0.5,0.04],[-0.22,0.04],[0.06,0.04]],K2T_TOP=0.72,K2T_STAND=[-0.36,0.78];
+{const c={id:K2T.id,kind:'decor',cat:'counter',name:'2. Kat servis tezgâhı',price:12000,lvl:14,half:[1.0,0.4],rot:true,once:true,
+   desc:'Yemek asansörlü servis tezgâhı: üst kat siparişleri asansörle bu tezgâha çıkar, garson mutfağa inmeden servis eder. 2. kat gerekir.'};
+ if(!CAT[c.id]){CATALOG.push(c);CAT[c.id]=c}}
+const k2tRec=()=>{try{return [...FURN.values()].find(R=>R.rec.id===K2T.id)||null}catch(e){return null}};
+function k2tW(rec,lx,lz){const a=yawOf(rec.rot),c=Math.cos(a),s=Math.sin(a);return {x:rec.x+c*lx+s*lz,z:rec.z-s*lx+c*lz}}
+function k2tStand(rec){const p=k2tW(rec,K2T_STAND[0],K2T_STAND[1]),q=k2tW(rec,K2T_STAND[0],0);return {x:p.x,z:p.z,yaw:Math.atan2(q.x-p.x,q.z-p.z)}}
+function k2tSlotPos(rec,i){const p=k2tW(rec,K2T_SLOT[i][0],K2T_SLOT[i][1]);return new THREE.Vector3(p.x,K2T_TOP+0.005,p.z)}
+
+// ---- model: ahşap tezgâh, krem tabla, yeşil panolar; sağ ucunda kapaklı yemek asansörü dolabı, zil ve "Servis" tabelası ----
+DECOR_BUILD[K2T.id]=()=>{const g=new THREE.Group(),P0=PARENT;PARENT=g;try{
+  box(1.42,K2T_TOP-0.06,0.6,M.wood,-0.29,(K2T_TOP-0.06)/2,-0.05);                                   // gövde
+  box(1.5,0.06,0.7,M.cream,-0.29,K2T_TOP-0.03,-0.04,{round:0.02});                                  // tabla
+  for(const x of [-0.75,-0.29,0.17]){box(0.4,0.42,0.02,M.green,x,0.33,0.255,{round:0.01});box(0.32,0.34,0.02,M.woodDark,x,0.33,0.262)}   // ön panolar
+  box(1.44,0.06,0.04,M.woodDark,-0.29,0.03,0.24);                                                    // süpürgelik
+  // yemek asansörü dolabı
+  box(0.56,1.9,0.66,M.wood,0.72,0.95,-0.07);box(0.6,0.07,0.7,M.woodDark,0.72,1.93,-0.07);
+  box(0.42,0.44,0.03,M.dark,0.72,0.98,0.27);                                                         // asansör ağzı
+  box(0.38,0.02,0.3,M.cream,0.72,0.77,0.14);                                                         // asansör tablası
+  box(0.48,0.05,0.05,M.green,0.72,1.22,0.28);box(0.05,0.5,0.05,M.green,0.48,0.98,0.28);box(0.05,0.5,0.05,M.green,0.96,0.98,0.28);
+  box(0.36,0.18,0.04,M.green,0.72,1.55,0.27,{round:0.02});box(0.3,0.12,0.01,M.cream,0.72,1.55,0.295); // tabela
+  cyl(0.008,0.008,0.05,M.dark,0.72,1.39,0.28,6);cyl(0.035,0.06,0.06,M.gold,0.72,1.34,0.28,12);       // zil
+  cyl(0.05,0.07,0.03,M.gold,-0.9,K2T_TOP+0.015,-0.22,14);sph(0.022,M.gold,-0.9,K2T_TOP+0.05,-0.22);  // tezgâh zili
+  for(const s of [-1,1])box(0.04,0.04,0.04,M.gold,0.72+s*0.18,1.75,0.28)
+ }finally{PARENT=P0}
+ // tabelaya "SERVİS" yazısı
+ try{const cv=document.createElement('canvas');cv.width=256;cv.height=96;const x=cv.getContext('2d');x.fillStyle='#fff3df';x.fillRect(0,0,256,96);x.fillStyle='#4a2a14';x.font='900 52px "Baloo 2",system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('SERVİS',128,52);
+   const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(0.28,0.105),new THREE.MeshBasicMaterial({map:tx}));m.position.set(0.72,1.55,0.302);g.add(m)}catch(e){}
+ return g};
+
+// ---- market ----
+{const _cs=catShown;catShown=function(c){if(c&&c.id===K2T.id)return !EVMODE&&!(S.furniture||[]).some(f=>f.id===K2T.id);return _cs.apply(this,arguments)}}   // alınınca listeden kalkar (depodaysa Depom'da)
+{const _by=buy;buy=function(c){if(c&&c.id===K2T.id){if(!K2.on){try{sfx('nope')}catch(e){}toast('Önce 2. katı aç: Yapı Market › Genişlet › 2. Kat',ic('lock'),2800);return}if((S.furniture||[]).some(f=>f.id===K2T.id))return}return _by.apply(this,arguments)}}
+{const _sp=startPlacement;startPlacement=function(o){try{if(o&&o.rec&&o.rec.id===K2T.id&&K2.on&&K2.view!==2)k2View(2,true)}catch(e){}return _sp.apply(this,arguments)}}   // tezgâh üst kata konur: bakış oraya geçer
+
+// ---- yerleştirme kuralı ----
+{const _v=validatePlacement;validatePlacement=function(rec,ex){if(!rec||rec.id!==K2T.id)return _v.apply(this,arguments);
+  if(!k2X(rec.x))return 'Bu tezgâh 2. kata konur';const r=_v.apply(this,arguments);if(r)return r;
+  const S0=k2tStand(rec),R=k2Rect(),m=0.38;if(S0.x<R.x0+m||S0.x>R.x1-m||S0.z<R.z0+m||S0.z>R.z1-m)return 'Tezgâhın önünde garsona yer kalmalı';
+  const p={x:S0.x,z:S0.z};for(const o of [K2.ob,K2.nb2])if(o&&inside(p,o,0.2))return 'Tezgâhın önü merdivene denk geliyor';
+  for(const [u,F] of FURN){if(u===rec.uid||!F.boxes)continue;for(const b of F.boxes)if(inside(p,b,0.18))return 'Tezgâhın önünde garsona yer kalmalı'}
+  return null}}
+
+// ---- asansör ----
+const k2tUp=o=>!!(o&&!o.delivery&&o.table&&o.table.center&&k2X(o.table.center.x));
+function k2Lift(o){const R=k2tRec();if(!R||!o.mesh||o.k2up)return false;const i=K2T.used.indexOf(null);if(i<0)return false;
+  if(o.slot>=0){slotUsed[o.slot]=null;o.slot=-1}K2T.used[i]=o;o.k2at=i;o.k2up=true;const m=o.mesh;try{scene.attach(m)}catch(e){}
+  m.position.copy(k2tSlotPos(R.rec,i));m.rotation.set(0,0,0);const s0=m.scale.x||1;m.scale.setScalar(s0*0.2);tween(0.3,u=>m.scale.setScalar(s0*(0.2+0.8*u))).then(()=>m.scale.setScalar(s0));return true}
+function k2LiftTick(){if(!K2.on)return;const R=k2tRec();
+  for(let i=0;i<K2T.used.length;i++){const o=K2T.used[i];if(o&&(o.state!=='READY'||o.cancel||!o.mesh||o.k2at!==i)){K2T.used[i]=null;if(o&&o.k2at===i)o.k2at=-1}}
+  if(!R)return;const sig=[R.rec.x,R.rec.z,R.rec.rot].join('|');if(sig!==K2T.sig){K2T.sig=sig;K2T.used.forEach((o,i)=>{if(o&&o.mesh)o.mesh.position.copy(k2tSlotPos(R.rec,i))})}
+  for(const o of orders)if(o.state==='READY'&&!o.pickupQueued&&!o.cancel&&!o.k2up&&o.mesh&&k2tUp(o))if(!k2Lift(o))break}
+{const _st=simStep;simStep=function(dt){_st(dt);tk('k2lift',k2LiftTick)}}
+
+// ---- garson: asansörden teslim al ----
+function k2PickOrder(o){o.pickupQueued=true;
+  const flag=servSibs(o).filter(x=>x.state==='READY'&&!x.pickupQueued&&x.k2up);for(const x of flag)x.pickupQueued=true;
+  const unflag=()=>{for(const x of flag)if(x.state==='READY')x.pickupQueued=false};
+  enqueue('serve',async w=>{if(o.cancel||!o.mesh||o.state!=='READY'){unflag();return}const ch=w.ch;const R=k2tRec();const st=R?k2tStand(R.rec):null;
+    if(!st){unflag();o.pickupQueued=false;return}
+    await ch.walkTo(st.x,st.z);await ch.face(st.yaw);await ch.doFor('Idle_12',0.35);if(o.cancel||!o.mesh){unflag();return}
+    const tray=ch.tray;tray.visible=false;ch.carry=tray;await sleep(0.45);
+    const B=[o,...servSibs(o)].filter(x=>x.state==='READY'&&x.mesh&&!x.cancel&&x.k2up).slice(0,4);
+    if(!B.length){tray.visible=false;ch.carry=null;unflag();return}
+    B.forEach((x,i)=>{if(x.k2at>=0){K2T.used[x.k2at]=null;x.k2at=-1}x.pickupQueued=true;tray.add(x.mesh);const f=TRAY_SLOTS[B.length===1?0:i];x.mesh.position.set(f[0],tray.userData.top,f[1]);x.mesh.rotation.set(0,0,0);x.state='PICKED_UP'});
+    tray.visible=true;sfx('clink');unflag();
+    const left=B.slice();while(left.length){let bi=0,bd=1e9;left.forEach((x,i)=>{const d=Math.hypot(x.seat.serve.x-ch.pos.x,x.seat.serve.z-ch.pos.z);if(d<bd){bd=d;bi=i}});const x=left.splice(bi,1)[0];
+      if(x.cancel){if(x.mesh){scene.attach(x.mesh);fadeOut(x.mesh);x.mesh=null}x.state='CANCELLED';x.cleared=true;continue}
+      const s=x.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);await sleep(0.2);
+      if(x.cancel||!x.mesh){if(x.mesh){scene.attach(x.mesh);fadeOut(x.mesh);x.mesh=null}x.state='CANCELLED';x.cleared=true;continue}
+      const from=new THREE.Vector3();x.mesh.getWorldPosition(from);scene.attach(x.mesh);const to=new THREE.Vector3(s.spot.x,x.table.topY,s.spot.z);
+      await tween(0.45,u=>{x.mesh.position.lerpVectors(from,to,u);x.mesh.position.y+=Math.sin(u*Math.PI)*0.08});x.mesh.position.copy(to);sfx('clink');
+      if(x.mesh.userData.hot)x.steam=steamOn(()=>cupTop(x.mesh),1.2);
+      x.state='SERVED';addXP(CONFIG.xp.serve);x.customer._served()}
+    ch.carry=null;tray.visible=false;await ch.doFor('IDLE_TALK',0.9)})}
+{const _po=pickupOrder;pickupOrder=function(o){try{if(o&&o.state==='READY'&&!o.pickupQueued&&K2.on&&k2tRec()&&k2tUp(o)&&(o.k2up||k2Lift(o)))return k2PickOrder(o)}catch(e){console.warn('kat2 asansör',e)}return _po.apply(this,arguments)}}
+
+// ---- "Teslim al" balonu asansördeki siparişte tezgâhın üstünde ----
+{const _el=el;el=function(key){const e=_el.apply(this,arguments);try{if(e&&typeof key==='string')e.__k=key}catch(er){}return e}}
+{const _pl=place;const V=new THREE.Vector3();place=function(e,wp,dy){try{if(wp===PICKUP_ANCHOR&&e&&e.__k&&e.__k.startsWith('pick')){const id=+e.__k.slice(4),o=orders.find(x=>x.id===id),R=k2tRec();
+      if(o&&o.k2up&&R){const p=k2tW(R.rec,-0.36,0.05);V.set(p.x,1.3,p.z);return _pl.call(this,e,V,dy)}}}catch(er){}return _pl.apply(this,arguments)}}
+
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
   try{layoutBoot()}catch(e){console.warn('yerleşim',e)}
