@@ -7636,7 +7636,7 @@ const XM={on:false,g:null,raf:0,sel:null,cam:null,last:''};
 function expArea(e){const r=expRect(e);if(e.key==='x1')return [RM.x1,r.x1,RM.z0,RM.z1];if(e.key==='x0')return [r.x0,RM.x0,RM.z0,RM.z1];if(e.key==='z1')return [RM.x0,RM.x1,RM.z1,r.z1];return [RM.x0,RM.x1,r.z0,RM.z0]}
 function xmSides(){return EXP_SIDES.map(e=>({e,s:expandState(e.id)})).filter(o=>!o.s.done)}
 function openExpandMode(){if(XM.on)return;const list=xmSides();
-  if(!list.length){toast('Kafen olabileceği en büyük boyutta!',ic('check'),2600);return}
+  if(!list.length&&!(typeof k2XmOn==='function'&&k2XmOn())){toast('Kafen olabileceği en büyük boyutta!',ic('check'),2600);return}   // (V222) 2. Kat girişi varsa kip yine açılır (p107)
   XM.on=true;XM.sel=null;document.documentElement.classList.add('xmode');
   // kamera biraz geri: yeni alanlar görünsün
   XM.cam={p:camera.position.clone(),t:controls.target.clone()};const v=camera.position.clone().sub(controls.target).multiplyScalar(1.28);camera.position.copy(controls.target).add(v);controls.update();
@@ -16490,7 +16490,7 @@ function k2Rec(){try{return (S.furniture||[]).find(f=>f&&f.id==='d_stairs'&&!f.s
 // ---- katalog: tek seferlik eşya ----
 {const c={id:'d_stairs',kind:'decor',name:'2. Kat merdiveni',price:7500,lvl:10,half:[0.5,1.25],rot:true,once:true,desc:'Kafene ikinci katı açar: +6 masa yeri. Merdiveni içeride bir yere yerleştir; üst kata “Kat” düğmesiyle geçersin.'};
  if(!CAT[c.id]){const i=CATALOG.findIndex(x=>x.kind==='decor');CATALOG.splice(i<0?CATALOG.length:i,0,c);CAT[c.id]=c}}
-{const _cs=catShown;catShown=function(c){if(c&&c.id==='d_stairs')return !EVMODE&&!k2Rec();return _cs.apply(this,arguments)}}   // alınınca marketten kalkar
+{const _cs=catShown;catShown=function(c){if(c&&c.id==='d_stairs')return false;return _cs.apply(this,arguments)}}   // (V222) Dekor'da görünmez: Yapı Market › Genişlet'teki 2. Kat kartından alınır
 {const _by=buy;buy=function(c){if(c&&c.id==='d_stairs'&&k2Rec()){toast('2. kat zaten açık',ic('check'));return}return _by.apply(this,arguments)}}
 
 // ---- merdivenin ölçüleri: yerel −Z yönünde yükselir (rot 0: arka duvara doğru) ----
@@ -16514,6 +16514,10 @@ function k2StairModel(){const g=new THREE.Group(),H=3.2,L=2.5,N=16,h=H/N,d=L/N,z
     add(new THREE.BoxGeometry(0.08,0.78,0.08),M.woodDark,s*0.46,0.39,z0-0.04);add(new THREE.BoxGeometry(0.08,0.8,0.08),M.woodDark,s*0.46,H+0.33,-z0+0.04);   // baş babaları
     add(new THREE.BoxGeometry(0.09,H-0.05,0.09),M.woodDark,s*0.41,(H-0.05)/2,-z0+0.07);add(new THREE.BoxGeometry(0.08,1.42,0.08),M.woodDark,s*0.41,0.71,0)}  // taşıyıcı direkler
   add(new THREE.BoxGeometry(0.86,0.03,len-0.2),M.woodDark,0,cy-0.16,0,ph);add(new THREE.BoxGeometry(0.9,0.08,0.08),M.woodDark,0,H-0.1,-z0+0.07);
+  // (V222) yeşil yolluk (krem kenar şeritli) ve baş babalarında altın topuz
+  {const rt=new THREE.BoxGeometry(0.46,0.012,d+0.034),rr=new THREE.BoxGeometry(0.46,h-0.04,0.01),et=new THREE.BoxGeometry(0.035,0.013,d+0.034);
+   for(let i=0;i<N;i++){const y=(i+1)*h,zc=z0-(i+0.5)*d+0.005;add(rt,M.green,0,y+0.006,zc);add(rr,M.green,0,y-h/2-0.02,z0-i*d+0.004);for(const s of [-1,1])add(et,M.cream,s*0.2475,y+0.0065,zc)}
+   const kn=new THREE.SphereGeometry(0.062,12,10);for(const s of [-1,1]){add(kn,M.gold,s*0.46,0.82,z0-0.04);add(kn,M.gold,s*0.46,H+0.77,-z0+0.04)}}
   try{mergeStatic(g)}catch(e){}return g}
 DECOR_BUILD.d_stairs=()=>k2StairModel();
 
@@ -16689,6 +16693,51 @@ const k2Foot=()=>new THREE.Vector3(K2.geo.foot.x,0,K2.geo.foot.z),k2Head=()=>new
   try{_u.call(this,dt)}finally{if(st){this.speed=sp;this.canRun=cr}}
   const y=this._k2on?k2Ground(this.pos.x,this.pos.z):0;this._k2y=y;if(y){this.pos.y+=y;if(this.carry)this.carry.position.y+=y}}}
 {const _es=envShell;envShell=function(){const r=_es.apply(this,arguments);try{k2EnvPos()}catch(e){}return r}}   // arsa kabuğu yeniden kurulunca (oda büyümesi) üst kat bakışındaki yerine döner
+
+// ================= V222: 2. KAT, YAPI MARKET › GENİŞLET MENÜSÜNDE =================
+// Kullanıcı isteği (13 Kasım 16:11): merdiven Genişlet menüsüne özenli bir tasarımla eklensin; oyuncu merdiveni istediği yere koyabilsin.
+// Genişletme kipinde (p50) kafenin ortasında altın bir "2. Kat" balonu durur; dokununca sağ altta zengin kart açılır (önizleme, getirdikleri, fiyat).
+// Satın al → yerleştirme kipi (sürükle, döndür, onayla; ücret onayda alınır). Kat açıksa kart "Üst kata git" ve "Merdiveni taşı" düğmelerini verir.
+function k2XmOn(){return !EVMODE&&!!CAT.d_stairs}
+function k2XmState(){const c=CAT.d_stairs;if(k2Rec())return {has:true,c:c.price};if(S.lvl<c.lvl)return {ok:false,why:`Seviye ${c.lvl} gerekli`,lv:c.lvl,c:c.price};if(S.coins<c.price)return {ok:false,why:'Altın yetmiyor',c:c.price};return {ok:true,c:c.price}}
+function k2XmAdd(){const ov=$('expOv'),B=ov&&ov.querySelector('.xmBtns');if(!B||!k2XmOn()||B.querySelector('[data-x="k2"]'))return;const s=k2XmState();
+  B.insertAdjacentHTML('beforeend',`<button type="button" class="xmPlus k2x${s.has?' has':s.ok?'':' lock'}" data-x="k2" aria-label="2. Kat"><i>${s.has||s.ok||S.lvl>=(s.lv||0)?K2_ICON:ic('lock')}</i><span>${s.has?ic('check')+'2. Kat':s.ok||S.lvl>=(s.lv||0)?ic('coin')+s.c.toLocaleString('tr-TR'):'Sv '+s.lv}</span></button>`)}
+function k2XmBuy(){const c=CAT.d_stairs,s=k2XmState();if(!s.ok)return;closeExpandMode();startPlacement({rec:{uid:++S.uid,id:'d_stairs',x:0,z:0,rot:0},isNew:true,price:c.price})}
+function k2MoveStairs(){const r=k2Rec();if(!r||!edCan())return;closeExpandMode();if(K2.view===2)k2View(1,true);K2.pick=r.uid;let n=0;enterEdit();
+  const iv=setInterval(()=>{if(++n>80||UI.mode==='cafe'&&n>6){clearInterval(iv);K2.pick=null;return}if(UI.mode==='edit'&&!ED.busy&&FURN.has(K2.pick)){clearInterval(iv);UI.edit=K2.pick;K2.pick=null;drawEditBar()}},300)}
+{const _ox=openExpandMode;openExpandMode=function(){const r=_ox.apply(this,arguments);try{if(XM.on)k2XmAdd()}catch(e){console.warn('kat2 genişlet',e)}return r}}
+{const _xf=xmFrame;const _v3=new THREE.Vector3();xmFrame=function(){const r=_xf.apply(this,arguments);try{const ov=$('expOv'),b=ov&&ov.querySelector('[data-x="k2"]');if(b){const q=renderer.domElement.getBoundingClientRect();
+      _v3.set((RM.x0+RM.x1)/2,1.6,(RM.z0+RM.z1)/2).project(camera);b.style.transform=`translate(${((_v3.x+1)/2*q.width).toFixed(1)}px,${((1-_v3.y)/2*q.height).toFixed(1)}px) translate(-50%,-50%)`;b.classList.toggle('sel',XM.sel==='k2')}}catch(e){}return r}}
+{const _xt=xmTip;xmTip=function(){const ov=$('expOv'),t=ov&&ov.querySelector('.xmTip');if(!t||XM.sel!=='k2'){if(t)t.classList.remove('k2');return _xt.apply(this,arguments)}
+  const s=k2XmState(),c=CAT.d_stairs,li=x=>`<li>${ic('check')}<span>${x}</span></li>`;t.classList.add('k2');
+  t.innerHTML=`<div class="k2top"><div class="k2im"><img src="${itemThumb('d_stairs')}" alt=""></div><div class="k2tx"><em>${s.has?'AÇIK':'YENİ KAT'}</em><b>2. Kat</b><p>${s.has?'Üst katın hazır. Merdiveni dilediğin zaman başka yere alabilirsin.':'Kafene bir üst kat ekle; merdiveni istediğin yere koy.'}</p></div></div>
+    <ul>${li('+6 masa yeri')}${li('Üst kata masa ve dekor')}${li('Müşteriler ve garsonlar merdivenle çıkar')}</ul>`+
+    (s.has?`<div class="k2row"><button class="btn green" type="button" id="k2Go">${K2_ICON}Üst kata git</button><button class="btn light" type="button" id="k2Mv">${ic('move')}Merdiveni taşı</button></div>`
+      :s.ok?`<button class="btn green" type="button" id="xmBuy">${ic('coin')}${c.price.toLocaleString('tr-TR')} · Satın al ve yerleştir</button>`:`<p class="why">${ic('lock')}${s.why} · ${ic('coin')}${c.price.toLocaleString('tr-TR')}</p>`);
+  t.hidden=false;XM.last='';const b=$('xmBuy');if(b)b.onclick=()=>{try{sfx('tap')}catch(e){}k2XmBuy()};
+  const g=$('k2Go');if(g)g.onclick=()=>{closeExpandMode();setTimeout(()=>k2View(2),60)};const m=$('k2Mv');if(m)m.onclick=()=>k2MoveStairs()}}
+{const st=document.createElement('style');st.textContent=`
+.xmPlus.k2x i{width:52px;height:52px;background:radial-gradient(circle at 38% 32%,#fff0a8,#f6b23a 70%);border-color:#8a4a12;box-shadow:0 3px 0 #8a4a12,0 0 0 4px rgba(255,255,255,.85),0 6px 16px rgba(0,0,0,.32)}
+.xmPlus.k2x i svg{width:32px;height:32px;display:block}
+.xmPlus.k2x.sel i{box-shadow:0 3px 0 #8a4a12,0 0 0 5px #fff,0 0 0 8px #ffd24a,0 6px 16px rgba(0,0,0,.32)}
+.xmPlus.k2x.has i{background:radial-gradient(circle at 38% 32%,#c9f0a8,#63b84a 70%);border-color:#2f6b22;box-shadow:0 3px 0 #2f6b22,0 0 0 4px rgba(255,255,255,.85),0 6px 16px rgba(0,0,0,.32)}
+.xmPlus.k2x.lock i{background:radial-gradient(circle at 40% 35%,#efe2c8,#c9b28a);border-color:#7a5a36;box-shadow:0 3px 0 #7a5a36,0 0 0 4px rgba(255,255,255,.6)}
+.xmPlus.k2x span{font-size:12.5px!important;padding:1px 9px}
+.xmTip.k2{width:306px;padding:10px 12px 12px;text-align:left}
+.xmTip.k2 .k2top{display:flex;gap:10px;align-items:center}
+.xmTip.k2 .k2im{flex:none;width:86px;height:86px;border:3px solid #5a2f12;border-radius:16px;background:radial-gradient(circle at 50% 38%,#fff6da,#f3cf8e);box-shadow:inset 0 0 0 2.5px rgba(255,255,255,.7),0 3px 0 #5a2f12;overflow:hidden}
+.xmTip.k2 .k2im img{width:100%;height:100%;object-fit:contain;display:block}
+.xmTip.k2 .k2tx{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.xmTip.k2 .k2tx em{font-style:normal;font-size:9.5px;font-weight:900;letter-spacing:.06em;color:#fff;background:#e2703a;border:2px solid #5a2f12;border-radius:999px;padding:0 7px;line-height:15px}
+.xmTip.k2 .k2tx b{font-size:20px;line-height:1.15;font-weight:900}
+.xmTip.k2 .k2tx p{margin:1px 0 0;font-size:11.5px;line-height:1.3;text-align:left}
+.xmTip.k2 ul{list-style:none;margin:8px 0 10px;padding:7px 9px;display:flex;flex-direction:column;gap:4px;border:2.5px solid #e2c493;border-radius:12px;background:#fffaf0}
+.xmTip.k2 li{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:#5a3a1c;line-height:1.25}
+.xmTip.k2 li .ic{flex:none;width:15px;height:15px;color:#3f9a3a}
+.xmTip.k2 .k2row{display:flex;gap:7px}.xmTip.k2 .k2row .btn{flex:1;width:auto;font-size:12.5px;padding:0 8px;gap:4px;white-space:nowrap}
+.xmTip.k2 .btn svg{width:18px;height:18px;flex:none}
+.xmTip.k2 p.why{margin:2px 0 0;font-size:12.5px}`;document.head.appendChild(st)}
+
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
