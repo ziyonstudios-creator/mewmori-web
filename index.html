@@ -15852,10 +15852,10 @@ rhStok=function(){
 // Her paketin kendi 15 üretim + dinlenme hakkı vardır (S.bags[k]). Hedef seçiliyse paket o tarifin malzemesini daha sık verir (targetBias).
 const PACKS=[
  {k:'firin',n:'Fırın',out:[['un1',3],['yum1',2],['seker1',2]],img:'img/bag_food.png'},
- {k:'mandira',n:'Mandıra',out:[['sut1',3],['peynir1',2]],img:null,tmp:'sut2'},
+ {k:'mandira',n:'Süt ürünleri',out:[['sut1',3],['peynir1',2]],img:null,tmp:'sut2'},
+ {k:'kafe',n:'İçecekler',out:[['kahve1',3],['cay1',3],['kakao1',2],['bitki1',2]],img:'img/bag_drink.png'},
  {k:'meyve',n:'Meyve',out:[['cilek1',3],['limon1',2]],img:null,tmp:'cilek2'},
- {k:'kafe',n:'Kahve & Çay',out:[['kahve1',3],['cay1',3],['kakao1',2],['bitki1',2]],img:'img/bag_drink.png'},
- {k:'manav',n:'Manav',out:[['domates1',3],['mantar1',2],['marul1',2],['patates1',2],['mercimek1',2]],img:'img/bag_manav.webp'},
+ {k:'manav',n:'Sebze',out:[['domates1',3],['mantar1',2],['marul1',2],['patates1',2],['mercimek1',2]],img:'img/bag_manav.webp'},
  {k:'kasap',n:'Kasap',out:[['sucuk1',3],['tavuk1',2],['et1',2],['balik1',2]],img:'img/bag_kasap.webp'}];
 const PACK_IMG=[];   // gerçek görseli gelen raf paketleri (img/packs/<k>.webp)
 for(const P of PACKS){BAG_OUT[P.k]=P.out.map(x=>x.slice());const id='bag_'+P.k;
@@ -16156,7 +16156,7 @@ function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonu
     li('<span class="n">4</span>',`Misafir yiyip kasaya gider, ${c} ödemeyi alır.`),
     li(I('auto'),`${tagb('auto','Otomatik','l')} açıksa ${w} bu işleri kendisi yapar.`)]},
   {t:'Birleştirme',i:'merge',art:`${it('sut1')}<b class="ar">+</b>${it('sut1')}<b class="ar">=</b>${it('sut2')}`,b:[
-    li(I('box'),'Tahtanın solundaki <b>paketlere</b> dokun, malzeme çıksın: Fırın, Mandıra, Meyve, Kahve & Çay, Manav, Kasap.'),
+    li(I('box'),'Tahtanın solundaki <b>paketlere</b> dokun, malzeme çıksın: Fırın, Süt ürünleri, İçecekler, Meyve, Sebze, Kasap.'),
     li(I('merge'),'Aynı iki malzemeyi üst üste sürükle; bir üst kademe olur.'),
     li(I('target'),'<b>Hedef</b> kartı, açmak istediğin tarifin istediği malzemeleri gösterir. Malzeme hazır olunca yanındaki onaya dokunup teslim et.'),
     li(I('bolt'),'Her dokunuş enerji harcar; enerji Hedef kartının altında, zamanla dolar. Her paket 15 üretimden sonra kısa bir mola verir.')]},
