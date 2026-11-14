@@ -3087,25 +3087,25 @@ function renderMenu(){const L=$('menuList');if(menuTab==='price')return renderPr
 const board=$('board');let mgDrag=null;
 function cellHTML(i){const id=S.board[i];if(!id)return '';const it=ITEMS[id];let extra='';
   if(it.fam==='bag'){const b=bagState(it.bag);extra=b.cool?`<span class="cd">${fmtT(b.cool)}</span>`:`<span class="cnt">${b.left}/${CONFIG.bag.limit}</span>`;return `<div class="it${b.cool?' cool':''}" data-i="${i}">${itemArt(id)}${extra}</div>`;return `<div class="it" data-i="${i}">${itemArt(id)}${extra}</div>`}
-  if(it.chain)extra=`<span class="lv">${it.lv}</span>`;return `<div class="it" data-i="${i}">${itemArt(id)}${extra}</div>`}
+  if(it.chain&&it.max!==1)extra=`<span class="lv">${it.lv}</span>`;return `<div class="it" data-i="${i}">${itemArt(id)}${extra}</div>`}
 const fmtT=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0')};
 function renderMerge(){board.innerHTML=S.board.map((_,i)=>`<div class="cell${UI.mgSel===i?' sel':''}" data-c="${i}">${cellHTML(i)}</div>`).join('');renderEnergy();renderInfo()}
 function renderEnergy(){const E=energyNow(),MX=energyMax();$('enTxt').textContent=`${E.v} / ${MX}`;$('enFill').style.width=(E.v/MX*100)+'%';
   $('enNext').textContent=E.v>=MX?'Enerji dolu':`+1 enerji: ${fmtT(E.next)} · ${CONFIG.energy.regenSec>=60?CONFIG.energy.regenSec/60+' dakikada':CONFIG.energy.regenSec+' saniyede'} 1`;renderTarget()}
 function refreshCell(i,anim){const c=board.querySelector(`[data-c="${i}"]`);if(!c)return;c.innerHTML=cellHTML(i);c.classList.toggle('sel',UI.mgSel===i);if(anim){const it=c.querySelector('.it');it&&it.classList.add(anim)}}
 function renderInfo(){const box=$('mgInfo');const i=UI.mgSel;const id=i!=null?S.board[i]:null;
-  if(!id){box.innerHTML=`<span class="mi">${UI_IC.merge}</span><div class="tx"><b>Nasıl oynanır?</b>Soldaki paketlere dokun, malzeme çıksın. Aynı iki malzemeyi üst üste bırak; farklılar da tarif keşfettirebilir.</div>`;return}
+  if(!id){box.innerHTML=`<span class="mi">${UI_IC.merge}</span><div class="tx"><b>Nasıl oynanır?</b>Soldaki paketlere dokun, ham madde çıksın. Aynı iki malzemeyi üst üste bırak: işlenir. Farklı iki malzeme karışıp yeni ürün olur.</div>`;return}
   const it=ITEMS[id];let t='';
   if(it.fam==='bag'){const b=bagState(it.bag);t=`<b>${it.name}</b>${it.bag==='food'?'Un, yumurta, şeker, çilek, peynir, süt':'Kahve, çay yaprağı, süt, kakao, limon'} üretir. Her dokunuş ${CONFIG.energy.cost} enerji. ${b.cool?`Dinleniyor: ${fmtT(b.cool)}.`:`${b.left} üretim kaldı; ${CONFIG.bag.limit}. üretimden sonra ${CONFIG.bag.cooldownSec/60} dk dinlenir.`}${S.target?` Hedef tarifin malzemeleri daha sık çıkar.`:''}`;box.innerHTML=`<span class="mi">${itemArt(id)}</span><div class="tx">${t}</div>${b.cool?`<button class="btn light" type="button" id="mgRec">${ic('clock')}Hızlandır</button>`:''}`;if($('mgRec'))$('mgRec').onclick=()=>openRecover('bag',it.bag);return}
   if(it.chain)t=`<b>${it.name}</b>Seviye ${it.lv}/${it.max}. ${it.next?`İki tane birleştir → ${S.items[it.next]?ITEMS[it.next].name:'?'}`:'Zincirin en üst seviyesi.'}`;else t=`<b>${it.name}</b>Özel birleşim.`;
   const cs=COMBOS.filter(c=>c.a===id||c.b===id).map(c=>{const o=c.a===id?c.b:c.a;return `${ITEMS[o].name} ile → ${S.items[c.r]?ITEMS[c.r].name:'?'}`});if(cs.length)t+=`<br>${cs.join(' · ')}`;
   const r=recipeByDisc[id];if(r)t+=`<br>Tarif: ${r.name}`;
-  const val=sellVal(it),ask=it.chain?it.lv>=3:true;
+  const val=sellVal(it),ask=it.chain?(it.lv>=3||(it.sv|0)>=5):true;
   box.innerHTML=`<span class="mi">${itemArt(id)}</span><div class="tx">${t}</div><button class="btn light" type="button" id="mgDel">${ic('coin')}Sat · ${val}</button>`;
   let armed=false;$('mgDel').onclick=()=>{if(ask&&!armed){armed=true;const b=$('mgDel');b.classList.remove('light');b.classList.add('red');b.innerHTML=`${ic('coin')}Emin misin? Sat · ${val}`;sfx('tap');return}
     S.board[i]=null;UI.mgSel=null;addCoins(val,'sell');sfx('coin');floatSell(i,val);markDirty();refreshCell(i);renderInfo()}}
 // birleştirme tahtasında satış: seviye arttıkça değeri katlanır (birleştirip satmak daha kârlı)
-const sellVal=it=>it.chain?[0,1,3,8,20,50,120,260][it.lv]||1:15;
+const sellVal=it=>it.sv!=null?it.sv:it.chain?[0,1,3,8,20,50,120,260][it.lv]||1:15;
 function floatSell(i,v){try{const c=board.querySelector(`[data-c="${i}"]`);if(!c)return;const r=c.getBoundingClientRect();const e=document.createElement('div');e.className='sellfx';e.innerHTML=`+${v} ${ic('coin')}`;
   e.style.left=(r.left+r.width/2)+'px';e.style.top=(r.top+r.height/2)+'px';document.body.appendChild(e);setTimeout(()=>e.remove(),1000)}catch(e){}}
 {const st=document.createElement('style');st.textContent=`.sellfx{position:fixed;transform:translate(-50%,-50%);z-index:60;font:900 18px var(--font-display,inherit);color:#b8860b;text-shadow:0 2px 0 #fff8ec;pointer-events:none;animation:sellup 1s ease-out forwards;display:flex;align-items:center;gap:3px}.sellfx .ic{width:18px;height:18px;display:inline-grid}@keyframes sellup{to{transform:translate(-50%,-160%);opacity:0}}`;document.head.appendChild(st)}
@@ -15821,7 +15821,7 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     if(m!=='merge'){if(m!=='cafe')return setMode('cafe');const b=()=>navBtn('merge');RH2.ok=[b];RH2.allow=[b];rh2Show('mgnav',{text:'Birleştirme tahtasına geçelim.',target:b});return}
     RH2.ok=[];if(S.tkT!==G_REC){S.tkT=G_REC;markDirty();try{const i=document.querySelector('#merge .info');if(i)i.dataset.thk='';tkHedefDraw()}catch(e){}}
     const hed=()=>document.querySelector('#merge .thd');
-    if(!RH2.mgIntro){RH2.allow=[];rh2Show('mg0',{title:'Birleştirme tahtası',text:`Soldaki paketlere dokun, malzeme çıksın. Aynı iki malzemeyi birleştir, bir üst kademe olsun. <b>Hedef</b> kartı, tarifin istediklerini gösterir.`,target:hed,place:'head',
+    if(!RH2.mgIntro){RH2.allow=[];rh2Show('mg0',{title:'Birleştirme tahtası',text:`Soldaki paketlere dokun, ham madde çıksın. Aynı iki malzeme birleşince işlenir; farklı ikisi karışıp yeni ürün olur. <b>Hedef</b> kartı, tarifin istediklerini gösterir.`,target:hed,place:'head',
         buttons:[{label:'Başlayalım',green:true,onClick:()=>{RH2.mgIntro=true;RH2.shown=''}}]});return}
     const I=tkInfo(G_REC);if(!I||!I.stage)return;const need=I.stage.d.find(([it,n])=>(I.dl[it]|0)<n);if(!need)return;const [X]=need,ch=X.replace(/\d+$/,''),Y=ch+'1',bagK='bag_'+((typeof packOf==='function'&&packOf(ch))||{k:'firin'}).k;
     RH2.need=Y;RH2.bag=bagK;
@@ -15887,7 +15887,7 @@ rhStok=function(){
 // Raf: tahtanın solunda dikey şerit (tahtayla aynı ahşap çerçeve). Pakete dokununca malzeme tahtanın ortasına en yakın boş hücreye düşer.
 // Her paketin kendi 15 üretim + dinlenme hakkı vardır (S.bags[k]). Hedef seçiliyse paket o tarifin malzemesini daha sık verir (targetBias).
 const PACKS=[
- {k:'firin',n:'Fırın',out:[['un1',3],['yum1',2],['seker1',2]],img:'img/bag_food.png'},
+ {k:'firin',n:'Çiftlik',out:[['un1',3],['yum1',2],['seker1',2]],img:'img/bag_food.png'},
  {k:'mandira',n:'Süt ürünleri',out:[['sut1',3],['peynir1',2]],img:null,tmp:'sut2'},
  {k:'kafe',n:'İçecekler',out:[['kahve1',3],['cay1',3],['kakao1',2],['bitki1',2]],img:'img/bag_drink.png'},
  {k:'meyve',n:'Meyve',out:[['cilek1',3],['limon1',2]],img:null,tmp:'cilek2'},
@@ -16196,9 +16196,10 @@ function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonu
     li('<span class="n">4</span>',`Misafir yiyip kasaya gider, ${c} ödemeyi alır.`),
     li(I('auto'),`${tagb('auto','Otomatik','l')} açıksa ${w} bu işleri kendisi yapar.`)]},
   {t:'Birleştirme',i:'merge',art:`${it('sut1')}<b class="ar">+</b>${it('sut1')}<b class="ar">=</b>${it('sut2')}`,b:[
-    li(I('box'),'Tahtanın solundaki <b>paketlere</b> dokun, malzeme çıksın: Fırın, Süt ürünleri, İçecekler, Meyve, Sebze, Kasap.'),
-    li(I('merge'),'Aynı iki malzemeyi üst üste sürükle; bir üst kademe olur.'),
-    li(I('target'),'<b>Hedef</b> kartı, açmak istediğin tarifin istediği malzemeleri gösterir. Malzeme hazır olunca yanındaki onaya dokunup teslim et.'),
+    li(I('box'),'Tahtanın solundaki <b>paketlere</b> dokun, <b>ham madde</b> çıksın: Çiftlik, Süt ürünleri, İçecekler, Meyve, Sebze, Kasap.'),
+    li(I('merge'),'<b>Aynı iki malzemeyi</b> üst üste sürükle: işlenir, bir sonraki hâli olur (Süt → Krema → Tereyağı).'),
+    li(I('plus'),'<b>Farklı iki malzeme</b> karışıp yeni ürün olur: Un + Maya → Hamur, Süt + Peynir mayası → Teleme. Hepsi Bilgi kartındaki <b>Üretim rehberi</b>’nde.'),
+    li(I('target'),'<b>Hedef</b> kartı, açmak istediğin tarifin istediği ürünleri gösterir. Bir ürüne dokun: nasıl yapıldığını gör. Hazır olunca yanındaki onaya dokunup teslim et.'),
     li(I('bolt'),'Her dokunuş enerji harcar; enerji Hedef kartının altında, zamanla dolar. Her paket 15 üründen sonra kısa bir süre yeni ürün üretir.')]},
   {t:'Tarifler',i:'book',art:img('corba_mercimek')+img('omlet')+img('sezar'),b:[
     li(I('star'),'Yeni tarifler seviye atladıkça sırayla açılmaya hazır olur.'),
@@ -16316,7 +16317,7 @@ const ZMIG={sut3:'sut2',sut4:'sut3',sut5:'sut3',sut6:'sut4',peynir1:'sut4',peyni
  kahve4:'kahve3',kahve5:'kahve3',kahve6:'kahve3',cay4:'cay3',cay5:'cay3',cay6:'cay3',kakao4:'kakao3',kakao5:'kakao3',kakao6:'kakao3',limon4:'limon3',limon5:'limon3',limon6:'limon3',
  bitki4:'bitki3',domates3:'domates2',domates4:'domates3',mantar3:'mantar2',mantar4:'mantar3',marul4:'marul3',patates3:'patates2',patates4:'patates3',
  mercimek3:'mercimek2',mercimek4:'mercimek2',sucuk1:'sucuk2',sucuk2:'sucuk1',sucuk4:'sucuk3',tavuk4:'tavuk3',et4:'et3',balik4:'balik3'};
-{const keepArt={};for(const ch in ZCH)ZCH[ch].forEach((d,i)=>{keepArt[ch+(i+1)]=ITEM_ART[ch+(i+1)]});
+if(!EVMODE){const keepArt={};for(const ch in ZCH)ZCH[ch].forEach((d,i)=>{keepArt[ch+(i+1)]=ITEM_ART[ch+(i+1)]});
  for(const [ch,L] of Object.entries(ZCH)){const n=L.length,fam=CHAIN_FAM[ch]||'food';CHAINS[ch]=L.map(d=>d[0]);
    L.forEach(([nm,src],i)=>{const id=ch+(i+1);ITEMS[id]={...(ITEMS[id]||{}),id,name:nm,chain:ch,lv:i+1,max:n,fam,next:i+1<n?ch+(i+2):null};
      ITEM_ART[id]=src?(src.startsWith('<')?src:(ITEM_ART[src]&&/src=/.test(keepArt[src]||ITEM_ART[src])&&!/class="kt/.test(keepArt[src]||ITEM_ART[src])?ZIMG(src):(keepArt[src]||ITEM_ART[src]))):keepArt[id]});
@@ -16382,115 +16383,160 @@ setTimeout(()=>{try{if(S&&S.created)zincirMigrate()}catch(e){}},3000);
 // (loadState yalnız defaultState'teki anahtarları alır) → her açılışta teslimatlar ve hedef sıfırlanıyordu.
 {const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.tk=null;s.tkT=null;s.tkv=0;s.zv=0;return s}}
 
-// ================= V218: GERÇEK HAYAT ZİNCİRLERİ =================
-// Kullanıcı isteği: eski bütün zincir ve eşleştirmeler kalkar. Paketler yalnız en ham maddeyi verir; aynı iki malzeme birleşince
-// gerçek hayattaki bir sonraki ürüne dönüşür (Süt → Lor → Peynir → Kaşar, Yağ → Tereyağı → Margarin …). Tarifler bu ürünleri ister.
-// Kimlikler yeni önekli (bug1, st3 …); eski kimlikler "gone" olur, tahtadakiler yeni karşılığına çevrilir.
+// ================= V230: GERÇEK HAYAT ZİNCİRLERİ + KARIŞIMLAR (V218'in yerine) =================
+// Kullanıcı isteği (14 Kasım 2026, 15:50): Fırın, İçecekler, Süt ürünleri, Meyve, Sebze ve Kasap paketlerinden çıkanlar ürünlerin HAM MADDESİ
+// olsun; belli bir kademeye gelince tarifin malzemesi olsun; hangi maddelerin birleşimiyle bir sonraki ürünün oluştuğu gerçek hayattan
+// araştırılsın, tarifler de buna göre ürün istesin. Seçilen kural: "Aynı ikili + karışım".
+//  · AYNI iki malzeme → işleme (bir sonraki hâli): Buğday → Un, Süt → Krema → Tereyağı, Hamur → Ekmek …   (GZC zincirleri)
+//  · FARKLI iki malzeme → karışım (yeni ürün): Un + Maya → Hamur, Süt + Peynir mayası → Teleme, Kakao tozu + Şeker → Çikolata …   (GZ_MIX → COMBOS)
+//  · Paketler yalnız ham madde verir (GZ_PACK). Yeni ham maddeler: Maya, Peynir mayası, Sarımsak. Kalkanlar: Yağ / Margarin (Tereyağı artık
+//    Süt → Krema → Tereyağı), paketten çıkan Sucuk (artık Kıyma + Sarımsak), Lor (yerine Teleme).
+//  · Tarifler bu ürünleri ister (TK_ST5). Kaynaklar ve tam liste: varliklar/gercek_zincirler.md
+// Kimlikler zincir+kademe (bug2, hmr1 …). Karışımdan çıkan ürünün kendi zinciri vardır (hmr: Hamur → Ekmek) ve hiçbir paketten çıkmaz.
+// HOW[id]: bir malzemenin nasıl elde edildiği → {k:'raw',pk} | {k:'same',a} | {k:'mix',a,b}   (arayüz: p111_karisim.js)
+// Etkinlik kafesi (EVMODE) bu sisteme dahil DEĞİL: orada ilk zincirler ve ülke birleşimleri (p5 EV_COMBOS) olduğu gibi kalır.
+// Satırlar: [ad, eski görsel kimliği (yoksa null), geçici simge, gerçek hayatta nasıl yapıldığı]
+// (Görsel kimlikleri p105'ten SONRAKİ hâliyle okunur: p105 sucuk1/sucuk2 görsellerini yer değiştirmişti → halka sucuk = 'sucuk1', dilimler = 'sucuk2'.)
 const GZC={
  // Fırın
- bug:{f:'food',L:[['Buğday',null,'🌾'],['Un','un1'],['Hamur','un2'],['Ekmek','un3']]},
- ymr:{f:'food',L:[['Yumurta','yum1'],['Çırpılmış yumurta','yum2']]},
- sek:{f:'food',L:[['Şeker pancarı',null,'🌱'],['Şeker','seker1'],['Karamel',null,'🍮']]},
- bal:{f:'food',L:[['Petek',null,'🐝'],['Bal',null,'🍯']]},
+ bug:{f:'food',L:[['Buğday',null,'🌾','Tarladan biçilen buğday tanesi.'],['Un','un1',0,'Buğday değirmende öğütülür, kepeği elenir.']]},
+ mya:{f:'food',L:[['Maya',null,'🫧','Hamuru kabartan ekmek mayası.']]},
+ hmr:{f:'food',L:[['Hamur','un2',0,'Un mayayla yoğrulur.'],['Ekmek','un3',0,'Hamur mayalanıp kabarır, fırında pişer.']]},
+ mkr:{f:'food',L:[['Makarna',null,'🍝','Un yumurtayla yoğrulur, açılıp kesilir.']]},
+ kek:{f:'food',L:[['Kek hamuru','c_kekhamuru',0,'Çırpılmış yumurtaya un eklenir.']]},
+ krb:{f:'food',L:[['Kurabiye hamuru','c_kurabiye',0,'Un tereyağıyla ovulup yoğrulur.']]},
+ ymr:{f:'food',L:[['Yumurta','yum1',0,'Kümesten gelen taze yumurta.'],['Çırpılmış yumurta','yum2',0,'Yumurta kırılıp çırpılır.']]},
+ sek:{f:'food',L:[['Şeker pancarı',null,'🌱','Tarladan sökülen şeker pancarı.'],['Şeker','seker1',0,'Pancar dilimlenir, şerbeti kaynatılıp kristallenir.'],['Karamel',null,'🍮','Şeker eritilip kehribar rengine dek pişer.']]},
+ bal:{f:'food',L:[['Petek',null,'🐝','Kovandan alınan ballı petek.'],['Bal',null,'🍯','Petek süzülür.']]},
  // Süt ürünleri
- st:{f:'food',L:[['Süt','sut1'],['Lor',null,'🥣'],['Peynir','peynir1'],['Kaşar',null,'🧀']]},
- yg:{f:'food',L:[['Yağ',null,'🫒'],['Tereyağı',null,'🧈'],['Margarin',null,'🧈']]},
+ st:{f:'food',L:[['Süt','sut1',0,'Mandıradan gelen taze süt.'],['Krema','sut2',0,'Sütün üstünde toplanan yağlı kısım ayrılır.'],['Tereyağı',null,'🧈','Krema yayıkta dövülür, yağı ayrılır.']]},
+ pmy:{f:'food',L:[['Peynir mayası',null,'💧','Sütü pıhtılaştıran maya.']]},
+ pyn:{f:'food',L:[['Teleme',null,'🥣','Süt mayalanır, pıhtılaşır.'],['Peynir','peynir1',0,'Teleme süzülür, tuzlanır, kalıplanır.'],['Kaşar',null,'🧀','Peynir haşlanıp yoğrulur, kalıpta dinlenip olgunlaşır.']]},
+ ksn:{f:'food',L:[['Krem şanti','seker3',0,'Krema şekerle çırpılır.']]},
  // İçecekler
- khv:{f:'drink',L:[['Yeşil kahve çekirdeği',null,'🫘'],['Kavrulmuş kahve','kahve1'],['Çekilmiş kahve','kahve2']]},
- cy:{f:'drink',L:[['Taze çay yaprağı','cay1'],['Kuru çay','cay2']]},
- kak:{f:'drink',L:[['Kakao meyvesi',null,'🥭'],['Kakao çekirdeği','kakao1'],['Kakao tozu','kakao2'],['Çikolata','kakao3']]},
- btk:{f:'drink',L:[['Taze nane',null,'🌿'],['Kuru nane',null,'🍂'],['Bitki çayı karışımı',null,'🍵']]},
- trc:{f:'drink',L:[['Tarçın kabuğu',null,'🪵'],['Tarçın tozu',null,'🟤']]},
+ khv:{f:'drink',L:[['Yeşil kahve çekirdeği',null,'🫘','Kahve kirazından çıkarılıp kurutulan çiğ çekirdek.'],['Kavrulmuş kahve','kahve1',0,'Çekirdekler kavrulur.'],['Çekilmiş kahve','kahve2',0,'Kavrulmuş çekirdek öğütülür.']]},
+ cy:{f:'drink',L:[['Taze çay yaprağı','cay1',0,'Çay bahçesinden toplanan filiz.'],['Kuru çay','cay2',0,'Yapraklar soldurulur, kıvrılır, kurutulur.']]},
+ kak:{f:'drink',L:[['Kakao meyvesi',null,'🥭','Kakao ağacının meyvesi.'],['Kakao çekirdeği','kakao1',0,'Meyve açılır; çekirdekler mayalanıp kurutulur.'],['Kakao tozu','kakao2',0,'Çekirdek kavrulur, öğütülür, yağı preslenir.']]},
+ cko:{f:'drink',L:[['Çikolata','kakao3',0,'Kakao şekerle karıştırılıp kalıba dökülür.']]},
+ btk:{f:'drink',L:[['Taze nane',null,'🌿','Bahçeden toplanan nane.'],['Kuru nane',null,'🍂','Nane gölgede kurutulur.']]},
+ bth:{f:'drink',L:[['Bitki çayı harmanı',null,'🍵','Kuru nane tarçın kabuğuyla harmanlanır.']]},
+ trc:{f:'drink',L:[['Tarçın kabuğu',null,'🪵','Tarçın ağacının kurutulmuş kabuğu.'],['Tarçın tozu',null,'🟤','Kabuk öğütülür.']]},
  // Meyve
- clk:{f:'food',L:[['Çilek','cilek1'],['Doğranmış çilek','cilek2'],['Çilek reçeli',null,'🫙']]},
- lmn:{f:'drink',L:[['Limon','limon1'],['Limon dilimi','limon2'],['Limon suyu','limon3']]},
+ clk:{f:'food',L:[['Çilek','cilek1',0,'Bahçeden toplanan çilek.'],['Doğranmış çilek','cilek2',0,'Çilek ayıklanıp doğranır.']]},
+ rcl:{f:'food',L:[['Çilek reçeli',null,'🫙','Çilek şekerle kaynatılır.']]},
+ lmn:{f:'drink',L:[['Limon','limon1',0,'Daldan koparılan limon.'],['Limon dilimi','limon2',0,'Limon dilimlenir.'],['Limon suyu','limon3',0,'Dilimler sıkılır.']]},
  // Sebze
- dmt:{f:'food',L:[['Domates','domates1'],['Doğranmış domates','domates2'],['Domates sosu','domates4']]},
- mnt:{f:'food',L:[['Mantar','mantar1'],['Dilimlenmiş mantar','mantar2']]},
- mrl:{f:'food',L:[['Marul','marul2'],['Doğranmış marul','marul1']]},
- slt:{f:'food',L:[['Salatalık',null,'🥒'],['Doğranmış salatalık',null,'🥗']]},
- pts:{f:'food',L:[['Patates','patates1'],['Patates dilimleri','patates2']]},
- mrc:{f:'food',L:[['Mercimek',null,'🫘'],['Haşlanmış mercimek',null,'🥣']]},
+ dmt:{f:'food',L:[['Domates','domates1',0,'Bahçeden toplanan domates.'],['Doğranmış domates','domates2',0,'Domates doğranır.'],['Domates sosu','domates4',0,'Doğranmış domates kısık ateşte pişip koyulaşır.']]},
+ mnt:{f:'food',L:[['Mantar','mantar1',0,'Taze kültür mantarı.'],['Dilimlenmiş mantar','mantar2',0,'Mantar temizlenip dilimlenir.']]},
+ mrl:{f:'food',L:[['Marul','marul2',0,'Bahçeden kesilen marul.'],['Doğranmış marul','marul1',0,'Marul yıkanıp doğranır.']]},
+ slt:{f:'food',L:[['Salatalık',null,'🥒','Bahçeden toplanan salatalık.'],['Doğranmış salatalık',null,'🥗','Salatalık doğranır.']]},
+ pts:{f:'food',L:[['Patates','patates1',0,'Topraktan sökülen patates.'],['Patates dilimleri','patates2',0,'Patates soyulup dilimlenir.']]},
+ mrc:{f:'food',L:[['Mercimek',null,'🫘','Kurutulmuş kırmızı mercimek.'],['Haşlanmış mercimek',null,'🥣','Mercimek yumuşayana dek haşlanır.']]},
+ srm:{f:'food',L:[['Sarımsak',null,'🧄','Kurutulmuş baş sarımsak.']]},
  // Kasap
- dna:{f:'food',L:[['Dana eti','et4'],['Biftek','et2']]},
- kym:{f:'food',L:[['Et parçası','et1'],['Kıyma',null,'🥩'],['Köfte harcı',null,'🧆']]},
- kzu:{f:'food',L:[['Kuzu eti',null,'🍖'],['Pirzola',null,'🍖']]},
- tvk:{f:'food',L:[['Bütün tavuk','tavuk4'],['Tavuk göğsü','tavuk2'],['Tavuk şiş','tavuk3']]},
- sck:{f:'food',L:[['Sucuk','sucuk2'],['Sucuk dilimleri','sucuk1']]},
- blk:{f:'food',L:[['Balık','balik1'],['Balık fileto','balik2']]}};
-const GZ_PACK={firin:[['bug1',3],['ymr1',2],['sek1',2],['bal1',1]],mandira:[['st1',3],['yg1',2]],
+ dna:{f:'food',L:[['Dana eti','et4',0,'Kasaptan gelen dana eti.'],['Biftek','et2',0,'Etten kalın dilim kesilir.']]},
+ kym:{f:'food',L:[['Kıymalık et','et1',0,'Kıyma çekilecek et parçası.'],['Kıyma',null,'🥩','Et kıyma makinesinden çekilir.']]},
+ kft:{f:'food',L:[['Köfte harcı',null,'🧆','Kıyma yumurtayla yoğrulur.']]},
+ sck:{f:'food',L:[['Sucuk','sucuk1',0,'Kıyma sarımsak ve baharatla yoğrulur, kılıfa doldurulup birkaç gün olgunlaşır.'],['Sucuk dilimleri','sucuk2',0,'Sucuk dilimlenir.']]},
+ kzu:{f:'food',L:[['Kuzu eti',null,'🍖','Kasaptan gelen kuzu eti.'],['Pirzola',null,'🍖','Kaburgadan kemikli dilim kesilir.']]},
+ tvk:{f:'food',L:[['Bütün tavuk','tavuk4',0,'Kasaptan gelen bütün tavuk.'],['Tavuk göğsü','tavuk2',0,'Tavuk parçalanır, göğsü ayrılır.'],['Tavuk şiş','tavuk3',0,'Göğüs kuşbaşı doğranır, şişe dizilir.']]},
+ blk:{f:'food',L:[['Balık','balik1',0,'Tezgâhtan gelen taze balık.'],['Balık fileto','balik2',0,'Balığın kılçığı ayrılır.']]}};
+// karışımlar: [malzeme, malzeme, çıkan ürün]
+const GZ_MIX=[['bug2','mya1','hmr1'],['bug2','ymr1','mkr1'],['bug2','ymr2','kek1'],['bug2','st3','krb1'],['st1','pmy1','pyn1'],['st2','sek2','ksn1'],
+ ['kak3','sek2','cko1'],['clk2','sek2','rcl1'],['btk2','trc1','bth1'],['kym2','ymr1','kft1'],['kym2','srm1','sck1']];
+const GZ_PACK={firin:[['bug1',3],['ymr1',2],['sek1',2],['bal1',1],['mya1',1]],mandira:[['st1',3],['pmy1',1]],
  kafe:[['khv1',3],['cy1',3],['kak1',2],['btk1',1],['trc1',1]],meyve:[['clk1',3],['lmn1',2]],
- manav:[['dmt1',3],['mnt1',2],['mrl1',2],['slt1',2],['pts1',2],['mrc1',2]],kasap:[['dna1',1],['kym1',2],['kzu1',1],['tvk1',2],['sck1',2],['blk1',2]]};
+ manav:[['dmt1',3],['mnt1',2],['mrl1',2],['slt1',2],['pts1',2],['mrc1',2],['srm1',1]],kasap:[['dna1',1],['kym1',2],['kzu1',1],['tvk1',2],['blk1',2]]};
 const GZ_IMG=[];   // gerçek görseli gelen yeni kimlikler (img/items/<id>.webp)
 const gzEmoji=e=>`<span class="gze"><i>${e}</i></span>`;
 (()=>{const st=document.createElement('style');st.textContent=`.gze{display:grid;place-items:center;width:100%;height:100%}.gze i{font-style:normal;display:grid;place-items:center;width:78%;aspect-ratio:1;border-radius:50%;background:#fff4dd;border:2.5px dashed #c9a27a;font-size:min(30px,calc(var(--mc,60px)*.48));line-height:1;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}`;document.head.appendChild(st)})();
-// eski zincir anahtarları (kalkar)
+// ---- nasıl elde edilir + ham madde maliyeti ----
+const HOW={};
+function howBuild(){for(const k in HOW)delete HOW[k];
+  for(const [pk,L] of Object.entries(GZ_PACK))for(const [id] of L)HOW[id]={k:'raw',pk};
+  for(const ch in GZC){const n=GZC[ch].L.length;for(let i=2;i<=n;i++)HOW[ch+i]={k:'same',a:ch+(i-1)}}
+  for(const [a,b,r] of GZ_MIX)HOW[r]={k:'mix',a,b}}
+const howCost=(id,d=0)=>{const h=HOW[id];if(!h||h.k==='raw'||d>8)return 1;return h.k==='same'?2*howCost(h.a,d+1):howCost(h.a,d+1)+howCost(h.b,d+1)};
+const GZ_SV=c=>[0,1,3,5,8,10,13,16,20][c]||Math.round(c*2.6);   // satış değeri: ham madde sayısına göre (p11 sellVal → it.sv)
+// ---- eski kimlikler ----
+// ilk zincir anahtarları (kalkar)
 const GZ_OLD=['un','yum','seker','sut','peynir','kahve','cay','kakao','limon','cilek','bitki','domates','mantar','marul','patates','mercimek','sucuk','tavuk','et','balik','su'];
-const GZ_OLDMAP={un:['bug',1],yum:['ymr',0],seker:['sek',1],sut:['st',0],peynir:['st',2],kahve:['khv',1],cay:['cy',0],kakao:['kak',1],limon:['lmn',0],cilek:['clk',0],bitki:['btk',0],
+const GZ_OLDMAP={un:['bug',1],yum:['ymr',0],seker:['sek',1],sut:['st',0],peynir:['pyn',1],kahve:['khv',1],cay:['cy',0],kakao:['kak',1],limon:['lmn',0],cilek:['clk',0],bitki:['btk',0],
  domates:['dmt',0],mantar:['mnt',0],marul:['mrl',0],patates:['pts',0],mercimek:['mrc',0],sucuk:['sck',0],tavuk:['tvk',0],et:['kym',0],balik:['blk',0]};
-{const oldArt={};for(const k in ITEM_ART)oldArt[k]=ITEM_ART[k];
+// tek tek karşılıklar: V218'de olup kalkan kimlikler + ilk zincirlerde genel kurala uymayanlar
+const GZ_FIX={bug3:'hmr1',bug4:'hmr2',st4:'pyn3',yg1:'st1',yg2:'st3',yg3:'st3',kak4:'cko1',btk3:'bth1',clk3:'rcl1',kym3:'kft1',
+ un2:'hmr1',un3:'hmr2',un4:'hmr2',un5:'hmr2',un6:'hmr2',sut4:'pyn2',sut5:'pyn2',sut6:'pyn3',kakao3:'cko1',kakao4:'cko1',kakao5:'cko1',kakao6:'cko1',
+ cilek4:'rcl1',cilek5:'rcl1',cilek6:'rcl1',bitki3:'bth1',bitki4:'bth1'};
+// yalnız V218 kaydından (S.zv===2) gelirken: aynı kimliğin anlamı değişenler (st2 Lor → Teleme, st3 Peynir → Peynir)
+const GZ_V2={st2:'pyn1',st3:'pyn2'};
+if(!EVMODE){const oldArt={};for(const k in ITEM_ART)oldArt[k]=ITEM_ART[k];
  for(const ch of GZ_OLD){for(let k=1;k<=8;k++){const id=ch+k;if(ITEMS[id])ITEMS[id]={...ITEMS[id],next:null,gone:true}}delete CHAINS[ch]}
+ howBuild();
  for(const [ch,D] of Object.entries(GZC)){const n=D.L.length;CHAINS[ch]=D.L.map(d=>d[0]);CHAIN_FAM[ch]=D.f;
-   D.L.forEach(([nm,src,em],i)=>{const id=ch+(i+1);ITEMS[id]={id,name:nm,chain:ch,lv:i+1,max:n,fam:D.f,next:i+1<n?ch+(i+2):null};
+   D.L.forEach(([nm,src,em,note],i)=>{const id=ch+(i+1);ITEMS[id]={id,name:nm,chain:ch,lv:i+1,max:n,fam:D.f,next:i+1<n?ch+(i+2):null,note:note||'',sv:GZ_SV(howCost(id))};
      const real=src&&oldArt[src]&&/src=/.test(oldArt[src])&&!/class="kt/.test(oldArt[src]);
      ITEM_ART[id]=GZ_IMG.includes(id)?`<img src="img/items/${id}.webp" alt="" draggable="false">`:real?oldArt[src]:gzEmoji(em||'❔')})}
- COMBOS.length=0}
-for(const P of PACKS)if(GZ_PACK[P.k]){P.out=GZ_PACK[P.k].map(x=>x.slice());BAG_OUT[P.k]=P.out.map(x=>x.slice())}
-// ---- tarifler: gerçek malzemeler ----
-const TK_ST4={
- bitki_cay:[{n:'Bitki çayı',d:[['btk3',1]]}],
+ COMBOS.length=0;for(const [a,b,r] of GZ_MIX)COMBOS.push({a,b,r,name:ITEMS[r].name});
+ // kalkan V218 kimlikleri tahtada kalmışsa oyunu düşürmesin: "gone" gölge kayıt (aşağıdaki süpürücü yenisine çevirir)
+ for(const id in GZ_FIX)if(!ITEMS[id]){const t=ITEMS[GZ_FIX[id]];ITEMS[id]={id,name:t.name,chain:id.replace(/\d+$/,''),lv:1,max:1,fam:t.fam,next:null,gone:true};ITEM_ART[id]=ITEM_ART[GZ_FIX[id]]}
+ for(const P of PACKS)if(GZ_PACK[P.k]){P.out=GZ_PACK[P.k].map(x=>x.slice());BAG_OUT[P.k]=P.out.map(x=>x.slice())}}
+// ---- tarifler: gerçek ürünler ----
+const TK_ST5={
+ bitki_cay:[{n:'Bitki çayı',d:[['bth1',1],['bal2',1]]}],
  yesil_cay:[{n:'Çay',d:[['cy2',2]]},{n:'Limon',d:[['lmn2',1]]}],
  espresso:[{n:'Kahve',d:[['khv3',2]]}],
  latte:[{n:'Kahve',d:[['khv3',1]]},{n:'Süt',d:[['st1',2]]}],
- moka:[{n:'Kahve ve çikolata',d:[['khv3',1],['kak4',1]]},{n:'Süt',d:[['st1',2]]}],
+ moka:[{n:'Kahve ve çikolata',d:[['khv3',1],['cko1',1]]},{n:'Süt ve krema',d:[['st1',1],['ksn1',1]]}],
  sicak_sut:[{n:'Ballı süt',d:[['st1',2],['bal2',1]]}],
  tarcinli_sut:[{n:'Tarçınlı süt',d:[['st1',2],['trc2',1]]}],
- sicak_cik:[{n:'Çikolata',d:[['kak4',2]]},{n:'Süt',d:[['st1',2],['sek2',1]]}],
+ sicak_cik:[{n:'Çikolata',d:[['cko1',2]]},{n:'Süt',d:[['st1',2]]}],
  limonata:[{n:'Limonata',d:[['lmn3',2],['sek2',1]]}],
  meyveli_cay:[{n:'Çay',d:[['cy2',1]]},{n:'Çilek',d:[['clk2',2],['sek2',1]]}],
- milkshake:[{n:'Çilek',d:[['clk2',2]]},{n:'Süt',d:[['st1',2],['sek2',1]]}],
- tost:[{n:'Peynirli tost',d:[['bug4',1],['st3',2]]}],
- tost_sucuk:[{n:'Ekmek ve peynir',d:[['bug4',1],['st3',1]]},{n:'Sucuk',d:[['sck2',2]]}],
- tost_karisik:[{n:'Ekmek ve kaşar',d:[['bug4',1],['st4',1]]},{n:'İç malzeme',d:[['sck2',1],['dmt2',1]]}],
- omlet_peynir:[{n:'Peynirli omlet',d:[['ymr2',2],['st3',1]]}],
- omlet_sucuk:[{n:'Yumurta',d:[['ymr2',2]]},{n:'Sucuk',d:[['sck2',2],['yg2',1]]}],
- omlet_karisik:[{n:'Yumurta ve kaşar',d:[['ymr2',2],['st4',1]]},{n:'İç malzeme',d:[['sck2',1],['dmt2',1],['mnt2',1]]}],
- kahvalti:[{n:'Yumurta ve peynir',d:[['ymr1',2],['st3',1]]},{n:'Sebzeler',d:[['dmt2',1],['slt2',1]]}],
- koy_kahvalti:[{n:'Yumurta',d:[['ymr1',2]]},{n:'Peynir ve tereyağı',d:[['st3',1],['yg2',1]]},{n:'Bal',d:[['bal2',1]]}],
- serpme:[{n:'Yumurta',d:[['ymr1',2]]},{n:'Peynirler',d:[['st4',1],['st3',1]]},{n:'Reçel, bal, tereyağı',d:[['clk3',1],['bal2',1],['yg2',1]]},{n:'Sıcaklar ve sebze',d:[['sck2',1],['dmt2',1],['slt2',1]]},{n:'Çay',d:[['cy2',1]]}],
- corba_domates:[{n:'Domates',d:[['dmt3',1],['dmt2',2]]},{n:'Tereyağı',d:[['yg2',1]]}],
- corba_mercimek:[{n:'Mercimek',d:[['mrc2',2]]},{n:'Servis',d:[['yg2',1],['lmn2',1]]}],
- corba_mantar:[{n:'Mantar',d:[['mnt2',2]]},{n:'Kremalı baz',d:[['st1',1],['yg2',1],['bug2',1]]}],
+ milkshake:[{n:'Çilek',d:[['clk2',2]]},{n:'Süt ve krema',d:[['st1',1],['ksn1',1]]}],
+ tost:[{n:'Peynirli tost',d:[['hmr2',1],['pyn2',1]]}],
+ tost_sucuk:[{n:'Ekmek ve peynir',d:[['hmr2',1],['pyn2',1]]},{n:'Sucuk',d:[['sck2',1]]}],
+ tost_karisik:[{n:'Ekmek ve kaşar',d:[['hmr2',1],['pyn3',1]]},{n:'İç malzeme',d:[['sck2',1],['dmt2',1]]}],
+ omlet_peynir:[{n:'Peynirli omlet',d:[['ymr2',2],['pyn2',1]]}],
+ omlet_sucuk:[{n:'Yumurta',d:[['ymr2',2]]},{n:'Sucuk',d:[['sck2',1],['st3',1]]}],
+ omlet_karisik:[{n:'Yumurta ve kaşar',d:[['ymr2',2],['pyn3',1]]},{n:'İç malzeme',d:[['sck2',1],['dmt2',1],['mnt2',1]]}],
+ kahvalti:[{n:'Yumurta ve peynir',d:[['ymr1',2],['pyn2',1]]},{n:'Sebzeler',d:[['dmt2',1],['slt2',1]]}],
+ koy_kahvalti:[{n:'Yumurta',d:[['ymr1',2]]},{n:'Peynir ve tereyağı',d:[['pyn2',1],['st3',1]]},{n:'Bal, reçel, ekmek',d:[['bal2',1],['rcl1',1],['hmr2',1]]}],
+ serpme:[{n:'Yumurta',d:[['ymr1',2]]},{n:'Peynirler',d:[['pyn3',1],['pyn2',1]]},{n:'Reçel, bal, tereyağı',d:[['rcl1',1],['bal2',1],['st3',1]]},{n:'Sıcaklar ve sebze',d:[['sck2',1],['dmt2',1],['slt2',1]]},{n:'Çay',d:[['cy2',1]]}],
+ corba_domates:[{n:'Domates',d:[['dmt3',1]]},{n:'Meyane',d:[['st3',1],['bug2',1]]}],
+ corba_mercimek:[{n:'Mercimek',d:[['mrc2',2]]},{n:'Servis',d:[['st3',1],['lmn2',1]]}],
+ corba_mantar:[{n:'Mantar',d:[['mnt2',2]]},{n:'Meyane',d:[['st3',1],['bug2',1]]},{n:'Krema',d:[['st2',1]]}],
  kiz_tavuk:[{n:'Tavuk',d:[['tvk2',2]]},{n:'Garnitür',d:[['pts2',2],['dmt2',1]]}],
- tavuk_sis:[{n:'Şiş',d:[['tvk3',2]]},{n:'Garnitür',d:[['dmt2',1],['mrl2',1]]}],
- kiz_et:[{n:'Biftek',d:[['dna2',2]]},{n:'Marine',d:[['btk1',1],['yg2',1]]},{n:'Garnitür',d:[['pts2',2]]}],
- pirzola:[{n:'Pirzola',d:[['kzu2',2]]},{n:'Otlar',d:[['btk1',1]]},{n:'Garnitür',d:[['pts2',1],['dmt2',1]]}],
+ tavuk_sis:[{n:'Şiş',d:[['tvk3',2]]},{n:'Marine',d:[['srm1',1],['lmn2',1]]},{n:'Garnitür',d:[['dmt2',1],['mrl2',1]]}],
+ kiz_et:[{n:'Biftek',d:[['dna2',2]]},{n:'Sarımsaklı tereyağı',d:[['srm1',1],['st3',1]]},{n:'Garnitür',d:[['pts2',2]]}],
+ pirzola:[{n:'Pirzola',d:[['kzu2',2]]},{n:'Marine',d:[['srm1',1],['btk1',1]]},{n:'Garnitür',d:[['pts2',1],['dmt2',1]]}],
  levrek:[{n:'Balık',d:[['blk1',2]]},{n:'Garnitür',d:[['lmn2',1],['mrl2',1]]}],
- somon:[{n:'Fileto',d:[['blk2',2]]},{n:'Sos',d:[['lmn2',1],['btk1',1]]},{n:'Garnitür',d:[['pts2',1]]}],
- makarna_domates:[{n:'Makarna',d:[['bug3',2]]},{n:'Sos',d:[['dmt3',1],['st3',1]]}],
- makarna_mantar:[{n:'Makarna',d:[['bug3',2]]},{n:'Mantar',d:[['mnt2',2]]},{n:'Krema',d:[['st1',1],['yg2',1]]}],
- kofte:[{n:'Köfte',d:[['kym3',2]]},{n:'Garnitür',d:[['dmt2',1],['pts2',1]]}],
- kofte_kasar:[{n:'Köfte',d:[['kym3',2]]},{n:'Kaşar',d:[['st4',1]]},{n:'Garnitür',d:[['dmt2',1]]}],
+ somon:[{n:'Fileto',d:[['blk2',2]]},{n:'Limonlu tereyağı',d:[['lmn3',1],['st3',1]]},{n:'Garnitür',d:[['pts2',1]]}],
+ makarna_domates:[{n:'Makarna',d:[['mkr1',2]]},{n:'Sos',d:[['dmt3',1],['srm1',1]]}],
+ makarna_mantar:[{n:'Makarna',d:[['mkr1',2]]},{n:'Mantar',d:[['mnt2',2]]},{n:'Kremalı sos',d:[['st2',1],['st3',1]]}],
+ kofte:[{n:'Köfte',d:[['kft1',2]]},{n:'Garnitür',d:[['dmt2',1],['pts2',1]]}],
+ kofte_kasar:[{n:'Köfte',d:[['kft1',2]]},{n:'Kaşar',d:[['pyn3',1]]},{n:'Garnitür',d:[['dmt2',1]]}],
  coban:[{n:'Çoban salata',d:[['dmt2',2],['slt2',1],['lmn2',1]]}],
  mevsim:[{n:'Yeşillik',d:[['mrl2',2]]},{n:'Sebzeler',d:[['dmt2',1],['slt2',1]]}],
- sezar:[{n:'Marul',d:[['mrl2',2]]},{n:'Tavuk ve kaşar',d:[['tvk2',1],['st4',1]]},{n:'Kıtır ekmek',d:[['bug4',1]]}],
- kurabiye:[{n:'Kurabiye hamuru',d:[['bug2',2],['sek2',1],['yg2',1]]}],
- kurabiye_cik:[{n:'Hamur',d:[['bug2',2],['yg2',1]]},{n:'Çikolata',d:[['kak4',1]]}],
+ sezar:[{n:'Marul',d:[['mrl2',2]]},{n:'Tavuk ve kaşar',d:[['tvk2',1],['pyn3',1]]},{n:'Kıtır ekmek',d:[['hmr2',1]]}],
+ kurabiye:[{n:'Kurabiye',d:[['krb1',1],['sek2',1]]}],
+ kurabiye_cik:[{n:'Hamur',d:[['krb1',1]]},{n:'Çikolata',d:[['cko1',1]]}],
  puding_sut:[{n:'Muhallebi',d:[['st1',2],['sek2',1],['bug2',1]]}],
  puding_cik:[{n:'Muhallebi',d:[['st1',2],['sek2',1]]},{n:'Kakao',d:[['kak3',1]]}],
- cupcake:[{n:'Kek hamuru',d:[['bug2',2],['ymr1',1],['yg3',1]]},{n:'Süsleme',d:[['sek3',1],['clk1',1]]}],
- pasta:[{n:'Pandispanya',d:[['bug2',2],['ymr2',2]]},{n:'Çilek katı',d:[['clk2',2],['sek2',1]]},{n:'Çikolata',d:[['kak4',1]]}]};
-for(const id in TK_ST4)if(TK_CFG[id])TK_CFG[id].st=TK_ST4[id];
-// kapsam dışında kalan tarifler (ülke vb.): eski kimlikleri en yakın yeniye çevir
-const gzMap=old=>{const it=ITEMS[old];if(!it||!it.gone)return old;const m=/^([a-z]+)(\d+)$/.exec(old);const M=m&&GZ_OLDMAP[m[1]];if(!M)return 'bug1';const D=GZC[M[0]];const lv=Math.min(D.L.length,Math.max(1,+m[2]+M[1]));return M[0]+lv};
-for(const id in TK_CFG){const c=TK_CFG[id];if(!c||!c.st||TK_ST4[id])continue;for(const s of c.st)if(s.d)s.d=s.d.map(([it,n])=>[gzMap(it),n])}
-// ---- kayıt geçişi (bir kez): tahtadaki eski malzemeler yeni karşılığına, açılmamış tariflerin yarım teslimatı sıfır ----
-function gzMigrate(){if(EVMODE||!S||S.zv>=2)return;try{if(Array.isArray(S.board))S.board=S.board.map(v=>v&&ITEMS[v]&&ITEMS[v].gone?gzMap(v):v);
-  const T=tkS();for(const id in TK_ST4)if(!S.unlocked[id]){delete T.st[id];delete T.dl[id]}}catch(e){console.warn('gerçek zincir geçişi',e)}S.zv=2;markDirty();try{if(UI.mode==='merge')renderMerge()}catch(e){}}
+ cupcake:[{n:'Kek',d:[['kek1',1]]},{n:'Süsleme',d:[['ksn1',1],['sek3',1]]}],
+ pasta:[{n:'Pandispanya',d:[['kek1',2]]},{n:'Krema ve çilek',d:[['ksn1',1],['clk2',2]]},{n:'Çikolata',d:[['cko1',1]]}]};
+// eski kimlik → en yakın yeni kimlik
+const gzMap=old=>{if(GZ_FIX[old])return GZ_FIX[old];const it=ITEMS[old];if(!it||!it.gone)return old;const m=/^([a-z]+)(\d+)$/.exec(old);const M=m&&GZ_OLDMAP[m[1]];if(!M)return 'bug1';const D=GZC[M[0]];const lv=Math.min(D.L.length,Math.max(1,+m[2]+M[1]));return M[0]+lv};
+if(!EVMODE){for(const id in TK_ST5)if(TK_CFG[id])TK_CFG[id].st=TK_ST5[id];
+ // kapsam dışında kalan tarifler (ülke vb.): eski kimlikleri en yakın yeniye çevir
+ for(const id in TK_CFG){const c=TK_CFG[id];if(!c||!c.st||TK_ST5[id])continue;for(const s of c.st)if(s.d)s.d=s.d.map(([it,n])=>[gzMap(it),n])}}
+// ---- kayıt geçişi (bir kez, S.zv → 3): tahtadaki eski malzemeler yeni karşılığına, açılmamış tariflerin yarım teslimatı sıfır ----
+function gzMigrate(){if(EVMODE||!S||S.zv>=3)return;try{const v2=S.zv===2;
+  if(Array.isArray(S.board))S.board=S.board.map(v=>{if(!v)return v;if(v2&&GZ_V2[v])return GZ_V2[v];if(GZ_FIX[v])return GZ_FIX[v];if(!ITEMS[v])return null;return ITEMS[v].gone?gzMap(v):v});
+  const T=tkS();for(const id in TK_ST5)if(!S.unlocked[id]){delete T.st[id];delete T.dl[id]}}catch(e){console.warn('karışım geçişi',e)}S.zv=3;markDirty();try{if(UI.mode==='merge')renderMerge()}catch(e){}}
 {const _as=applyState;applyState=function(){const r=_as.apply(this,arguments);try{gzMigrate()}catch(e){}return r}}
 setTimeout(()=>{try{if(S&&S.created)gzMigrate()}catch(e){}},3500);
-// tahtada kalmış "gone" bir şey olursa (eski kayıt, etkinlik dönüşü) yeniden çevir
-setInterval(()=>{try{if(EVMODE||!started||!Array.isArray(S.board)||mgDrag)return;let ch=false;S.board=S.board.map(v=>{if(v&&ITEMS[v]&&ITEMS[v].gone&&ITEMS[v].chain){ch=true;return gzMap(v)}return v});if(ch){markDirty();if(UI.mode==='merge')renderMerge()}}catch(e){}},3000);
+// tahtada kalmış "gone" ya da tanımsız bir şey olursa (eski kayıt, etkinlik dönüşü) yeniden çevir
+setInterval(()=>{try{if(EVMODE||!started||!Array.isArray(S.board)||mgDrag)return;let ch=false;S.board=S.board.map(v=>{if(v&&!ITEMS[v]){ch=true;return null}if(v&&ITEMS[v].gone&&ITEMS[v].chain){ch=true;return gzMap(v)}return v});if(ch){markDirty();if(UI.mode==='merge')renderMerge()}}catch(e){}},3000);
 
 // ================= 2. KAT (V219) =================
 // Kullanıcı isteği (13 Kasım 2026): kafeye ikinci kat.
@@ -16991,6 +17037,140 @@ function opxGoEdit(sel){try{if(typeof K2!=='undefined'&&K2.view===2)k2View(1,tru
   const iv=setInterval(()=>{if(++n>120||(UI.mode==='cafe'&&!ED.busy&&n>8)){clearInterval(iv);return}
     if(UI.mode!=='edit'||ED.busy||UI.modal)return;clearInterval(iv);
     try{if(sel.win&&OP[sel.win]){layStart(sel.win);mvStart()}else if(sel.gate!=null&&GATES[sel.gate]){GTM.i=sel.gate;GTM.sel=true;UI.edit=null;gateMark();gateMoveStart()}}catch(e){console.warn('yeni açıklık',e)}},250)}
+
+// ================= V230: KARIŞIMLAR — Bilgi kartı, "Nasıl yapılır?" penceresi, Üretim rehberi, hedef yardımı =================
+// Veri p106_gercek.js'te (GZC zincirleri, GZ_MIX karışımları, HOW). Burada:
+//  · howMissing: hedef aşamasının istediği ürünler için, tahtadakiler düşülerek EKSİK ham maddeler → paketler bunları daha sık verir
+//    (targetBases) ve raftaki ilgili paketler işaretlenir.
+//  · Bilgi kartı: seçili malzemeden ne olur — "2 tane birleşince →" ve karışımlar ("+ Maya → Hamur"); "Nasıl yapılır?" düğmesi.
+//  · "Nasıl yapılır?" penceresi (nyOpen): ürünün ham maddeye kadar yapılış ağacı, toplam ham madde ve paketi, bundan ne olduğu, isteyen tarifler.
+//    Hedef kartındaki satıra, Keşif penceresindeki malzemeye ya da Bilgi kartındaki düğmeye dokununca açılır.
+//  · Üretim rehberi (nyOpenAll): bütün karışımlar ve paketlere göre işleme zincirleri.
+const nyOn=()=>!EVMODE;
+// ---- eksik ham maddeler: istenen [malzeme, adet] listesi için, tahtadakiler düşülerek ----
+function howMissing(list){const inv={};for(const v of S.board)if(v)inv[v]=(inv[v]||0)+1;const miss={};
+  const need=(id,n,d)=>{if(n<=0||d>8)return;const k=Math.min(inv[id]||0,n);if(k){inv[id]-=k;n-=k}if(!n)return;const h=HOW[id];
+    if(!h||h.k==='raw'){miss[id]=(miss[id]||0)+n;return}
+    if(h.k==='same')need(h.a,2*n,d+1);else{need(h.a,n,d+1);need(h.b,n,d+1)}};
+  for(const [id,n] of list)need(id,n,0);return miss}
+// toplam ham madde (tahtaya bakmadan)
+function howRaw(id,n,acc,d){acc=acc||{};d=d||0;const h=HOW[id];if(!h||h.k==='raw'||d>8){acc[id]=(acc[id]||0)+n;return acc}
+  if(h.k==='same')howRaw(h.a,2*n,acc,d+1);else{howRaw(h.a,n,acc,d+1);howRaw(h.b,n,acc,d+1)}return acc}
+// hedef tarifin bulunduğu aşamada hâlâ eksik olan ham maddeler (paket bunları daha sık verir, rafta işaretlenir)
+{const _tb=targetBases;targetBases=function(){if(!nyOn())return _tb.apply(this,arguments);try{const I=S.tkT&&tkInfo(S.tkT);if(!I||!I.stage)return null;
+    const list=I.stage.d.map(([it,n])=>[it,n-(I.dl[it]|0)]).filter(x=>x[1]>0),m=howMissing(list),s=new Set(Object.keys(m).filter(k=>HOW[k]&&HOW[k].k==='raw'));return s.size?s:null}catch(e){return null}}}
+
+// ---- Bilgi kartı ----
+const nyPk=k=>{const P=PACKS.find(p=>p.k===k);return P?P.n:''};
+const nyMixOf=id=>COMBOS.filter(c=>c.a===id||c.b===id);
+{const _ri=renderInfo;renderInfo=function(){const r=_ri.apply(this,arguments);if(!nyOn())return r;try{const box=$('mgInfo'),i=UI.mgSel,id=i!=null?S.board[i]:null,it=id&&ITEMS[id],tx=box&&box.querySelector('.tx');
+  if(!box||!tx)return r;
+  if(!it){if(!box.querySelector('#nyGuide')){const b=document.createElement('button');b.type='button';b.className='btn light';b.id='nyGuide';b.innerHTML=`${ic('book')}Üretim rehberi`;b.onclick=()=>nyOpenAll();box.appendChild(b)}return r}
+  if(!it.chain||it.gone||!HOW[id])return r;
+  // görsele dokun → ayrıntı ("?" rozeti)
+  const tile=box.querySelector('.mi');if(tile&&!tile.querySelector('.nyq')){tile.style.cursor='pointer';tile.setAttribute('role','button');tile.setAttribute('aria-label',`${it.name}: nasıl yapılır, ne olur`);tile.insertAdjacentHTML('beforeend','<em class="nyq">?</em>');tile.onclick=()=>nyOpen(id)}
+  const nx=it.next,mx=nyMixOf(id),kn=x=>!!S.items[x];
+  if(!mx.length){if(!nx)tx.innerHTML=`<b>${it.name}</b><div class="k4nx"><small>Hazır ürün · tarifte kullanılır</small></div>`;return r}   // yalnız zincir: p92 görünümü
+  const uses=[];if(nx)uses.push({same:1,o:id,r:nx});for(const c of mx)uses.push({o:c.a===id?c.b:c.a,r:c.r});const many=uses.length>3,wide=tx.clientWidth>=114;   // dar kartta (küçük telefon) ürün adı sığmaz
+  tx.innerHTML=`<b>${it.name}</b><div class="kmx${many?' many':''}"><small>Birleşince</small><div class="kmg">${uses.map(u=>{const k=kn(u.r),nm=k?ITEMS[u.r].name:'?';
+      return `<button type="button" class="kmr" data-ny="${u.r}" aria-label="${u.same?'İki '+it.name:it.name+' ve '+ITEMS[u.o].name}: ${nm}"><i class="kop">${u.same?'2×':'+'}</i><span class="kmi">${itemArt(u.o)}</span><i>→</i><span class="kmi${k?'':' q'}">${k?itemArt(u.r):'?'}</span>${many||!k||!wide?'':`<em>${nm}</em>`}</button>`}).join('')}</div></div>`;
+  tx.querySelectorAll('[data-ny]').forEach(b=>b.onclick=()=>nyOpen(b.dataset.ny))}catch(e){console.warn('bilgi karışım',e)}return r}}
+
+// ---- "Nasıl yapılır?" penceresi ----
+function nyTree(id,n,d){const it=ITEMS[id],h=HOW[id]||{k:'raw'};let how='',kids='';
+  if(h.k==='raw')how=`<em class="nyh raw">${nyPk(h.pk)} paketi</em>`;
+  else if(h.k==='same'){how=`<em class="nyh same">2 × ${ITEMS[h.a].name} birleşir</em>`;if(d<6)kids=nyTree(h.a,2*n,d+1)}
+  else{how=`<em class="nyh mix">${ITEMS[h.a].name} + ${ITEMS[h.b].name} karışır</em>`;if(d<6)kids=nyTree(h.a,n,d+1)+nyTree(h.b,n,d+1)}
+  const have=S.board.filter(v=>v===id).length;
+  return `<div class="nyn"><div class="nyr ${h.k}"><span class="nya">${itemArt(id)}<i>×${n}</i></span><span class="nyt"><b>${it.name}</b>${how}</span>${have?`<span class="nyhv">tahtada ${have}</span>`:''}</div>${kids?`<div class="nyk">${kids}</div>`:''}</div>`}
+const nyRecipes=id=>Object.keys(TK_CFG).filter(r=>RECIPE[r]&&!RECIPE[r].br&&!RECIPE[r].hidden&&RECIPES.includes(RECIPE[r])&&TK_CFG[r].st&&TK_CFG[r].st.some(s=>s.d.some(x=>x[0]===id))).map(r=>RECIPE[r].name);
+function nyWin(title){const w=skWin('nyWin',title,'cat_peek');const x=w.m.querySelector('.skclose'),_c=x.onclick;
+  x.onclick=()=>{_c();UI.modal=[...document.querySelectorAll('.modal')].some(m=>!m.hidden)};
+  w.body.onclick=e=>{const b=e.target.closest('[data-ny]');if(b){e.stopPropagation();nyOpen(b.dataset.ny)}};return w}
+function nyOpen(id){if(!nyOn()||!ITEMS[id]||!HOW[id])return;try{sfx('tap')}catch(e){}const it=ITEMS[id],h=HOW[id],w=nyWin(h.k==='raw'?'Ham madde':'Nasıl yapılır?');
+  const raw=howRaw(id,1),rk=Object.keys(raw),uses=[];
+  if(it.next)uses.push({t:`2 × ${it.name}`,r:it.next});for(const c of nyMixOf(id)){const o=c.a===id?c.b:c.a;uses.push({t:`+ ${ITEMS[o].name}`,r:c.r})}
+  const recs=nyRecipes(id);
+  w.body.innerHTML=`<div class="nywrap${h.k==='raw'?' one':''}">
+    <div class="nyhead"><span class="nybig">${itemArt(id)}</span><div class="nyhd"><b>${it.name}</b><p>${it.note||''}</p></div><button class="nyall" type="button" id="nyAll">${ic('book')}Üretim rehberi</button></div>
+    <div class="nycol">${h.k==='raw'?`<div class="nysec"><h3>Nereden gelir?</h3><div class="nychips"><span class="nychip"><span>${itemArt('bag_'+h.pk)}</span><b>${nyPk(h.pk)} paketi</b><small>ham madde</small></span></div></div>`
+      :`<div class="nysec"><h3>Yapılışı</h3><div class="nytree">${nyTree(id,1,0)}</div></div>`}</div>
+    <div class="nycol">${h.k==='raw'?'':`<div class="nysec"><h3>Toplam ham madde</h3><div class="nychips">${rk.map(k=>`<span class="nychip"><span>${itemArt(k)}</span><b>${raw[k]} × ${ITEMS[k].name}</b><small>${nyPk(HOW[k]&&HOW[k].pk)} paketi</small></span>`).join('')}</div></div>`}
+    ${uses.length?`<div class="nysec"><h3>Bundan ne olur?</h3><div class="nychips">${uses.map(u=>`<button type="button" class="nychip go" data-ny="${u.r}"><span>${itemArt(u.r)}</span><b>${ITEMS[u.r].name}</b><small>${u.t}</small></button>`).join('')}</div></div>`:''}
+    ${recs.length?`<div class="nysec"><h3>İsteyen tarifler</h3><p class="nyrec">${recs.join(' · ')}</p></div>`:''}</div></div>`;
+  w.foot.innerHTML='';$('nyAll').onclick=e=>{e.stopPropagation();nyOpenAll()};w.body.scrollTop=0}
+// ---- Üretim rehberi: bütün karışımlar + paketlere göre işleme zincirleri ----
+const nyIt=id=>`<button type="button" class="nyi" data-ny="${id}">${itemArt(id)}<small>${ITEMS[id].name}</small></button>`;
+function nyChain(id){let h=nyIt(id),g=0;while(ITEMS[id].next&&g++<8){id=ITEMS[id].next;h+=`<i>→</i>`+nyIt(id)}return `<div class="nych">${h}</div>`}
+function nyOpenAll(){if(!nyOn())return;try{sfx('tap')}catch(e){}const w=nyWin('Üretim rehberi');
+  const mix=COMBOS.map(c=>`<div class="nych mx">${nyIt(c.a)}<i>+</i>${nyIt(c.b)}<i>→</i>${nyIt(c.r)}</div>`).join('');
+  const packs=PACKS.map(P=>`<div class="nypk"><h4><span>${itemArt('bag_'+P.k)}</span>${P.n}</h4>${P.out.map(([id])=>nyChain(id)).join('')}</div>`).join('');
+  const made=COMBOS.filter(c=>ITEMS[c.r].next).map(c=>nyChain(c.r)).join('');
+  w.body.innerHTML=`<div class="nywrap all">
+    <p class="nyintro">Paketlerden yalnız <b>ham madde</b> çıkar. <b>Aynı iki malzeme</b> birleşince işlenir; <b>farklı iki malzeme</b> karışıp yeni ürün olur. Bir malzemeye dokun: nasıl yapıldığını gör.</p>
+    <div class="nysec"><h3>Karışımlar · farklı iki malzeme</h3><div class="nymix">${mix}</div></div>
+    <div class="nysec"><h3>İşleme · aynı iki malzeme</h3><div class="nypks">${packs}${made?`<div class="nypk"><h4>Karışımdan çıkanlar</h4>${made}</div>`:''}</div></div></div>`;
+  w.foot.innerHTML='';w.body.scrollTop=0}
+
+// ---- Hedef kartı: satıra dokun → nasıl yapılır; tahtada yoksa satır bunu söyler ----
+{const _hd=tkHedefDraw;tkHedefDraw=function(){const r=_hd.apply(this,arguments);if(!nyOn())return r;try{const h=document.querySelector('#merge .info .thd'),I=h&&!h.dataset.nyk&&tkT();
+    if(I&&I.stage){h.dataset.nyk='1';h.querySelectorAll('.thr').forEach((el,i)=>{const d=I.stage.d[i];if(!d)return;el.dataset.ny=d[0];
+        const have=tkOnBoard(d[0]).length,full=(I.dl[d[0]]|0)>=d[1],sm=el.querySelector('.thn small');if(sm&&!full&&!have)sm.textContent=HOW[d[0]]&&HOW[d[0]].k==='raw'?'paketten çıkar ›':'nasıl yapılır ›'});
+      h.addEventListener('click',e=>{if(e.target.closest('[data-thdv],[data-thall],[data-thoff],[data-thbook]'))return;const row=e.target.closest('.thr[data-ny]');if(row)nyOpen(row.dataset.ny)})}}catch(e){console.warn('hedef nasıl',e)}return r}}
+// ---- Keşif penceresi: malzemeye dokun → nasıl yapılır ----
+{const _rt=renderTk;renderTk=function(){const r=_rt.apply(this,arguments);if(!nyOn())return r;try{const W=UI.tkW,I=W&&!W.w.m.hidden&&tkInfo(W.id);if(I&&!I.done&&I.stage){
+    W.w.body.querySelectorAll('.tkrow').forEach((el,i)=>{const d=I.stage.d[i];if(!d)return;const h=HOW[d[0]],sm=el.querySelector('.tkname small');
+      if(sm)sm.textContent=`${!h||h.k==='raw'?'Ham madde':h.k==='mix'?'Karışım':'İşlenmiş'} · tahtada ${tkOnBoard(d[0]).length}`;
+      for(const x of [el.querySelector('.tkart'),el.querySelector('.tkname')])if(x){x.style.cursor='pointer';x.onclick=()=>nyOpen(d[0])}});
+    const n=W.w.body.querySelector('.tknote');if(n&&!n.dataset.ny){n.dataset.ny='1';n.insertAdjacentHTML('beforeend',' Bir malzemeye dokunursan nasıl yapıldığını görürsün.')}}}catch(e){console.warn('keşif nasıl',e)}return r}}
+
+{const M='html.land #game#game #merge.skin',INK='#4a2a14';const st=document.createElement('style');st.textContent=`
+${M} .info .box .tx .kmx{display:flex;flex-direction:column;align-items:stretch;gap:3px;margin-top:4px;width:100%}
+${M} .info .box .tx .kmx small{font-size:11px;font-weight:800;color:#7a5236;text-align:center}
+.kmg{display:flex;flex-direction:column;gap:3px}.kmx.many .kmg{display:grid;grid-template-columns:1fr 1fr}
+.kmr{all:unset;display:flex;align-items:center;gap:3px;padding:1px 4px;min-height:26px;border:2px solid ${INK};border-radius:10px;background:#fff8ea;cursor:pointer;box-sizing:border-box;font:800 11px/1 var(--font-display);color:${INK};min-width:0}
+.kmr i{font-style:normal;flex:none}.kmr .kop{min-width:13px;text-align:center}
+.kmi{width:22px;height:22px;display:grid;place-items:center;flex:none;font:800 13px/1 var(--font-display)}.kmi>*{width:100%;height:100%}.kmi.q{border-radius:6px;background:#efe2c8}
+.kmg:not(:has(em)) .kmr{justify-content:center}
+.kmr em{font-style:normal;flex:1;min-width:0;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.kmx.many .kmr{position:relative;padding:1px 2px;gap:1px;font-size:9.5px;justify-content:center}.kmx.many .kmi{width:18px;height:18px}
+.kmx.many .kmr .kop{position:absolute;left:-3px;top:-5px;min-width:0;padding:1px 3px;border-radius:999px;background:${INK};color:#fff;font-size:8px;line-height:1}
+.kmi .gze i{font-size:12px;border-width:1.5px}.kmx.many .kmi .gze i{font-size:10px}
+.nyq{position:absolute;left:-8px;top:-8px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:${INK};color:#fff;font:900 12px/1 var(--font-display);font-style:normal;box-shadow:0 0 0 2px #fff8ea}
+.thr[data-ny]{cursor:pointer}
+.nywrap{grid-column:1/-1;width:100%;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:8px 14px;align-items:start;font-family:var(--font-display);color:${INK};text-align:left}
+html:not(.land) .nywrap,.nywrap.one{grid-template-columns:minmax(0,1fr)}
+.nywrap.all{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.nyhead{grid-column:1/-1;display:flex;align-items:center;gap:10px}.nybig{width:56px;height:56px;flex:none;display:grid;place-items:center;border:3px solid ${INK};border-radius:16px;background:#fff8ea;box-sizing:border-box}.nybig>*{width:44px;height:44px}
+.nybig .gze i{font-size:22px}.nyhd{flex:1;min-width:0}.nyhead b{font-size:18px}.nyhead p{margin:1px 0 0;font-size:12.5px;font-weight:700;line-height:1.3;opacity:.85}
+.nyall{all:unset;flex:none;display:flex;align-items:center;gap:5px;height:34px;padding:0 12px;border:2.5px solid ${INK};border-radius:999px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 2px 0 ${INK};font:800 12px/1 var(--font-display);color:${INK};cursor:pointer;box-sizing:border-box}.nyall .ic{width:15px;height:15px}
+.nycol{display:flex;flex-direction:column;gap:9px;min-width:0}
+.nysec h3{margin:0 0 5px;font-size:12.5px;font-weight:800;color:#7a5236;text-transform:none}
+.nychips{display:flex;flex-wrap:wrap;gap:6px}
+.nychip{all:unset;display:grid;grid-template-columns:30px auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;padding:4px 10px 4px 5px;border:2.5px solid ${INK};border-radius:12px;background:#fff;box-sizing:border-box;font-family:var(--font-display);color:${INK}}
+.nychip>span{grid-row:1/3;width:30px;height:30px;display:grid;place-items:center}.nychip>span>*{width:100%;height:100%}.nychip b{font-size:12.5px;line-height:1.1;align-self:end}.nychip small{font-size:10.5px;font-weight:700;opacity:.75;align-self:start}
+.nychip.go{cursor:pointer;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 2px 0 ${INK}}
+.nychip .gze i{font-size:14px;border-width:1.5px}
+.nyn{display:flex;flex-direction:column;gap:5px}.nyk{display:flex;flex-direction:column;gap:5px;margin-left:14px;padding-left:10px;border-left:3px solid #d9b98c}
+.nyr{display:flex;align-items:center;gap:8px;padding:3px 8px 3px 5px;border:2.5px solid ${INK};border-radius:12px;background:#fff}
+.nyr.raw{background:#eef7e4}.nyr.mix{background:#fff6cf}
+.nya{position:relative;width:32px;height:32px;flex:none;display:grid;place-items:center}.nya>:first-child{width:100%;height:100%}
+.nya>i{position:absolute;right:-5px;bottom:-4px;font-style:normal;font-size:10px;font-weight:900;padding:1px 4px;border-radius:999px;background:${INK};color:#fff;line-height:1.1}
+.nya .gze i{font-size:15px;border-width:1.5px}
+.nyt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15}.nyt b{font-size:13px}.nyh{font-style:normal;font-size:11px;font-weight:700;opacity:.85}
+.nyhv{flex:none;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:#cdeb8b;border:2px solid ${INK};white-space:nowrap}
+.nyrec{margin:0;font-size:12px;font-weight:700;line-height:1.4}
+.nyintro{margin:0;font-size:12.5px;font-weight:700;line-height:1.4}
+.nymix{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:6px}
+.nych{display:flex;align-items:flex-start;flex-wrap:wrap;gap:2px 3px;padding:4px 6px;border:2.5px solid ${INK};border-radius:12px;background:#fff}
+.nych.mx{background:#fff6cf;justify-content:center}.nych>i{font-style:normal;font-weight:900;font-size:15px;align-self:center;padding-bottom:12px}
+.nyi{all:unset;display:flex;flex-direction:column;align-items:center;gap:1px;width:64px;cursor:pointer;font-family:var(--font-display);color:${INK}}
+.nyi>:first-child{width:34px;height:34px}.nyi small{font-size:9.5px;font-weight:800;line-height:1.05;text-align:center;max-width:64px}
+.nyi .gze i{font-size:16px;border-width:1.5px}
+.nypks{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:6px 10px;align-items:start}
+.nypk{display:flex;flex-direction:column;gap:5px}.nypk h4{display:flex;align-items:center;gap:6px;margin:2px 0 0;font-size:13.5px;font-weight:800}.nypk h4 span{width:26px;height:26px;display:grid;place-items:center}.nypk h4 span>*{width:100%;height:100%}
+#nyWin .skwin{max-width:min(600px,calc(96*var(--vw)))}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
