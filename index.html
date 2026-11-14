@@ -16196,10 +16196,10 @@ function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonu
     li('<span class="n">4</span>',`Misafir yiyip kasaya gider, ${c} ödemeyi alır.`),
     li(I('auto'),`${tagb('auto','Otomatik','l')} açıksa ${w} bu işleri kendisi yapar.`)]},
   {t:'Birleştirme',i:'merge',art:`${it('sut1')}<b class="ar">+</b>${it('sut1')}<b class="ar">=</b>${it('sut2')}`,b:[
-    li(I('box'),'Tahtanın solundaki <b>paketlere</b> dokun, <b>ham madde</b> çıksın: Çiftlik, Süt ürünleri, İçecekler, Meyve, Sebze, Kasap.'),
-    li(I('merge'),'<b>Aynı iki malzemeyi</b> üst üste sürükle: işlenir, bir sonraki hâli olur (Süt → Krema → Tereyağı).'),
-    li(I('plus'),'<b>Farklı iki malzeme</b> karışıp yeni ürün olur: Un + Maya → Hamur, Süt + Peynir mayası → Teleme. Hepsi Bilgi kartındaki <b>Üretim rehberi</b>’nde.'),
-    li(I('target'),'<b>Hedef</b> kartı, açmak istediğin tarifin istediği ürünleri gösterir. Bir ürüne dokun: nasıl yapıldığını gör. Hazır olunca yanındaki onaya dokunup teslim et.'),
+    li(I('target'),'Bir tarif <b>hedefle</b>; Hedef kartı o tarifin istediği ürünleri gösterir.'),
+    li(I('star'),'Tahtanın üstündeki <b>Sıradaki adım</b> ne yapacağını söyler: parlayan <b>pakete</b> dokun, parlayan <b>iki malzemeyi</b> üst üste bırak.'),
+    li(I('merge'),'<b>Aynı iki malzeme</b> işlenir (Süt → Krema → Tereyağı); <b>farklı iki malzeme</b> karışıp yeni ürün olur (Un + Maya → Hamur).'),
+    li(I('check'),'Ürün hazır olunca Hedef kartındaki onaya dokunup <b>teslim et</b>. Bir ürüne dokunursan nasıl yapıldığını adım adım görürsün.'),
     li(I('bolt'),'Her dokunuş enerji harcar; enerji Hedef kartının altında, zamanla dolar. Her paket 15 üründen sonra kısa bir süre yeni ürün üretir.')]},
   {t:'Tarifler',i:'book',art:img('corba_mercimek')+img('omlet')+img('sezar'),b:[
     li(I('star'),'Yeni tarifler seviye atladıkça sırayla açılmaya hazır olur.'),
@@ -16447,7 +16447,8 @@ const GZ_MIX=[['bug2','mya1','hmr1'],['bug2','ymr1','mkr1'],['bug2','ymr2','kek1
 const GZ_PACK={firin:[['bug1',3],['ymr1',2],['sek1',2],['bal1',1],['mya1',1]],mandira:[['st1',3],['pmy1',1]],
  kafe:[['khv1',3],['cy1',3],['kak1',2],['btk1',1],['trc1',1]],meyve:[['clk1',3],['lmn1',2]],
  manav:[['dmt1',3],['mnt1',2],['mrl1',2],['slt1',2],['pts1',2],['mrc1',2],['srm1',1]],kasap:[['dna1',1],['kym1',2],['kzu1',1],['tvk1',2],['blk1',2]]};
-const GZ_IMG=[];   // gerçek görseli gelen yeni kimlikler (img/items/<id>.webp)
+// gerçek görseli gelen yeni kimlikler (img/items/<id>.webp). V231: 28 ürün (kullanıcının ürettiği sayfalardan kesildi: varliklar/karisim_sayfalari, araclar/gorsel_kes.py)
+const GZ_IMG=['bug1','mya1','sek1','sek3','bal1','bal2','mkr1','st3','pmy1','pyn1','pyn3','khv1','kak1','btk1','btk2','bth1','trc1','trc2','rcl1','slt1','slt2','mrc1','mrc2','srm1','kym2','kft1','kzu1','kzu2'];
 const gzEmoji=e=>`<span class="gze"><i>${e}</i></span>`;
 (()=>{const st=document.createElement('style');st.textContent=`.gze{display:grid;place-items:center;width:100%;height:100%}.gze i{font-style:normal;display:grid;place-items:center;width:78%;aspect-ratio:1;border-radius:50%;background:#fff4dd;border:2.5px dashed #c9a27a;font-size:min(30px,calc(var(--mc,60px)*.48));line-height:1;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}`;document.head.appendChild(st)})();
 // ---- nasıl elde edilir + ham madde maliyeti ----
@@ -16479,7 +16480,8 @@ if(!EVMODE){const oldArt={};for(const k in ITEM_ART)oldArt[k]=ITEM_ART[k];
  COMBOS.length=0;for(const [a,b,r] of GZ_MIX)COMBOS.push({a,b,r,name:ITEMS[r].name});
  // kalkan V218 kimlikleri tahtada kalmışsa oyunu düşürmesin: "gone" gölge kayıt (aşağıdaki süpürücü yenisine çevirir)
  for(const id in GZ_FIX)if(!ITEMS[id]){const t=ITEMS[GZ_FIX[id]];ITEMS[id]={id,name:t.name,chain:id.replace(/\d+$/,''),lv:1,max:1,fam:t.fam,next:null,gone:true};ITEM_ART[id]=ITEM_ART[GZ_FIX[id]]}
- for(const P of PACKS)if(GZ_PACK[P.k]){P.out=GZ_PACK[P.k].map(x=>x.slice());BAG_OUT[P.k]=P.out.map(x=>x.slice())}}
+ for(const P of PACKS)if(GZ_PACK[P.k]){P.out=GZ_PACK[P.k].map(x=>x.slice());BAG_OUT[P.k]=P.out.map(x=>x.slice())}
+ ITEM_ART.bag_firin=`<img src="img/packs/ciftlik.webp" alt="" draggable="false">`}   // Çiftlik paketinin kendi görseli (V231; eski taş fırın görseli img/packs/firin.webp etkinlikte kalır)
 // ---- tarifler: gerçek ürünler ----
 const TK_ST5={
  bitki_cay:[{n:'Bitki çayı',d:[['bth1',1],['bal2',1]]}],
@@ -17038,14 +17040,18 @@ function opxGoEdit(sel){try{if(typeof K2!=='undefined'&&K2.view===2)k2View(1,tru
     if(UI.mode!=='edit'||ED.busy||UI.modal)return;clearInterval(iv);
     try{if(sel.win&&OP[sel.win]){layStart(sel.win);mvStart()}else if(sel.gate!=null&&GATES[sel.gate]){GTM.i=sel.gate;GTM.sel=true;UI.edit=null;gateMark();gateMoveStart()}}catch(e){console.warn('yeni açıklık',e)}},250)}
 
-// ================= V230: KARIŞIMLAR — Bilgi kartı, "Nasıl yapılır?" penceresi, Üretim rehberi, hedef yardımı =================
-// Veri p106_gercek.js'te (GZC zincirleri, GZ_MIX karışımları, HOW). Burada:
-//  · howMissing: hedef aşamasının istediği ürünler için, tahtadakiler düşülerek EKSİK ham maddeler → paketler bunları daha sık verir
-//    (targetBases) ve raftaki ilgili paketler işaretlenir.
-//  · Bilgi kartı: seçili malzemeden ne olur — "2 tane birleşince →" ve karışımlar ("+ Maya → Hamur"); "Nasıl yapılır?" düğmesi.
-//  · "Nasıl yapılır?" penceresi (nyOpen): ürünün ham maddeye kadar yapılış ağacı, toplam ham madde ve paketi, bundan ne olduğu, isteyen tarifler.
-//    Hedef kartındaki satıra, Keşif penceresindeki malzemeye ya da Bilgi kartındaki düğmeye dokununca açılır.
-//  · Üretim rehberi (nyOpenAll): bütün karışımlar ve paketlere göre işleme zincirleri.
+// ================= V230–V231: KARIŞIMLAR — sade kullanım: "Sıradaki adım", Bilgi kartı, "Nasıl yapılır?", Üretim rehberi =================
+// Veri p106_gercek.js'te (GZC zincirleri, GZ_MIX karışımları, HOW). Sistem aynı; burası yalnız oyuncuya nasıl gösterildiği.
+// V231 (kullanıcı isteği 14 Kasım 17:34: "sistemi değiştirme, oynanışı ve kullanımı daha basit yap; oyuncu rahatça okuyup anlasın ve yapsın"):
+//  · SIRADAKİ ADIM (nyNext / nyHintDraw): hedef tarifin bulunduğu aşama için, tahtaya bakarak şimdi yapılacak TEK işi bulur ve tahtanın
+//    üstündeki plakaya yazar ("Un + Maya → Hamur", "Çiftlik paketine dokun", "Ekmek → teslim et"); ilgili iki hücre / paket / onay düğmesi
+//    parlar. Öncelik: teslim edilebilen → şimdi yapılabilen birleşim (son ürüne en yakın olan) → eksik ham madde için paket.
+//  · Hedef kartı: hedef yokken sıradaki açılabilir tarifi önerir (tek dokunuşla hedeflenir). Üzerinde çalışılan ürünün satırı işaretlenir.
+//  · Bilgi kartı: "?" yok; seçili malzemeden ne olduğu adlarıyla kısa liste (hedef için gereken en üstte, en çok 2–3 satır, kalanı "+N başka"),
+//    hedef varken "Hedef için gerekli / Bu hedefte gerekmiyor" etiketi.
+//  · "Nasıl yapılır?" (nyOpen): ağaç yerine yemek tarifi gibi numaralı adımlar: 1. paketten al, 2…n. birleştir.
+//  · howMissing / targetBases: paket, hedef aşamasının tahtada EKSİK kalan ham maddesini öne alır (V230).
+//  · Üretim rehberi (nyOpenAll): bütün karışımlar + paketlere göre işleme zincirleri (V230).
 const nyOn=()=>!EVMODE;
 // ---- eksik ham maddeler: istenen [malzeme, adet] listesi için, tahtadakiler düşülerek ----
 function howMissing(list){const inv={};for(const v of S.board)if(v)inv[v]=(inv[v]||0)+1;const miss={};
@@ -17059,48 +17065,100 @@ function howRaw(id,n,acc,d){acc=acc||{};d=d||0;const h=HOW[id];if(!h||h.k==='raw
 // hedef tarifin bulunduğu aşamada hâlâ eksik olan ham maddeler (paket bunları daha sık verir, rafta işaretlenir)
 {const _tb=targetBases;targetBases=function(){if(!nyOn())return _tb.apply(this,arguments);try{const I=S.tkT&&tkInfo(S.tkT);if(!I||!I.stage)return null;
     const list=I.stage.d.map(([it,n])=>[it,n-(I.dl[it]|0)]).filter(x=>x[1]>0),m=howMissing(list),s=new Set(Object.keys(m).filter(k=>HOW[k]&&HOW[k].k==='raw'));return s.size?s:null}catch(e){return null}}}
-
-// ---- Bilgi kartı ----
 const nyPk=k=>{const P=PACKS.find(p=>p.k===k);return P?P.n:''};
 const nyMixOf=id=>COMBOS.filter(c=>c.a===id||c.b===id);
+const nyIt=id=>`<button type="button" class="nyi" data-ny="${id}">${itemArt(id)}<small>${ITEMS[id].name}</small></button>`;
+const nyTutOn=()=>!!(S.tut&&S.tut!=='done');   // ilk ders sürerken öğretici kendi balonlarıyla yönlendirir
+
+// ---- SIRADAKİ ADIM ----
+// dönen: {k:'give',id,cells} | {k:'same'|'mix',a,b,r,cells} | {k:'pack',pk,id,n,block?} | {k:'wait',t} ; top = bu adımın hizmet ettiği hedef ürünü
+function nyNext(){if(!nyOn()||nyTutOn())return null;const I=tkT();if(!I||!I.stage)return null;
+  if(!I.ready)return {k:'wait',t:!I.lvlOk?`Seviye ${I.c.lvl} gerekli`:`Önce: ${RECIPE[I.preMiss[0]].name}`};
+  const cells={};S.board.forEach((v,i)=>{if(v)(cells[v]=cells[v]||[]).push(i)});
+  const todo=I.stage.d.map(([it,n])=>[it,n-(I.dl[it]|0)]).filter(x=>x[1]>0);
+  for(const [it,n] of todo)if(cells[it])return {k:'give',id:it,cells:[cells[it][0]],top:it,topN:n};
+  const inv={};for(const k in cells)inv[k]=cells[k].length;const acts=[],want=[];
+  const need=(id,n,d,top,tn)=>{if(n<=0||d>8)return;const k=Math.min(inv[id]||0,n);if(k){inv[id]-=k;n-=k}if(!n)return;const h=HOW[id];
+    if(!h||h.k==='raw'){want.push({id,n,top,topN:tn});return}
+    if(h.k==='same'){const p=Math.min(Math.floor((inv[h.a]||0)/2),n);if(p){acts.push({k:'same',a:h.a,b:h.a,r:id,top,topN:tn});inv[h.a]-=2*p;n-=p}if(n)need(h.a,2*n,d+1,top,tn)}
+    else{const p=Math.min(inv[h.a]||0,inv[h.b]||0,n);if(p){acts.push({k:'mix',a:h.a,b:h.b,r:id,top,topN:tn});inv[h.a]-=p;inv[h.b]-=p;n-=p}if(n){need(h.a,n,d+1,top,tn);need(h.b,n,d+1,top,tn)}}};
+  for(const [it,n] of todo)need(it,n,0,it,n);
+  if(acts.length){const A=acts[0],ca=cells[A.a],cb=cells[A.b];A.cells=A.k==='same'?[ca[0],ca[1]]:[ca[0],cb[0]];return A}
+  if(!want.length)return null;
+  const tot={};for(const w of want)tot[w.id]=(tot[w.id]||0)+w.n;
+  const w=want.find(x=>!bagState(HOW[x.id].pk).cool)||want[0],pk=HOW[w.id].pk,cool=bagState(pk).cool;
+  const st={k:'pack',pk,id:w.id,n:tot[w.id],top:w.top,topN:w.topN};
+  if(cool)st.block={c:`${nyPk(pk)} paketi dinleniyor`,t:`${fmtT(cool)} sonra hazır`};
+  else if(energyNow().v<CONFIG.energy.cost)st.block={c:'Enerji bitti',t:'Dolmasını bekle ya da doldur'};
+  else if(!S.board.includes(null))st.block={c:'Tahta dolu',t:'Birleştir ya da sat'};
+  return st}
+function nyHintHTML(st){const nm=id=>ITEMS[id].name;let art='',cap='Sıradaki adım',t='';
+  if(st.k==='wait'){cap='Hedef kilitli';t=st.t}
+  else if(st.k==='give'){art=itemArt(st.id);cap='Hazır!';t=`${nm(st.id)} → teslim et`}
+  else if(st.k==='pack'){art=itemArt('bag_'+st.pk);if(st.block){cap=st.block.c;t=st.block.t}else{cap=`${nm(st.id)} lazım${st.n>1?' · '+st.n+' tane':''}`;t=`${nyPk(st.pk)} paketine dokun`}}
+  else{art=itemArt(st.r);t=`${nm(st.a)} + ${nm(st.b)} → ${nm(st.r)}`}
+  return `${art?`<span class="nxi">${art}</span>`:''}<span class="nxt${t.length>27?' long':''}"><small>${cap}</small><em>${t}</em></span>`}
+function nyHintDraw(){try{if(UI.mode!=='merge'||!nyOn())return;const st=nyNext(),plq=document.querySelector('#merge .k3plq');
+  if(plq){const b=plq.querySelector('b'),html=st?nyHintHTML(st):'';if(plq.dataset.nx!==html){plq.dataset.nx=html;plq.classList.toggle('nx',!!st);if(st)b.innerHTML=html;else b.textContent='Birleştir'}
+    plq.onclick=st&&st.top?()=>nyOpen(st.top,st.topN,'hedef'):null}
+  const on=new Set(st&&st.cells?st.cells:[]);board.querySelectorAll('.cell').forEach(c=>{const v=on.has(+c.dataset.c);if(c.classList.contains('nx')!==v)c.classList.toggle('nx',v)});
+  document.querySelectorAll('#pkRaf .pk').forEach(p=>{const v=!!(st&&st.k==='pack'&&!st.block&&p.dataset.pk===st.pk);if(p.classList.contains('nx')!==v)p.classList.toggle('nx',v)});
+  document.querySelectorAll('#merge .thd .thr').forEach(r=>{const v=!!(st&&st.top&&r.dataset.ny===st.top);if(r.classList.contains('cur')!==v)r.classList.toggle('cur',v);
+    const dv=r.querySelector('.thdv');if(dv){const g=!!(st&&st.k==='give'&&r.dataset.ny===st.id);if(dv.classList.contains('nx')!==g)dv.classList.toggle('nx',g)}})}catch(e){console.warn('sıradaki adım',e)}}
+{const _rm=renderMerge;renderMerge=function(){const r=_rm.apply(this,arguments);nyHintDraw();return r}}
+{const _dm=doMerge;doMerge=function(){const r=_dm.apply(this,arguments);nyHintDraw();return r}}
+{const _pt=packTap;packTap=function(){const r=_pt.apply(this,arguments);nyHintDraw();return r}}
+
+// ---- Hedef kartı: öneri (hedef yokken) + satıra dokun → nasıl yapılır ----
+function nySuggest(){try{let best=null;for(const r of RECIPES){const I=tkInfo(r.id);if(!I||I.done||!I.ready)continue;const c=TK_CFG[r.id],k=c.lvl*10+c.cls;if(!best||k<best.k)best={r,k}}return best&&best.r}catch(e){return null}}
+{const _hh=tkHedefHTML;tkHedefHTML=function(){const html=_hh.apply(this,arguments);try{if(!nyOn()||nyTutOn()||tkT())return html;const r=nySuggest();if(!r)return html;
+    return `<div class="thd empty sug"><span class="thlbl">Hedef</span><small class="thsl">Sıradaki tarif</small><img class="thsimg" src="${productThumb(r.id)}" alt=""><b class="thsn">${r.name}</b><button class="thgo" type="button" data-thsug="${r.id}">${ic('target')}Hedefle</button><button class="thalt" type="button" data-thbook>Başka tarif seç</button></div>`}catch(e){return html}}}
+{const _hd=tkHedefDraw;tkHedefDraw=function(){const r=_hd.apply(this,arguments);if(!nyOn())return r;try{const h=document.querySelector('#merge .info .thd');
+    if(h&&!h.dataset.nyk){h.dataset.nyk='1';const I=tkT();
+      if(I&&I.stage)h.querySelectorAll('.thr').forEach((el,i)=>{const d=I.stage.d[i];if(!d)return;el.dataset.ny=d[0];el.dataset.nyn=Math.max(1,d[1]-(I.dl[d[0]]|0));
+        const have=tkOnBoard(d[0]).length,full=(I.dl[d[0]]|0)>=d[1],sm=el.querySelector('.thn small');if(sm&&!full&&!have)sm.textContent=HOW[d[0]]&&HOW[d[0]].k==='raw'?'paketten çıkar ›':'nasıl yapılır ›'});
+      h.addEventListener('click',e=>{const sg=e.target.closest('[data-thsug]');if(sg){tkSetTarget(sg.dataset.thsug);const info=document.querySelector('#merge .info');if(info)info.dataset.thk='';tkHedefDraw();try{renderInfo()}catch(_){}return}
+        if(e.target.closest('[data-thdv],[data-thall],[data-thoff],[data-thbook]'))return;const row=e.target.closest('.thr[data-ny]');if(row)nyOpen(row.dataset.ny,+row.dataset.nyn||1,'hedef')})}
+    nyHintDraw()}catch(e){console.warn('hedef nasıl',e)}return r}}
+
+// ---- Bilgi kartı: seçili malzemeden ne olur (adlarıyla, kısa) ----
+function nyTargetSet(){const I=tkT();if(!I||!I.stage)return null;const s=new Set(),w=(x,d)=>{if(s.has(x)||d>8)return;s.add(x);const h=HOW[x];if(!h||h.k==='raw')return;w(h.a,d+1);if(h.b)w(h.b,d+1)};
+  for(const [it,n] of I.stage.d)if((I.dl[it]|0)<n)w(it,0);return s}
 {const _ri=renderInfo;renderInfo=function(){const r=_ri.apply(this,arguments);if(!nyOn())return r;try{const box=$('mgInfo'),i=UI.mgSel,id=i!=null?S.board[i]:null,it=id&&ITEMS[id],tx=box&&box.querySelector('.tx');
   if(!box||!tx)return r;
-  if(!it){if(!box.querySelector('#nyGuide')){const b=document.createElement('button');b.type='button';b.className='btn light';b.id='nyGuide';b.innerHTML=`${ic('book')}Üretim rehberi`;b.onclick=()=>nyOpenAll();box.appendChild(b)}return r}
+  if(!it){tx.innerHTML=`<b>Nasıl oynanır?</b><ol class="kno"><li>Bir tarif hedefle.</li><li>Parlayan pakete dokun.</li><li>Parlayan iki malzemeyi üst üste bırak.</li><li>Hazır olanı teslim et.</li></ol>`;
+    if(!box.querySelector('#nyGuide')){const b=document.createElement('button');b.type='button';b.className='btn light';b.id='nyGuide';b.innerHTML=`${ic('book')}Üretim rehberi`;b.onclick=()=>nyOpenAll();box.appendChild(b)}return r}
   if(!it.chain||it.gone||!HOW[id])return r;
-  // görsele dokun → ayrıntı ("?" rozeti)
   const tile=box.querySelector('.mi');if(tile&&!tile.querySelector('.nyq')){tile.style.cursor='pointer';tile.setAttribute('role','button');tile.setAttribute('aria-label',`${it.name}: nasıl yapılır, ne olur`);tile.insertAdjacentHTML('beforeend','<em class="nyq">?</em>');tile.onclick=()=>nyOpen(id)}
-  const nx=it.next,mx=nyMixOf(id),kn=x=>!!S.items[x];
-  if(!mx.length){if(!nx)tx.innerHTML=`<b>${it.name}</b><div class="k4nx"><small>Hazır ürün · tarifte kullanılır</small></div>`;return r}   // yalnız zincir: p92 görünümü
-  const uses=[];if(nx)uses.push({same:1,o:id,r:nx});for(const c of mx)uses.push({o:c.a===id?c.b:c.a,r:c.r});const many=uses.length>3,wide=tx.clientWidth>=114;   // dar kartta (küçük telefon) ürün adı sığmaz
-  tx.innerHTML=`<b>${it.name}</b><div class="kmx${many?' many':''}"><small>Birleşince</small><div class="kmg">${uses.map(u=>{const k=kn(u.r),nm=k?ITEMS[u.r].name:'?';
-      return `<button type="button" class="kmr" data-ny="${u.r}" aria-label="${u.same?'İki '+it.name:it.name+' ve '+ITEMS[u.o].name}: ${nm}"><i class="kop">${u.same?'2×':'+'}</i><span class="kmi">${itemArt(u.o)}</span><i>→</i><span class="kmi${k?'':' q'}">${k?itemArt(u.r):'?'}</span>${many||!k||!wide?'':`<em>${nm}</em>`}</button>`}).join('')}</div></div>`;
-  tx.querySelectorAll('[data-ny]').forEach(b=>b.onclick=()=>nyOpen(b.dataset.ny))}catch(e){console.warn('bilgi karışım',e)}return r}}
+  const ts=nyTutOn()?null:nyTargetSet(),uses=[];if(it.next)uses.push({same:1,o:id,r:it.next});for(const c of nyMixOf(id))uses.push({o:c.a===id?c.b:c.a,r:c.r});
+  const rel=u=>!!(ts&&ts.has(u.r));uses.sort((a,b)=>rel(b)-rel(a));
+  const wide=tx.clientWidth>=114,max=wide?3:2;let shown=uses,more=0;if(uses.length>max){shown=uses.slice(0,max-1);more=uses.length-shown.length}
+  const stat=ts?`<span class="kst${ts.has(id)?' ok':''}">${ts.has(id)?'Hedef için gerekli':'Bu hedefte gerekmiyor'}</span>`:'';
+  tx.innerHTML=`<b>${it.name}</b>${stat}`+(uses.length?`<div class="kmx"><div class="kmg">${shown.map(u=>`<button type="button" class="kmr${rel(u)?' tg':''}" data-ny="${u.r}" aria-label="${u.same?'İki '+it.name:it.name+' ve '+ITEMS[u.o].name}: ${ITEMS[u.r].name}"><i class="kop">${u.same?'2×':'+'}</i><span class="kmi">${itemArt(u.o)}</span><i>→</i><em>${ITEMS[u.r].name}</em></button>`).join('')}${more?`<button type="button" class="kmr more" data-nyself="1">+${more} başka ›</button>`:''}</div></div>`
+    :`<div class="k4nx"><small>Hazır ürün · tarife teslim edilir</small></div>`);
+  tx.querySelectorAll('[data-ny]').forEach(b=>b.onclick=()=>nyOpen(b.dataset.ny));const ms=tx.querySelector('[data-nyself]');if(ms)ms.onclick=()=>nyOpen(id)}catch(e){console.warn('bilgi karışım',e)}return r}}
 
-// ---- "Nasıl yapılır?" penceresi ----
-function nyTree(id,n,d){const it=ITEMS[id],h=HOW[id]||{k:'raw'};let how='',kids='';
-  if(h.k==='raw')how=`<em class="nyh raw">${nyPk(h.pk)} paketi</em>`;
-  else if(h.k==='same'){how=`<em class="nyh same">2 × ${ITEMS[h.a].name} birleşir</em>`;if(d<6)kids=nyTree(h.a,2*n,d+1)}
-  else{how=`<em class="nyh mix">${ITEMS[h.a].name} + ${ITEMS[h.b].name} karışır</em>`;if(d<6)kids=nyTree(h.a,n,d+1)+nyTree(h.b,n,d+1)}
-  const have=S.board.filter(v=>v===id).length;
-  return `<div class="nyn"><div class="nyr ${h.k}"><span class="nya">${itemArt(id)}<i>×${n}</i></span><span class="nyt"><b>${it.name}</b>${how}</span>${have?`<span class="nyhv">tahtada ${have}</span>`:''}</div>${kids?`<div class="nyk">${kids}</div>`:''}</div>`}
-const nyRecipes=id=>Object.keys(TK_CFG).filter(r=>RECIPE[r]&&!RECIPE[r].br&&!RECIPE[r].hidden&&RECIPES.includes(RECIPE[r])&&TK_CFG[r].st&&TK_CFG[r].st.some(s=>s.d.some(x=>x[0]===id))).map(r=>RECIPE[r].name);
+// ---- "Nasıl yapılır?" penceresi: yemek tarifi gibi numaralı adımlar ----
+// adımlar: malzemeler ürünlerinden önce gelecek sırayla [{id,n,h}], aynı ürün iki yerde geçerse adedi toplanır
+function nySteps(id,n){const order=[],cnt={},walk=(x,k,d)=>{const h=HOW[x];if(!h||d>8)return;if(h.k==='same')walk(h.a,2*k,d+1);else if(h.k==='mix'){walk(h.a,k,d+1);walk(h.b,k,d+1)}
+    cnt[x]=(cnt[x]||0)+k;if(!order.includes(x))order.push(x)};walk(id,n,0);return order.map(x=>({id:x,n:cnt[x],h:HOW[x]}))}
 function nyWin(title){const w=skWin('nyWin',title,'cat_peek');const x=w.m.querySelector('.skclose'),_c=x.onclick;
   x.onclick=()=>{_c();UI.modal=[...document.querySelectorAll('.modal')].some(m=>!m.hidden)};
   w.body.onclick=e=>{const b=e.target.closest('[data-ny]');if(b){e.stopPropagation();nyOpen(b.dataset.ny)}};return w}
-function nyOpen(id){if(!nyOn()||!ITEMS[id]||!HOW[id])return;try{sfx('tap')}catch(e){}const it=ITEMS[id],h=HOW[id],w=nyWin(h.k==='raw'?'Ham madde':'Nasıl yapılır?');
-  const raw=howRaw(id,1),rk=Object.keys(raw),uses=[];
-  if(it.next)uses.push({t:`2 × ${it.name}`,r:it.next});for(const c of nyMixOf(id)){const o=c.a===id?c.b:c.a;uses.push({t:`+ ${ITEMS[o].name}`,r:c.r})}
-  const recs=nyRecipes(id);
-  w.body.innerHTML=`<div class="nywrap${h.k==='raw'?' one':''}">
-    <div class="nyhead"><span class="nybig">${itemArt(id)}</span><div class="nyhd"><b>${it.name}</b><p>${it.note||''}</p></div><button class="nyall" type="button" id="nyAll">${ic('book')}Üretim rehberi</button></div>
-    <div class="nycol">${h.k==='raw'?`<div class="nysec"><h3>Nereden gelir?</h3><div class="nychips"><span class="nychip"><span>${itemArt('bag_'+h.pk)}</span><b>${nyPk(h.pk)} paketi</b><small>ham madde</small></span></div></div>`
-      :`<div class="nysec"><h3>Yapılışı</h3><div class="nytree">${nyTree(id,1,0)}</div></div>`}</div>
-    <div class="nycol">${h.k==='raw'?'':`<div class="nysec"><h3>Toplam ham madde</h3><div class="nychips">${rk.map(k=>`<span class="nychip"><span>${itemArt(k)}</span><b>${raw[k]} × ${ITEMS[k].name}</b><small>${nyPk(HOW[k]&&HOW[k].pk)} paketi</small></span>`).join('')}</div></div>`}
-    ${uses.length?`<div class="nysec"><h3>Bundan ne olur?</h3><div class="nychips">${uses.map(u=>`<button type="button" class="nychip go" data-ny="${u.r}"><span>${itemArt(u.r)}</span><b>${ITEMS[u.r].name}</b><small>${u.t}</small></button>`).join('')}</div></div>`:''}
-    ${recs.length?`<div class="nysec"><h3>İsteyen tarifler</h3><p class="nyrec">${recs.join(' · ')}</p></div>`:''}</div></div>`;
+function nyOpen(id,n,src){if(!nyOn()||!ITEMS[id]||!HOW[id])return;n=Math.max(1,n|0);try{sfx('tap')}catch(e){}const it=ITEMS[id],h=HOW[id],w=nyWin(h.k==='raw'?'Ham madde':'Nasıl yapılır?');
+  const uses=[];if(src!=='hedef'){if(it.next)uses.push({t:`${it.name} + ${it.name}`,r:it.next});for(const c of nyMixOf(id)){const o=c.a===id?c.b:c.a;uses.push({t:`+ ${ITEMS[o].name}`,r:c.r})}}
+  let body='';
+  if(h.k==='raw')body=`<div class="nysec"><h3>Nereden gelir?</h3><div class="nychips"><span class="nychip"><span>${itemArt('bag_'+h.pk)}</span><b>${nyPk(h.pk)} paketi</b><small>pakete dokun, çıksın</small></span></div></div>`;
+  else{const S0=nySteps(id,n),raw=S0.filter(s=>s.h.k==='raw'),mk=S0.filter(s=>s.h.k!=='raw'),byPk={};for(const s of raw)(byPk[s.h.pk]=byPk[s.h.pk]||[]).push(s);
+    const li=[`<li class="raw"><span class="nynum">1</span><div class="nyrw"><b>Paketlerden al</b>${Object.keys(byPk).map(pk=>`<div class="nyrl"><em>${nyPk(pk)}</em>${byPk[pk].map(s=>`<button type="button" class="nyrc" data-ny="${s.id}"><span class="kmi">${itemArt(s.id)}</span>${s.n} ${ITEMS[s.id].name}</button>`).join('')}</div>`).join('')}</div></li>`];
+    mk.forEach((s,k)=>li.push(`<li class="${s.h.k}${k===mk.length-1?' last':''}"><span class="nynum">${k+2}</span><div class="nyf">${nyIt(s.h.a)}<i>+</i>${nyIt(s.h.k==='same'?s.h.a:s.h.b)}<i>→</i>${nyIt(s.id)}</div>${s.n>1?`<span class="nyx">${s.n} kez</span>`:''}</li>`));
+    body=`<ol class="nysteps${li.length>3?' two':''}" style="--rows:${Math.ceil(li.length/2)}">${li.join('')}</ol>`}
+  w.body.innerHTML=`<div class="nywrap one">
+    <div class="nyhead"><span class="nybig">${itemArt(id)}</span><div class="nyhd"><b>${n>1?n+' × ':''}${it.name}</b><p>${it.note||''}</p></div><button class="nyall" type="button" id="nyAll">${ic('book')}Üretim rehberi</button></div>
+    ${body}
+    ${uses.length?`<div class="nysec"><h3>Bundan ne olur?</h3><div class="nychips">${uses.map(u=>`<button type="button" class="nychip go" data-ny="${u.r}"><span>${itemArt(u.r)}</span><b>${ITEMS[u.r].name}</b><small>${u.t}</small></button>`).join('')}</div></div>`:''}</div>`;
   w.foot.innerHTML='';$('nyAll').onclick=e=>{e.stopPropagation();nyOpenAll()};w.body.scrollTop=0}
 // ---- Üretim rehberi: bütün karışımlar + paketlere göre işleme zincirleri ----
-const nyIt=id=>`<button type="button" class="nyi" data-ny="${id}">${itemArt(id)}<small>${ITEMS[id].name}</small></button>`;
 function nyChain(id){let h=nyIt(id),g=0;while(ITEMS[id].next&&g++<8){id=ITEMS[id].next;h+=`<i>→</i>`+nyIt(id)}return `<div class="nych">${h}</div>`}
 function nyOpenAll(){if(!nyOn())return;try{sfx('tap')}catch(e){}const w=nyWin('Üretim rehberi');
   const mix=COMBOS.map(c=>`<div class="nych mx">${nyIt(c.a)}<i>+</i>${nyIt(c.b)}<i>→</i>${nyIt(c.r)}</div>`).join('');
@@ -17112,61 +17170,75 @@ function nyOpenAll(){if(!nyOn())return;try{sfx('tap')}catch(e){}const w=nyWin('�
     <div class="nysec"><h3>İşleme · aynı iki malzeme</h3><div class="nypks">${packs}${made?`<div class="nypk"><h4>Karışımdan çıkanlar</h4>${made}</div>`:''}</div></div></div>`;
   w.foot.innerHTML='';w.body.scrollTop=0}
 
-// ---- Hedef kartı: satıra dokun → nasıl yapılır; tahtada yoksa satır bunu söyler ----
-{const _hd=tkHedefDraw;tkHedefDraw=function(){const r=_hd.apply(this,arguments);if(!nyOn())return r;try{const h=document.querySelector('#merge .info .thd'),I=h&&!h.dataset.nyk&&tkT();
-    if(I&&I.stage){h.dataset.nyk='1';h.querySelectorAll('.thr').forEach((el,i)=>{const d=I.stage.d[i];if(!d)return;el.dataset.ny=d[0];
-        const have=tkOnBoard(d[0]).length,full=(I.dl[d[0]]|0)>=d[1],sm=el.querySelector('.thn small');if(sm&&!full&&!have)sm.textContent=HOW[d[0]]&&HOW[d[0]].k==='raw'?'paketten çıkar ›':'nasıl yapılır ›'});
-      h.addEventListener('click',e=>{if(e.target.closest('[data-thdv],[data-thall],[data-thoff],[data-thbook]'))return;const row=e.target.closest('.thr[data-ny]');if(row)nyOpen(row.dataset.ny)})}}catch(e){console.warn('hedef nasıl',e)}return r}}
 // ---- Keşif penceresi: malzemeye dokun → nasıl yapılır ----
 {const _rt=renderTk;renderTk=function(){const r=_rt.apply(this,arguments);if(!nyOn())return r;try{const W=UI.tkW,I=W&&!W.w.m.hidden&&tkInfo(W.id);if(I&&!I.done&&I.stage){
     W.w.body.querySelectorAll('.tkrow').forEach((el,i)=>{const d=I.stage.d[i];if(!d)return;const h=HOW[d[0]],sm=el.querySelector('.tkname small');
       if(sm)sm.textContent=`${!h||h.k==='raw'?'Ham madde':h.k==='mix'?'Karışım':'İşlenmiş'} · tahtada ${tkOnBoard(d[0]).length}`;
-      for(const x of [el.querySelector('.tkart'),el.querySelector('.tkname')])if(x){x.style.cursor='pointer';x.onclick=()=>nyOpen(d[0])}});
+      for(const x of [el.querySelector('.tkart'),el.querySelector('.tkname')])if(x){x.style.cursor='pointer';x.onclick=()=>nyOpen(d[0],Math.max(1,d[1]-(I.dl[d[0]]|0)),'hedef')}});
     const n=W.w.body.querySelector('.tknote');if(n&&!n.dataset.ny){n.dataset.ny='1';n.insertAdjacentHTML('beforeend',' Bir malzemeye dokunursan nasıl yapıldığını görürsün.')}}}catch(e){console.warn('keşif nasıl',e)}return r}}
 
 {const M='html.land #game#game #merge.skin',INK='#4a2a14';const st=document.createElement('style');st.textContent=`
-${M} .info .box .tx .kmx{display:flex;flex-direction:column;align-items:stretch;gap:3px;margin-top:4px;width:100%}
-${M} .info .box .tx .kmx small{font-size:11px;font-weight:800;color:#7a5236;text-align:center}
-.kmg{display:flex;flex-direction:column;gap:3px}.kmx.many .kmg{display:grid;grid-template-columns:1fr 1fr}
-.kmr{all:unset;display:flex;align-items:center;gap:3px;padding:1px 4px;min-height:26px;border:2px solid ${INK};border-radius:10px;background:#fff8ea;cursor:pointer;box-sizing:border-box;font:800 11px/1 var(--font-display);color:${INK};min-width:0}
+/* sıradaki adım: plaka */
+${M} .k3plq.nx{pointer-events:auto;cursor:pointer;z-index:4}
+${M} .k3plq.nx b{gap:7px;padding:2px 16px 0 9px;max-width:min(310px,calc(var(--mc,48px)*6 + 4px));box-shadow:0 0 0 3px rgba(255,211,77,.55),0 3px 0 ${INK};animation:nxplq 1.6s ease-in-out infinite}
+@keyframes nxplq{50%{box-shadow:0 0 0 6px rgba(255,211,77,.25),0 3px 0 ${INK}}}
+.k3plq.nx i{display:none}
+.nxi{position:relative;z-index:1;flex:none;width:30px;height:30px;display:grid;place-items:center}.nxi>*{width:100%;height:100%}.nxi .gze i{display:grid;font-size:15px;border-width:1.5px;position:static;transform:none;width:78%;height:auto;background:#fff4dd;border-style:dashed;border-color:#c9a27a}
+.nxt{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.08;text-align:left}
+.nxt small{font-size:10px;font-weight:800;opacity:.8;white-space:nowrap}.nxt em{font-style:normal;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nxt.long em{font-size:11.5px}
+/* sıradaki adım: tahtada, rafta ve hedef kartında parlayanlar */
+#board .cell.nx{border-radius:12px;animation:nxcell 1s ease-in-out infinite;position:relative;z-index:1}
+@keyframes nxcell{0%,100%{box-shadow:0 0 0 3px #ffd34d inset,0 0 0 2px #ffd34d}50%{box-shadow:0 0 0 4px #ff9f1a inset,0 0 10px 4px rgba(255,170,30,.9)}}
+#pkRaf .pk.nx{animation:nxpk 1s ease-in-out infinite;z-index:2}
+@keyframes nxpk{0%,100%{box-shadow:0 0 0 3px #ffd34d,0 2px 0 ${INK};transform:scale(1)}50%{box-shadow:0 0 0 5px #ff9f1a,0 0 12px 5px rgba(255,170,30,.9);transform:scale(1.08)}}
+.thr.cur{box-shadow:0 0 0 2px #ffd24a}.thdv.nx{animation:nxdv .9s ease-in-out infinite}@keyframes nxdv{50%{transform:scale(1.18);box-shadow:0 0 0 4px rgba(255,170,30,.8)}}
+/* hedef önerisi */
+.thd.empty.sug{gap:4px}.thsl{font-size:11px!important;font-weight:800!important;opacity:.8}.thsimg{width:58px;height:58px;object-fit:contain;border-radius:14px;background:#f6e6cc;border:2.5px solid ${INK}}
+.thsn{font-size:14px;line-height:1.1}.thd.empty.sug .thgo{flex:none;width:100%}
+.thalt{all:unset;font:800 10.5px/1 var(--font-display);color:#7a5236;text-decoration:underline;cursor:pointer;padding:4px}
+/* bilgi kartı */
+${M} .info .box .tx .kno{margin:6px 0 0;padding:0 0 0 16px;text-align:left;font-size:11.5px;font-weight:800;line-height:1.3;display:flex;flex-direction:column;gap:3px}
+${M} .info .box #nyGuide{font-size:12.5px!important}
+${M} .info .box .tx .kmx{display:flex;flex-direction:column;align-items:stretch;gap:3px;margin-top:5px;width:100%}
+.kst{display:inline-block;margin-top:2px;padding:1px 7px;border-radius:999px;background:#e8dcc6;font:800 9.5px/1.4 var(--font-display);color:#7a5236;white-space:nowrap}.kst.ok{background:#cdeb8b;color:${INK}}
+.kmg{display:flex;flex-direction:column;gap:3px}
+.kmr{all:unset;display:flex;align-items:center;gap:3px;padding:1px 4px;min-height:27px;border:2px solid ${INK};border-radius:10px;background:#fff8ea;cursor:pointer;box-sizing:border-box;font:800 11px/1 var(--font-display);color:${INK};min-width:0}
+.kmr.tg{background:#fff1b8;box-shadow:0 0 0 2px #ffd24a}.kmr.more{justify-content:center;background:#fff;font-size:10.5px}
 .kmr i{font-style:normal;flex:none}.kmr .kop{min-width:13px;text-align:center}
-.kmi{width:22px;height:22px;display:grid;place-items:center;flex:none;font:800 13px/1 var(--font-display)}.kmi>*{width:100%;height:100%}.kmi.q{border-radius:6px;background:#efe2c8}
-.kmg:not(:has(em)) .kmr{justify-content:center}
-.kmr em{font-style:normal;flex:1;min-width:0;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
-.kmx.many .kmr{position:relative;padding:1px 2px;gap:1px;font-size:9.5px;justify-content:center}.kmx.many .kmi{width:18px;height:18px}
-.kmx.many .kmr .kop{position:absolute;left:-3px;top:-5px;min-width:0;padding:1px 3px;border-radius:999px;background:${INK};color:#fff;font-size:8px;line-height:1}
-.kmi .gze i{font-size:12px;border-width:1.5px}.kmx.many .kmi .gze i{font-size:10px}
+.kmi{width:22px;height:22px;display:grid;place-items:center;flex:none;font:800 13px/1 var(--font-display)}.kmi>*{width:100%;height:100%}
+.kmr em{font-style:normal;flex:1;min-width:0;font-size:10.5px;line-height:1.05;text-align:left;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.kmi .gze i{font-size:12px;border-width:1.5px}
 .nyq{position:absolute;left:-8px;top:-8px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:${INK};color:#fff;font:900 12px/1 var(--font-display);font-style:normal;box-shadow:0 0 0 2px #fff8ea}
 .thr[data-ny]{cursor:pointer}
-.nywrap{grid-column:1/-1;width:100%;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:8px 14px;align-items:start;font-family:var(--font-display);color:${INK};text-align:left}
-html:not(.land) .nywrap,.nywrap.one{grid-template-columns:minmax(0,1fr)}
-.nywrap.all{display:flex;flex-direction:column;align-items:stretch;gap:10px}
-.nyhead{grid-column:1/-1;display:flex;align-items:center;gap:10px}.nybig{width:56px;height:56px;flex:none;display:grid;place-items:center;border:3px solid ${INK};border-radius:16px;background:#fff8ea;box-sizing:border-box}.nybig>*{width:44px;height:44px}
-.nybig .gze i{font-size:22px}.nyhd{flex:1;min-width:0}.nyhead b{font-size:18px}.nyhead p{margin:1px 0 0;font-size:12.5px;font-weight:700;line-height:1.3;opacity:.85}
+/* pencereler */
+.nywrap{grid-column:1/-1;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:9px;font-family:var(--font-display);color:${INK};text-align:left}
+.nyhead{display:flex;align-items:center;gap:10px}.nybig{width:54px;height:54px;flex:none;display:grid;place-items:center;border:3px solid ${INK};border-radius:16px;background:#fff8ea;box-sizing:border-box}.nybig>*{width:42px;height:42px}
+.nybig .gze i{font-size:21px}.nyhd{flex:1;min-width:0}.nyhead b{font-size:18px}.nyhead p{margin:1px 0 0;font-size:12.5px;font-weight:700;line-height:1.3;opacity:.85}
 .nyall{all:unset;flex:none;display:flex;align-items:center;gap:5px;height:34px;padding:0 12px;border:2.5px solid ${INK};border-radius:999px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 2px 0 ${INK};font:800 12px/1 var(--font-display);color:${INK};cursor:pointer;box-sizing:border-box}.nyall .ic{width:15px;height:15px}
-.nycol{display:flex;flex-direction:column;gap:9px;min-width:0}
+.nysteps{list-style:none;margin:0;padding:0;display:grid;gap:6px 10px}
+html.land .nysteps.two{grid-auto-flow:column;grid-template-rows:repeat(var(--rows),auto);grid-auto-columns:minmax(0,1fr)}
+.nysteps li{display:flex;align-items:center;gap:8px;padding:5px 9px 5px 7px;border:2.5px solid ${INK};border-radius:14px;background:#fff;min-width:0}
+.nysteps li.raw{background:#eef7e4}.nysteps li.mix{background:#fff6cf}.nysteps li.last{box-shadow:0 0 0 3px #ffd24a}
+.nynum{flex:none;width:22px;height:22px;border-radius:50%;background:${INK};color:#fff;font:900 12px/22px var(--font-display);text-align:center}
+.nyrw{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.nyrw>b{font-size:12.5px}
+.nyrl{display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px}.nyrl em{font-style:normal;font-size:10.5px;font-weight:800;color:#5c7a2e}
+.nyrc{all:unset;display:inline-flex;align-items:center;gap:3px;padding:1px 7px 1px 3px;border:2px solid ${INK};border-radius:999px;background:#fff;font:800 11px/1 var(--font-display);color:${INK};cursor:pointer;white-space:nowrap}
+.nyf{flex:1;min-width:0;display:flex;align-items:flex-start;justify-content:center;gap:2px}.nyf>i{font-style:normal;font-weight:900;font-size:14px;align-self:center;padding-bottom:12px}
+.nyx{flex:none;padding:2px 7px;border-radius:999px;background:${INK};color:#fff;font:800 10.5px/1.3 var(--font-display);white-space:nowrap}
 .nysec h3{margin:0 0 5px;font-size:12.5px;font-weight:800;color:#7a5236;text-transform:none}
 .nychips{display:flex;flex-wrap:wrap;gap:6px}
 .nychip{all:unset;display:grid;grid-template-columns:30px auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;padding:4px 10px 4px 5px;border:2.5px solid ${INK};border-radius:12px;background:#fff;box-sizing:border-box;font-family:var(--font-display);color:${INK}}
 .nychip>span{grid-row:1/3;width:30px;height:30px;display:grid;place-items:center}.nychip>span>*{width:100%;height:100%}.nychip b{font-size:12.5px;line-height:1.1;align-self:end}.nychip small{font-size:10.5px;font-weight:700;opacity:.75;align-self:start}
 .nychip.go{cursor:pointer;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 2px 0 ${INK}}
 .nychip .gze i{font-size:14px;border-width:1.5px}
-.nyn{display:flex;flex-direction:column;gap:5px}.nyk{display:flex;flex-direction:column;gap:5px;margin-left:14px;padding-left:10px;border-left:3px solid #d9b98c}
-.nyr{display:flex;align-items:center;gap:8px;padding:3px 8px 3px 5px;border:2.5px solid ${INK};border-radius:12px;background:#fff}
-.nyr.raw{background:#eef7e4}.nyr.mix{background:#fff6cf}
-.nya{position:relative;width:32px;height:32px;flex:none;display:grid;place-items:center}.nya>:first-child{width:100%;height:100%}
-.nya>i{position:absolute;right:-5px;bottom:-4px;font-style:normal;font-size:10px;font-weight:900;padding:1px 4px;border-radius:999px;background:${INK};color:#fff;line-height:1.1}
-.nya .gze i{font-size:15px;border-width:1.5px}
-.nyt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15}.nyt b{font-size:13px}.nyh{font-style:normal;font-size:11px;font-weight:700;opacity:.85}
-.nyhv{flex:none;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:#cdeb8b;border:2px solid ${INK};white-space:nowrap}
-.nyrec{margin:0;font-size:12px;font-weight:700;line-height:1.4}
 .nyintro{margin:0;font-size:12.5px;font-weight:700;line-height:1.4}
 .nymix{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:6px}
 .nych{display:flex;align-items:flex-start;flex-wrap:wrap;gap:2px 3px;padding:4px 6px;border:2.5px solid ${INK};border-radius:12px;background:#fff}
 .nych.mx{background:#fff6cf;justify-content:center}.nych>i{font-style:normal;font-weight:900;font-size:15px;align-self:center;padding-bottom:12px}
-.nyi{all:unset;display:flex;flex-direction:column;align-items:center;gap:1px;width:64px;cursor:pointer;font-family:var(--font-display);color:${INK}}
-.nyi>:first-child{width:34px;height:34px}.nyi small{font-size:9.5px;font-weight:800;line-height:1.05;text-align:center;max-width:64px}
-.nyi .gze i{font-size:16px;border-width:1.5px}
+.nyi{all:unset;display:flex;flex-direction:column;align-items:center;gap:1px;width:62px;cursor:pointer;font-family:var(--font-display);color:${INK}}
+.nyi>:first-child{width:32px;height:32px}.nyi small{font-size:9.5px;font-weight:800;line-height:1.05;text-align:center;max-width:62px}
+.nyi .gze i{font-size:15px;border-width:1.5px}
 .nypks{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:6px 10px;align-items:start}
 .nypk{display:flex;flex-direction:column;gap:5px}.nypk h4{display:flex;align-items:center;gap:6px;margin:2px 0 0;font-size:13.5px;font-weight:800}.nypk h4 span{width:26px;height:26px;display:grid;place-items:center}.nypk h4 span>*{width:100%;height:100%}
 #nyWin .skwin{max-width:min(600px,calc(96*var(--vw)))}
