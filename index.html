@@ -469,7 +469,8 @@ buildShell();
 const ENV={seaTex:null,boats:[],gulls:[],t:0,hide:{back:null,left:null},wallMeshes:null};
 var RING={s1:{x:LOT.x1+2.6,z:LOT.z1+2.6},r:{x:LOT.x1+9,z:LOT.z1+9},s2:{x:LOT.x1+11.4,z:LOT.z1+11.4},lane:{x:LOT.x1+4.3,z:LOT.z1+4.3}};
 const ENV_N0=scene.children.length;
-const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma meydanı (kurucular p112_italya.js)
+const IT_ENV=EVMODE==='it';
+const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı, ahşap evler, cami, Galata Kulesi (kurucular p113_turkiye.js)   // İtalya Durağı (Roma): deniz yok; çevre Roma meydanı (kurucular p112_italya.js)
 {const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
  scene.background=new THREE.Color(0xbfe2f3);scene.fog=new THREE.Fog(0xf3e6da,34,105);
  // gökyüzü: pastel mavi → ufukta şeftali
@@ -505,7 +506,7 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
  // kafenin çevresinde açık renk kaldırım (yükseltilmiş)
  ENV.pave=pave;ENV.T=T;ENV.cobble=cobble;if(IT_ENV)ENV.lane=itcRoadTex();outdoorStatic();envShell();   // arsa, kaldırım, araç yolu (sabit) + kapıdan kaldırıma yol (kapıyla taşınır)
  // kapı önüne çiçekli tente
- {const _oc=capStart();const g=new THREE.Group();g.position.set(-ROOM_W/2-0.05,DOOR.h+0.55,DOOR.z);g.userData.wall='left';scene.add(g);for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.04,0.3),T(IT_ENV?[0x3a8f4b,0xfffaf0,0xd9453b][i%3]:(i%2?0xfbf6ec:0xd9534f)));s.position.set(-0.42,-0.16,-0.75+i*0.3);s.rotation.z=-0.38;g.add(s)}capEnd('door',_oc)}
+ {const _oc=capStart();const g=new THREE.Group();g.position.set(-ROOM_W/2-0.05,DOOR.h+0.55,DOOR.z);g.userData.wall='left';scene.add(g);for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.04,0.3),T(IT_ENV?[0x3a8f4b,0xfffaf0,0xd9453b][i%3]:TR_ENV?(i%2?0xfbf6ec:0xc8302a):(i%2?0xfbf6ec:0xd9534f)));s.position.set(-0.42,-0.16,-0.75+i*0.3);s.rotation.z=-0.38;g.add(s)}capEnd('door',_oc)}
  // sokak lambaları, banklar, ağaçlı saksılar, çeşme
  const lamp=(x,z)=>{cyl(0.06,0.09,3.2,T(0x3e4a3a),x,1.3,z,8);cyl(0.16,0.2,0.08,T(0x3e4a3a),x,-0.12,z,10);const h=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.24,0.32,6),T(0x3e4a3a));h.position.set(x,3.05,z);scene.add(h);
    const gl=new THREE.Mesh(new THREE.SphereGeometry(0.15,10,8),new THREE.MeshBasicMaterial({color:0xfff0c0}));gl.position.set(x,2.84,z);scene.add(gl);(ENV.glows=ENV.glows||[]).push(gl)};
@@ -519,17 +520,18 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
  {const ex=LOT.x1+2.15,ez=LOT.z1+2.15;
   for(const v of [-7,0,7]){lamp(-ex,v*0.9);lamp(ex,v*0.9);lamp(v,-ez);lamp(v,ez)}
   for(const [x,z,ry] of [[-ex+0.25,-3.6,-Math.PI/2],[-ex+0.25,3.6,-Math.PI/2],[3.6,ez-0.25,0],[-3.6,ez-0.25,0],[ex-0.25,-3.6,Math.PI/2],[ex-0.25,3.6,Math.PI/2],[3.6,-ez+0.25,Math.PI],[-3.6,-ez+0.25,Math.PI]])bench(x,z,ry);   // oturanlar yola bakar
-  if(IT_ENV)itcStreet();else for(const sx of [-1,1])for(const sz of [-1,1])planterTree(sx*(LOT.x1+1.3),sz*(LOT.z1+1.3),0.9);
+  if(IT_ENV)itcStreet();else if(TR_ENV)trcStreet();else for(const sx of [-1,1])for(const sz of [-1,1])planterTree(sx*(LOT.x1+1.3),sz*(LOT.z1+1.3),0.9);
   /* lamba direklerinin yanındaki çiçek saksıları kaldırıldı */}
  // açık hava masaları (süs): kaldırımda iki şemsiyeli masa
  const parasol=(x,z,c)=>{cyl(0.035,0.035,2.1,T(0xfbf6ec),x,0.9,z,8);const u=new THREE.Mesh(new THREE.ConeGeometry(1.05,0.45,8),T(c));u.position.set(x,2.05,z);u.castShadow=true;scene.add(u);cyl(0.42,0.42,0.04,T(0xfbf6ec),x,0.55,z,16);cyl(0.04,0.06,0.55,T(0x3e4a3a),x,0.27,z,8);
    for(const a of [0,Math.PI]){const ch=box(0.36,0.05,0.36,T(0x9a6a3e),x+Math.cos(a)*0.62,0.32,z+Math.sin(a)*0.62)}};
  /* kaldırımdaki şemsiyeli masalar kaldırıldı */
  // meydan çeşmesi (sağ-arka köşede)
- if(!IT_ENV){const x=23.2,z=22.2;cyl(1.5,1.6,0.45,T(0xe8dcc6),x,-0.05,z,24);const w=cyl(1.32,1.32,0.05,T(0x7fd3dc),x,0.15,z,24);w.castShadow=false;cyl(0.25,0.32,1.1,T(0xe8dcc6),x,0.6,z,12);cyl(0.55,0.4,0.18,T(0xe8dcc6),x,1.2,z,16);const s=sph(0.16,T(0x7fd3dc),x,1.4,z)}
+ if(!IT_ENV&&!TR_ENV){const x=23.2,z=22.2;cyl(1.5,1.6,0.45,T(0xe8dcc6),x,-0.05,z,24);const w=cyl(1.32,1.32,0.05,T(0x7fd3dc),x,0.15,z,24);w.castShadow=false;cyl(0.25,0.32,1.1,T(0xe8dcc6),x,0.6,z,12);cyl(0.55,0.4,0.18,T(0xe8dcc6),x,1.2,z,16);const s=sph(0.16,T(0x7fd3dc),x,1.4,z)}
  // binalar: meydanı çevreleyen pastel cepheler (kiremit ya da düz çatı, panjur, balkon, tente)
  const facade=IT_ENV?[0xf2c078,0xe9a071,0xf6dba6,0xdb8a63,0xf3bf96,0xeed3a0,0xe7a183]:[0xfbf6ec,0xf7d9c4,0xfde8b0,0xd8ecf2,0xf2cdd6,0xe6efcb,0xf4e3d3];
  const bld=(x,z,w,d,h,ry,ci,opt={})=>{const g=new THREE.Group();g.position.set(x,-0.3,z);g.rotation.y=ry;scene.add(g);
+    if(TR_ENV){trcHouse(g,w,d,h,ci,opt);trcFacade(g,w,d,h,ci,opt);(ENV.itBlds=ENV.itBlds||[]).push(g);return g}
     if(IT_ENV){itcHouse(g,w,d,h,ci,opt);if(opt.vine)itcVine(g,w,d,h,ci,opt.vine);itcFacade(g,w,d,h,ci,opt);(ENV.itBlds=ENV.itBlds||[]).push(g);return g}
    const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),T(facade[ci%facade.length]));body.position.y=h/2;body.castShadow=true;body.receiveShadow=true;g.add(body);
    if(opt.flat){const r=new THREE.Mesh(new THREE.BoxGeometry(w+0.2,0.18,d+0.2),T(0xece2d0));r.position.y=h+0.09;g.add(r)}
@@ -550,8 +552,8 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
  const front=[[-16.8,22.6,5,5,6.6,1,{awn:0xd9534f}],[-11.2,23,5.2,5,8,2,{vine:1}],[-5.6,22.6,5.4,5,7,3,{awn:0x5e8c5a,flat:true}],[0,23.1,5.2,5,8.6,4,{vine:-1}],[5.6,22.6,5.4,5,6.8,5,{awn:0x4f86c6}],[11.2,22.9,5,5,7.6,0,{flat:true,vine:1}],[16.6,22.6,5,5,7,6,{awn:0xf2b134}]];
  for(const [x,z,w,d,h,ci,o] of front){if(IT_ENV&&x===0){itcPantheon(0,23.9);continue}bld(x,z,w,d,h,Math.PI,ci,o)}
  // sağ sıra (+x), sokağın karşısı
- for(const [x,z,w,d,h,ci,o] of [[23.4,13.6,5,5.4,7.2,2,{awn:0xf2b134}],[23.8,7.8,5,5.6,8.4,6,{vine:1}],[23.4,2,5,5.2,6.6,3,{flat:true}],[23.6,-3.8,5,5.4,7.8,1,{awn:0xd9534f}],[23.4,-9.6,5,5.2,7,4,{vine:-1}],[23.6,-15.4,5,5.4,8,0,{flat:true}]])bld(x,z,w,d,h,-Math.PI/2,ci,o);
- if(IT_ENV)itcMergeBuildings();   // 12 bina iki grupta (ön sıra, sağ sıra) malzeme başına tek ağ
+ for(const [x,z,w,d,h,ci,o] of [[23.4,13.6,5,5.4,7.2,2,{awn:0xf2b134}],[23.8,7.8,5,5.6,8.4,6,{vine:1}],[23.4,2,5,5.2,6.6,3,{flat:true}],[23.6,-3.8,5,5.4,7.8,1,{awn:0xd9534f}],[23.4,-9.6,5,5.2,7,4,{vine:-1}],[23.6,-15.4,5,5.4,8,0,{flat:true}]]){if(TR_ENV&&(z===7.8||z===2||z===-3.8||z===-9.6)){if(z===2)trcMosque(34.5,-0.9);continue}bld(x,z,w,d,h,-Math.PI/2,ci,o)}
+ if(IT_ENV||TR_ENV)itcMergeBuildings();   // 12 bina iki grupta (ön sıra, sağ sıra) malzeme başına tek ağ
  // ---------- SAHİL (sol -x ve arka -z): binalar yerine korkuluklu gezinti yolu, palmiyeler, begonvilli çardaklar, kumsal, iskele, şapel ----------
  {const G=new THREE.Group();G.name='seaside';scene.add(G);const mc=new Map(),Tm=c=>{if(!mc.has(c))mc.set(c,T(c));return mc.get(c)},Y0=-0.32;   // Y0: kara yüzeyi
   const add=(geo,c,x,y,z)=>{const m=new THREE.Mesh(geo,Tm(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;G.add(m);return m};
@@ -583,13 +585,14 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
     blooms(x,Y0+2.95,z,16,hx*0.95,0.16,hz*0.95);blooms(x+hx*(alongZ?1:0.95),Y0+1.9,z+hz*(alongZ?0.95:1),7,0.22,0.8,0.22)};
   const urn=(x,z,c)=>{cy(0.36,0.22,0.62,0xc9653a,x,Y0+0.31,z,10);cy(0.4,0.38,0.08,0xd9774a,x,Y0+0.64,z,10);for(let i=0;i<6;i++){const a=i*1.05;sp(0.19,i%3===2?0x6f9a4a:c,x+Math.cos(a)*0.2,Y0+0.8+(i%2)*0.1,z+Math.sin(a)*0.2)}};
   // sol gezinti yolu (x≈-23): palmiyeler denize doğru eğik
-  for(const z of [26,19.5,6.5,0,-6.5])palm(-23.6,z,4.4+((z*7)%5)*0.12,0.7,Math.PI);
+  const TH={add,bx,cy,sp,Y0};
+  if(TR_ENV)for(const [z,p] of [[26,0],[19.5,1],[6.5,0],[0,1],[-6.5,0]])trcTree(TH,-23.6,z,4.6,p);else for(const z of [26,19.5,6.5,0,-6.5])palm(-23.6,z,4.4+((z*7)%5)*0.12,0.7,Math.PI);
   pergola(-22.9,15.4,true);pergola(-22.9,-11,true);
-  for(const z of [23,3.2,-3.2])urn(-24.1,z,PINK[1]);
+  for(const z of [23,3.2,-3.2])TR_ENV?trcTulip(TH,-24.1,z):urn(-24.1,z,PINK[1]);
   // arka gezinti yolu (z≈-22.5)
-  for(const x of [-15.5,-9,-4,4,9,15.5])palm(x,-23.2,4.5+((x*3+20)%5)*0.12,0.7,-Math.PI/2);
+  if(TR_ENV)for(const [x,p] of [[-15.5,1],[-9,0],[-4,1],[4,0],[9,1],[15.5,0]])trcTree(TH,x,-23.2,4.8,p);else for(const x of [-15.5,-9,-4,4,9,15.5])palm(x,-23.2,4.5+((x*3+20)%5)*0.12,0.7,-Math.PI/2);
   pergola(-6.5,-22.2,false);pergola(11.8,-22.2,false);
-  for(const x of [-12.4,-2.4,2.4,6.6])urn(x,-23.6,x>0?0xf2b134:PINK[0]);
+  for(const x of [-12.4,-2.4,2.4,6.6])TR_ENV?trcTulip(TH,x,-23.6):urn(x,-23.6,x>0?0xf2b134:PINK[0]);
   // iskele: arkada, gezinti yolundan denize uzanır
   {const z0=-24.6,z1=-39,w=2.4,py=Y0-0.02;bx(w,0.14,z0-z1,0xb5835a,0,py,(z0+z1)/2);
    for(let z=z0-0.3;z>z1;z-=0.55)bx(w,0.02,0.05,0x8a5f3c,0,py+0.075,z);
@@ -598,9 +601,9 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
   // kumsal: çizgili şemsiyeler ve havlular (sol kıyı)
   const parasolB=(x,z,c)=>{cy(0.035,0.035,2.2,0xfbf6ec,x,-0.75+1.1,z,6);const u=add(new THREE.ConeGeometry(1.15,0.42,8),c,x,-0.75+2.25,z);const t=add(new THREE.ConeGeometry(0.5,0.2,8),0xfbf6ec,x,-0.75+2.43,z);
     bx(0.62,0.04,1.5,c,x+0.75,-0.72,z+0.2);bx(0.62,0.04,1.5,0xfbf6ec,x-0.75,-0.72,z-0.1)};
-  parasolB(-26.8,20,0xd9534f);parasolB(-26.9,5,0x4f86c6);parasolB(-26.8,-4.5,0xf2b134);
+  if(TR_ENV){let i=0;for(const z of [21,17,6.5,2.5,-3.5])trcParasol(TH,-26.9,z,i++)}else{parasolB(-26.8,20,0xd9534f);parasolB(-26.9,5,0x4f86c6);parasolB(-26.8,-4.5,0xf2b134)}
   // şapel: sağ-arka burunda beyaz badanalı, mavi kubbeli
-  {const x=25.4,z=-21.6;bx(3.6,3,4.4,0xfbf6ec,x,Y0+1.5,z);const dm=add(new THREE.SphereGeometry(1.55,14,8,0,Math.PI*2,0,Math.PI/2),0x3f7fc0,x,Y0+3,z+0.4);cy(0.07,0.07,0.5,0xf2b134,x,Y0+4.75,z+0.4,6);bx(0.34,0.07,0.07,0xf2b134,x,Y0+4.85,z+0.4);
+  if(TR_ENV)trcGalata(24.6,-21.2);else{const x=25.4,z=-21.6;bx(3.6,3,4.4,0xfbf6ec,x,Y0+1.5,z);const dm=add(new THREE.SphereGeometry(1.55,14,8,0,Math.PI*2,0,Math.PI/2),0x3f7fc0,x,Y0+3,z+0.4);cy(0.07,0.07,0.5,0xf2b134,x,Y0+4.75,z+0.4,6);bx(0.34,0.07,0.07,0xf2b134,x,Y0+4.85,z+0.4);
    bx(1.2,4.8,1.2,0xfbf6ec,x-1.2,Y0+2.4,z-1.6);bx(0.5,0.8,1.24,0x4a2e1c,x-1.2,Y0+3.9,z-1.6);bx(1.24,0.8,0.5,0x4a2e1c,x-1.2,Y0+3.9,z-1.6);sp(0.2,0xf2b134,x-1.2,Y0+3.85,z-1.6);
    const cp=add(new THREE.ConeGeometry(0.95,0.8,4),0x3f7fc0,x-1.2,Y0+5.2,z-1.6);cp.rotation.y=Math.PI/4;
    bx(0.07,1.5,0.9,0x3f7fc0,x-1.82,Y0+0.75,z+0.6);bx(0.07,0.7,0.6,0x3f7fc0,x-1.82,Y0+2.0,z-0.2);blooms(x-1.75,Y0+1.6,z+1.75,8,0.3,1.2,0.4)}
@@ -619,7 +622,7 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
  if(!IT_ENV){const row=(x,z,ry,c)=>{const g=new THREE.Group();g.position.set(x,-1.12,z);g.rotation.y=ry;scene.add(g);const hull=new THREE.Mesh(new THREE.SphereGeometry(1,10,6,0,Math.PI*2,Math.PI/2,Math.PI/2),T(c));hull.scale.set(1.25,0.5,0.52);hull.position.y=0.42;g.add(hull);
     const rim=new THREE.Mesh(new THREE.CylinderGeometry(1,1,0.07,14),T(0xfbf6ec));rim.scale.set(1.25,1,0.52);rim.position.y=0.42;g.add(rim);const inn=new THREE.Mesh(new THREE.CylinderGeometry(0.86,0.86,0.075,14),T(0x9a6a3e));inn.scale.set(1.25,1,0.5);inn.position.y=0.422;g.add(inn);
     for(const sx of [-0.4,0.4]){const s=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.05,0.84),T(0xfbf6ec));s.position.set(sx,0.47,0);g.add(s)}ENV.boats.push({g,ph:Math.random()*6,y0:-1.12})};
-  row(-2.6,-33,1.5,0x4f86c6);row(2.7,-29.5,1.62,0xd9534f);row(2.9,-36.6,1.45,0xf2b134);row(-27.9,12.6,0.2,0x8fae58)}
+  row(-2.6,-33,1.5,TR_ENV?0xe0483f:0x4f86c6);row(2.7,-29.5,1.62,TR_ENV?0x2f6e9a:0xd9534f);row(2.9,-36.6,1.45,0xf2b134);row(-27.9,12.6,0.2,0x8fae58)}
  // arka plan ağaçları ve selviler
  const cypress=(x,z,s=1)=>{const c=new THREE.Mesh(new THREE.ConeGeometry(0.45*s,3*s,8),T(0x4f7d3a));c.position.set(x,-0.3+1.5*s,z);c.castShadow=true;scene.add(c)};
  for(const [x,z] of [[19.2,-22.2],[20.4,-23.2],[-22.6,22.4],[-21.4,24.2],[27,18],[28.5,-21],[20.6,25.6]])cypress(x,z);
@@ -628,9 +631,9 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
  const boat=(x,z,ry,c)=>{const g=new THREE.Group();g.position.set(x,-1.1,z);g.rotation.y=ry;scene.add(g);const hull=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.45,0.9),T(0xfbf6ec));hull.position.y=0.15;g.add(hull);
    const st=new THREE.Mesh(new THREE.BoxGeometry(2.42,0.08,0.92),T(c));st.position.y=0.3;g.add(st);const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,2.6,6),M.woodDark);mast.position.y=1.5;g.add(mast);
    const sail=new THREE.Mesh(new THREE.ConeGeometry(0.9,2.1,3),T(0xfff6e8));sail.scale.z=0.08;sail.position.set(0.45,1.55,0);g.add(sail);ENV.boats.push({g,ph:Math.random()*6,y0:-1.1})};
- boat(-37,-4,0.4,0x4f86c6);boat(-15,-41,-0.3,0xd9534f);boat(20,-54,1.1,0x8fae58);
+ if(TR_ENV){trcFerry(-37,-6,0.35);trcFerry(-14,-42,-0.25);trcFerry(24,-56,1.0)}else{boat(-37,-4,0.4,0x4f86c6);boat(-15,-41,-0.3,0xd9534f);boat(20,-54,1.1,0x8fae58)}
  for(const [x,z,rx,rz,c] of [[-42,-72,14,5,0xa7c27c],[-80,-20,8,4,0x9ab86e]]){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,10),T(c));m.scale.set(rx,2.4,rz);m.position.set(x,-1.9,z);scene.add(m)}
- {const g=new THREE.Group();g.position.set(-48,-1.2,-48);scene.add(g);const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(2.4,0),T(0xb8ab98));rock.scale.y=0.45;g.add(rock);
+ if(TR_ENV)trcMaiden(-44,-36);else{const g=new THREE.Group();g.position.set(-48,-1.2,-48);scene.add(g);const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(2.4,0),T(0xb8ab98));rock.scale.y=0.45;g.add(rock);
   for(let i=0;i<4;i++){const s=new THREE.Mesh(new THREE.CylinderGeometry(0.62-i*0.06,0.68-i*0.06,1.0,16),T(i%2?0xd9534f:0xfbf6ec));s.position.y=0.9+i*1.0;g.add(s)}
   const lp=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.6,12),new THREE.MeshBasicMaterial({color:0xfff0c0}));lp.position.y=4.7;g.add(lp);const cap=new THREE.Mesh(new THREE.ConeGeometry(0.6,0.7,12),T(0xd9534f));cap.position.y=5.35;g.add(cap)}
  }
@@ -17576,6 +17579,137 @@ if(EVMODE==='it'){const _et=envTick;envTick=function(dt){const r=_et.apply(this,
   // açılış bakışı: aynı yönden ama biraz daha uzaktan ve yatık → Kolezyum ile su kemeri ilk bakışta görünür
   try{const T=controls.target,v=camera.position.clone().sub(T),az=Math.atan2(v.x,v.z),d=v.length()*1.13,po=1.19;controls.maxPolarAngle=1.22;
     camera.position.set(T.x+d*Math.sin(po)*Math.sin(az),T.y+d*Math.cos(po),T.z+d*Math.sin(po)*Math.cos(az));controls.update();controls.maxPolarAngle=itcPolar()}catch(e){console.warn('italya bakış',e)}}
+
+// ================= V238: TÜRKİYE DURAĞI — çevre İstanbul (Galata ve Boğaz) =================
+// Kullanıcı isteği (14 Kasım 2026, 23:45): "bittiğinde diğer etkinlik ülkelerinin hepsine uygun ülke tasarımları yap, çevre olarak".
+// Oyunda İtalya dışında tek etkinlik Türkiye (İstanbul, "Galata'nın dibinde"). Deniz kalır (Boğaz), çim arsa kalır (kullanıcı çimi seviyor).
+// Yalnız Türkiye etkinliğinde (EVMODE==='tr'); p1b_env.js'te TR_ENV dalları buradaki kurucuları çağırır. p112'deki itcKit/itcTex/itcMat,
+// itcDoorClear (kaldırım parçaları, ENV.itPieces), itcMergeBuildings ve kamera eğimi (itcPolar) burada da kullanılır.
+// Dosya düzeyinde const/let YOK (p1b'den sonra yüklenir; yalnız işlev bildirimleri yukarı taşınır). Adlar "trc…".
+//  · trcHouse: ahşap Osmanlı evi: taş zemin kat (dükkân), ahşap kaplama üst katlar (pastel), cumba (çıkma) ve altında payandalar, beyaz
+//    pencere çerçeveleri, kimi pencerede kafes, geniş saçak, kiremit çatı; trcFacade: tabelalar (SİMİTÇİ, KAHVECİ …), asılı Türk bayrakları.
+//  · trcMosque: sağ sıranın ortasında cami (kubbe, yarım kubbeler, dört minare, revak). trcGalata: sağ-arka burunda Galata Kulesi.
+//  · trcStreet: kaldırımda Türk bayrağı flamaları, simit arabası, çay ocağı masaları, kediler, lale saksıları, Osmanlı çeşmesi.
+//  · Sahil: palmiye yerine çınar ve erguvan, saksılarda lale, plajda kırmızı-beyaz şemsiyeler; denizde vapurlar; adacıkta Kız Kulesi.
+function trcFlagTex(){return itcTex(96,64,(c,W,H)=>{c.fillStyle='#e30a17';c.fillRect(0,0,W,H);c.fillStyle='#fff';c.beginPath();c.arc(36,32,16,0,7);c.fill();c.fillStyle='#e30a17';c.beginPath();c.arc(40,32,12.8,0,7);c.fill();
+  c.fillStyle='#fff';c.beginPath();for(let i=0;i<10;i++){const r=i%2?3:7.5,a=-Math.PI/2+i*Math.PI/5;c.lineTo(58+Math.cos(a+Math.PI/2)*r,32+Math.sin(a+Math.PI/2)*r)}c.fill()})}
+function trcWoodTex(col){return itcTex(64,64,(c,W,H)=>{c.fillStyle=col;c.fillRect(0,0,W,H);for(let y=0;y<H;y+=8){c.fillStyle='rgba(0,0,0,.16)';c.fillRect(0,y+6,W,2);c.fillStyle='rgba(255,255,255,.14)';c.fillRect(0,y,W,1)}},1,1)}
+function trcLatticeTex(){return itcTex(32,32,(c,W,H)=>{c.fillStyle='#3b4f5e';c.fillRect(0,0,W,H);c.strokeStyle='#8a5f3c';c.lineWidth=3;for(let k=-W;k<W*2;k+=8){c.beginPath();c.moveTo(k,0);c.lineTo(k+H,H);c.stroke();c.beginPath();c.moveTo(k+H,0);c.lineTo(k,H);c.stroke()}})}
+// ---- ahşap Osmanlı evi ----
+function trcHouse(g,w,d,h,ci,opt){const K=itcKit(g),C=K.C,FD=d/2,cols=['#e9b8a0','#c9d9c0','#f0d9a8','#b9cde0','#e8c4c8','#e6c39a','#f2e6d0'],col=cols[ci%7],GF=2.6,
+    stone=0xd9cbb2,stone2=0xc7b595,WH=0xfbf6ec,flat=!!opt.flat;
+  if(!trcHouse.m){trcHouse.m={};trcHouse.lat=itcMat(trcLatticeTex());trcHouse.tile=itcMat(itcTex(64,64,(c,W,H)=>{c.fillStyle='#a8452a';c.fillRect(0,0,W,H);for(let r=0;r<4;r++)for(let k=0;k<4;k++){c.fillStyle=['#c0553a','#b44c30','#c86240'][(r+k)%3];c.beginPath();c.ellipse(k*16+(r%2)*8+8,r*16+9,7,8,0,0,7);c.fill()}}))}
+  const wood=trcHouse.m[col]||(trcHouse.m[col]=itcMat(trcWoodTex(col)));
+  K.bx(w+0.06,GF,d+0.06,stone,0,GF/2,0);for(let y=0.5;y<GF;y+=0.5)K.bx(w+0.08,0.04,d+0.08,stone2,0,y,0);
+  K.add(new THREE.BoxGeometry(w,h-GF,d),wood,0,GF+(h-GF)/2,0);K.bx(w+0.16,0.14,d+0.16,WH,0,GF+0.02,0);
+  for(const sx of [-1,1])K.bx(0.16,h-GF,0.16,WH,sx*(w/2-0.02),GF+(h-GF)/2,FD-0.02);
+  // saçak + çatı
+  K.bx(w+1.0,0.14,d+1.0,WH,0,h+0.02,0);for(let x=-w/2;x<=w/2+1e-6;x+=0.45)K.bx(0.08,0.24,0.5,0x8a5f3c,x,h-0.12,FD+0.3);
+  if(flat){K.bx(w+0.2,0.5,d+0.2,WH,0,h+0.3,0)}
+  else{const hp=Math.min(1.4,h*0.17),r=K.add(new THREE.ConeGeometry(Math.hypot(w+0.9,d+0.9)/2,hp,4),trcHouse.tile,0,h+0.09+hp/2,0);r.rotation.y=Math.PI/4;r.scale.set(w/Math.hypot(w,d)*1.41,1,d/Math.hypot(w,d)*1.41);K.bx(0.45,1.1,0.45,0xb9a68a,-w*0.25,h+hp*0.65,-d*0.1)}
+  // zemin kat: ahşap kepenkli dükkân ve kapı
+  const n=Math.max(2,Math.floor(w/1.45)),cw=w/n,dc=Math.floor(n/2);
+  for(let c=0;c<n;c++){const x=-w/2+(c+0.5)*cw;if(c===dc){K.bx(0.85,1.9,0.06,0x6b3f22,x,0.95,FD+0.05);K.bx(1.05,0.12,0.1,WH,x,1.95,FD+0.06);continue}
+    K.bx(cw*0.78,1.6,0.06,0x4a5d6b,x,1.05,FD+0.05);for(let k=0;k<3;k++)K.bx(0.05,1.6,0.04,0x8a5f3c,x-cw*0.39+k*cw*0.39,1.05,FD+0.08);K.bx(cw*0.82,0.1,0.08,0x8a5f3c,x,1.88,FD+0.07);K.bx(cw*0.8,0.18,0.1,0x8a5f3c,x,0.2,FD+0.07);
+    if(opt.awn){for(let i=0;i<3;i++){const s=K.bx(cw/3,0.04,0.75,i%2?WH:0xc8302a,x-cw/3+i*cw/3,2.35,FD+0.36);s.rotation.x=0.38;s.castShadow=false}}}
+  // üst katlar: cumba (çıkma) ortada, yanlarda pencereler
+  const floors=Math.max(1,Math.floor((h-GF-0.4)/2.1)),fh=(h-GF-0.3)/floors,cbW=Math.min(w*0.55,3.0),cbD=0.7;
+  {const y0=GF+0.15,hh=floors*fh-0.25;K.add(new THREE.BoxGeometry(cbW,hh,cbD),wood,0,y0+hh/2,FD+cbD/2);K.bx(cbW+0.14,0.12,cbD+0.1,WH,0,y0+hh+0.04,FD+cbD/2);K.bx(cbW+0.1,0.1,cbD+0.06,WH,0,y0,FD+cbD/2);
+    for(const s of [-0.4,0,0.4]){const b=K.bx(0.1,0.85,0.1,0x8a5f3c,s*cbW,y0-0.3,FD+0.32);b.rotation.x=-0.75}
+    for(let f=0;f<floors;f++){const y=y0+f*fh+fh*0.5;for(const sx of [-1,0,1]){const wx=sx*cbW*0.32,lat=(f+ci)%3===2&&sx!==0;K.add(new THREE.BoxGeometry(cbW*0.24,fh*0.55,0.05),lat?trcHouse.lat:K.Tm(0x4f6f8f),wx,y,FD+cbD+0.03);K.bx(cbW*0.28,0.08,0.08,WH,wx,y-fh*0.29,FD+cbD+0.04);K.bx(cbW*0.28,0.08,0.08,WH,wx,y+fh*0.29,FD+cbD+0.04)}
+      for(const s of [-1,1]){K.bx(0.05,fh*0.5,cbD*0.5,0x4f6f8f,s*(cbW/2+0.03),y,FD+cbD*0.5)}}}
+  for(let f=0;f<floors;f++)for(const s of [-1,1]){const x=s*(cbW/2+(w/2-cbW/2)/2);if(w/2-cbW/2<0.8)continue;const y=GF+0.15+f*fh+fh*0.5;
+    K.bx(0.55,fh*0.55,0.05,0x4f6f8f,x,y,FD+0.03);K.bx(0.7,0.09,0.1,WH,x,y-fh*0.29,FD+0.05);K.bx(0.7,0.09,0.1,WH,x,y+fh*0.29,FD+0.05);for(const t of [-1,1])K.bx(0.08,fh*0.6,0.08,WH,x+t*0.31,y,FD+0.05);
+    if((f+ci+s)%2===0){K.bx(0.6,0.14,0.16,0x8a5f3c,x,y-fh*0.36,FD+0.12);for(let k=0;k<3;k++)K.sp(0.1,k===1?C.LEAF:0xd9453b,x-0.18+k*0.18,y-fh*0.3,FD+0.13,7,5)}}
+  K.done();return g}
+function trcFacade(g,w,d,h,ci,opt){const n=trcFacade.n=(trcFacade.n|0)+1,K=itcKit(g),names=['SİMİTÇİ','KAHVECİ','BAKLAVACI','LOKANTA','ÇAY OCAĞI','BALIK EKMEK','LOKUMCU','KÖFTECİ','BAKKAL','BÖREKÇİ','SAHAF','HALICI','TATLICI'],nm=names[(n-1)%names.length];
+  const sw=Math.min(w*0.7,3.2),tex=itcTex(512,96,(c,W,H)=>{c.fillStyle='#7a1f1a';c.fillRect(0,0,W,H);c.strokeStyle='#e8c66a';c.lineWidth=6;c.strokeRect(7,7,W-14,H-14);c.fillStyle='#f6e3a8';c.font='bold 52px Georgia,"Times New Roman",serif';c.textAlign='center';c.textBaseline='middle';c.fillText(nm,W/2,H/2+3,W-40)});
+  K.add(new THREE.BoxGeometry(sw,sw*96/512,0.07),itcMat(tex),0,opt.awn?2.75:2.2,d/2+0.06).castShadow=false;
+  if(n%3===2){if(!trcFacade.flag)trcFacade.flag=itcMat(trcFlagTex(),{side:THREE.DoubleSide});K.bx(0.04,0.04,1.1,0x3e4a3a,w*0.3,h-1.0,d/2+0.55);K.add(new THREE.PlaneGeometry(0.9,0.6),trcFacade.flag,w*0.3,h-1.4,d/2+1.05).rotation.y=Math.PI/2}
+  K.done();return g}
+// ---- cami: kafeye (−x) bakan ön revak, merkezi kubbe, dört yarım kubbe, köşe kubbeleri, dört minare ----
+function trcMosque(x,z){const K=itcKit(),ST=0xeee3cf,ST2=0xdccfb5,LEAD=0x8fa3ad,LEAD2=0x7d919b,GOLD=0xf2b134,DK=0x4f6f8f;K.G.position.set(x,-0.32,z);K.G.scale.setScalar(1.25);   // sağ sıranın ortadaki dört evi yerine (avlusuyla birlikte), kafeden rahat görünsün
+  const B=11,HB=5.2;K.bx(B,HB,B,ST,0,HB/2,0);K.bx(B+0.3,0.25,B+0.3,ST2,0,HB,0);
+  for(const [fx,fz,ry] of [[-B/2,0,0],[B/2,0,0],[0,-B/2,1],[0,B/2,1]])for(let i=-2;i<=2;i++)for(const y of [1.6,3.7]){const ww=0.6,hh=y<2?1.4:1.1;const o=ry?[i*2,y,fz+(fz>0?0.03:-0.03)]:[fx+(fx>0?0.03:-0.03),y,i*2];
+    K.bx(ry?ww:0.06,hh,ry?0.06:ww,DK,o[0],o[1],o[2]);const a=K.cy(ww/2,ww/2,0.06,DK,o[0],o[1]+hh/2,o[2],10);a.rotation[ry?'x':'z']=Math.PI/2}
+  // kasnak ve kubbe
+  K.cy(4.1,4.3,1.3,ST,0,HB+0.9,0,24);for(let i=0;i<16;i++){const a=i*Math.PI/8;const wv=K.bx(0.35,0.7,0.1,DK,Math.cos(a)*4.12,HB+0.95,Math.sin(a)*4.12);wv.rotation.y=-a+Math.PI/2}
+  const dm=K.add(new THREE.SphereGeometry(4.2,24,10,0,Math.PI*2,0,Math.PI/2),LEAD,0,HB+1.55,0);dm.scale.y=0.9;
+  K.cy(0.3,0.4,0.6,LEAD2,0,HB+5.4,0,10);K.cy(0.05,0.05,1.2,GOLD,0,HB+6.2,0,6);const cr=K.add(new THREE.TorusGeometry(0.3,0.06,6,14,Math.PI*1.4),GOLD,0,HB+6.95,0);cr.rotation.z=0.9;
+  // yarım kubbeler
+  for(const [dx,dz] of [[-1,0],[1,0],[0,-1],[0,1]]){const s=K.add(new THREE.SphereGeometry(2.6,16,8,0,Math.PI*2,0,Math.PI/2),LEAD,dx*3.6,HB+0.25,dz*3.6);s.scale.y=0.75}
+  for(const sx of [-1,1])for(const sz of [-1,1]){K.cy(0.9,0.9,0.6,ST,sx*4.3,HB+0.55,sz*4.3,12);K.add(new THREE.SphereGeometry(0.95,12,6,0,Math.PI*2,0,Math.PI/2),LEAD,sx*4.3,HB+0.85,sz*4.3);K.cy(0.04,0.04,0.6,GOLD,sx*4.3,HB+2.0,sz*4.3,5)}
+  // ön revak (−x): kemerler ve küçük kubbeler
+  {const px=-B/2-2.2;K.bx(4.4,0.3,B,ST2,px,0.15,0);for(let i=0;i<5;i++){const zz=-B/2+1.1+i*2.2;K.cy(0.18,0.2,2.8,ST,px-2,1.7,zz-1.1,10);K.cy(0.18,0.2,2.8,ST,px-2,1.7,zz+1.1,10);
+      const ar=K.add(new THREE.TorusGeometry(1.0,0.18,6,12,Math.PI),ST,px-2,3.1,zz);ar.rotation.y=Math.PI/2;K.bx(4.4,0.5,2.2,ST,px,3.55,zz);
+      K.add(new THREE.SphereGeometry(0.95,12,6,0,Math.PI*2,0,Math.PI/2),LEAD,px,3.8,zz);K.cy(0.03,0.03,0.4,GOLD,px,4.9,zz,5)}}
+  // dört minare
+  for(const [mx,mz] of [[-B/2-4.4,-B/2-0.6],[-B/2-4.4,B/2+0.6],[B/2+0.6,-B/2-0.6],[B/2+0.6,B/2+0.6]]){K.bx(1.3,1.6,1.3,ST2,mx,0.8,mz);K.cy(0.5,0.58,12,ST,mx,1.6+6,mz,12);
+    for(const y of [8.3,11.2]){K.cy(0.85,0.6,0.35,ST2,mx,y,mz,14);K.cy(0.88,0.88,0.12,ST,mx,y+0.3,mz,14)}K.cy(0.42,0.5,1.4,ST,mx,12.9,mz,12);
+    K.cn(0.55,3.4,LEAD2,mx,15.3,mz,12);K.cy(0.03,0.03,0.6,GOLD,mx,17.2,mz,5);K.sp(0.08,GOLD,mx,17.55,mz,6,5)}
+  // avlu: şadırvan ve iki ağaç
+  K.cy(1.0,1.1,0.6,ST2,-B/2-6.2,0.3,0,8);const sd=K.add(new THREE.SphereGeometry(1.15,10,6,0,Math.PI*2,0,Math.PI/2),LEAD,-B/2-6.2,2.2,0);for(let i=0;i<8;i++){const a=i*Math.PI/4;K.cy(0.06,0.06,1.6,ST,-B/2-6.2+Math.cos(a)*1.0,1.4,Math.sin(a)*1.0,5)}
+  for(const [dx,dz,p] of [[-B/2-8.5,-5.5,0],[-B/2-8.5,5.5,1],[-B/2-8.8,-2.4,0],[-B/2-8.8,2.6,1]]){K.cy(0.18,0.26,2.2,0x9a8f7a,dx,1.1,dz,7);for(let i=0;i<5;i++){const a=i*1.26,c=K.sp(i?0.75:0.95,p?[0xd96aa8,0xe48bbb][i%2]:[0x5f9a4a,0x6faa52][i%2],dx+Math.cos(a)*(i?0.6:0),2.7+(i%2)*0.25,dz+Math.sin(a)*(i?0.6:0));c.scale.y=0.8}}
+  return K.done()}
+// ---- Galata Kulesi ----
+function trcGalata(x,z){const K=itcKit(),ST=0xd8c6a6,ST2=0xc6b18e,LEAD=0x5f6b72,GOLD=0xf2b134,DK=0x3e4a55;K.G.position.set(x,-0.32,z);
+  K.cy(2.5,2.7,1.2,ST2,0,0.6,0,20);K.cy(2.2,2.35,10.5,ST,0,1.2+5.25,0,20);for(const y of [3.2,5.6,8.0])K.cy(2.25,2.25,0.12,ST2,0,y,0,20);
+  for(let i=0;i<8;i++){const a=i*Math.PI/4,r=2.24;for(const y of [4.3,6.7,9.1]){const w=K.bx(0.32,0.75,0.1,DK,Math.cos(a)*r,y,Math.sin(a)*r);w.rotation.y=-a+Math.PI/2}}
+  K.cy(2.75,2.75,0.25,ST2,0,11.8,0,24);for(let i=0;i<24;i++){const a=i*Math.PI/12;K.cy(0.035,0.035,0.75,0x3e3a36,Math.cos(a)*2.7,12.3,Math.sin(a)*2.7,4)}K.cy(2.75,2.75,0.06,0x3e3a36,0,12.68,0,24);
+  K.cy(2.1,2.1,1.6,ST,0,12.7,0,20);for(let i=0;i<10;i++){const a=i*Math.PI/5,w=K.bx(0.42,0.95,0.1,DK,Math.cos(a)*2.1,12.75,Math.sin(a)*2.1);w.rotation.y=-a+Math.PI/2}
+  K.cy(2.3,2.3,0.18,ST2,0,13.55,0,20);K.cn(2.3,4.6,LEAD,0,15.9,0,20);K.cy(0.04,0.04,0.8,GOLD,0,18.5,0,5);K.sp(0.12,GOLD,0,18.95,0,6,5);
+  // dibinde küçük ahşap evler ve bir ağaç
+  for(const [dx,dz,c] of [[-3.6,2.4,0xe9b8a0],[3.4,2.8,0xb9cde0],[-3.2,-3.0,0xf0d9a8]]){K.bx(2.6,3.2,2.4,c,dx,1.6,dz);const r=K.cn(2.1,1.0,0xb44c30,dx,3.7,dz,4);r.rotation.y=Math.PI/4}
+  return K.done()}
+// ---- sahil ağaçları ve saksıları ----
+function trcTree(H,x,z,h,pink){const {cy,sp,Y0}=H;cy(0.2,0.3,h*0.55,0x9a8f7a,x,Y0+h*0.27,z,7);for(const s of [-1,1]){const b=cy(0.08,0.12,1.4,0x9a8f7a,x+s*0.35,Y0+h*0.58,z,6);b.rotation.z=-s*0.6}
+  const cs=pink?[0xd96aa8,0xe48bbb,0xc85a98,0x7fa85a]:[0x5f9a4a,0x6faa52,0x4f8a42,0x7fae5a];for(let i=0;i<7;i++){const a=i*0.9,r=i?1.0:0,c=sp(i?1.05:1.35,cs[i%4],x+Math.cos(a)*r,Y0+h*0.78+(i%2)*0.35,z+Math.sin(a)*r);c.scale.y=0.78}}
+function trcTulip(H,x,z){const {cy,sp,Y0}=H;cy(0.36,0.24,0.6,0x2f6e9a,x,Y0+0.3,z,10);cy(0.4,0.38,0.08,0xf0e6d0,x,Y0+0.62,z,10);const cs=[0xe0483f,0xf2b134,0xe86aa8,0xe0483f,0xffffff];
+  for(let i=0;i<7;i++){const a=i*0.9,rx=x+Math.cos(a)*0.2,rz=z+Math.sin(a)*0.2;cy(0.02,0.02,0.45,0x5f9a4a,rx,Y0+0.85,rz,4);const f=sp(0.1,cs[i%5],rx,Y0+1.1,rz);f.scale.y=1.4}}
+function trcParasol(H,x,z,i){const {add,bx,cy}=H,c=i%2?0xe0483f:0xfbf6ec;cy(0.035,0.035,2.2,0xfbf6ec,x,0.35,z,6);add(new THREE.ConeGeometry(1.1,0.4,8),c,x,1.5,z);add(new THREE.ConeGeometry(0.46,0.19,8),i%2?0xfbf6ec:0xe0483f,x,1.67,z);bx(0.6,0.05,1.4,0xe0483f,x+0.75,-0.72,z+0.1)}
+// ---- vapur ve Kız Kulesi ----
+function trcFerry(x,z,ry){const g=new THREE.Group();g.position.set(x,-1.1,z);g.rotation.y=ry;scene.add(g);const mc=new Map(),T=c=>{let m=mc.get(c);if(!m){m=new THREE.MeshToonMaterial({color:c,gradientMap:grad});mc.set(c,m)}return m},A=(geo,c,px,py,pz)=>{const m=new THREE.Mesh(geo,T(c));m.position.set(px,py,pz);g.add(m);return m};
+  const hull=A(new THREE.BoxGeometry(7,0.9,2.2),0xfbf6ec,0,0.25,0);A(new THREE.BoxGeometry(7.05,0.3,2.25),0x2e3a46,0,-0.12,0);for(const s of [-1,1]){const b=A(new THREE.CylinderGeometry(1.1,1.1,0.9,12,1,false,0,Math.PI),0xfbf6ec,s*3.5,0.25,0);b.rotation.y=s>0?0:Math.PI;b.scale.x=0.9}
+  A(new THREE.BoxGeometry(5.6,0.8,1.9),0xf3ead2,0,1.1,0);for(let i=0;i<9;i++)for(const s of [-1,1])A(new THREE.BoxGeometry(0.35,0.35,0.04),0x4f6f8f,-2.4+i*0.6,1.15,s*0.96);A(new THREE.BoxGeometry(5.8,0.08,2.1),0xfbf6ec,0,1.54,0);
+  A(new THREE.BoxGeometry(3,0.7,1.6),0xf3ead2,0.4,1.9,0);A(new THREE.BoxGeometry(3.2,0.08,1.8),0xfbf6ec,0.4,2.28,0);A(new THREE.CylinderGeometry(0.32,0.36,1.3,12),0xfbf6ec,-0.6,2.9,0);A(new THREE.CylinderGeometry(0.33,0.33,0.35,12),0x1e242a,-0.6,3.5,0);
+  ENV.boats.push({g,ph:Math.random()*6,y0:-1.1});return g}
+function trcMaiden(x,z){const K=itcKit(),ST=0xf3ead2,LEAD=0x6f7c84;K.G.position.set(x,-1.2,z);const r=K.add(new THREE.DodecahedronGeometry(3.2,0),0xb8ab98,0,0,0);r.scale.set(1.3,0.4,1);
+  K.bx(4.2,1.6,3.2,ST,0.6,1.3,0);K.cy(0.95,1.05,4.5,ST,-1.0,2.6,0,12);K.cy(1.2,1.2,0.25,ST,-1.0,4.9,0,14);K.cy(0.85,0.85,1.0,ST,-1.0,5.5,0,12);K.cn(0.95,1.6,LEAD,-1.0,6.8,0,12);K.cy(0.03,0.03,0.5,0xf2b134,-1.0,7.8,0,5);
+  if(!trcMaiden.f)trcMaiden.f=itcMat(trcFlagTex(),{side:THREE.DoubleSide});K.cy(0.03,0.03,1.6,0x3e4a3a,1.9,2.9,0,5);K.add(new THREE.PlaneGeometry(0.9,0.6),trcMaiden.f,2.35,3.4,0);
+  for(let i=0;i<5;i++)K.bx(0.3,0.5,0.08,0x4f6f8f,-0.6+i*0.6,1.4,1.62);return K.done()}
+// ---- kaldırım: Türk bayrağı flamaları, simit arabası, çay ocağı, kediler, lale saksıları, Osmanlı çeşmesi ----
+function trcSimit(K,x,z,ry){const V=K.sub(x,-0.15,z,ry),C=K.C;V.bx(1.3,0.7,0.7,0xd9453b,0,0.75,0);V.bx(1.34,0.06,0.74,0xfbf6ec,0,1.12,0);
+  V.bx(1.1,0.5,0.55,0xdff3f7,0,1.42,0);for(let i=0;i<4;i++)for(let j=0;j<2;j++){const t=V.add(new THREE.TorusGeometry(0.13,0.05,6,12),0xc98a42,-0.38+i*0.25,1.3+j*0.12,0.0);t.rotation.x=Math.PI/2}
+  for(const s of [-1,1]){const w=V.cy(0.3,0.3,0.06,0x3e3a36,-0.3,0.3,s*0.4,12);w.rotation.x=Math.PI/2}V.cy(0.03,0.03,0.4,0x3e3a36,0.5,0.2,0,5);
+  const sign=itcMat(itcTex(256,64,(c,W,H)=>{c.fillStyle='#fbf6ec';c.fillRect(0,0,W,H);c.fillStyle='#d9453b';c.font='bold 40px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.fillText('SİMİT',W/2,H/2+2)}));V.add(new THREE.BoxGeometry(0.9,0.24,0.02),sign,0,0.8,0.36);return V}
+function trcCayOcagi(K,x,z,ry){const V=K.sub(x,-0.15,z,ry),C=K.C;for(const tx of [-0.9,0.9]){V.cy(0.42,0.42,0.05,0xfbf6ec,tx,0.62,0,14);V.cy(0.04,0.05,0.6,0x3e3a36,tx,0.3,0,6);
+    for(let k=0;k<2;k++){const gl=V.cy(0.045,0.035,0.12,0xb5303a,tx-0.12+k*0.24,0.71,0.05,8);V.cy(0.06,0.06,0.01,0xfbf6ec,tx-0.12+k*0.24,0.65,0.05,8)}
+    for(const s of [-1,1]){V.cy(0.18,0.18,0.04,0xd9a35f,tx+s*0.62,0.36,0,10);for(let k=0;k<4;k++){const a=k*Math.PI/2+0.7;V.cy(0.02,0.02,0.36,0xd9a35f,tx+s*0.62+Math.cos(a)*0.13,0.18,Math.sin(a)*0.13,4)}}}
+  V.bx(0.6,0.9,0.5,0x8a5f3c,0,0.45,-0.8);V.cy(0.16,0.2,0.3,0xd9d0c0,-0.1,1.05,-0.8,10);V.cy(0.11,0.13,0.22,0xd9d0c0,-0.1,1.3,-0.8,10);return V}
+function trcCat(K,x,z,ry,c){const V=K.sub(x,-0.15,z,ry);const b=V.sp(0.22,c,0,0.2,0,8,6);b.scale.set(1,0.9,1.3);V.sp(0.15,c,0,0.42,0.22,8,6);for(const s of [-1,1]){const e=V.cn(0.06,0.12,c,s*0.08,0.56,0.22,4)}
+  const t=V.cy(0.03,0.03,0.4,c,0.12,0.12,-0.3,5);t.rotation.x=1.2;return V}
+function trcFountain(K,x,z){const ST=0xf0e6d0,ST2=0xd9cbb2,LEAD=0x8fa3ad,y=-0.15;K.bx(1.6,2.2,1.0,ST,x,y+1.1,z);K.bx(1.8,0.2,1.2,ST2,x,y+2.3,z);
+  const ar=K.add(new THREE.TorusGeometry(0.42,0.08,6,12,Math.PI),ST2,x,y+1.5,z+0.51);K.bx(0.84,1.0,0.04,0x6f8f9f,x,y+1.0,z+0.51);K.bx(1.2,0.3,0.4,ST2,x,y+0.15,z+0.7);K.cy(0.04,0.04,0.12,0xb08a4a,x,y+1.2,z+0.6,5);
+  for(const s of [-1,1])K.bx(0.12,2.0,0.12,ST2,x+s*0.74,y+1.0,z+0.5);const d=K.add(new THREE.SphereGeometry(0.75,12,6,0,Math.PI*2,0,Math.PI/2),LEAD,x,y+2.4,z);d.scale.y=0.7;K.cy(0.02,0.02,0.4,0xf2b134,x,y+3.1,z,5)}
+function trcStreet(){const C=itcPal(),ex=LOT.x1+2.15,ez=LOT.z1+2.15;ENV.itPieces=[];if(!trcStreet.f)trcStreet.f=itcMat(trcFlagTex(),{side:THREE.DoubleSide});
+  const piece=(side,t0,t1,fn)=>{const K=itcKit();fn(K);ENV.itPieces.push({g:K.done(),side,t0,t1})};
+  {const K=itcKit(),span=(x0,z0,x1,z1)=>{const N=10,L=Math.hypot(x1-x0,z1-z0),ry=Math.atan2(-(z1-z0),x1-x0),py=t=>2.74-1.6*t*(1-t);
+      for(let i=0;i<N;i++){const t0=i/N,t1=(i+1)/N,ya=py(t0),yb=py(t1),m=K.bx(Math.hypot(L/N,yb-ya)+0.01,0.02,0.02,C.INK,x0+(x1-x0)*(t0+t1)/2,(ya+yb)/2,z0+(z1-z0)*(t0+t1)/2);m.rotation.y=ry;m.rotation.z=Math.atan2(yb-ya,L/N);m.castShadow=false}
+      for(let i=0;i<7;i++){const t=(i+0.5)/7,f=K.add(new THREE.PlaneGeometry(0.42,0.28),trcStreet.f,x0+(x1-x0)*t,py(t)-0.17,z0+(z1-z0)*t);f.rotation.y=ry;f.castShadow=false}};
+   for(const s of [-1,1]){span(s*ex,-6.3,s*ex,0);span(s*ex,0,s*ex,6.3);span(-7,s*ez,0,s*ez);span(0,s*ez,7,s*ez)}K.done()}
+  {const K=itcKit(),qx=LOT.x1+1.3,qz=LOT.z1+1.3,H={cy:K.cy,sp:K.sp,Y0:-0.15};trcFountain(K,-qx,-qz);trcTulip(H,qx,-qz);trcTulip(H,-qx,qz);trcTulip(H,qx,qz);K.done()}
+  const sx=LOT.x1+1.75,sz=LOT.z1+1.6;
+  piece('left',7.4,10,K=>trcSimit(K,-(LOT.x1+1.5),8.7,Math.PI/2));
+  piece('left',-10,-7.4,K=>{trcCat(K,-sx,-8.4,0.5,0xf2a65a);trcCat(K,-sx+0.2,-9.3,2.2,0x5a5a5a)});
+  piece('back',-10.8,-7.0,K=>trcCayOcagi(K,-8.9,-(LOT.z1+1.3),0));
+  piece('back',7.0,10.4,K=>{trcCat(K,8.2,-sz,1.0,0xfbf6ec);trcCat(K,9.2,-sz-0.2,-0.4,0xf2a65a)});
+  piece('right',-9.8,-7.4,K=>trcSimit(K,LOT.x1+1.5,-8.6,-Math.PI/2));
+  piece('front',7.0,10.8,K=>trcCayOcagi(K,8.9,LOT.z1+1.3,0));
+  itcDoorClear()}
+// ---- kamera açılışı ve eğim (İtalya'daki gibi): uzaklaşınca cami ve kule görünür ----
+if(EVMODE==='tr'){const _et=envTick;envTick=function(dt){const r=_et.apply(this,arguments);try{controls.maxPolarAngle=itcPolar()}catch(e){}return r};
+  try{const T=controls.target,v=camera.position.clone().sub(T),az=Math.atan2(v.x,v.z),d=v.length()*1.13,po=1.19;controls.maxPolarAngle=1.22;
+    camera.position.set(T.x+d*Math.sin(po)*Math.sin(az),T.y+d*Math.cos(po),T.z+d*Math.sin(po)*Math.cos(az));controls.update();controls.maxPolarAngle=itcPolar()}catch(e){console.warn('türkiye bakış',e)}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
