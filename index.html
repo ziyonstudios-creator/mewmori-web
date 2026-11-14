@@ -530,6 +530,7 @@ const IT_ENV=EVMODE==='it';   // İtalya Durağı (Roma): deniz yok; çevre Roma
  // binalar: meydanı çevreleyen pastel cepheler (kiremit ya da düz çatı, panjur, balkon, tente)
  const facade=IT_ENV?[0xf2c078,0xe9a071,0xf6dba6,0xdb8a63,0xf3bf96,0xeed3a0,0xe7a183]:[0xfbf6ec,0xf7d9c4,0xfde8b0,0xd8ecf2,0xf2cdd6,0xe6efcb,0xf4e3d3];
  const bld=(x,z,w,d,h,ry,ci,opt={})=>{const g=new THREE.Group();g.position.set(x,-0.3,z);g.rotation.y=ry;scene.add(g);
+    if(IT_ENV){itcHouse(g,w,d,h,ci,opt);if(opt.vine)itcVine(g,w,d,h,ci,opt.vine);itcFacade(g,w,d,h,ci,opt);(ENV.itBlds=ENV.itBlds||[]).push(g);return g}
    const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),T(facade[ci%facade.length]));body.position.y=h/2;body.castShadow=true;body.receiveShadow=true;g.add(body);
    if(opt.flat){const r=new THREE.Mesh(new THREE.BoxGeometry(w+0.2,0.18,d+0.2),T(0xece2d0));r.position.y=h+0.09;g.add(r)}
    else{const r=new THREE.Mesh(new THREE.ConeGeometry(Math.hypot(w,d)/2*1.02,h*0.32,4),T(opt.roof||0xd0703f));r.scale.set(w/Math.hypot(w,d)*1.41,1,d/Math.hypot(w,d)*1.41);r.rotation.y=Math.PI/4;r.position.y=h+h*0.16;r.castShadow=true;g.add(r)}
@@ -17367,6 +17368,56 @@ function itcStreet(){const C=itcPal(),ex=LOT.x1+2.15,ez=LOT.z1+2.15;ENV.itPieces
   {const K=itcKit();itcFiat(K,LOT.x1+8.1,9.4,Math.PI/2,0xf3ead2);itcFiat(K,-7.6,LOT.z1+8.1,0,C.R);K.done()}
   itcDoorClear()}
 {const _e=envShell;envShell=function(){const r=_e.apply(this,arguments);itcDoorClear();return r}}
+
+// ---- İtalyan evi (V237; kullanıcı isteği 14 Kasım 23:42 "binaları da biraz daha İtalyan havasında oluştur"): p1b bld() İtalya'da gövdeyi
+//      buradan kurar. Sıva gövde + daha koyu taş zemin kat (bossajlı bantlar), köşe taşları, katlar arası silmeler, ağır saçak kornişi ve
+//      oluklu kiremit çatı (ya da korkuluklu, pergolalı çatı terası); zemin katta kemerli dükkân açıklıkları ve taş çerçeveli kemerli kapı;
+//      üst katlarda taş çerçeveli, alınlıklı uzun pencereler, panjurlu yeşil/mavi kepenkler (yarısı açık), ferforje balkonlar ve sardunyalar.
+function itcTileTex(){return itcTex(128,128,(c,W,H)=>{c.fillStyle='#b9542c';c.fillRect(0,0,W,H);for(let r=0;r<8;r++)for(let k=0;k<8;k++){const x=k*16+(r%2)*8,y=r*16;
+    c.fillStyle=['#d06a3a','#c8623a','#d97a45','#c25b33'][(r*3+k)%4];c.beginPath();c.ellipse(x+8,y+9,7.2,8.5,0,0,PI2());c.fill();c.fillStyle='rgba(255,220,180,.35)';c.fillRect(x+4,y+3,3,9);c.fillStyle='rgba(90,30,10,.35)';c.fillRect(x,y+14,16,2)}},1,1)}
+function PI2(){return Math.PI*2}
+function itcShutTex(c1){return itcTex(32,64,(c,W,H)=>{c.fillStyle=c1;c.fillRect(0,0,W,H);c.fillStyle='rgba(0,0,0,.28)';for(let y=6;y<H-4;y+=5)c.fillRect(3,y,W-6,2);c.fillStyle='rgba(255,255,255,.18)';for(let y=8;y<H-4;y+=5)c.fillRect(3,y,W-6,1);c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=3;c.strokeRect(1.5,1.5,W-3,H-3)})}
+function itcVine(g,w,d,h,ci,v){const K=itcKit(g);let s=ci*7+3;const rnd=()=>(s=(s*9301+49297)%233280)/233280,pk=[0xd9488f,0xe86aa8,0xc93f86,0xf08fb8,0x6f9a4a],sx=v>0?1:-1;
+  for(let k=0;k<18;k++){const t=k/17,b=K.sp(0.28+rnd()*0.2,pk[k%5],sx*(w/2-0.3-rnd()*(0.4+0.7*(1-t))),0.4+t*(h-0.8),d/2+0.18,7,5);b.scale.z=0.45}K.done()}
+function itcHouse(g,w,d,h,ci,opt){const K=itcKit(g),C=K.C,FD=d/2,pal=[0xf2c078,0xe9a071,0xf6dba6,0xdb8a63,0xf3bf96,0xeed3a0,0xe7a183],wall=pal[ci%7],
+    stone=0xd8c3a0,stone2=0xc9b08a,trim=0xf4ead6,shutC=['#3f7a4f','#4a6f8a','#5b8a5a','#6a8fa3'][ci%4],GF=2.75,flat=!!opt.flat;
+  if(!itcHouse.tile){itcHouse.tile=itcTileTex();itcHouse.sh={}}
+  const shM=itcHouse.sh[shutC]||(itcHouse.sh[shutC]=itcMat(itcShutTex(shutC)));
+  K.bx(w,h,d,wall,0,h/2,0);
+  // zemin kat: taş kaplama + bossaj bantları
+  K.bx(w+0.08,GF,d+0.08,stone,0,GF/2,0);for(let y=0.45;y<GF;y+=0.45)K.bx(w+0.1,0.05,d+0.1,stone2,0,y,0);
+  K.bx(w+0.2,0.22,d+0.2,trim,0,GF+0.05,0);
+  // köşe taşları
+  for(const sx of [-1,1])for(let y=GF+0.3;y<h-0.6;y+=0.62){const q=K.bx(0.42,0.3,0.42,trim,sx*(w/2-0.17),y,FD-0.17);q.castShadow=false}
+  // saçak + çatı
+  if(flat){K.bx(w+0.5,0.35,d+0.5,trim,0,h+0.05,0);K.bx(w+0.3,0.18,d+0.3,stone2,0,h-0.22,0);
+    for(let x=-w/2+0.3;x<=w/2-0.3+1e-6;x+=0.45)K.cy(0.06,0.08,0.55,trim,x,h+0.5,FD+0.05,6);K.bx(w+0.3,0.1,0.2,trim,0,h+0.82,FD+0.05);
+    for(const sx of [-1,1])K.cy(0.22,0.16,0.35,C.POT,sx*(w/2-0.8),h+0.4,FD-0.6,10),K.sp(0.32,C.LEAF,sx*(w/2-0.8),h+0.75,FD-0.6);
+    for(const sx of [-0.9,0.9]){K.cy(0.05,0.05,1.8,C.WOOD,sx,h+1.1,0.2,6);}K.bx(2.2,0.08,1.6,C.WOOD,0,h+2.0,0.2);for(let i=0;i<6;i++)K.sp(0.28,i%2?C.LEAF:0x7fae5a,-0.9+i*0.36,h+2.12,0.2+((i%3)-1)*0.4)}
+  else{K.bx(w+0.7,0.22,d+0.7,trim,0,h+0.02,0);K.bx(w+0.85,0.12,d+0.85,stone2,0,h+0.18,0);
+    for(let x=-w/2;x<=w/2+1e-6;x+=0.5)K.bx(0.14,0.16,0.3,trim,x,h-0.14,FD+0.2);
+    const hp=Math.min(1.6,h*0.2),r=K.add(new THREE.ConeGeometry(Math.hypot(w,d)/2*1.08,hp,4),itcMat(itcHouse.tile),0,h+0.24+hp/2,0);r.rotation.y=Math.PI/4;r.scale.set(w/Math.hypot(w,d)*1.41,1,d/Math.hypot(w,d)*1.41);
+    K.bx(0.55,1.2,0.55,stone2,w*0.28,h+hp*0.7,-d*0.15);K.bx(0.7,0.12,0.7,trim,w*0.28,h+hp*0.7+0.62,-d*0.15)}
+  // katlar arası silmeler
+  const floors=Math.max(1,Math.floor((h-GF-0.6)/2.15)),fh=(h-GF-0.5)/floors;for(let f=1;f<floors;f++)K.bx(w+0.12,0.12,d+0.12,trim,0,GF+f*fh,0);
+  // zemin kat: kemerli dükkân açıklıkları ve kemerli kapı
+  const cols=Math.max(2,Math.floor(w/1.45)),cw=w/cols,dc=Math.floor(cols/2);
+  for(let c=0;c<cols;c++){const x=-w/2+(c+0.5)*cw;
+    if(c===dc){K.bx(0.9,1.7,0.06,0x7a4a26,x,0.85,FD+0.07);const ar=K.cy(0.45,0.45,0.06,0x7a4a26,x,1.7,FD+0.07,12);ar.rotation.x=Math.PI/2;
+      const fr=K.add(new THREE.TorusGeometry(0.55,0.09,6,12,Math.PI),trim,x,1.7,FD+0.08);for(const s of [-1,1])K.bx(0.18,1.7,0.12,trim,x+s*0.55,0.85,FD+0.08);continue}
+    const ow=Math.min(1.0,cw*0.7);K.bx(ow,1.5,0.06,0x3b4f5e,x,0.95,FD+0.07);const ar=K.cy(ow/2,ow/2,0.06,0x3b4f5e,x,1.7,FD+0.07,12);ar.rotation.x=Math.PI/2;
+    K.add(new THREE.TorusGeometry(ow/2+0.07,0.07,6,12,Math.PI),trim,x,1.7,FD+0.09);K.bx(0.08,1.4,0.05,0x6b4a2a,x,0.95,FD+0.1);K.bx(ow,0.06,0.05,0x6b4a2a,x,1.2,FD+0.1)
+    if(opt.awn)for(let i=0;i<3;i++){const s=K.bx((ow+0.3)/3,0.04,0.75,itcAwn(opt.awn,i+c),x-(ow+0.3)/3+i*(ow+0.3)/3,2.38,FD+0.36);s.rotation.x=0.38;s.castShadow=false}}
+  // üst katlar: pencereler
+  for(let f=0;f<floors;f++)for(let c=0;c<cols;c++){const x=-w/2+(c+0.5)*cw,y=GF+f*fh+fh*0.5,wh=Math.min(1.25,fh*0.6),ww=0.6;
+    K.bx(ww,wh,0.06,0x4f6f8f,x,y,FD+0.03);K.bx(ww+0.22,0.1,0.14,trim,x,y-wh/2-0.05,FD+0.07);
+    if((f+c)%2===0){const p=K.add(new THREE.ConeGeometry(0.5,0.22,3),trim,x,y+wh/2+0.17,FD+0.06);p.rotation.z=0;p.scale.set(1,1,0.25);p.rotation.y=Math.PI/2*0}
+    else K.bx(ww+0.26,0.14,0.14,trim,x,y+wh/2+0.1,FD+0.07);
+    for(const s of [-1,1]){const open=(c+f+ci)%3!==0,sm=K.add(new THREE.BoxGeometry(ww/2,wh,0.05),shM,open?x+s*(ww/2+ww/4+0.02):x+s*ww/4,y,FD+(open?0.07:0.09));sm.castShadow=false}
+    if(f<floors-1&&(c+f+ci)%3===1){K.bx(ww+0.5,0.08,0.45,trim,x,y-wh/2-0.12,FD+0.24);for(let k=0;k<7;k++)K.bx(0.03,0.42,0.03,C.IRON,x-(ww+0.4)/2+k*(ww+0.4)/6,y-wh/2+0.12,FD+0.45);K.bx(ww+0.45,0.04,0.04,C.IRON,x,y-wh/2+0.33,FD+0.45);
+      for(let k=0;k<3;k++)K.sp(0.13,k===1?C.LEAF:C.R,x-0.25+k*0.25,y-wh/2+0.05,FD+0.35,7,5)}
+    else if((c+ci)%2===0){K.bx(ww+0.1,0.14,0.16,C.POT,x,y-wh/2-0.12,FD+0.14);for(let k=0;k<3;k++)K.sp(0.11,k===1?C.LEAF:C.R,x-0.2+k*0.2,y-wh/2+0.0,FD+0.15,7,5)}}
+  K.done();return g}
 
 // ---- binalar: tabela, çamaşır ipi, bayrak (bina grubuna eklenir; uzak gruplar p36 mergeFar ile birleşir) ----
 function itcFacade(g,w,d,h,ci,opt){const n=itcFacade.n=(itcFacade.n|0)+1,K=itcKit(g),C=K.C,names=['PIZZERIA','GELATERIA','TRATTORIA','CAFFÈ ROMA','FORNO','PASTA FRESCA','ENOTECA','ALIMENTARI','OSTERIA','FIORI','SALUMERIA','LIBRERIA','BAR SPORT'],nm=names[(n-1)%names.length],col=n%2?'#a3261d':'#2f6d3c';
