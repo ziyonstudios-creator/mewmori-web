@@ -17420,17 +17420,6 @@ function itcColosseum(){const K=itcKit(),cx=-40.6,cz=0.5,a=16.8,b=22,TH=2.5,ATT=
    const bw=K.add(new THREE.CylinderGeometry(1,0.6,1,56,1,true),0xd8c6a2,0,2.3,0);bw.scale.set(a-3,4.4,b-3);bw.material.side=THREE.DoubleSide;bw.castShadow=false}
   return K.done()}
 
-// ---- Tripo modeli (V234): Kolezyum. Kullanıcı Tripo'da üretti (varliklar/tripo/kolezyum_tripo_orijinal.glb, 8.274 üçgen);
-//      araclar/glb_ac.py ile meshopt sıkıştırması açıldı, doku 1024 px'e küçültülüp oyunun soluk renklerine çekildi → models/kolezyum.txt (base64).
-//      Yüklenene kadar (ya da yüklenemezse) kodla kurulan Kolezyum durur. Model dairesel; elipse açılır (x 16,8 · z 19 m yarı eksen, 9,5 m yükseklik: eski Kolezyum kadar).
-//      Yıkık yanı modelde +x'e bakıyor = kafeye doğru (içi görünür). Kum saha kodla eklenir (modelde zemin yok).
-function itcColoModel(){loadGLB('models/kolezyum.txt',()=>{}).then(g=>{try{const m=g.scene,cx=-40.6,cz=0.5,SX=33.6,SZ=38,SY=17.4;
-    m.traverse(o=>{if(o.isMesh){const old=o.material;o.material=new THREE.MeshToonMaterial({map:old.map||null,color:0xffffff,gradientMap:grad,side:THREE.DoubleSide});if(o.material.map)o.material.map.colorSpace=THREE.SRGBColorSpace;try{old.dispose()}catch(e){}o.castShadow=true;o.receiveShadow=true}});
-    const G=new THREE.Group();G.name='itColoModel';G.position.set(cx,-0.32+0.2737*SY,cz);m.scale.set(SX,SY,SZ);G.add(m);
-    const fl=new THREE.Mesh(new THREE.CylinderGeometry(1,1,0.06,40),new THREE.MeshToonMaterial({color:0xe7d4a8,gradientMap:grad}));fl.scale.set(SX*0.44,1,SZ*0.44);fl.position.set(cx,-0.28,cz);fl.receiveShadow=true;
-    scene.add(G);scene.add(fl);G.userData.merged=true;
-    const old=ENV.itColo;if(old){scene.remove(old);old.traverse(o=>{if(o.isMesh){o.geometry.dispose()}})}ENV.itColo=G}catch(e){console.warn('kolezyum modeli',e)}}).catch(e=>console.warn('kolezyum modeli yüklenemedi',e))}
-
 // ---- su kemeri (arka yan): gerçek kemer açıklıkları (arkadaki park görünür), üstünde küçük kemerli ikinci kat; doğu ucu yıkık ----
 function itcAqueduct(){const K=itcKit(),ST=0xdcc7a0,ST2=0xead9b8,BW=3.15,N=12,x0=-19.6,z=-23.35,Y=-0.32,H=4.5,D=1.1,r=BW/2-0.5;
   const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(0.5,0);sh.lineTo(0.5,2.55);sh.absarc(BW/2,2.55,r,Math.PI,0,true);sh.lineTo(BW-0.5,0);sh.lineTo(BW,0);sh.lineTo(BW,H);sh.lineTo(0,H);sh.lineTo(0,0);
@@ -17473,7 +17462,7 @@ function itcRoma(H){const {G,add,bx,cy,sp,rnd,Y0}=H,BARK=0x8c6d4a,PINE=0x3f6f3a,
   const ger=(x,z)=>{cy(0.36,0.22,0.62,0xc9653a,x,Y0+0.31,z,10);cy(0.4,0.38,0.08,0xd9774a,x,Y0+0.64,z,10);for(let i=0;i<7;i++){const a=i*0.9;sp(0.19,i%3===2?0x5f9a4a:(i%2?0xd9453b:0xe8604f),x+Math.cos(a)*0.2,Y0+0.8+(i%2)*0.1,z+Math.sin(a)*0.2)}};
   const col=(x,z,h)=>{bx(0.7,0.16,0.7,ST,x,Y0+0.08,z);cy(0.24,0.28,h,MARB,x,Y0+0.16+h/2,z,12);cy(0.34,0.24,0.2,ST,x,Y0+0.26+h,z,12);bx(0.66,0.1,0.66,ST,x,Y0+0.41+h,z)};
   // anıtlar
-  ENV.itColo=itcColosseum();itcColoModel();itcAqueduct();itcChurch(H,25.4,-21.6);
+  itcColosseum();itcAqueduct();itcChurch(H,25.4,-21.6);
   // Kolezyum önü (sol kaldırım kenarı): sardunya saksıları, bankların yanında serviler; uçlarda fıstık çamları
   for(const z of [19.5,3.4,-3.4,-18])ger(-22.9,z);
   for(const z of [17.3,13.5,-9.1,-12.9])cyp(-23.7,z,1);
