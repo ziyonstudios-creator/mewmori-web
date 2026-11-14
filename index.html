@@ -17395,29 +17395,53 @@ function itcPantheon(x,z){const K=itcKit(),C=K.C;K.G.position.set(x,-0.3,z);K.G.
   K.cy(2.9,2.9,4.6,WARM,0,2.3,-2.3,24);K.cy(3.0,3.0,0.18,ST,0,4.69,-2.3,24);K.cy(3.0,3.0,0.14,ST,0,3.0,-2.3,24);
   const dm=K.add(new THREE.SphereGeometry(2.85,20,8,0,Math.PI*2,0,Math.PI/2),0xb9b2a4,0,4.78,-2.3);dm.scale.y=0.62;K.cy(0.5,0.5,0.06,0x4a4038,0,6.56,-2.3,14);
   for(const sx of [-1,1]){K.cy(0.3,0.2,0.4,C.POT,sx*3.45,0.2,2.9,10);K.cn(0.36,1.5,C.CYP,sx*3.45,1.15,2.9,8)}
+  // V235: alınlık heykelleri (tepede ve iki köşede), bronz kapı kanatları, kubbe basamakları, merdiven önünde iki aslan kaidesi
+  const fig=(x,y,z,s)=>{K.bx(0.42*s,0.16*s,0.42*s,ST,x,y+0.08*s,z);K.cy(0.13*s,0.19*s,0.62*s,MB,x,y+0.47*s,z,8);K.sp(0.12*s,MB,x,y+0.86*s,z,8,6);const ar=K.bx(0.07*s,0.42*s,0.07*s,MB,x+0.17*s,y+0.82*s,z);ar.rotation.z=-0.5};
+  fig(0,5.8,2.7,1.15);fig(-2.85,4.62,2.7,0.95);fig(2.85,4.62,2.7,0.95);
+  for(const sx of [-0.31,0.31]){K.bx(0.58,2.6,0.05,0x7a5a2e,sx,1.75,1.07);for(let r=0;r<4;r++)K.bx(0.46,0.04,0.02,0xb08a4a,sx,0.75+r*0.65,1.1)}
+  for(let k=0;k<3;k++)K.cy(2.95-k*0.35,2.95-k*0.35,0.14,0xc9c1b2,0,4.82+k*0.42*0.62*1.6,-2.3,24);
+  for(const sx of [-1,1]){K.bx(0.7,0.5,1.0,ST,sx*2.6,0.6,3.55);const b=K.sp(1,0xe2d6bf,sx*2.6,1.12,3.55,10,7);b.scale.set(0.26,0.22,0.42);K.sp(0.2,0xe2d6bf,sx*2.6,1.28,3.88,8,6)}
   return K.done()}
 
-// ---- Kolezyum (sol yan): elips; yüksek dış halka (üç kemer katı + çatı katı) kafeye bakan yanı ve arkayı sarar, öndeki yıkık bölümde
-//      bir buçuk metre içeride iki katlı iç halka görünür. Kemerler dokuya boyalı (açıklık değil). ----
-function itcColosseum(){const K=itcKit(),cx=-40.6,cz=0.5,a=16.8,b=22,TH=2.5,ATT=2.0,PI=Math.PI;K.G.position.set(cx,-0.32,cz);
-  const paint=(tiers,attic)=>itcTex(64,64*tiers+(attic?52:0),(c,W,H)=>{const A=attic?52:0;c.fillStyle='#e6d3b0';c.fillRect(0,0,W,H);
-    if(attic){c.fillStyle='#ead9b8';c.fillRect(0,0,W,A);c.fillStyle='#f3e6ca';c.fillRect(0,0,W,4);c.fillStyle='#cfb88e';c.fillRect(0,A-5,W,5);c.fillStyle='#5a4632';c.fillRect(W/2-7,15,14,17);c.fillStyle='#d6c097';c.fillRect(2,4,6,A-9);c.fillRect(W-8,4,6,A-9)}
-    for(let t=0;t<tiers;t++){const y0=A+t*64;c.fillStyle='#cfb88e';c.fillRect(0,y0,W,5);c.fillStyle='#f3e6ca';c.fillRect(0,y0+5,W,3);
-      c.fillStyle='#57432f';c.beginPath();c.moveTo(15,y0+64);c.lineTo(15,y0+37);c.arc(32,y0+37,17,PI,0);c.lineTo(49,y0+64);c.fill();
-      c.fillStyle='#3d2f22';c.fillRect(19,y0+44,26,20);c.fillStyle='#d6c097';c.fillRect(3,y0+8,7,56);c.fillRect(W-10,y0+8,7,56);c.fillStyle='#f1e2c4';c.fillRect(3,y0+8,2,56);c.fillRect(W-10,y0+8,2,56)}});
-  const wall=(ra,rb,h,th0,thL,n,tex,side)=>{const t=tex.clone();t.needsUpdate=true;t.repeat.set(n,1);const m=K.add(new THREE.CylinderGeometry(1,1,1,Math.max(8,n*2),1,true,th0,thL),itcMat(t,side?{side}:null),0,h/2,0);m.scale.set(ra,h,rb);return m};
-  const cap=(ra,rb,k,y,th0,thL,n)=>{const m=K.add(new THREE.RingGeometry(k,1,Math.max(8,n*2),1,th0-PI/2,thL),0xd9c6a0,0,y,0);m.rotation.x=-PI/2;m.scale.set(ra,rb,1);m.castShadow=false;return m};
-  const H=3*TH+ATT,H2=2*TH,T0=0.3*PI,TL=1.2*PI,kk=1-1.5/a;
-  wall(a,b,H,T0,TL,46,paint(3,true));cap(a,b,kk,H,T0,TL,46);
-  {const m=K.add(new THREE.CylinderGeometry(1,1,1,92,1,true,T0,TL),0xcdb992,0,H/2,0);m.scale.set(a*kk,H,b*kk);m.material.side=THREE.BackSide}
-  wall(a-1.5,b-1.5,H2,T0+TL,2*PI-TL,30,paint(2,false),THREE.DoubleSide);cap(a-1.5,b-1.5,1-1.3/(a-1.5),H2,T0+TL,2*PI-TL,30);
-  // yıkık uç: dış halkanın bittiği yerde basamak basamak alçalan taş bloklar (tuğla payanda) ve uç duvarları
-  const P=(th,r)=>[Math.sin(th)*(a-r),Math.cos(th)*(b-r)];
-  for(const [th,sgn] of [[T0,-1],[T0+TL,1]]){const [x0,z0]=P(th,0),[x1,z1]=P(th,1.5),s=K.bx(Math.hypot(x1-x0,z1-z0)+0.1,H,0.35,0xd9c6a0,(x0+x1)/2,H/2,(z0+z1)/2);s.rotation.y=Math.atan2(-(z1-z0),x1-x0);
-    for(let i=1;i<=4;i++){const t2=th+sgn*i*0.036,[px,pz]=P(t2,0.55),hh=H*(1-i*0.2);const q=K.bx(1.15,hh,1.15,i%2?0xcf9f78:0xd9ad86,px,hh/2,pz);q.rotation.y=t2}}
-  // kum saha ve oturma basamakları (yukarıdan bakınca içi boş kalmasın)
-  {const fl=K.cy(1,1,0.06,0xe7d4a8,0,0.04,0,40);fl.scale.set(a-7.5,1,b-7.5);fl.castShadow=false;
-   const bw=K.add(new THREE.CylinderGeometry(1,0.6,1,56,1,true),0xd8c6a2,0,2.3,0);bw.scale.set(a-3,4.4,b-3);bw.material.side=THREE.DoubleSide;bw.castShadow=false}
+// ---- Kolezyum (sol yan; V235'te yeniden): elips, GERÇEK kemer açıklıkları. Çevre eşit yay uzunluklu NB bölmeye ayrılır; her bölmede her kat
+//      bir "kemerli pano" (dikdörtgenden kemer deliği oyulmuş, kalınlık D), önünde yarım sütun, katlar arasında korniş; en üstte pencereli
+//      çatı katı. Kafeye bakan yan (θ 0,3π…1,5π) tam yükseklik; ön yan yıkık: kat kat alçalır, en alçakta yalnız zemin kemerleri → içi görünür.
+//      Arkada karanlık koridor duvarı (açıklıklardan derinlik görünsün), içeride oturma basamakları ve kum saha. θ: x = sin θ·a, z = cos θ·b.
+function itcColosseum(){const K=itcKit(),cx=-40.6,cz=0.5,a=16.8,b=22,TH=2.6,ATT=2.1,D=0.9,PI=Math.PI,NB=52,TRV=0xe7d5b2,TRV2=0xd9c4a0,CORN=0xf1e4c8,DARK=0x6b5640;K.G.position.set(cx,-0.32,cz);
+  // eşit yay uzunluğu: ince örnekle, birikimli uzunluk
+  const S=720,pts=[],acc=[0];for(let i=0;i<=S;i++){const th=i/S*2*PI;pts.push([Math.sin(th)*a,Math.cos(th)*b,th]);if(i)acc.push(acc[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]))}
+  const L=acc[S],at=s=>{let i=1;while(i<S&&acc[i]<s)i++;const f=(s-acc[i-1])/(acc[i]-acc[i-1]||1),p=pts[i-1],q=pts[i];return [p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f,p[2]+(q[2]-p[2])*f]};
+  const W=L/NB;
+  // kemerli pano: genişlik W, yükseklik TH, açıklık genişliği 0,62W; kemerin üstü katın %80'inde
+  const ow=W*0.6,sp=TH*0.78,arch=new THREE.Shape();arch.moveTo(-W/2,0);arch.lineTo(W/2,0);arch.lineTo(W/2,TH);arch.lineTo(-W/2,TH);arch.lineTo(-W/2,0);
+  {const h=new THREE.Path();h.moveTo(-ow/2,0);h.lineTo(ow/2,0);h.lineTo(ow/2,sp-ow/2);h.absarc(0,sp-ow/2,ow/2,0,PI,false);h.lineTo(-ow/2,0);arch.holes.push(h)}
+  const gArch=new THREE.ExtrudeGeometry(arch,{depth:D,bevelEnabled:false,curveSegments:5});gArch.translate(0,0,-D/2);
+  const attic=new THREE.Shape();attic.moveTo(-W/2,0);attic.lineTo(W/2,0);attic.lineTo(W/2,ATT);attic.lineTo(-W/2,ATT);attic.lineTo(-W/2,0);
+  {const h=new THREE.Path();const ww=W*0.2,wy=ATT*0.38,wh=ATT*0.3;h.moveTo(-ww/2,wy);h.lineTo(ww/2,wy);h.lineTo(ww/2,wy+wh);h.lineTo(-ww/2,wy+wh);h.lineTo(-ww/2,wy);attic.holes.push(h)}
+  const gAtt=new THREE.ExtrudeGeometry(attic,{depth:D,bevelEnabled:false});gAtt.translate(0,0,-D/2);
+  const gCol=new THREE.CylinderGeometry(0.17,0.19,1,8),gCorn=new THREE.BoxGeometry(1,0.22,D+0.36),gCap=new THREE.BoxGeometry(0.44,0.12,0.3);
+  // tam yükseklikteki bölmeler (kat sayısı 4 = 3 kemer + çatı katı); yıkık yanda alçalır
+  const full=th=>{const u=((th%(2*PI))+2*PI)%(2*PI);return u>=0.3*PI&&u<=1.5*PI};
+  const lev=th=>{if(full(th))return 4;const u=((th%(2*PI))+2*PI)%(2*PI),d=Math.min(Math.abs(u-0.3*PI),Math.abs(u-1.5*PI),Math.abs(u+2*PI-1.5*PI),Math.abs(u-2*PI-0.3*PI));return d<0.09?3:d<0.2?2:1};
+  const put=(geo,c,x,y,z,ry,sx)=>{const m=K.add(geo,c,x,y,z);m.rotation.y=ry;if(sx)m.scale.x=sx;return m};
+  for(let i=0;i<NB;i++){const s0=i*W,[x0,z0]=at(s0),[x1,z1]=at(s0+W),[xm,zm,th]=at(s0+W/2),dx=x1-x0,dz=z1-z0,ch=Math.hypot(dx,dz),ry=Math.atan2(-dz,dx),
+      nx=dz/ch,nz=-dx/ch,o=(nx*xm+nz*zm)>0?1:-1,sx=ch/W,n=lev(th),ox=nx*o,oz=nz*o;   // ox,oz: dışa doğru birim
+    for(let k=0;k<Math.min(n,3);k++){const y=k*TH;put(gArch,TRV,xm,y,zm,ry,sx);
+      // yarım sütunlar: bölme kenarında, dış yüzde (her bölmenin sol kenarı → komşuyla paylaşılır)
+      put(gCol,k%2?CORN:TRV2,x0+ox*(D/2+0.08),y+TH*0.5,z0+oz*(D/2+0.08),0).scale.y=TH*0.86;put(gCap,CORN,x0+ox*(D/2+0.08),y+TH*0.95,z0+oz*(D/2+0.08),ry);
+      put(gCorn,CORN,xm,y+TH-0.05,zm,ry,ch*1.02)}
+    if(n>=4){put(gAtt,TRV,xm,3*TH,zm,ry,sx);put(gCorn,CORN,xm,3*TH+ATT,zm,ry,ch*1.02);put(gCorn,TRV2,xm,3*TH+ATT+0.2,zm,ry,ch*1.02).scale.y=0.6;
+      // çatı katının üstünde direk tutucu konsollar (Kolezyum'un velarium direkleri)
+      if(i%2===0)put(gCap,TRV2,xm+ox*(D/2+0.1),3*TH+ATT-0.4,zm+oz*(D/2+0.1),ry)}
+    else if(n>=2){// yıkık üst kenar: düzensiz taşlar
+      for(let j=0;j<3;j++){const st=put(new THREE.BoxGeometry(W*0.32,0.25+((i*7+j*3)%5)*0.12,D*0.9),TRV2,xm+(dx/ch)*(j-1)*W*0.3,n*TH+0.12,zm+(dz/ch)*(j-1)*W*0.3,ry);st.rotation.z=((i+j)%3-1)*0.15}}
+    // koridorun karanlık arka duvarı (kemerlerden bakınca derinlik)
+    const hb=Math.min(n,3)*TH;if(hb>0){const w=put(new THREE.BoxGeometry(1,hb,0.12),DARK,xm-ox*2.0,hb/2,zm-oz*2.0,ry,ch*1.05);w.castShadow=false}}
+  // iç halka zemini (koridor tabanı) ve iç taraf: oturma basamakları (3 kademe), kum saha, arena bölmeleri
+  {const fl=K.cy(1,1,0.08,0xe7d4a8,0,0.04,0,48);fl.scale.set(a-6.5,1,b-6.5);fl.castShadow=false;
+   for(let k=0;k<3;k++){const r=2.1+k*1.5,h=1.1+k*1.3,m=K.add(new THREE.CylinderGeometry(1,1,1,56,1,true),k%2?0xcdb992:0xd8c6a2,0,h/2,0);m.scale.set(a-r,h,b-r);m.material.side=THREE.DoubleSide;m.castShadow=false;
+     const top=K.add(new THREE.RingGeometry(1-1.5/(a-r),1,56),k%2?0xe3d2ae:0xd5c29c,0,h,0);top.rotation.x=-PI/2;top.scale.set(a-r,b-r,1);top.castShadow=false}
+   for(let i=0;i<5;i++){const w=K.bx(a*0.9,0.7,0.25,0xb79d74,0,0.38,-b*0.4+i*b*0.2);w.castShadow=false}}
   return K.done()}
 
 // ---- su kemeri (arka yan): gerçek kemer açıklıkları (arkadaki park görünür), üstünde küçük kemerli ikinci kat; doğu ucu yıkık ----
