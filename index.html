@@ -652,8 +652,7 @@ function outdoorStatic(){const G=new THREE.Group();G.name='outdoor';scene.add(G)
       for(let i=0;i<700;i++){x.fillStyle=i%3?'rgba(110,165,75,.38)':'rgba(205,235,150,.42)';x.fillRect(rnd()*256,rnd()*256,2,5)}
       for(let i=0;i<26;i++){const fx=10+rnd()*236,fy=10+rnd()*236,k=i%3;x.fillStyle=k===0?'#ffffff':k===1?'#f7a8c8':'#fbe36a';for(let p=0;p<5;p++){const a=p*1.257;x.beginPath();x.arc(fx+Math.cos(a)*2.6,fy+Math.sin(a)*2.6,1.9,0,7);x.fill()}x.fillStyle=k===2?'#f2a03a':'#f7d04a';x.beginPath();x.arc(fx,fy,1.5,0,7);x.fill()}
       const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t})();
-    const IT=EVMODE==='it';   // İtalya Durağı: çim yerine traverten döşeli meydan
-    const lot=new THREE.Mesh(new THREE.BoxGeometry(LOT.x1-LOT.x0,0.3,LOT.z1-LOT.z0),new THREE.MeshToonMaterial({color:0xffffff,map:IT?itcPiazzaTex():grassTex,gradientMap:grad}));lot.position.set(0,-0.36,0);lot.receiveShadow=true;G.add(lot);envUV(lot,IT?6:5);
+    const lot=new THREE.Mesh(new THREE.BoxGeometry(LOT.x1-LOT.x0,0.3,LOT.z1-LOT.z0),new THREE.MeshToonMaterial({color:0xffffff,map:grassTex,gradientMap:grad}));lot.position.set(0,-0.36,0);lot.receiveShadow=true;G.add(lot);envUV(lot,5);
     const pv=new THREE.MeshToonMaterial({color:0xffffff,map:ENV.pave,gradientMap:grad});
     const S1=RING.s1,RR=RING.r,S2=RING.s2;
     ring(LOT.x1,LOT.z1,S1.x,S1.z,-0.3,0.3,pv);                                  // kaldırım
@@ -17261,7 +17260,8 @@ html.land .nysteps.two{grid-auto-flow:column;grid-template-rows:repeat(var(--row
 // kurucular çağrılır. DİKKAT: bu dosya p1b'den SONRA yüklenir; işlev bildirimleri yukarı taşındığı için çağrılabilir ama dosya düzeyinde
 // const/let KULLANILMAZ (çağrı anında henüz tanımsız olurdu) — her şey işlevlerin içinde. Adlar "itc…" (t01–t05 paketleri "it…" kullanıyor).
 // YERLEŞİM (kafe ortada; arsa → kaldırım → yol → karşı kaldırım aynı):
-//  · arsa: çim yerine traverten meydan (itcPiazzaTex); yol: gri sampietrini taşı (itcRoadTex); deniz yerine çim park (itcGround, itcLand).
+//  · arsa: çim (ana kafedeki gibi; V232'deki traverten meydan kullanıcı isteğiyle kaldırıldı: "zemin çimen olsun", V233);
+//    yol: gri sampietrini taşı (itcRoadTex); deniz yerine çim park (itcGround, itcLand).
 //  · kaldırım (itcStreet): lambadan lambaya üç renkli flamalar; köşelerde limon ağaçları ve dikilitaşlı çeşme (itcObelisk); Vespa, dondurma
 //    arabası, trattoria masaları, Roma sütunları (her biri ayrı grup: kapının önüne denk gelen gizlenir → itcDoorClear); yol kenarında Fiat 500.
 //  · sol (−x): Kolezyum (itcColosseum; yüksek dış halka + yıkık uçta alçak iç halka).  · arka (−z): su kemeri (itcAqueduct), ardında park.
@@ -17284,13 +17284,6 @@ function itcMat(tex,o){return new THREE.MeshToonMaterial(Object.assign({color:0x
 function itcAwn(c,i){if(c===0x4f86c6||c===0xf2b134)return [0x3a8f4b,0xfffaf0,0xd9453b][i%3];return i%2?0xfbf6ec:(c===0xd9534f?0xb5303a:c===0x5e8c5a?0x2f6d3c:c)}
 
 // ---- zeminler ----
-// meydan döşemesi (arsa): traverten levhalar + pişmiş toprak şeritler; bir doku karesi = 6 m
-function itcPiazzaTex(){return itcTex(512,512,x=>{let s=5;const rnd=()=>(s=(s*9301+49297)%233280)/233280;x.fillStyle='#d9c6a4';x.fillRect(0,0,512,512);const tones=['#efe2ca','#e9d9bd','#f3e8d3','#e5d3b5','#ecddc4'];
-    for(let r=0;r<8;r++)for(let c=-1;c<8;c++){x.fillStyle=tones[(r*3+c*5+8)%5];x.fillRect(c*64+(r%2)*32+1.5,r*64+1.5,61,61)}
-    for(let i=0;i<700;i++){x.fillStyle=i%2?'rgba(186,160,120,.22)':'rgba(255,251,238,.32)';x.fillRect(rnd()*512,rnd()*512,2,2)}
-    for(const p of [0,256,512]){x.fillStyle='#cf8a5e';x.fillRect(p-8,0,16,512);x.fillRect(0,p-8,512,16);x.fillStyle='rgba(120,60,30,.28)';for(let k=0;k<512;k+=20){x.fillRect(p-8,k,16,1.5);x.fillRect(k,p-8,1.5,16)}}
-    for(const cx of [0,256,512])for(const cy of [0,256,512]){x.save();x.translate(cx,cy);x.rotate(Math.PI/4);x.fillStyle='#fbf3e2';x.fillRect(-17,-17,34,34);x.fillStyle='#7d8f6e';x.fillRect(-10,-10,20,20);x.restore()}
-    for(const cx of [128,384])for(const cy of [128,384]){x.save();x.translate(cx,cy);x.fillStyle='#c98558';x.fillRect(-17,-17,34,34);x.rotate(Math.PI/4);x.fillRect(-17,-17,34,34);x.fillStyle='#fbf3e2';x.beginPath();x.arc(0,0,11,0,7);x.fill();x.fillStyle='#7d8f6e';x.beginPath();x.arc(0,0,5,0,7);x.fill();x.restore()}})}
 // yol: Roma'nın gri küp taşları (sampietrini)
 function itcRoadTex(){return itcTex(256,256,x=>{x.fillStyle='#857e75';x.fillRect(0,0,256,256);const cols=['#aaa399','#9d968c','#b4ada2','#a29b91','#ada69b'];
     for(let r=0;r<10;r++)for(let c=-1;c<10;c++){x.fillStyle=cols[(r*3+c*7+11)%5];x.beginPath();x.roundRect(c*25.6+(r%2)*12.8+1.4,r*25.6+1.4,22.8,22.8,4);x.fill()}})}
