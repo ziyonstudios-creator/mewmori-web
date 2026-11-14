@@ -305,8 +305,12 @@ const ROOM_MAX=SALON_PRE?{x0:-12.75,x1:12.75,z0:-12,z1:12}:{x0:-10.75,x1:10.75,z
 const LOT={x0:ROOM_MAX.x0-0.3,x1:ROOM_MAX.x1+0.3,z0:ROOM_MAX.z0-0.3,z1:ROOM_MAX.z1+0.3};   // genişleme arsası: içinde hiçbir şey yok
 // açıklıklar: duvar ('left' | 'back') ve duvar boyunca konum t (sol duvarda z, arka duvarda x)
 var OP={door:{wall:'left',t:1.8},win:{wall:'back',t:1.6}};   // V160: kapının yanındaki küçük cam ('side') oyundan kaldırıldı
-const OP_DIM=()=>({door:{w:DOOR.w,h:DOOR.h,y:DOOR.h/2},win:{w:WIN.w,h:WIN.h,y:WIN.y}});
-const OP_NAME={door:'Kapı',win:'Pencere'};
+// (V229) BİRDEN FAZLA PENCERE: ek pencereler OP'de 'win2', 'win3'… anahtarlarıyla durur (hepsi aynı ölçü ve aynı tarz). for(k in OP) dolaşan
+// bütün kurallar (duvar boşluğu, çakışma, raf, duvar süsü yuvası) onları kendiliğinden görür. Ekleme/kaldırma: p110.
+const opIsWin=k=>k==='win'||/^win\d+$/.test(k);
+const opWinKeys=()=>Object.keys(OP).filter(opIsWin);
+const OP_DIM=()=>{const w={w:WIN.w,h:WIN.h,y:WIN.y},d={door:{w:DOOR.w,h:DOOR.h,y:DOOR.h/2},win:w};for(const k in OP)if(k!=='door'&&k!=='win')d[k]=w;return d};
+const OP_NAME=new Proxy({door:'Kapı',win:'Pencere'},{get:(o,k)=>o[k]||(typeof k==='string'&&opIsWin(k)?'Pencere':undefined)});
 // duvar üstünde bir nokta ve içe bakan normal
 // (V162) dört duvar: 'left' (x0) ve 'back' (z0) kalın uzak duvarlar; 'right' (x1) ve 'front' (z1) ince yakın duvarlardır (p82). off > 0: içeri doğru
 function wallPt(wall,t,off=0){return wall==='left'?{x:RM.x0+off,z:t}:wall==='right'?{x:RM.x1-off,z:t}:wall==='front'?{x:t,z:RM.z1-off}:{x:t,z:RM.z0+off}}
@@ -352,8 +356,9 @@ function buildShell(){if(SHELL.g){scene.remove(SHELL.g);disposeTree(SHELL.g)}
     PARENT=WG;const segs=[[a,b]];if(OP.door.wall===wall){const d0=OP.door.t-DOOR.w/2,d1=OP.door.t+DOOR.w/2;segs.length=0;segs.push([a,d0],[d1,b])}
     for(const [p,q] of segs){if(q-p<0.05)continue;if(wall==='back')box(q-p,0.18,0.06,M.green,(p+q)/2,0.09,z0+0.03);else box(0.06,0.18,q-p,M.green,x0+0.03,0.09,(p+q)/2)}PARENT=G}
   // büyük pencere: cam + doğrama (pervaz, kemer, kayıtlar) yerel olarak kurulur, duvarına oturtulur
-  {const WG=new THREE.Group();if(wallNear(OP.win.wall)){WG.userData.wallKeep=true;WG.userData.nwall=OP.win.wall}else WG.userData.wall=OP.win.wall;WG.userData.opening='win';G.add(WG);SHELL.win=WG;const P1=PARENT;PARENT=WG;try{winClassic(WG)}finally{PARENT=P1}
-   const p=wallPt(OP.win.wall,OP.win.t,wallNear(OP.win.wall)?0.1:0);WG.position.set(p.x,0,p.z);WG.rotation.y=WALL_RY[OP.win.wall]}   // ince yakın duvarda cam duvarın ortasına gelsin diye 10 cm içeride
+  SHELL.wins={};
+  for(const wk of opWinKeys()){const o=OP[wk],WG=new THREE.Group();if(wallNear(o.wall)){WG.userData.wallKeep=true;WG.userData.nwall=o.wall}else WG.userData.wall=o.wall;WG.userData.opening=wk;G.add(WG);SHELL.wins[wk]=WG;if(wk==='win')SHELL.win=WG;const P1=PARENT;PARENT=WG;try{winClassic(WG)}finally{PARENT=P1}
+   const p=wallPt(o.wall,o.t,wallNear(o.wall)?0.1:0);WG.position.set(p.x,0,p.z);WG.rotation.y=WALL_RY[o.wall]}   // ince yakın duvarda cam duvarın ortasına gelsin diye 10 cm içeride
   }finally{PARENT=P0}
   if(OP.win.wall==='back')WIN.x=OP.win.t;
   try{for(const k in FLOOR_TEX)FLOOR_TEX[k].repeat.set(W/1.2,D/1.2)}catch(e){}   // ilk kurulumda FLOOR_TEX henüz tanımlı değil
@@ -6125,7 +6130,7 @@ for(const o of scene.children)if(o.userData&&o.userData.static&&!o.userData.merg
 // S.layout={k:{x,z,r},c:{x,z,r},w}: tezgâh (KP) ve kasa (CP) bloğunun temel konumdan kayması ve dönüşü (90°'lik), pencere x'i.
 // Bütün durma noktaları (barista, garson, kasiyer, kuyruk, kurye, koli) temel değerlerinden bu dönüşümle yeniden hesaplanır.
 // Düzenle modunda taşıma önizlemedir; "Tamam" deyince kaydedilip sayfa yenilenir. Kurulum rehberinde canlı uygulanır.
-const LAY_STEP=0.25;
+const LAY_STEP=0.25,OPW_MAX=5;   // OPW_MAX: en çok pencere (ilk pencere dahil)
 const LAY={on:null,k0:null,c0:null,w0:1.6,mark:null,base:null};
 const poseEq=(a,b)=>a.x===b.x&&a.z===b.z&&((a.r-b.r)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)<1e-6;
 // temel (dönüşümsüz) değerlerin kopyası: ilk kullanımda bir kez alınır
@@ -6148,8 +6153,10 @@ function shelfWall(P){const b=boxW(LAY.base?LAY.base.shelf:layBase().shelf,P||KP
 function kShelfVis(){if(!KSHELF)return;const sw=shelfWall();let v=!!sw;try{if(sw&&wallNear(sw.wall)&&NW.hide[sw.wall]===true)v=false}catch(e){}KSHELF.visible=v}   // yakın duvar gizliyken üstündeki raflar da gizlenir
 function opValid(o){return o&&WALLS4.includes(o.wall)&&isFinite(o.t)}
 function layoutBoot(){const L=S.layout;if(!L)return;let sh=false;
-  if(L.op){for(const k in OP)if(opValid(L.op[k])){OP[k]={wall:L.op[k].wall,t:+L.op[k].t};sh=true}}else if(L.w!=null&&L.w!==OP.win.t){OP.win={wall:'back',t:L.w};sh=true}
-  if(sh){buildShell();if(opCheck()){console.warn('kayıtlı kapı/pencere yeri geçersiz:',opCheck());OP.door={wall:'left',t:1.8};OP.win={wall:'back',t:1.6};S.layout.op=null;buildShell()}try{envShell();ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}
+  if(L.op){for(const k in OP)if(opValid(L.op[k])){OP[k]={wall:L.op[k].wall,t:+L.op[k].t};sh=true}
+    for(const k in L.op)if(!OP[k]&&/^win\d+$/.test(k)&&opValid(L.op[k])&&opWinKeys().length<OPW_MAX){OP[k]={wall:L.op[k].wall,t:+L.op[k].t};sh=true}}   // (V229) ek pencereler
+  else if(L.w!=null&&L.w!==OP.win.t){OP.win={wall:'back',t:L.w};sh=true}
+  if(sh){buildShell();if(opCheck()){console.warn('kayıtlı kapı/pencere yeri geçersiz:',opCheck());for(const k of opWinKeys())if(k!=='win')delete OP[k];OP.door={wall:'left',t:1.8};OP.win={wall:'back',t:1.6};S.layout.op=null;buildShell()}try{envShell();ENV.hide.back=ENV.hide.left=null;envWalls()}catch(e){}}
   const pk=typeof L.k==='number'?{x:L.k,z:0,r:0}:L.k,pc=typeof L.c==='number'?{x:L.c,z:0,r:0}:L.c;layBase();
   if(!pk&&!pc)return;const k=pk||{x:0,z:0,r:0},c=pc||{x:0,z:0,r:0};
   const why=layoutCheck(k,c,true);if(why){console.warn('kayıtlı tezgâh/kasa yeri geçersiz:',why);S.layout={w:L.w,op:L.op};return}
@@ -6193,13 +6200,13 @@ function layoutCheck(k,c,boot){k=k||KP;c=c||CP;const L=layBase();
 {const _t=editTap;editTap=function(x,y){const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
   const fh=raycaster.intersectObjects([...FURN.values()].map(R=>R.group),true),bh=raycaster.intersectObjects([KG,CG].filter(Boolean),true);
   if(bh.length&&(!fh.length||bh[0].distance<fh[0].distance)){let o=bh[0].object;while(o&&!o.userData.block)o=o.parent;if(o){layStart(o.userData.block);return}}
-  {const og=[OPG.door,SHELL.win].filter(o=>o&&o.visible!==false);const near=fh.length?fh[0].distance:1e9;
+  {const og=[OPG.door,...Object.values(SHELL.wins||{})].filter(o=>o&&o.visible!==false);const near=fh.length?fh[0].distance:1e9;
     const oh=raycaster.intersectObjects(og,true).filter(h=>{let o=h.object;while(o){if(o.visible===false)return false;o=o.parent}return true});
     if(oh.length&&oh[0].distance<near){let o=oh[0].object;while(o&&!o.userData.opening)o=o.parent;if(o){layStart(o.userData.opening);return}}}
   if(LAY.on)return;_t(x,y)}}
 {const _d=drawEditBar;drawEditBar=function(){if(LAY.on){layBar();return}_d();const m=$('placeMsg');if(m&&UI.edit==null)m.textContent='Düzenlemek istediğin eşyaya dokun · tezgâh, kasa, kapı ve pencere de taşınır'}}
 {const _x=exitEdit;exitEdit=function(){if(LAY.on)layCancel();_x()}}
-const isOp=b=>b==='door'||b==='win';
+const isOp=b=>b==='door'||(typeof b==='string'&&opIsWin(b));
 function layStart(b){if(b==='w')b='win';if(!LAY.on){LAY.k0={...KP};LAY.c0={...CP};LAY.w0=WIN.x;LAY.op0=JSON.parse(JSON.stringify(OP))}LAY.on=b;UI.edit=null;try{if(selRing){scene.remove(selRing);selRing=null}}catch(e){}sfx('tap');layMark();layBar()}
 const opMoved=()=>JSON.stringify(OP)!==JSON.stringify(LAY.op0||OP);
 const layMoved=()=>!poseEq(KP,LAY.k0)||!poseEq(CP,LAY.c0)||opMoved();
@@ -6251,7 +6258,7 @@ function layConfirm(){const why=layoutCheck();if(why){toast(why,ic('close'),2200
 // açıklıklar duvarın içinde ve birbirinden ayrı mı?
 function opCheck(){const D=OP_DIM();for(const q in OP){const o=OP[q],[a,b]=wallSpan(o.wall);if(o.t-D[q].w/2<a+0.3||o.t+D[q].w/2>b-0.3)return `${OP_NAME[q]} duvarın dışına taşıyor`}
   const ks=Object.keys(OP);for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){const A=OP[ks[i]],B=OP[ks[j]];if(A.wall===B.wall&&Math.abs(A.t-B.t)<(D[ks[i]].w+D[ks[j]].w)/2+0.2)return `${OP_NAME[ks[i]]} ile ${OP_NAME[ks[j]].toLowerCase()} üst üste geliyor`}
-  try{if(GATE.wall)for(const q in OP)if(OP[q].wall===GATE.wall&&Math.abs(OP[q].t-GATE.t)<D[q].w/2+GT_W+0.25)return `${OP_NAME[q]} bahçe kapısıyla üst üste geliyor`}catch(e){}
+  try{for(const G of GATES)for(const q in OP)if(OP[q].wall===G.wall&&Math.abs(OP[q].t-G.t)<D[q].w/2+GT_W+0.25)return `${OP_NAME[q]} bahçe kapısıyla üst üste geliyor`}catch(e){}
   return null}
 // duvardaki süs yeri: duvarın dışında, bir açıklığın üstünde ya da tezgâh raflarının arkasında mı?
 function slotBlocked(i,kp){const sl=WALL_SLOTS[i];if(!sl)return 'out';if(sl.k2)return k2SlotBlocked(sl);   // (V224) 2. kat duvarı: kendi pencereleri (p107)
@@ -14267,12 +14274,15 @@ const RPF_LBL={flama:'Flama',saksi:'Saksı',rozet:'Rozet',tablo:'Tablo',puf:'Puf
 //  · Kapıyı taşıma: Düzenle'de kapıya dokun → Taşı → duvar boyunca sürükle (bahçesi olan öbür duvara da geçer) → Yerleştir / Vazgeç.
 //    Duvar dibindeki kareler yeşil (konabilir) / kırmızı (konamaz) boyanır. Kapı kare ortalarına oturur (t = duvar başı + 0,25 + 0,5·k).
 //  · Eski dekor "Bahçe kapısı" (d_gate, p61) marketten kaldırıldı; oyuncudaki kapılar için 120 altın iade edilir.
-const GATE={wall:null,t:0};
+// (V229) BİRDEN FAZLA BAHÇE KAPISI: GATES=[{wall,t},…] (kayıt: S.gates). GATE yalnızca İLK kapının aynasıdır (eski kod ve eski sürümler
+// için; S.gate de ilk kapının kopyası olarak yazılmaya devam eder). Her kapının kendi yasak bölgesi (NW.zones → NO_BUILD) ve kanatları var.
+const GATES=[];const GATE={wall:null,t:0};const GT_MAX=4;const NW_FAR={minX:1e6,maxX:1e6,minZ:1e6,maxZ:1e6};
 const GT_W=0.65,GT_H=2.2,GT_ZD=0.5;           // açıklığın yarı genişliği, kemer başlangıç yüksekliği, kapı önü/arkası yasak derinliği
-const NW={g:{front:null,right:null},hide:{front:null,right:null},gate:null,leaves:[],a:0,zone:{minX:1e6,maxX:1e6,minZ:1e6,maxZ:1e6},mark:null,refund:0};
-const GTM={sel:false,on:false,c0:null,why:null,drag:null};
-NO_BUILD.push(NW.zone);
-{const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.gate=null;return s}}
+const NW={g:{front:null,right:null},hide:{front:null,right:null},gates:[],zone:{minX:1e6,maxX:1e6,minZ:1e6,maxZ:1e6},zones:[],mark:null,refund:0};
+const GTM={sel:false,on:false,i:0,c0:null,why:null,drag:null};
+NW.zones.push(NW.zone);NO_BUILD.push(NW.zone);
+{const _ds=defaultState;defaultState=function(){const s=_ds.apply(this,arguments);s.gate=null;s.gates=null;return s}}
+const gateAt=(w,v)=>GATES.some(q=>q.wall===w&&Math.abs(v-q.t)<GT_W-0.2);   // v, w duvarındaki bir kapı boşluğunun içinde mi
 const nwSpan=w=>w==='front'?[RM.x0,RM.x1]:[RM.z0,RM.z1];
 const nwLine=w=>w==='front'?RM.z1:RM.x1;
 const nwPt=(w,t,off=0)=>w==='front'?{x:t,z:RM.z1+off}:{x:RM.x1+off,z:t};       // off > 0: bahçe tarafı
@@ -14281,10 +14291,12 @@ const nwName=w=>w==='front'?'ön':'sağ';
 const nwTR=v=>Math.round(v*100)/100;
 function gateZone(c){const p=nwPt(c.wall,c.t),hw=GT_W+0.1;return c.wall==='front'?{minX:p.x-hw,maxX:p.x+hw,minZ:p.z-GT_ZD,maxZ:p.z+GT_ZD}:{minX:p.x-GT_ZD,maxX:p.x+GT_ZD,minZ:p.z-hw,maxZ:p.z+hw}}
 // bahçesi olan kenarlarda duvarın İÇ yanındaki tek hücre sırası kapatılır (kapı boşluğu hariç) → içeriyle bahçe arasında yalnız kapıdan geçilir
-function nwBarrier(g,c){for(const w of ['front','right']){if(!nwGarden(w))continue;const f=w==='front',[a,b]=nwSpan(w),L=nwLine(w),gt=c&&c.wall===w?c.t:null,dt=OP.door.wall===w?OP.door.t:null,dh=DOOR.w/2-0.1;   // (V162) giriş kapısı bu duvardaysa onun boşluğu da açık
-    if(f){const k=Math.round((L-RM.z0)/CELL)-1;if(k<0||k>=GZ)continue;for(let i=0;i<GX;i++){const x=(i+0.5)*CELL+RM.x0;if(x<a-0.01||x>b+0.01||(gt!=null&&Math.abs(x-gt)<GT_W-0.2)||(dt!=null&&Math.abs(x-dt)<dh))continue;g[k*GX+i]=1}}
-    else{const i=Math.round((L-RM.x0)/CELL)-1;if(i<0||i>=GX)continue;for(let k=0;k<GZ;k++){const z=(k+0.5)*CELL+RM.z0;if(z<a-0.01||z>b+0.01||(gt!=null&&Math.abs(z-gt)<GT_W-0.2)||(dt!=null&&Math.abs(z-dt)<dh))continue;g[k*GX+i]=1}}}return g}
-function nwNav(){Object.assign(NW.zone,GATE.wall?gateZone(GATE):{minX:1e6,maxX:1e6,minZ:1e6,maxZ:1e6})}
+function nwBarrier(g,c){const list=!c?[]:Array.isArray(c)?c:[c];for(const w of ['front','right']){if(!nwGarden(w))continue;const f=w==='front',[a,b]=nwSpan(w),L=nwLine(w),gts=list.filter(q=>q&&q.wall===w).map(q=>q.t),open=v=>gts.some(t=>Math.abs(v-t)<GT_W-0.2),dt=OP.door.wall===w?OP.door.t:null,dh=DOOR.w/2-0.1;   // (V162) giriş kapısı bu duvardaysa onun boşluğu da açık
+    if(f){const k=Math.round((L-RM.z0)/CELL)-1;if(k<0||k>=GZ)continue;for(let i=0;i<GX;i++){const x=(i+0.5)*CELL+RM.x0;if(x<a-0.01||x>b+0.01||open(x)||(dt!=null&&Math.abs(x-dt)<dh))continue;g[k*GX+i]=1}}
+    else{const i=Math.round((L-RM.x0)/CELL)-1;if(i<0||i>=GX)continue;for(let k=0;k<GZ;k++){const z=(k+0.5)*CELL+RM.z0;if(z<a-0.01||z>b+0.01||open(z)||(dt!=null&&Math.abs(z-dt)<dh))continue;g[k*GX+i]=1}}}return g}
+function nwNav(){GATE.wall=GATES.length?GATES[0].wall:null;GATE.t=GATES.length?GATES[0].t:0;
+  while(NW.zones.length<GATES.length){const z={...NW_FAR};NW.zones.push(z);NO_BUILD.push(z)}
+  NW.zones.forEach((z,i)=>Object.assign(z,GATES[i]?gateZone(GATES[i]):NW_FAR))}
 // ---- yol ızgarası: mobilyanın yürüme payı daraltıldı (PAD 0,28 → NW_PADF 0,14) ----
 // Duvar gerçek engel olunca 2 m'lik bahçe şeridine 4 kişilik masa hiç sığmıyordu (masa şeridi ikiye bölüyordu). Mobilya kutularına
 // daha dar pay verilince bir karelik (50 cm) aralıklar yürünür oldu: bahçede 4 kişilik masa 0 → 120 yer, 2 kişilik 126 → 230 yer;
@@ -14301,14 +14313,14 @@ function nwGridBase(boxes){const g=new Uint8Array(GX*GZ),x0=RM.x0,z0=RM.z0;
     for(let k=k0;k<=k1;k++){const z=(k+0.5)*CELL+z0;if(!(z>o.minZ-P&&z<o.maxZ+P))continue;for(let i=i0;i<=i1;i++){const x=(i+0.5)*CELL+x0;if(x>o.minX-P&&x<o.maxX+P)g[k*GX+i]=1}}}
   return g}
 const _nwMakeGrid=nwGridBase;
-makeGrid=function(boxes){return nwBarrier(nwGridBase(boxes),GATE.wall?GATE:null)};
+makeGrid=function(boxes){return nwBarrier(nwGridBase(boxes),GATES)};
 // ---- ince engelin iki yanını karıştırmamak için ----
 // Sağ duvar çizgisi bir hücrenin ORTASINDAN geçer (oda eni 0,2'nin katı değil), ön duvar çizgisi hücre sınırındadır. Kapalı engel hücresinin
 // içinde kalan bir nokta (duvara yapışık sandalyenin yaklaşma noktası, köşeyi sıyıran karakter) için "en yakın boş hücre" duvarın ÖBÜR
 // yanında çıkabiliyordu → karakter duvarın içinden geçiyordu. nwSide noktayı kendi yanındaki boş hücreye iter (kapı boşluğu hariç).
 function nwSide(x,z){let nx=x,nz=z;
-  if(GDN.r>0&&z>RM.z0-0.01&&z<RM.z1+0.001&&Math.abs(x-RM.x1)<0.105&&!(GATE.wall==='right'&&Math.abs(z-GATE.t)<GT_W-0.2)&&!(OP.door.wall==='right'&&Math.abs(z-OP.door.t)<DOOR.w/2-0.1))nx=x<RM.x1?RM.x1-0.2:RM.x1+0.2;
-  if(GDN.f>0&&x>RM.x0-0.01&&x<RM.x1+0.001&&z>RM.z1-0.205&&z<RM.z1&&!(GATE.wall==='front'&&Math.abs(x-GATE.t)<GT_W-0.2)&&!(OP.door.wall==='front'&&Math.abs(x-OP.door.t)<DOOR.w/2-0.1))nz=RM.z1-0.3;
+  if(GDN.r>0&&z>RM.z0-0.01&&z<RM.z1+0.001&&Math.abs(x-RM.x1)<0.105&&!gateAt('right',z)&&!(OP.door.wall==='right'&&Math.abs(z-OP.door.t)<DOOR.w/2-0.1))nx=x<RM.x1?RM.x1-0.2:RM.x1+0.2;
+  if(GDN.f>0&&x>RM.x0-0.01&&x<RM.x1+0.001&&z>RM.z1-0.205&&z<RM.z1&&!gateAt('front',x)&&!(OP.door.wall==='front'&&Math.abs(x-OP.door.t)<DOOR.w/2-0.1))nz=RM.z1-0.3;
   return nx===x&&nz===z?null:{x:nx,z:nz}}
 // Yol düzleştirme (görüş hattı) duvarın köşe ucunu birkaç cm sıyırabiliyor: böyle bir parça köşenin dışındaki boş hücreden dolaştırılır.
 function nwFixPath(P){if(!P||P.length<2||!(GDN.r>0&&GDN.f>0))return P;const L1=RM.x1,L2=RM.z1,out=[P[0]];
@@ -14323,11 +14335,13 @@ function nwFixPath(P){if(!P||P.length<2||!(GDN.r>0&&GDN.f>0))return P;const L1=R
 function nwFurn(){const out=[];if(FURN.size){for(const R of FURN.values()){const c=CAT[R.rec.id];if(c.kind==='walldecor')continue;out.push({name:c.name,boxes:R.boxes||[],pts:R.table?R.table.seats.flatMap(s=>[s.A,s.serve]):[]})}return out}
   try{for(const rec of S.furniture||[]){const c=CAT[rec.id];if(!c||rec.stored||c.kind==='walldecor')continue;const I=candidateInfo(rec);out.push({name:c.name,boxes:I.boxes,pts:I.points})}}catch(e){}return out}
 // bir kapı yeri uygun mu? (null = uygun)
-function gateWhy(c){if(!c||!nwGarden(c.wall))return 'Bu duvarın önünde bahçe yok';const [a,b]=nwSpan(c.wall);if(c.t-GT_W<a+0.09||c.t+GT_W>b-0.09)return 'Kapı duvarın dışına taşıyor';
+// c: denenen yer · ex: taşınmakta olan kapının kendisi (öbür kapılar arasında sayılmaz)
+function gateWhy(c,ex){if(!c||!nwGarden(c.wall))return 'Bu duvarın önünde bahçe yok';const [a,b]=nwSpan(c.wall);if(c.t-GT_W<a+0.09||c.t+GT_W>b-0.09)return 'Kapı duvarın dışına taşıyor';
+  const oth=GATES.filter(q=>q!==ex&&q!==c);for(const q of oth)if(q.wall===c.wall&&Math.abs(q.t-c.t)<2*GT_W+0.45)return 'Başka bir bahçe kapısıyla üst üste geliyor';
   try{const D=OP_DIM();for(const q in OP)if(OP[q].wall===c.wall&&Math.abs(OP[q].t-c.t)<D[q].w/2+GT_W+0.25)return `${OP_NAME[q]} ile üst üste geliyor`}catch(e){}
   const z=gateZone(c),F=nwFurn();for(const f of F)for(const q of f.boxes)if(boxOv(q,z))return `“${f.name}” kapının önünde kalıyor: önce onu taşı`;
   for(const o of OBST)if(boxOv(o,z,-0.02))return 'Tezgâha, kasaya ya da sabit bir eşyaya denk geliyor';
-  const g=nwBarrier(_nwMakeGrid(OBST.concat(F.flatMap(f=>f.boxes))),c),seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
+  const g=nwBarrier(_nwMakeGrid(OBST.concat(F.flatMap(f=>f.boxes))),oth.concat([c])),seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
   if(!pointReachable(g,seen,nwPt(c.wall,c.t,-0.7))||!pointReachable(g,seen,nwPt(c.wall,c.t,0.7)))return 'Kapının önü ya da arkası kapalı';
   for(const f of F)for(const p of f.pts)if(!pointReachable(g,seen,p))return `Bu yerde “${f.name}” masasına yol kalmıyor`;
   return null}
@@ -14335,12 +14349,24 @@ function gateCands(){const out=[];for(const w of ['front','right']){if(!nwGarden
 function gateDefault(pref){const C=gateCands();if(!C.length)return null;const mid=w=>{const [a,b]=nwSpan(w);return (a+b)/2};
   const rank=c=>c.wall===pref?0:c.wall==='right'?1:2;C.sort((p,q)=>rank(p)-rank(q)||Math.abs(p.t-mid(p.wall))-Math.abs(q.t-mid(q.wall)));   // önce istenen duvar, sonra sağ (varsayılan bakışta kameraya dönük olan), sonra ön; duvarın ortasına yakın olan önce
   for(const c of C)if(!gateWhy(c))return c;return C[0]}
+// yeni bir kapı için ilk UYGUN yer (yoksa null)
+function gateFree(){const C=gateCands(),mid=w=>{const [a,b]=nwSpan(w);return (a+b)/2},n=w=>GATES.filter(q=>q.wall===w).length;
+  C.sort((p,q)=>n(p.wall)-n(q.wall)||Math.abs(p.t-mid(p.wall))-Math.abs(q.t-mid(q.wall)));for(const c of C)if(!gateWhy(c))return c;return null}
+// bir kapı kaldırılırsa bütün masalara yol kalıyor mu? (null = kalıyor)
+function gateRemoveWhy(i){const rest=GATES.filter((q,k)=>k!==i);if(!rest.length)return 'En az bir bahçe kapısı kalmalı';
+  const F=nwFurn(),g=nwBarrier(_nwMakeGrid(OBST.concat(F.flatMap(f=>f.boxes))),rest),seen=floodFrom(g,DOOR_IN.x,DOOR_IN.z);
+  for(const f of F)for(const p of f.pts)if(!pointReachable(g,seen,p))return `Bu kapı kalkarsa “${f.name}” masasına yol kalmıyor`;return null}
 // kayıttaki kapıyı doğrula; yoksa / geçersizse uygun bir yere koy
+const gateGeoOk=g=>{if(!(g&&(g.wall==='front'||g.wall==='right')&&nwGarden(g.wall)&&isFinite(g.t)))return false;const [a,b]=nwSpan(g.wall);return g.t-GT_W>=a+0.09&&g.t+GT_W<=b-0.09};
+function gateSave(){S.gates=GATES.map(g=>({wall:g.wall,t:g.t}));S.gate=S.gates[0]?{...S.gates[0]}:null}
 function gateSync(){let has=false;try{has=!!S&&(nwGarden('front')||nwGarden('right'))}catch(e){}
-  if(!has){GATE.wall=null;nwNav();return}
-  const g=S.gate,[a,b]=g&&(g.wall==='front'||g.wall==='right')?nwSpan(g.wall):[0,0];
-  if(!(g&&(g.wall==='front'||g.wall==='right')&&nwGarden(g.wall)&&isFinite(g.t)&&g.t-GT_W>=a+0.09&&g.t+GT_W<=b-0.09)){const d=gateDefault(g&&g.wall);if(!d){GATE.wall=null;nwNav();return}S.gate={wall:d.wall,t:d.t};try{markDirty()}catch(e){}}
-  GATE.wall=S.gate.wall;GATE.t=S.gate.t;nwNav()}
+  GATES.length=0;if(!has){nwNav();return}
+  const L=Array.isArray(S.gates)&&S.gates.length?S.gates:(S.gate?[S.gate]:[]),out=[];   // eski kayıt: tek kapı (S.gate)
+  for(const g of L){if(out.length>=GT_MAX)break;if(!gateGeoOk(g)||out.some(q=>q.wall===g.wall&&Math.abs(q.t-g.t)<2*GT_W+0.45))continue;out.push({wall:g.wall,t:+g.t})}
+  let ch=out.length!==L.length||!Array.isArray(S.gates);
+  if(!out.length){const d=gateDefault(L[0]&&L[0].wall);if(!d){nwNav();return}out.push({wall:d.wall,t:d.t});ch=true}
+  for(const g of out)GATES.push(g);if(ch&&!(typeof VISIT!=='undefined'&&VISIT.on)){gateSave();try{markDirty()}catch(e){}}   // ziyarette (başkasının oda ölçüsü) kayda dokunulmaz: dönünce kendi kapıların geri gelir
+  nwNav()}
 
 // ---------- görünüm ----------
 const GT_M={stone:toon(0xe4d6bd),pink:[toon(0xd9488f),toon(0xe86aa8),toon(0xc93f86)]};
@@ -14359,35 +14385,35 @@ function gateBuild(){const g=new THREE.Group(),P0=PARENT;PARENT=g;const leaves=[
     let sd=7;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;
     for(let i=0;i<15;i++){const a=Math.PI*(0.08+0.84*i/14),r=GT_W+0.1+rnd()*0.06,q=sph(0.085+rnd()*0.05,i%4===3?M.leaf:GT_M.pink[i%3],Math.cos(a)*r,GT_H+Math.sin(a)*r,0.03+rnd()*0.07);q.scale.z=0.65}
   }finally{PARENT=P0}
-  g.traverse(m=>{if(m.isMesh){m.castShadow=m.castShadow!==false&&m.material!==M.glass;m.receiveShadow=true}});NW.leaves=leaves;return g}
+  g.traverse(m=>{if(m.isMesh){m.castShadow=m.castShadow!==false&&m.material!==M.glass;m.receiveShadow=true}});g.userData.leaves=leaves;return g}
 function nwBuild(){for(const w of ['front','right']){const old=NW.g[w];if(old&&old.parent){old.parent.remove(old);disposeTree(old)}NW.g[w]=null}
-  if(NW.gate){if(NW.gate.parent)NW.gate.parent.remove(NW.gate);disposeTree(NW.gate);NW.gate=null;NW.leaves=[]}
+  for(const o of NW.gates){if(o.g.parent)o.g.parent.remove(o.g);try{disposeTree(o.g)}catch(e){}}NW.gates=[];
   if(!SHELL.g)return;const P0=PARENT;
-  try{for(const w of ['front','right']){const WG=new THREE.Group();WG.userData.wallKeep=true;WG.userData.nwall=w;SHELL.g.add(WG);NW.g[w]=WG;const [a,b]=nwSpan(w),L=nwLine(w),gt=GATE.wall===w?GATE.t:null;
+  try{for(const w of ['front','right']){const WG=new THREE.Group();WG.userData.wallKeep=true;WG.userData.nwall=w;SHELL.g.add(WG);NW.g[w]=WG;const [a,b]=nwSpan(w),L=nwLine(w),gts=GATES.filter(q=>q.wall===w).map(q=>q.t);
       const sh=new THREE.Shape();sh.moveTo(a-0.2,-0.2);sh.lineTo(b+0.05,-0.2);sh.lineTo(b+0.05,WALL_H);sh.lineTo(a-0.2,WALL_H);sh.lineTo(a-0.2,-0.2);
-      if(gt!=null){const h=new THREE.Path();h.moveTo(gt-GT_W,0);h.lineTo(gt+GT_W,0);h.lineTo(gt+GT_W,GT_H);h.absarc(gt,GT_H,GT_W,0,Math.PI,false);h.lineTo(gt-GT_W,0);sh.holes.push(h)}
+      for(const gt of gts){const h=new THREE.Path();h.moveTo(gt-GT_W,0);h.lineTo(gt+GT_W,0);h.lineTo(gt+GT_W,GT_H);h.absarc(gt,GT_H,GT_W,0,Math.PI,false);h.lineTo(gt-GT_W,0);sh.holes.push(h)}
       for(const k in OP)if(OP[k].wall===w)sh.holes.push(openingHole(new THREE.Path(),k,OP[k].t));   // (V162) kapı / pencere bu duvardaysa boşluğu
       const geo=new THREE.ExtrudeGeometry(sh,{depth:0.1,bevelEnabled:false,curveSegments:24}),m=new THREE.Mesh(geo,M.wall);m.receiveShadow=true;
       if(w==='front')m.position.z=L-0.05;else{geo.rotateY(-Math.PI/2);m.position.x=L+0.05}WG.add(m);
       PARENT=WG;let segs=[[a,b]];const cutSeg=(c0,c1)=>{const o=[];for(const [p,q] of segs){if(c1<=p||c0>=q){o.push([p,q]);continue}if(c0>p)o.push([p,c0]);if(c1<q)o.push([c1,q])}segs=o};
-      if(gt!=null)cutSeg(gt-GT_W-0.07,gt+GT_W+0.07);if(OP.door.wall===w)cutSeg(OP.door.t-DOOR.w/2,OP.door.t+DOOR.w/2);
+      for(const gt of gts)cutSeg(gt-GT_W-0.07,gt+GT_W+0.07);if(OP.door.wall===w)cutSeg(OP.door.t-DOOR.w/2,OP.door.t+DOOR.w/2);
       for(const [p,q] of segs){if(q-p<0.05)continue;if(w==='front')box(q-p,0.18,0.06,M.green,(p+q)/2,0.09,L-0.08);else box(0.06,0.18,q-p,M.green,L-0.08,0.09,(p+q)/2)}
       WG.visible=NW.hide[w]!==true}
   }finally{PARENT=P0}
-  if(GATE.wall){const g=gateBuild(),p=nwPt(GATE.wall,GATE.t);g.position.set(p.x,0,p.z);g.rotation.y=GATE.wall==='front'?0:Math.PI/2;scene.add(g);NW.gate=g}
+  GATES.forEach((q,i)=>{const g=gateBuild(),p=nwPt(q.wall,q.t);g.position.set(p.x,0,p.z);g.rotation.y=q.wall==='front'?0:Math.PI/2;g.userData.gi=i;scene.add(g);NW.gates.push({g,leaves:g.userData.leaves||[],a:0})});
   NW.hide.front=NW.hide.right=null;try{nwWalls()}catch(e){}gateMark()}
 // "Bizim tarafımızdaki" duvar gizlenir (kapı görünür kalır): kamera oda ortasının ön yanındaysa ön duvar, sağ yanındaysa sağ duvar.
 // (Arka/sol duvarlardaki "kamera duvarın arkasına geçince" kuralı burada yetmez: varsayılan bakışta kamera ön duvar çizgisinin
 //  gerisinde ama odanın ön yarısındadır; duvar içeriden, yandan görünür ve bahçeyi kapatırdı.)
 function nwWalls(){const c=camera.position,hf=c.z>(RM.z0+RM.z1)/2,hr=c.x>(RM.x0+RM.x1)/2;if(hf===NW.hide.front&&hr===NW.hide.right)return;NW.hide.front=hf;NW.hide.right=hr;
   if(NW.g.front)NW.g.front.visible=!hf;if(NW.g.right)NW.g.right.visible=!hr;
-  try{const W=SHELL.win;if(W&&W.userData.nwall)W.visible=!(W.userData.nwall==='front'?hf:hr);kShelfVis()}catch(e){}}   // (V162) yakın duvardaki pencere ve tezgâh rafları duvarla birlikte gizlenir
+  try{for(const W of Object.values(SHELL.wins||{}))if(W&&W.userData.nwall)W.visible=!(W.userData.nwall==='front'?hf:hr);kShelfVis()}catch(e){}}   // (V162) yakın duvardaki pencere ve tezgâh rafları duvarla birlikte gizlenir
 {const _bs=buildShell;buildShell=function(){const r=_bs.apply(this,arguments);try{gateSync();nwBuild()}catch(e){console.warn('dört duvar',e)}return r}}
 {const _et=envTick;envTick=function(dt){const r=_et.apply(this,arguments);try{nwWalls()}catch(e){}return r}}
 // kanatlar: yakında biri varsa bahçeye doğru açılır
-{const _dt=doorTick;doorTick=function(dt){const r=_dt.apply(this,arguments);try{if(NW.gate&&NW.leaves.length){const P=[];for(const c of customers)if(c.char)P.push(c.char.pos);for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)P.push(k.ch.pos);
-      const gx=NW.gate.position.x,gz=NW.gate.position.z;let near=false;for(const p of P)if(Math.hypot(p.x-gx,p.z-gz)<1.3){near=true;break}
-      const want=near&&!GTM.on?1:0;NW.a+=Math.sign(want-NW.a)*Math.min(Math.abs(want-NW.a),(want?3.2:1.6)*dt);const e=NW.a<0.5?2*NW.a*NW.a:1-Math.pow(-2*NW.a+2,2)/2;for(const l of NW.leaves)l.p.rotation.y=-l.side*e*1.4}}catch(e){}return r}}
+{const _dt=doorTick;doorTick=function(dt){const r=_dt.apply(this,arguments);try{if(NW.gates.length){const P=[];for(const c of customers)if(c.char)P.push(c.char.pos);for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)P.push(k.ch.pos);
+      for(const o of NW.gates){if(!o.leaves.length)continue;const gx=o.g.position.x,gz=o.g.position.z;let near=false;for(const p of P)if(Math.hypot(p.x-gx,p.z-gz)<1.3){near=true;break}
+        const want=near&&!GTM.on?1:0;o.a+=Math.sign(want-o.a)*Math.min(Math.abs(want-o.a),(want?3.2:1.6)*dt);const e=o.a<0.5?2*o.a*o.a:1-Math.pow(-2*o.a+2,2)/2;for(const l of o.leaves)l.p.rotation.y=-l.side*e*1.4}}}catch(e){}return r}}
 
 // ---------- yerleştirme kuralı ----------
 function nwPlaceWhy(rec){const c=CAT[rec.id];if(!c||c.kind==='walldecor')return null;let boxes,points=[];
@@ -14409,45 +14435,48 @@ function nwPlaceWhy(rec){const c=CAT[rec.id];if(!c||c.kind==='walldecor')return 
 {const _bg=buyGarden;buyGarden=function(side){const had=!!GATE.wall,r=_bg.apply(this,arguments);try{if(r&&!had&&GATE.wall)setTimeout(()=>toast('<b>Bahçe kapısı kuruldu</b><br>Müşteriler bahçeye bu kapıdan çıkar · Düzenle’de kapıya dokunup istediğin yere taşıyabilirsin',ic('move'),5200),3800)}catch(e){}return r}}
 
 // ---------- Düzenle: kapıyı seç ve taşı ----------
-function gateMark(){if(NW.mark){scene.remove(NW.mark);disposeTree(NW.mark);NW.mark=null}if(!(GTM.sel||GTM.on)||!GATE.wall)return;const z=gateZone(GATE);
+const gateSel=()=>GATES[GTM.i]||null;
+function gateMark(){if(NW.mark){scene.remove(NW.mark);disposeTree(NW.mark);NW.mark=null}const G0=gateSel();if(!(GTM.sel||GTM.on)||!G0)return;const z=gateZone(G0);
   const m=new THREE.Mesh(new THREE.PlaneGeometry(z.maxX-z.minX,z.maxZ-z.minZ),new THREE.MeshBasicMaterial({color:GTM.why?0xe0483f:0x58cd68,transparent:true,opacity:0.36,depthWrite:false}));
   m.rotation.x=-Math.PI/2;m.position.set((z.minX+z.maxX)/2,0.036,(z.minZ+z.maxZ)/2);m.renderOrder=7;scene.add(m);NW.mark=m}
 function gateBar(){const pb=$('placebar');pb.hidden=false;try{if(selRing){scene.remove(selRing);selRing=null}}catch(e){}UI.edit=null;const m=$('placeMsg'),row=$('placeRow');
-  if(!GTM.on){m.className='msg';m.textContent='Bahçe kapısı · müşteriler bahçeye buradan çıkar';row.innerHTML=`<button class="btn light" type="button" id="gtMove">${ic('move')}Taşı</button><button class="btn green" type="button" id="gtDone">${ic('check')}Bitti</button>`;
-    $('gtMove').onclick=gateMoveStart;$('gtDone').onclick=()=>{GTM.sel=false;gateMark();drawEditBar()};return}
+  if(!GTM.on){m.className='msg';m.textContent='Bahçe kapısı · müşteriler bahçeye buradan çıkar';row.innerHTML=`<button class="btn light" type="button" id="gtMove">${ic('move')}Taşı</button>${GATES.length>1?`<button class="btn red" type="button" id="gtDel">${ic('close')}Kaldır</button>`:''}<button class="btn green" type="button" id="gtDone">${ic('check')}Bitti</button>`;
+    $('gtMove').onclick=gateMoveStart;if($('gtDel'))$('gtDel').onclick=()=>gateRemoveSel();$('gtDone').onclick=()=>{GTM.sel=false;gateMark();drawEditBar()};return}
   m.className='msg'+(GTM.why?' bad':'');m.textContent=GTM.why||'Bahçe kapısı · duvar boyunca sürükle (yeşil kareler uygun)';
   row.innerHTML=`<button class="btn red" type="button" id="gtNo">${ic('close')}Vazgeç</button><button class="btn green" type="button" id="gtOk" ${GTM.why?'disabled':''}>${ic('check')}Yerleştir</button>`;
   $('gtNo').onclick=()=>gateMoveCancel();$('gtOk').onclick=gateMoveCommit}
-function gateApply(c){GATE.wall=c.wall;GATE.t=c.t;nwNav();nwBuild()}
+function gateApply(c){const G0=gateSel();if(!G0)return;G0.wall=c.wall;G0.t=c.t;nwNav();nwBuild()}
 function gateMap(){try{vmEnsure();const N=tileN(),items=[];for(const c of gateCands()){const p=nwPt(c.wall,c.t,-0.25),i0=Math.floor((p.x-RM.x0)/TILE+1e-6),k0=Math.floor((p.z-RM.z0)/TILE+1e-6);
-      items.push({x:p.x,z:p.z,t:()=>!gateWhy(c),paint:ok=>{for(let d=-1;d<=1;d++){const i=c.wall==='front'?i0+d:i0,k=c.wall==='front'?k0:k0+d;if(i<0||k<0||i>=VM.nx||k>=VM.nz)continue;const id=k*VM.nx+i;if(ok){VM.cov[id]=1;vmPaint(i,k,true)}else if(!VM.cov[id]){VM.cov[id]=2;vmPaint(i,k,false)}}}})}
-    const p=nwPt(GATE.wall,GATE.t);vmRun(items,p.x,p.z,false)}catch(e){console.warn('kapı haritası',e)}}
-function gateMoveStart(){if(!GATE.wall)return;GTM.on=true;GTM.c0={wall:GATE.wall,t:GATE.t};GTM.why=gateWhy(GATE);GTM.drag=null;controls.enabled=false;try{sfx('tap')}catch(e){}gateMap();gateMark();gateBar()}
+      items.push({x:p.x,z:p.z,t:()=>!gateWhy(c,gateSel()),paint:ok=>{for(let d=-1;d<=1;d++){const i=c.wall==='front'?i0+d:i0,k=c.wall==='front'?k0:k0+d;if(i<0||k<0||i>=VM.nx||k>=VM.nz)continue;const id=k*VM.nx+i;if(ok){VM.cov[id]=1;vmPaint(i,k,true)}else if(!VM.cov[id]){VM.cov[id]=2;vmPaint(i,k,false)}}}})}
+    const G0=gateSel(),p=nwPt(G0.wall,G0.t);vmRun(items,p.x,p.z,false)}catch(e){console.warn('kapı haritası',e)}}
+function gateMoveStart(){const G0=gateSel();if(!G0)return;GTM.on=true;GTM.c0={wall:G0.wall,t:G0.t};GTM.why=gateWhy(G0,G0);GTM.drag=null;controls.enabled=false;try{sfx('tap')}catch(e){}gateMap();gateMark();gateBar()}
 function gateMoveEnd(){GTM.on=false;GTM.drag=null;GTM.why=null;try{vmHide()}catch(e){}if(UI.mode==='edit')controls.enabled=true}
 function gateMoveCancel(quiet){if(GTM.on&&GTM.c0)gateApply(GTM.c0);gateMoveEnd();GTM.sel=false;gateMark();try{buildGrid()}catch(e){}if(quiet!==true)drawEditBar()}
-function gateMoveCommit(){const why=gateWhy(GATE);if(why){GTM.why=why;gateBar();gateMark();try{sfx('nope')}catch(e){}return}
-  const moved=!GTM.c0||GTM.c0.wall!==GATE.wall||GTM.c0.t!==GATE.t;S.gate={wall:GATE.wall,t:GATE.t};gateMoveEnd();GTM.sel=false;gateMark();FVER++;try{refreshWorld()}catch(e){}markDirty();try{saveNow()}catch(e){}
+function gateMoveCommit(){const G0=gateSel();if(!G0)return;const why=gateWhy(G0,G0);if(why){GTM.why=why;gateBar();gateMark();try{sfx('nope')}catch(e){}return}
+  const moved=!GTM.c0||GTM.c0.wall!==G0.wall||GTM.c0.t!==G0.t;gateSave();gateMoveEnd();GTM.sel=false;gateMark();FVER++;try{refreshWorld()}catch(e){}markDirty();try{saveNow()}catch(e){}
   if(moved){try{sfx('place')}catch(e){}toast('Bahçe kapısı taşındı',ic('check'),1600)}drawEditBar()}
 // sürükleme: zemindeki noktaya en yakın (bahçeli) duvar ve o duvardaki en yakın kare ortası
-function gateDragTo(cx,cy){const p=screenToFloor(cx,cy);if(!p)return;let best=null;
+function gateDragTo(cx,cy){const G0=gateSel(),p=screenToFloor(cx,cy);if(!p||!G0)return;let best=null;
   for(const w of ['front','right']){if(!nwGarden(w))continue;const [a,b]=nwSpan(w),L=nwLine(w),t0=w==='front'?p.x:p.z,d=Math.abs((w==='front'?p.z:p.x)-L)+Math.max(0,a-t0,t0-b);
     const k=Math.max(0,Math.min(Math.round((b-a-1.5)/0.5),Math.round((t0-a-0.75)/0.5))),t=nwTR(a+0.75+0.5*k);if(!best||d<best.d)best={wall:w,t,d}}
-  if(!best||(best.wall===GATE.wall&&best.t===GATE.t))return;gateApply(best);GTM.why=gateWhy(GATE);gateMark();gateBar();try{sfx('tap')}catch(e){}}
+  if(!best||(best.wall===G0.wall&&best.t===G0.t))return;gateApply(best);GTM.why=gateWhy(G0,G0);gateMark();gateBar();try{sfx('tap')}catch(e){}}
 {const cv=renderer.domElement;
   cv.addEventListener('pointerdown',e=>{if(e.button>0||UI.mode!=='edit'||!GTM.on)return;GTM.drag={id:e.pointerId};try{cv.setPointerCapture(e.pointerId)}catch(er){}try{gateDragTo(e.clientX,e.clientY)}catch(er){console.warn('kapı taşıma',er)}});
   cv.addEventListener('pointermove',e=>{if(!GTM.on||!GTM.drag||GTM.drag.id!==e.pointerId)return;try{gateDragTo(e.clientX,e.clientY)}catch(er){}});
   const up=e=>{if(GTM.drag&&GTM.drag.id===e.pointerId)GTM.drag=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up)}
-function gateHit(x,y){if(!NW.gate)return false;const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
-  const gh=raycaster.intersectObject(NW.gate,true);if(!gh.length)return false;const oth=raycaster.intersectObjects([...FURN.values()].map(R=>R.group).concat([KG,CG].filter(Boolean)),true);return !oth.length||gh[0].distance<oth[0].distance}
+// dokunulan kapının sırası (yoksa -1)
+function gateHit(x,y){if(!NW.gates.length)return -1;const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(((x-r.left)/r.width)*2-1,-((y-r.top)/r.height)*2+1),camera);
+  let bi=-1,bd=1e9;NW.gates.forEach((o,i)=>{const h=raycaster.intersectObject(o.g,true);if(h.length&&h[0].distance<bd){bd=h[0].distance;bi=i}});if(bi<0)return -1;
+  const oth=raycaster.intersectObjects([...FURN.values()].map(R=>R.group).concat([KG,CG].filter(Boolean)),true);return !oth.length||bd<oth[0].distance?bi:-1}
 {const _t=editTap;editTap=function(x,y){if(GTM.on)return;if((typeof CHP!=='undefined'&&CHP.id)||MV.b)return _t(x,y);
-   let hit=false;try{hit=gateHit(x,y)}catch(e){}
-   if(hit){try{if(LAY.on){if(layMoved())return;layCancel()}}catch(e){}GTM.sel=true;UI.edCh=0;try{sfx('tap')}catch(e){}gateMark();gateBar();return}
+   let hit=-1;try{hit=gateHit(x,y)}catch(e){}
+   if(hit>=0){try{if(LAY.on){if(layMoved())return;layCancel()}}catch(e){}GTM.i=hit;GTM.sel=true;UI.edCh=0;try{sfx('tap')}catch(e){}gateMark();gateBar();return}
    if(GTM.sel){GTM.sel=false;gateMark()}return _t(x,y)}}
-{const _d=drawEditBar;drawEditBar=function(){if((GTM.sel||GTM.on)&&UI.mode==='edit'&&GATE.wall){gateBar();return}return _d.apply(this,arguments)}}
+{const _d=drawEditBar;drawEditBar=function(){if((GTM.sel||GTM.on)&&UI.mode==='edit'&&gateSel()){gateBar();return}return _d.apply(this,arguments)}}
 {const _x=exitEdit;exitEdit=function(){try{if(GTM.on)gateMoveCancel(true);GTM.sel=false;gateMark()}catch(e){}return _x.apply(this,arguments)}}
 // tezgâh / kasa taşınırken bahçe kapısının önü kapanmasın
-{const _lc=layoutCheck;layoutCheck=function(k,c,boot){const r=_lc.apply(this,arguments);if(r||boot||!GATE.wall)return r;
-   try{const kb=KOBST_BASE.map(b=>boxW(b,k||KP,K_PIV)),cb=COBST_BASE.map(b=>boxW(b,c||CP,C_PIV));for(const a of kb.concat(cb))if(boxOv(a,NW.zone))return 'Bahçe kapısının önünü kapatıyor'}catch(e){}return r}}
+{const _lc=layoutCheck;layoutCheck=function(k,c,boot){const r=_lc.apply(this,arguments);if(r||boot||!GATES.length)return r;
+   try{const kb=KOBST_BASE.map(b=>boxW(b,k||KP,K_PIV)),cb=COBST_BASE.map(b=>boxW(b,c||CP,C_PIV));for(const a of kb.concat(cb))for(const z of NW.zones)if(boxOv(a,z))return 'Bahçe kapısının önünü kapatıyor'}catch(e){}return r}}
 // ilk kurulum: kabuk bu dosyadan önce kurulmuştu (kayıtta oda ölçüsü yoksa buildShell yeniden çağrılmaz)
 try{gateSync();nwBuild()}catch(e){console.warn('dört duvar',e)}
 
@@ -14652,10 +14681,10 @@ pkDoorApply=function(){const c=oDoorOf();if(!c||PKO.door||!DOORA.leaves.length)r
     const i=C.objs.indexOf(old);if(i>=0)C.objs[i]=np;else C.objs.push(np);L.p=np;try{disposeTree(old)}catch(e){}try{mergeStatic(np.children[0]||np)}catch(e){}}
   const G=F.sur(c.tema);G.position.set(OPB.door.x0,0,OPB.door.t);G.rotation.y=-Math.PI/2;G.userData.wallKeep=true;(par||scene).add(G);C.objs.push(G);try{mergeStatic(G)}catch(e){}
   G.traverse(m=>{if(m.isMesh)m.receiveShadow=true});PKO.sur=G;PKO.door=true};
-pkWindowApply=function(){const c=oWinOf(),WG=SHELL.win;if(!c||!WG||WG.userData.pkWin)return;
-  if(c.pk==='gen'){ogPaint(WG,c.tema);WG.userData.pkWin=true;return}
+pkWindowApply=function(){const c=oWinOf();if(!c)return;for(const WG of Object.values(SHELL.wins||{win:SHELL.win})){if(!WG||WG.userData.pkWin)continue;   // (V229) bütün pencereler aynı tarzda
+  if(c.pk==='gen'){ogPaint(WG,c.tema);WG.userData.pkWin=true;continue}
   for(const o of WG.children.slice(1)){WG.remove(o);try{disposeTree(o)}catch(e){}}
-  const Wg=PK_OPEN[c.pk].win(c.tema);Wg.rotation.y=Math.PI;WG.add(Wg);try{mergeStatic(Wg)}catch(e){}WG.userData.pkWin=true};
+  const Wg=PK_OPEN[c.pk].win(c.tema);Wg.rotation.y=Math.PI;WG.add(Wg);try{mergeStatic(Wg)}catch(e){}WG.userData.pkWin=true}};
 pkBootOpen=function(){oMigrate();oMirror();if(!oDoorOf()&&!oWinOf())return;try{pkDoorApply();pkWindowApply();ENV.hide={back:null,left:null};renderer.shadowMap.needsUpdate=true}catch(e){console.warn('kapı/pencere',e)}};
 {const _g=pkRpGrant;pkRpGrant=function(){const r=_g.apply(this,arguments);oMirror();return r}}
 {const _rm=renderMarket;renderMarket=function(){oMirror();return _rm.apply(this,arguments)}}
@@ -16893,6 +16922,75 @@ function salonAdd(){const ov=$('expOv'),B=ov&&ov.querySelector('.xmBtns');if(!B|
     (s.ok?`<button class="btn green" type="button" id="salBuy">${ic('coin')}${s.c.toLocaleString('tr-TR')} · Büyüt</button>`:`<p class="why">${ic('lock')}${s.why}</p>`);
   t.hidden=false;XM.last='';const b=$('salBuy');if(b)b.onclick=()=>{closeExpandMode();salonBuy()}}}
 {const st=document.createElement('style');st.textContent=`.xmPlus.sal i{background:radial-gradient(circle at 40% 35%,#ffe7a0,#f2b134);border-color:#8a4a12;box-shadow:0 3px 0 #8a4a12,0 0 0 4px rgba(255,255,255,.8),0 6px 14px rgba(0,0,0,.3)}.xmPlus.sal.sel i{box-shadow:0 3px 0 #8a4a12,0 0 0 5px #ffd24a,0 6px 14px rgba(0,0,0,.3)}.xmPlus.sal.lock i{background:radial-gradient(circle at 40% 35%,#efe2c8,#c9b28a);border-color:#7a5a36}`;document.head.appendChild(st)}
+
+// ================= V229: BİRDEN FAZLA PENCERE VE BAHÇE KAPISI =================
+// Kullanıcı isteği (14 Kasım 2026, 15:50): "oyuna birden fazla pencere ve bahçe kapısı eklemeye izin ver".
+//  · Pencere: ek pencereler OP'de 'win2', 'win3'… anahtarlarıyla durur (p0: opIsWin, opWinKeys, OP_DIM, OP_NAME; buildShell hepsini kurar →
+//    SHELL.wins). Kayıt yine S.layout.op (p37 layoutBoot ek anahtarları da yükler). Hepsi aynı ölçüde ve seçili pencere tarzında (p84).
+//    En çok OPW_MAX (5) pencere; ilk pencere ('win') kaldırılamaz.
+//  · Bahçe kapısı: GATES=[{wall,t},…] (p82; kayıt S.gates, eski tek kapı S.gate'ten okunur). En çok GT_MAX (4); en az bir kapı kalır.
+//  · Market: Pencere sekmesinde "Ek pencere" (ow_extra), Kapı sekmesinde "Ek bahçe kapısı" (og_extra) — kind 'opadd' (stil değil, yapı).
+//    Satın alınca uygun ilk yere kurulur, ücret alınır ve Düzenle açılıp yeni açıklık taşıma kipinde seçili gelir (Vazgeç: kurulduğu yerde kalır).
+//  · Düzenle: ek pencere ya da (birden fazlaysa) bahçe kapısı seçiliyken "Kaldır" → kaldırılır, satın alma bedeli iade edilir.
+{const add=c=>{if(!CAT[c.id]){CATALOG.push(c);CAT[c.id]=c}};
+ add({id:'ow_extra',kind:'opadd',tab:'window',what:'win',name:'Ek pencere',price:300,lvl:3,once:true,desc:'Kafene bir pencere daha ekler. Uygun bir duvara kurulur; Düzenle’de dokunup istediğin duvara taşıyabilir ya da kaldırabilirsin.'});
+ add({id:'og_extra',kind:'opadd',tab:'door',what:'gate',name:'Ek bahçe kapısı',price:400,lvl:5,once:true,desc:'Bahçeye açılan bir kapı daha ekler. Müşteriler ve garsonlar en yakın kapıyı kullanır; Düzenle’de taşıyabilir ya da kaldırabilirsin.'})}
+{const _ct=catTab;catTab=function(c){return c&&c.kind==='opadd'?c.tab:_ct.apply(this,arguments)}}
+{const _cs=catShown;catShown=function(c){if(c&&c.kind==='opadd')return !EVMODE;return _cs.apply(this,arguments)}}
+{const _ft=furnThumb;furnThumb=function(id){
+  if(id==='ow_extra'){const c=oWinOf()||CAT.ow_default;return thumb('f:ow_extra:'+c.id,()=>oWinGroup(c),{dir:c.tema&&c.pk!=='gen'?[-0.5,0.22,-1]:[0.5,0.22,1],pad:1.0})}
+  if(id==='og_extra')return thumb('f:og_extra',()=>gateBuild(),{dir:[0.5,0.25,1],pad:1.0});
+  return _ft.apply(this,arguments)}}
+const opxGarden=()=>{try{return nwGarden('front')||nwGarden('right')}catch(e){return false}};
+function opxState(c){const w=c.what==='win',n=w?opWinKeys().length:GATES.length,max=w?OPW_MAX:GT_MAX,note=`Şimdi ${n}/${max} ${w?'pencere':'bahçe kapısı'} var.`;
+  if(S.lvl<c.lvl)return {lock:`Seviye ${c.lvl} gerekli`,note};
+  if(!w&&!opxGarden())return {lock:'Önce bahçe aç',note:'Bahçe, Yapı Market › Genişlet’ten açılır.'};
+  if(n>=max)return {lock:`En çok ${max} ${w?'pencere':'bahçe kapısı'}`,note};
+  return {ok:S.coins>=c.price,note:note+(S.coins>=c.price?'':' Yeterli paran yok.')}}
+{const _rd=renderDetail;renderDetail=function(){const c=CAT[UI.sel];if(!c||c.kind!=='opadd'||UI.tab==='clothes'||UI.tab==='upg'||UI.tab==='expand')return _rd.apply(this,arguments);
+  const d=$('mkDetail');d.hidden=false;const st=opxState(c);
+  const btn=st.lock?`<button class="btn" type="button" disabled>${ic('lock')}${st.lock}</button>`:`<button class="btn" type="button" id="dAct" ${st.ok?'':'disabled'}>${ic('coin')}${c.price} · Satın al ve yerleştir</button>`;
+  d.innerHTML=`<div class="th"><img src="${itemThumb(c.id)}" alt=""></div><div class="tx"><b>${c.name}</b><p>${c.desc} ${st.note}</p><div class="row">${btn}</div></div>`;const a=$('dAct');if(a)a.onclick=()=>buy(c)}}
+{const _by=buy;buy=function(c){if(c&&c.kind==='opadd'){opxBuy(c);return}return _by.apply(this,arguments)}}
+
+// ---- pencere ----
+// yeni pencerenin yeri uygun mu (null = uygun): duvar içinde, öbür açıklıklardan ve bahçe kapılarından ayrı, tezgâh raflarının ve duvar süslerinin dışında
+function winWhy(key){const w=opCheck();if(w)return w;const o=OP[key],D=OP_DIM()[key];
+  try{const sw=shelfWall(KP);if(sw&&o.wall===sw.wall){const b=sw.b,sx=sw.wall==='back'||sw.wall==='front',a0=sx?b.minX:b.minZ,a1=sx?b.maxX:b.maxZ;if(o.t+D.w/2+0.05>a0&&o.t-D.w/2-0.05<a1)return 'Pencere tezgâh raflarının arkasına geliyor'}}catch(e){}
+  for(const R of FURN.values()){const ck=CAT[R.rec.id];if(ck.kind==='walldecor'&&slotBlocked(R.rec.slot)==='win')return `Duvardaki “${ck.name}” pencereye denk geliyor`}
+  return null}
+const opSaveLayout=()=>{S.layout={...(S.layout||{}),op:JSON.parse(JSON.stringify(OP))}};
+function winAdd(){if(opWinKeys().length>=OPW_MAX)return null;let n=2;while(OP['win'+n])n++;const key='win'+n,hw=WIN.w/2;
+  const cnt=w=>Object.keys(OP).filter(k=>OP[k].wall===w).length+GATES.filter(g=>g.wall===w).length;
+  const walls=['back','left'].sort((a,b)=>cnt(a)-cnt(b)).concat(['right','front'].sort((a,b)=>cnt(a)-cnt(b)));   // önce varsayılan bakışta GÖRÜNEN duvarlar (arka, sol), aralarında en boş olan; yer yoksa sağ / ön
+  for(const w of walls){const [a,c]=wallSpan(w),cand=[];for(let t=Math.ceil((a+0.3+hw)/LAY_STEP)*LAY_STEP;t<=c-0.3-hw+1e-6;t+=LAY_STEP)cand.push(+t.toFixed(2));
+    const mid=(a+c)/2;cand.sort((p,q)=>Math.abs(p-mid)-Math.abs(q-mid));
+    for(const t of cand){OP[key]={wall:w,t};if(!winWhy(key)){opApplyLive();opSaveLayout();return key}}}
+  delete OP[key];return null}
+function winRemove(key){if(key==='win'||!OP[key]||!opIsWin(key))return;try{if(MV.b)mvStop();if(LAY.on)layCancel()}catch(e){}
+  delete OP[key];opApplyLive();opSaveLayout();const p=CAT.ow_extra.price;S.coins+=p;hudCoins(true);markDirty();saveNow();try{sfx('place')}catch(e){}
+  toast(`Pencere kaldırıldı · ${ic('coin')}${p} iade edildi`,ic('check'),2400);drawEditBar()}
+// Düzenle çubuğu: ek pencere seçiliyken (taşınmıyorken) "Kaldır"
+{const _lb=layBar;layBar=function(){const r=_lb.apply(this,arguments);try{const b=LAY.on;if(b&&b!=='win'&&opIsWin(b)&&MV.b!==b&&!(typeof buildOn==='function'&&buildOn())){const done=$('lyDone');
+      if(done&&!$('lyDel')){const x=document.createElement('button');x.type='button';x.className='btn red';x.id='lyDel';x.innerHTML=`${ic('close')}Kaldır`;x.onclick=()=>winRemove(b);done.parentNode.insertBefore(x,done)}}}catch(e){}return r}}
+
+// ---- bahçe kapısı ----
+function gateAdd(){if(GATES.length>=GT_MAX)return -1;const c=gateFree();if(!c)return -1;GATES.push({wall:c.wall,t:c.t});gateSave();nwNav();nwBuild();FVER++;try{refreshWorld()}catch(e){}return GATES.length-1}
+function gateRemoveSel(){const i=GTM.i;if(!GATES[i])return;const why=gateRemoveWhy(i);if(why){try{sfx('nope')}catch(e){}toast(why,ic('close'),2800);return}
+  GATES.splice(i,1);gateSave();GTM.sel=false;GTM.on=false;GTM.i=0;nwNav();nwBuild();gateMark();FVER++;try{refreshWorld()}catch(e){}
+  const p=CAT.og_extra.price;S.coins+=p;hudCoins(true);markDirty();saveNow();try{sfx('place')}catch(e){}toast(`Bahçe kapısı kaldırıldı · ${ic('coin')}${p} iade edildi`,ic('check'),2400);drawEditBar()}
+
+// ---- satın alma: kur → öde → Düzenle'de taşıma kipinde seçili ----
+function opxBuy(c){const st=opxState(c);if(st.lock||!st.ok){try{sfx('nope')}catch(e){}return}let sel=null;
+  if(c.what==='win'){const k=winAdd();if(!k){try{sfx('nope')}catch(e){}toast('Duvarlarda pencereye uygun yer yok · önce bir duvar süsünü ya da pencereyi taşı',ic('close'),3200);return}sel={win:k}}
+  else{const i=gateAdd();if(i<0){try{sfx('nope')}catch(e){}toast('Bahçe duvarında kapıya uygun yer yok · kapının geleceği yerdeki eşyaları taşı',ic('close'),3200);return}sel={gate:i}}
+  addCoins(-c.price,'decor');try{firstXP(c.id)}catch(e){}try{sfx('buy')}catch(e){}markDirty();saveNow();
+  toast(`<b>${c.name} kuruldu</b><br>Sürükleyerek istediğin yere al, sonra Yerleştir’e dokun`,`<img src="${itemThumb(c.id)}" alt="">`,3600);opxGoEdit(sel)}
+function opxGoEdit(sel){try{if(typeof K2!=='undefined'&&K2.view===2)k2View(1,true)}catch(e){}
+  let n=0;try{enterEdit()}catch(e){console.warn('düzenle',e)}
+  const iv=setInterval(()=>{if(++n>120||(UI.mode==='cafe'&&!ED.busy&&n>8)){clearInterval(iv);return}
+    if(UI.mode!=='edit'||ED.busy||UI.modal)return;clearInterval(iv);
+    try{if(sel.win&&OP[sel.win]){layStart(sel.win);mvStart()}else if(sel.gate!=null&&GATES[sel.gate]){GTM.i=sel.gate;GTM.sel=true;UI.edit=null;gateMark();gateMoveStart()}}catch(e){console.warn('yeni açıklık',e)}},250)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
