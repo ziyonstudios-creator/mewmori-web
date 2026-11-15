@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TabbyChef · Ön kayıt</title>
+<meta name="description" content="TabbyChef: kedilerle kendi kafeni kur. Şimdi ön kayıt ol, oyun çıkınca 100 elmas + 1.000 altın kazan.">
+<meta property="og:title" content="TabbyChef · Ön kayıt">
+<meta property="og:description" content="Kedilerle kendi kafeni kur. Ön kayıt ol, oyun çıkınca 100 elmas + 1.000 altın kazan.">
+<meta property="og:image" content="https://tabbychef.app/site/hero.jpg">
+<meta property="og:url" content="https://tabbychef.app/">
+<meta name="theme-color" content="#f7e7cf">
+<link rel="icon" href="site/logo.svg" type="image/svg+xml">
+<script>
+// Giriş dönüşü (Google/Apple ile girişten sonra kök adrese dönülürse) → oyuna aktar
+(function(){var h=location.hash||'',q=location.search||'';if(/access_token=|refresh_token=|error_description=/.test(h)||/[?&]code=/.test(q)){location.replace('oyna'+q+h)}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#4a2e1c;--ink2:#7a5536;--cream:#fff8ec;--bg:#f7e7cf;--card:#fffdf8;--line:#e8cfa9;--orange:#e9a25a;--orange2:#d9822f;--green:#7fbf4a;--green2:#5c9a2e;--red:#c0392b;--gold:#f0b52e;--sh:0 4px 0 #dcc19a;
+  --disp:"Baloo 2","Nunito",system-ui,sans-serif;--body:"Nunito",system-ui,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:700 16px/1.5 var(--body);overflow-x:hidden}
+img,video{max-width:100%;display:block}
+a{color:var(--orange2)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font:800 22px var(--disp)}
+.brand img{width:54px;height:auto}
+.lang{display:flex;border:2.5px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--card)}
+.lang button{border:0;background:none;font:900 13px var(--body);color:var(--ink);padding:6px 12px;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:#fff}
+
+.hero{position:relative;border-radius:28px;overflow:hidden;border:3px solid var(--ink);box-shadow:0 6px 0 var(--ink);background:#f6c79a}
+.hero .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(74,46,28,.05) 0%,rgba(74,46,28,.15) 40%,rgba(74,46,28,.72) 100%)}
+.hero .in{position:relative;padding:150px 20px 22px;color:#fff;text-align:center}
+h1{font:800 clamp(30px,7vw,52px)/1.05 var(--disp);margin:0 0 8px;text-shadow:0 3px 0 var(--ink),0 0 18px rgba(0,0,0,.25)}
+.hero p.sub{margin:0 auto;max-width:560px;font:800 17px/1.4 var(--body);text-shadow:0 2px 0 rgba(74,46,28,.8)}
+
+.counter{display:inline-flex;align-items:center;gap:10px;margin:16px auto 0;padding:8px 16px;background:var(--card);color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 3px 0 var(--ink)}
+.counter b{font:800 26px/1 var(--disp);color:var(--orange2);min-width:1ch}
+.counter span{font:900 14px var(--body)}
+
+.grid2{display:grid;grid-template-columns:1fr;gap:18px;margin:20px 0}
+@media(min-width:860px){.grid2{grid-template-columns:1.05fr .95fr;align-items:start}}
+
+.card{background:var(--card);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink);padding:20px}
+.card h2{font:800 26px/1.15 var(--disp);margin:0 0 6px}
+.reward{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+.chip{display:flex;align-items:center;gap:6px;padding:6px 12px 6px 6px;border:2.5px solid var(--ink);border-radius:999px;background:linear-gradient(#fff3cf,#ffe39b);font:800 17px var(--disp);white-space:nowrap}
+.chip img{width:28px;height:28px}
+.chip.gem{background:linear-gradient(#f4e8ff,#e0c6fa)}
+form{display:flex;flex-direction:column;gap:10px}
+label.f{font:900 14px var(--body)}
+input[type=email]{width:100%;font:800 18px var(--body);color:var(--ink);padding:13px 14px;border:3px solid var(--line);border-radius:16px;background:#fff}
+input[type=email]:focus{outline:none;border-color:var(--green)}
+.consent{display:flex;gap:10px;align-items:flex-start;font:700 13.5px/1.45 var(--body);color:var(--ink2)}
+.consent input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--green2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:3px solid var(--ink);border-radius:18px;padding:12px 20px;font:800 21px/1 var(--disp);color:#fff;background:linear-gradient(#93d15b,var(--green2));box-shadow:0 4px 0 var(--ink);cursor:pointer;text-decoration:none;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn[disabled]{filter:grayscale(.6);opacity:.7;cursor:default}
+.btn.orange{background:linear-gradient(#f5bb74,var(--orange2))}
+.btn.ghost{background:var(--card);color:var(--ink);text-shadow:none}
+.msg{min-height:22px;margin:0;font:800 14px var(--body)}.msg.bad{color:var(--red)}.msg.ok{color:var(--green2)}
+
+.done{display:none;text-align:center}
+.done.on{display:block}
+.codebox{margin:12px auto;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.code{font:800 34px/1 var(--disp);letter-spacing:.1em;padding:12px 18px;border:3px dashed var(--orange2);border-radius:16px;background:#fff6e6;color:var(--ink);word-break:break-all}
+.steps{text-align:left;margin:12px 0 0;padding-left:20px;font:700 14.5px/1.5 var(--body)}
+.steps li{margin:4px 0}
+
+.vid{display:flex;justify-content:center}
+.vid video{width:100%;max-width:340px;aspect-ratio:9/16;border-radius:22px;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);background:#000;object-fit:cover}
+
+h3.sec{font:800 30px/1.1 var(--disp);text-align:center;margin:34px 0 14px}
+.feats{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:700px){.feats{grid-template-columns:1fr 1fr 1fr}}
+.feat{background:var(--card);border:3px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 4px 0 var(--ink)}
+.feat img{width:100%;aspect-ratio:16/9;object-fit:cover;border-bottom:3px solid var(--ink)}
+.feat div{padding:12px 14px}
+.feat b{display:block;font:800 19px/1.2 var(--disp)}
+.feat p{margin:4px 0 0;font:700 14px/1.45 var(--body);color:var(--ink2)}
+
+.try{margin:30px 0 0;text-align:center;padding:22px 18px;background:#fff1d8;border:3px dashed var(--orange2);border-radius:24px}
+.try p{margin:0 0 12px;font:800 16px var(--body)}
+
+details.kvkk{margin:28px 0 0;background:var(--card);border:2.5px solid var(--line);border-radius:18px;padding:12px 16px}
+details.kvkk summary{cursor:pointer;font:900 15px var(--body)}
+details.kvkk p,details.kvkk li{font:600 13.5px/1.55 var(--body);color:var(--ink2)}
+footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var(--ink2)}
+.en{display:none}html[lang=en] .en{display:revert}html[lang=en] .tr{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="brand" href="./"><img src="site/logo.svg" alt="">TabbyChef</a>
+  <div class="lang" role="group" aria-label="Dil / Language"><button type="button" data-l="tr" aria-pressed="true">TR</button><button type="button" data-l="en" aria-pressed="false">EN</button></div>
+</header>
+
+<section class="hero">
+  <img class="bgimg" src="site/hero.jpg" alt="">
+  <div class="shade"></div>
+  <div class="in">
+    <h1><span class="tr">Kedilerle kendi kafeni kur!</span><span class="en">Build your own cat café!</span></h1>
+    <p class="sub"><span class="tr">Sipariş al, yemek pişir, kafeni büyüt ve dünyayı gez. Oyun yakında App Store ve Google Play'de.</span><span class="en">Take orders, cook, grow your café and tour the world. Coming soon to the App Store and Google Play.</span></p>
+    <div class="counter" aria-live="polite"><b id="cnt">…</b><span><span class="tr">kişi ön kayıt oldu</span><span class="en">players pre-registered</span></span></div>
+  </div>
+</section>
+
+<div class="grid2">
+  <section class="card" id="kayit">
+    <div id="formArea">
+      <h2><span class="tr">Ön kayıt ol, ödülü kap</span><span class="en">Pre-register and get a reward</span></h2>
+      <p style="margin:0;font-weight:700;color:var(--ink2)"><span class="tr">Oyun çıkınca hesabına hemen eklenir:</span><span class="en">Added to your account as soon as the game launches:</span></p>
+      <div class="reward">
+        <div class="chip gem"><img src="img/ui/i_gem.webp" alt="">100 <span class="tr">elmas</span><span class="en">gems</span></div>
+        <div class="chip"><img src="img/ui/i_coins.webp" alt="">1.000 <span class="tr">altın</span><span class="en">gold</span></div>
+      </div>
+      <form id="f" novalidate>
+        <label class="f" for="em"><span class="tr">E-posta adresin</span><span class="en">Your email address</span></label>
+        <input type="email" id="em" name="email" autocomplete="email" inputmode="email" required placeholder="ornek@mail.com">
+        <label class="consent"><input type="checkbox" id="ok">
+          <span><span class="tr">E-postamın oyun çıktığında bilgilendirme ve ön kayıt ödülü için saklanmasını kabul ediyorum. <a href="#kvkk">Aydınlatma metni</a></span><span class="en">I agree that my email is stored to notify me at launch and to give my pre-registration reward. <a href="#kvkk">Privacy notice</a></span></span></label>
+        <button class="btn" type="submit" id="go"><span class="tr">Ön kayıt ol</span><span class="en">Pre-register</span></button>
+        <p class="msg" id="msg" aria-live="polite"></p>
+      </form>
+    </div>
+    <div class="done" id="done">
+      <h2><span class="tr">Kaydın alındı! 🎉</span><span class="en">You're in! 🎉</span></h2>
+      <p style="margin:0" id="doneTx"></p>
+      <div class="codebox" id="codeBox"><div class="code" id="code"></div><button class="btn orange" type="button" id="copy"><span class="tr">Kopyala</span><span class="en">Copy</span></button></div>
+      <ol class="steps">
+        <li><span class="tr">Oyun çıkınca <b>aynı e-postayla</b> hesap açarsan ödülün kendiliğinden gelir.</span><span class="en">Sign up in the game with <b>the same email</b> and your reward arrives automatically.</span></li>
+        <li><span class="tr">Farklı bir hesapla girersen kodunu <b>Ayarlar › Hediye kodu</b>'na yaz.</span><span class="en">Using another account? Enter your code in <b>Settings › Gift code</b>.</span></li>
+        <li><span class="tr">Kodun ekran görüntüsünü almayı unutma.</span><span class="en">Take a screenshot of your code.</span></li>
+      </ol>
+      <p style="margin:14px 0 0"><a class="btn ghost" href="#" id="share"><span class="tr">Arkadaşına gönder</span><span class="en">Share with a friend</span></a></p>
+    </div>
+  </section>
+  <div class="vid"><video id="vid" playsinline muted loop autoplay preload="metadata" poster="site/poster_tr.jpg"><source src="site/tanitim_tr.mp4" type="video/mp4"></video></div>
+</div>
+
+<h3 class="sec"><span class="tr">Oyunda neler var?</span><span class="en">What's inside?</span></h3>
+<div class="feats">
+  <div class="feat"><img src="site/g2.jpg" alt="" loading="lazy"><div><b><span class="tr">Sevimli müşteriler</span><span class="en">Adorable customers</span></b><p><span class="tr">Kedi müşterileri karşıla, siparişlerini hazırla, bahşişleri topla.</span><span class="en">Greet cat customers, prepare their orders, collect tips.</span></p></div></div>
+  <div class="feat"><img src="site/g1.jpg" alt="" loading="lazy"><div><b><span class="tr">Kafeni büyüt</span><span class="en">Grow your café</span></b><p><span class="tr">Küçük bir dükkândan bahçeli kocaman bir kafeye uzan.</span><span class="en">Go from a tiny shop to a huge café with a garden.</span></p></div></div>
+  <div class="feat"><img src="site/g3.jpg" alt="" loading="lazy"><div><b><span class="tr">Dünyayı gez</span><span class="en">Tour the world</span></b><p><span class="tr">İtalya, Türkiye, Japonya, Fransa… her ülkenin kendi tarzı.</span><span class="en">Italy, Türkiye, Japan, France… each with its own style.</span></p></div></div>
+  <div class="feat"><img src="site/g4.jpg" alt="" loading="lazy"><div><b><span class="tr">Lüks takımlar</span><span class="en">Luxury sets</span></b><p><span class="tr">Yat Kulübü, Lale Sarayı ve dahası ile kafeni süsle.</span><span class="en">Decorate with Yacht Club, Tulip Palace and more.</span></p></div></div>
+  <div class="feat"><img src="site/g5.jpg" alt="" loading="lazy"><div><b><span class="tr">Kendi tarzın</span><span class="en">Your own style</span></b><p><span class="tr">Masaları, duvarları, zemini istediğin gibi yerleştir.</span><span class="en">Place tables, walls and floors any way you like.</span></p></div></div>
+  <div class="feat"><img src="site/poster_tr.jpg" alt="" loading="lazy" style="object-position:50% 35%"><div><b><span class="tr">Arkadaşlarınla yarış</span><span class="en">Compete with friends</span></b><p><span class="tr">Haftalık sıralamalar, etkinlikler ve hediyeler.</span><span class="en">Weekly rankings, events and gifts.</span></p></div></div>
+</div>
+
+<div class="try">
+  <p><span class="tr">Beklemek istemiyor musun? Tarayıcı sürümünü şimdi dene.</span><span class="en">Can't wait? Try the browser version now.</span></p>
+  <a class="btn orange" href="oyna"><span class="tr">Tarayıcıda oyna</span><span class="en">Play in browser</span></a>
+</div>
+
+<details class="kvkk" id="kvkk">
+  <summary><span class="tr">KVKK aydınlatma metni</span><span class="en">Privacy notice</span></summary>
+  <div class="tr">
+    <p>Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında ön kayıt sırasında toplanan verileri açıklar.</p>
+    <ul>
+      <li><b>Veri sorumlusu:</b> TabbyChef ekibi. İletişim: <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a></li>
+      <li><b>Toplanan veriler:</b> e-posta adresin, seçtiğin dil, kayıt tarihi, nereden geldiğin (ör. Instagram) ve kötüye kullanımı önlemek için IP adresinin geri çevrilemez özeti. IP adresinin kendisi saklanmaz.</li>
+      <li><b>Amaç:</b> oyun çıktığında seni bilgilendirmek ve ön kayıt ödülünü hesabına tanımlamak. Verilerin reklam için kullanılmaz, satılmaz, başkalarıyla paylaşılmaz.</li>
+      <li><b>Hukuki sebep:</b> açık rızan.</li>
+      <li><b>Saklama yeri:</b> Supabase bulut sunucuları (Frankfurt, Almanya). Bu, verinin yurt dışında saklanması anlamına gelir; onay kutusunu işaretleyerek buna da rıza vermiş olursun.</li>
+      <li><b>Saklama süresi:</b> oyunun çıkışından sonra en çok 12 ay ya da sen silinmesini isteyene kadar.</li>
+      <li><b>Hakların:</b> KVKK 11. madde kapsamında verine erişme, düzeltme, silme ve rızanı geri alma hakkın var. Bunun için <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a> adresine yazman yeterli.</li>
+    </ul>
+  </div>
+  <div class="en">
+    <p>This notice explains what we collect when you pre-register.</p>
+    <ul>
+      <li><b>Controller:</b> the TabbyChef team. Contact: <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a></li>
+      <li><b>Data:</b> your email, language, sign-up date, where you came from (e.g. Instagram) and a one-way hash of your IP address to prevent abuse. The IP address itself is not stored.</li>
+      <li><b>Purpose:</b> to tell you when the game launches and to add your pre-registration reward. Never used for ads, sold or shared.</li>
+      <li><b>Legal basis:</b> your consent.</li>
+      <li><b>Storage:</b> Supabase cloud servers in Frankfurt, Germany.</li>
+      <li><b>Retention:</b> up to 12 months after launch, or until you ask us to delete it.</li>
+      <li><b>Your rights:</b> access, correction, deletion and withdrawing consent. Just write to <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a>.</li>
+    </ul>
+  </div>
+</details>
+
+<footer>© 2026 TabbyChef · <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a></footer>
+</div>
+
+<script>
+(function(){
+var SBU='https://ampchjrsfqmmgcevpvms.supabase.co/rest/v1/rpc/',KEY='sb_publishable__hWgNWgALQ1Td2peh8aIUQ_6htQjU9m';
+function rpc(n,body){return fetch(SBU+n,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify(body||{})}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
+var $=function(i){return document.getElementById(i)};
+var L='tr';
+var T={tr:{email:'Geçerli bir e-posta adresi yaz.',consent:'Devam etmek için onay kutusunu işaretle.',rate:'Çok fazla deneme oldu. Biraz sonra yeniden dene.',net:'Bağlantı kurulamadı. Biraz sonra yeniden dene.',wait:'Kaydediliyor…',
+  done:'Oyun çıkınca ödülün seni bekliyor. Kişisel ön kayıt kodun:',already:'Bu e-posta zaten kayıtlı. Ödülün oyun çıkınca aynı e-postayla açacağın hesaba gelecek.',copied:'Kopyalandı',share:'TabbyChef için ön kayıt oldum! Sen de kayıt ol, oyun çıkınca 100 elmas + 1.000 altın kazan:'},
+  en:{email:'Please enter a valid email address.',consent:'Please tick the consent box to continue.',rate:'Too many attempts. Please try again later.',net:"Couldn't connect. Please try again later.",wait:'Saving…',
+  done:'Your reward will be waiting at launch. Your personal pre-registration code:',already:'This email is already registered. Your reward will arrive on the account you create with the same email.',copied:'Copied',share:'I pre-registered for TabbyChef! Sign up too and get 100 gems + 1,000 gold at launch:'}};
+function nf(n){return Number(n||0).toLocaleString(L==='en'?'en-US':'tr-TR')}
+var count=null;
+function setLang(l){L=l==='en'?'en':'tr';document.documentElement.lang=L;
+  document.querySelectorAll('.lang button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.l===L?'true':'false')});
+  try{localStorage.setItem('tc-lang',L)}catch(e){}
+  $('em').placeholder=L==='en'?'you@example.com':'ornek@mail.com';
+  var v=$('vid'),src=L==='en'?'site/tanitim_en.mp4':'site/tanitim_tr.mp4';if(v.querySelector('source').getAttribute('src')!==src){v.querySelector('source').setAttribute('src',src);v.poster=L==='en'?'site/poster_en.jpg':'site/poster_tr.jpg';v.load();var p=v.play();if(p&&p.catch)p.catch(function(){})}
+  if(count!=null)$('cnt').textContent=nf(count);
+  document.title=L==='en'?'TabbyChef · Pre-register':'TabbyChef · Ön kayıt'}
+var qs=new URLSearchParams(location.search),saved=null;try{saved=localStorage.getItem('tc-lang')}catch(e){}
+setLang(qs.get('lang')||saved||((navigator.language||'tr').toLowerCase().indexOf('tr')===0?'tr':'en'));
+document.querySelectorAll('.lang button').forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
+var src=(qs.get('k')||qs.get('utm_source')||(/Instagram/i.test(navigator.userAgent)?'instagram':(document.referrer?'ref':'web'))).slice(0,40);
+function loadCount(){rpc('prereg_count').then(function(n){count=n|0;$('cnt').textContent=nf(count)}).catch(function(){$('cnt').textContent='–'})}
+loadCount();setInterval(loadCount,60000);
+var busy=false,msg=$('msg');
+function say(t,ok){msg.className='msg '+(ok?'ok':'bad');msg.textContent=t}
+$('f').addEventListener('submit',function(e){e.preventDefault();if(busy)return;var em=$('em').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){say(T[L].email);$('em').focus();return}
+  if(!$('ok').checked){say(T[L].consent);return}
+  busy=true;$('go').disabled=true;say(T[L].wait,true);
+  rpc('prereg_signup',{p_email:em,p_lang:L,p_source:src,p_consent:true}).then(function(d){
+    if(!d||!d.ok){say(T[L][d&&d.err]||T[L].net);return}
+    if(d.count!=null){count=d.count;$('cnt').textContent=nf(count)}
+    $('formArea').style.display='none';$('done').classList.add('on');
+    if(d.code){$('code').textContent=d.code.slice(0,2)+'-'+d.code.slice(2);$('doneTx').textContent=d.already?T[L].already:T[L].done}
+    else{$('codeBox').style.display='none';$('doneTx').textContent=T[L].already}
+    $('kayit').scrollIntoView({behavior:'smooth',block:'start'});
+  }).catch(function(){say(T[L].net)}).then(function(){busy=false;$('go').disabled=false})});
+$('copy').onclick=function(){var t=$('code').textContent,b=this;function ok(){var o=b.innerHTML;b.textContent=T[L].copied;setTimeout(function(){b.innerHTML=o},1500)}
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(ok,function(){});else{var r=document.createRange();r.selectNode($('code'));getSelection().removeAllRanges();getSelection().addRange(r)}};
+$('share').onclick=function(e){e.preventDefault();var u='https://tabbychef.app/?k=paylas',t=T[L].share;
+  if(navigator.share)navigator.share({title:'TabbyChef',text:t,url:u}).catch(function(){});
+  else if(navigator.clipboard)navigator.clipboard.writeText(t+' '+u).then(function(){say(T[L].copied,true)})};
+})();
+</script>
+</body>
+</html>

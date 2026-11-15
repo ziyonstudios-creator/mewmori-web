@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="logo still" viewBox="0 0 460 300" role="img" aria-label="TabbyChef"><g transform="translate(230 160)">
+  <g class="lg-head">
+   <path d="M-58 -6 L-50 -62 L-14 -36 Z" fill="#e9a25a" stroke="#4a2e1c" stroke-width="7" stroke-linejoin="round"/><path d="M-48 -18 L-45 -46 L-26 -32 Z" fill="#f2a6a0"/>
+   <path d="M58 -6 L50 -62 L14 -36 Z" fill="#e9a25a" stroke="#4a2e1c" stroke-width="7" stroke-linejoin="round"/><path d="M48 -18 L45 -46 L26 -32 Z" fill="#f2a6a0"/>
+   <ellipse cx="0" cy="4" rx="66" ry="56" fill="#e9a25a" stroke="#4a2e1c" stroke-width="7"/>
+   <path d="M-22 -40 L-12 -24 L0 -40 L12 -24 L22 -40" fill="none" stroke="#9a5a2c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+   <path d="M-62 -2 h16 M-63 12 h14 M62 -2 h-16 M63 12 h-14" stroke="#9a5a2c" stroke-width="5" stroke-linecap="round"/>
+   <ellipse cx="0" cy="26" rx="30" ry="22" fill="#fbf3e4"/>
+   <g class="lg-eyes"><ellipse cx="-24" cy="2" rx="8" ry="10" fill="#4a2e1c"/><ellipse cx="24" cy="2" rx="8" ry="10" fill="#4a2e1c"/><circle cx="-21" cy="-2" r="3" fill="#fff"/><circle cx="27" cy="-2" r="3" fill="#fff"/></g>
+   <ellipse cx="-40" cy="20" rx="9" ry="5.5" fill="#f2a6a0" opacity=".8"/><ellipse cx="40" cy="20" rx="9" ry="5.5" fill="#f2a6a0" opacity=".8"/>
+   <path d="M-6 16 h12 l-6 7 z" fill="#f2a6a0" stroke="#4a2e1c" stroke-width="3" stroke-linejoin="round"/>
+   <path d="M0 23 q-5 9 -12 4 M0 23 q5 9 12 4" fill="none" stroke="#4a2e1c" stroke-width="3.5" stroke-linecap="round"/>
+   <path d="M-30 22 L-62 16 M-30 28 L-60 32 M30 22 L62 16 M30 28 L60 32" stroke="#4a2e1c" stroke-width="2.5" stroke-linecap="round" opacity=".75"/>
+  </g>
+  <g class="lg-hat"><g transform="translate(0 -47)">
+   <path d="M-38 6 h76 v-20 h-76 z" fill="#fff8ec" stroke="#4a2e1c" stroke-width="7" stroke-linejoin="round"/>
+   <path d="M-40 -14 C-62 -18 -60 -54 -34 -50 C-34 -74 -4 -78 2 -62 C10 -82 42 -74 38 -50 C62 -54 64 -18 40 -14 Z" fill="#fff8ec" stroke="#4a2e1c" stroke-width="7" stroke-linejoin="round"/>
+   <path d="M-14 -18 v-14 M14 -18 v-14" stroke="#e6d8c2" stroke-width="5" stroke-linecap="round"/>
+   <path d="M-38 -4 h76" stroke="#f2b134" stroke-width="5"/>
+  </g></g>
+  <path class="lg-steam" d="M44 -128 c-10 -8 8 -16 -2 -26 c-8 -8 6 -14 0 -22" fill="none" stroke="#f2a6a0" stroke-width="6" stroke-linecap="round"/></g><text class="lg-w" style="--i:0" x="230" y="282" text-anchor="middle" textLength="400" lengthAdjust="spacingAndGlyphs" fill="#c98a4e" stroke="#4a2e1c" stroke-width="8.58" stroke-linejoin="round" paint-order="stroke" font-family="'Baloo 2',Nunito,system-ui,sans-serif" font-weight="800" font-size="78" letter-spacing="1">Tabby<tspan fill="#8a9a3b">Chef</tspan></text><g transform="translate(372 52)"><g class="lg-spark"><path d="M0 0 l5 13 13 5 -13 5 -5 13 -5 -13 -13 -5 13 -5z" fill="#f2b134" stroke="#4a2e1c" stroke-width="3.5" stroke-linejoin="round"/></g></g></svg>
