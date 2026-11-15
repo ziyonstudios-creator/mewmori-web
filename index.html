@@ -11,10 +11,6 @@
 <meta property="og:url" content="https://tabbychef.app/">
 <meta name="theme-color" content="#f7e7cf">
 <link rel="icon" href="site/logo.svg" type="image/svg+xml">
-<script>
-// Giriş dönüşü (Google/Apple ile girişten sonra kök adrese dönülürse) → oyuna aktar
-(function(){var h=location.hash||'',q=location.search||'';if(/access_token=|refresh_token=|error_description=/.test(h)||/[?&]code=/.test(q)){location.replace('oyna'+q+h)}})();
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -33,20 +29,26 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .lang button{border:0;background:none;font:900 13px var(--body);color:var(--ink);padding:6px 12px;cursor:pointer}
 .lang button[aria-pressed=true]{background:var(--ink);color:#fff}
 
-.hero{position:relative;border-radius:28px;overflow:hidden;border:3px solid var(--ink);box-shadow:0 6px 0 var(--ink);background:#f6c79a}
-.hero .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(74,46,28,.05) 0%,rgba(74,46,28,.15) 40%,rgba(74,46,28,.72) 100%)}
-.hero .in{position:relative;padding:150px 20px 22px;color:#fff;text-align:center}
-h1{font:800 clamp(30px,7vw,52px)/1.05 var(--disp);margin:0 0 8px;text-shadow:0 3px 0 var(--ink),0 0 18px rgba(0,0,0,.25)}
-.hero p.sub{margin:0 auto;max-width:560px;font:800 17px/1.4 var(--body);text-shadow:0 2px 0 rgba(74,46,28,.8)}
+.stage{position:relative;border-radius:28px;overflow:hidden;border:3px solid var(--ink);box-shadow:0 6px 0 var(--ink);background:#f6c79a}
+.stage .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.05)}
+.stage .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(74,46,28,.12) 0%,rgba(74,46,28,.55) 45%,rgba(74,46,28,.82) 100%)}
+.stin{position:relative;display:grid;grid-template-columns:1fr;grid-template-areas:"txt" "vid" "frm";gap:18px;padding:26px 16px 20px}
+.txt{grid-area:txt;text-align:center;color:#fff}.vid{grid-area:vid}.frm{grid-area:frm}
+@media(min-width:860px){.stin{grid-template-columns:1.1fr .9fr;grid-template-areas:"txt vid" "frm vid";padding:34px 34px 30px;column-gap:34px;align-items:start}.txt{text-align:left}.vid{align-self:center}}
+.soon{display:inline-block;padding:4px 14px;border:2.5px solid var(--ink);border-radius:999px;background:linear-gradient(#fff3b0,var(--gold));color:var(--ink);font:800 14px var(--disp);letter-spacing:.08em;box-shadow:0 3px 0 var(--ink)}
+h1{font:800 clamp(32px,7.4vw,56px)/1.03 var(--disp);margin:12px 0 8px;text-shadow:0 3px 0 var(--ink),0 0 18px rgba(0,0,0,.25)}
+.txt p.sub{margin:0;max-width:540px;font:800 17px/1.4 var(--body);text-shadow:0 2px 0 rgba(74,46,28,.85)}
+@media(max-width:859px){.txt p.sub{margin:0 auto}}
 
-.counter{display:inline-flex;align-items:center;gap:10px;margin:16px auto 0;padding:8px 16px;background:var(--card);color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 3px 0 var(--ink)}
+.counter{display:inline-flex;align-items:center;gap:10px;margin:16px 0 0;padding:8px 16px;background:var(--card);color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 3px 0 var(--ink)}
 .counter b{font:800 26px/1 var(--disp);color:var(--orange2);min-width:1ch}
 .counter span{font:900 14px var(--body)}
 
-.grid2{display:grid;grid-template-columns:1fr;gap:18px;margin:20px 0}
-@media(min-width:860px){.grid2{grid-template-columns:1.05fr .95fr;align-items:start}}
-
+.phone{position:relative;margin:0 auto;width:min(100%,230px);aspect-ratio:9/16;border-radius:34px;border:6px solid var(--ink);background:#000;box-shadow:0 8px 0 var(--ink),0 18px 40px rgba(0,0,0,.35);overflow:hidden}
+.phone video{width:100%;height:100%;object-fit:cover}
+.snd{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);border:2.5px solid var(--ink);border-radius:999px;background:var(--card);color:var(--ink);font:900 13px var(--body);padding:6px 12px;cursor:pointer;white-space:nowrap;box-shadow:0 3px 0 var(--ink)}
+.snd[aria-pressed=true]{opacity:.55}
+@media(min-width:860px){.phone{width:min(100%,300px)}}
 .card{background:var(--card);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink);padding:20px}
 .card h2{font:800 26px/1.15 var(--disp);margin:0 0 6px}
 .reward{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
@@ -69,15 +71,14 @@ input[type=email]:focus{outline:none;border-color:var(--green)}
 .done{display:none;text-align:center}
 .done.on{display:block}
 .codebox{margin:12px auto;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
-.code{font:800 34px/1 var(--disp);letter-spacing:.1em;padding:12px 18px;border:3px dashed var(--orange2);border-radius:16px;background:#fff6e6;color:var(--ink);word-break:break-all}
+.code{font:800 34px/1 var(--disp);letter-spacing:.1em;padding:12px 18px;border:3px dashed var(--orange2);border-radius:16px;background:#fff6e6;color:var(--ink);white-space:nowrap}
 .steps{text-align:left;margin:12px 0 0;padding-left:20px;font:700 14.5px/1.5 var(--body)}
 .steps li{margin:4px 0}
 
-.vid{display:flex;justify-content:center}
-.vid video{width:100%;max-width:340px;aspect-ratio:9/16;border-radius:22px;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);background:#000;object-fit:cover}
 
 h3.sec{font:800 30px/1.1 var(--disp);text-align:center;margin:34px 0 14px}
-.feats{display:grid;grid-template-columns:1fr;gap:14px}
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.feat b{font-size:16px}.feat p{font-size:12.5px}.feat div{padding:9px 10px}}
 @media(min-width:700px){.feats{grid-template-columns:1fr 1fr 1fr}}
 .feat{background:var(--card);border:3px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 4px 0 var(--ink)}
 .feat img{width:100%;aspect-ratio:16/9;object-fit:cover;border-bottom:3px solid var(--ink)}
@@ -85,8 +86,6 @@ h3.sec{font:800 30px/1.1 var(--disp);text-align:center;margin:34px 0 14px}
 .feat b{display:block;font:800 19px/1.2 var(--disp)}
 .feat p{margin:4px 0 0;font:700 14px/1.45 var(--body);color:var(--ink2)}
 
-.try{margin:30px 0 0;text-align:center;padding:22px 18px;background:#fff1d8;border:3px dashed var(--orange2);border-radius:24px}
-.try p{margin:0 0 12px;font:800 16px var(--body)}
 
 details.kvkk{margin:28px 0 0;background:var(--card);border:2.5px solid var(--line);border-radius:18px;padding:12px 16px}
 details.kvkk summary{cursor:pointer;font:900 15px var(--body)}
@@ -94,6 +93,7 @@ details.kvkk p,details.kvkk li{font:600 13.5px/1.55 var(--body);color:var(--ink2
 footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var(--ink2)}
 .en{display:none}html[lang=en] .en{display:revert}html[lang=en] .tr{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media(max-width:520px){.card{padding:16px}.chip{font-size:14px;padding:4px 10px 4px 4px;gap:5px}.chip img{width:22px;height:22px}.reward{display:grid;grid-template-columns:1fr 1fr;gap:6px}.chip{justify-content:center}.card h2{font-size:24px}.code{font-size:26px;padding:10px 12px}}
 </style>
 </head>
 <body>
@@ -103,18 +103,22 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
   <div class="lang" role="group" aria-label="Dil / Language"><button type="button" data-l="tr" aria-pressed="true">TR</button><button type="button" data-l="en" aria-pressed="false">EN</button></div>
 </header>
 
-<section class="hero">
+<section class="stage">
   <img class="bgimg" src="site/hero.jpg" alt="">
   <div class="shade"></div>
-  <div class="in">
-    <h1><span class="tr">Kedilerle kendi kafeni kur!</span><span class="en">Build your own cat café!</span></h1>
-    <p class="sub"><span class="tr">Sipariş al, yemek pişir, kafeni büyüt ve dünyayı gez. Oyun yakında App Store ve Google Play'de.</span><span class="en">Take orders, cook, grow your café and tour the world. Coming soon to the App Store and Google Play.</span></p>
-    <div class="counter" aria-live="polite"><b id="cnt">…</b><span><span class="tr">kişi ön kayıt oldu</span><span class="en">players pre-registered</span></span></div>
-  </div>
-</section>
-
-<div class="grid2">
-  <section class="card" id="kayit">
+  <div class="stin">
+    <div class="txt">
+      <span class="soon"><span class="tr">ÇOK YAKINDA</span><span class="en">COMING SOON</span></span>
+      <h1><span class="tr">Kedilerle kendi kafeni kur!</span><span class="en">Build your own cat café!</span></h1>
+      <p class="sub"><span class="tr">Sipariş al, yemek pişir, kafeni büyüt ve dünyayı gez. App Store ve Google Play'de çok yakında.</span><span class="en">Take orders, cook, grow your café and tour the world. Coming soon to the App Store and Google Play.</span></p>
+      <div class="counter" aria-live="polite"><b id="cnt">…</b><span><span class="tr">kişi ön kayıt oldu</span><span class="en">players pre-registered</span></span></div>
+    </div>
+    <div class="vid">
+      <div class="phone"><video id="vid" playsinline muted loop autoplay preload="metadata" poster="site/poster_tr.jpg"><source src="site/tanitim_tr.mp4" type="video/mp4"></video>
+        <button class="snd" type="button" id="snd" aria-pressed="false"><span class="tr">🔊 Sesi aç</span><span class="en">🔊 Sound on</span></button></div>
+    </div>
+    <div class="frm">
+      <section class="card" id="kayit">
     <div id="formArea">
       <h2><span class="tr">Ön kayıt ol, ödülü kap</span><span class="en">Pre-register and get a reward</span></h2>
       <p style="margin:0;font-weight:700;color:var(--ink2)"><span class="tr">Oyun çıkınca hesabına hemen eklenir:</span><span class="en">Added to your account as soon as the game launches:</span></p>
@@ -143,10 +147,11 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
       <p style="margin:14px 0 0"><a class="btn ghost" href="#" id="share"><span class="tr">Arkadaşına gönder</span><span class="en">Share with a friend</span></a></p>
     </div>
   </section>
-  <div class="vid"><video id="vid" playsinline muted loop autoplay preload="metadata" poster="site/poster_tr.jpg"><source src="site/tanitim_tr.mp4" type="video/mp4"></video></div>
-</div>
+    </div>
+  </div>
+</section>
 
-<h3 class="sec"><span class="tr">Oyunda neler var?</span><span class="en">What's inside?</span></h3>
+<h3 class="sec" style="margin-top:38px"><span class="tr">Oyunda neler var?</span><span class="en">What's inside?</span></h3>
 <div class="feats">
   <div class="feat"><img src="site/g2.jpg" alt="" loading="lazy"><div><b><span class="tr">Sevimli müşteriler</span><span class="en">Adorable customers</span></b><p><span class="tr">Kedi müşterileri karşıla, siparişlerini hazırla, bahşişleri topla.</span><span class="en">Greet cat customers, prepare their orders, collect tips.</span></p></div></div>
   <div class="feat"><img src="site/g1.jpg" alt="" loading="lazy"><div><b><span class="tr">Kafeni büyüt</span><span class="en">Grow your café</span></b><p><span class="tr">Küçük bir dükkândan bahçeli kocaman bir kafeye uzan.</span><span class="en">Go from a tiny shop to a huge café with a garden.</span></p></div></div>
@@ -154,11 +159,6 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
   <div class="feat"><img src="site/g4.jpg" alt="" loading="lazy"><div><b><span class="tr">Lüks takımlar</span><span class="en">Luxury sets</span></b><p><span class="tr">Yat Kulübü, Lale Sarayı ve dahası ile kafeni süsle.</span><span class="en">Decorate with Yacht Club, Tulip Palace and more.</span></p></div></div>
   <div class="feat"><img src="site/g5.jpg" alt="" loading="lazy"><div><b><span class="tr">Kendi tarzın</span><span class="en">Your own style</span></b><p><span class="tr">Masaları, duvarları, zemini istediğin gibi yerleştir.</span><span class="en">Place tables, walls and floors any way you like.</span></p></div></div>
   <div class="feat"><img src="site/poster_tr.jpg" alt="" loading="lazy" style="object-position:50% 35%"><div><b><span class="tr">Arkadaşlarınla yarış</span><span class="en">Compete with friends</span></b><p><span class="tr">Haftalık sıralamalar, etkinlikler ve hediyeler.</span><span class="en">Weekly rankings, events and gifts.</span></p></div></div>
-</div>
-
-<div class="try">
-  <p><span class="tr">Beklemek istemiyor musun? Tarayıcı sürümünü şimdi dene.</span><span class="en">Can't wait? Try the browser version now.</span></p>
-  <a class="btn orange" href="oyna"><span class="tr">Tarayıcıda oyna</span><span class="en">Play in browser</span></a>
 </div>
 
 <details class="kvkk" id="kvkk">
@@ -231,6 +231,7 @@ $('f').addEventListener('submit',function(e){e.preventDefault();if(busy)return;v
     else{$('codeBox').style.display='none';$('doneTx').textContent=T[L].already}
     $('kayit').scrollIntoView({behavior:'smooth',block:'start'});
   }).catch(function(){say(T[L].net)}).then(function(){busy=false;$('go').disabled=false})});
+$('snd').onclick=function(){var v=$('vid');v.muted=!v.muted;if(!v.muted){v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){})}this.setAttribute('aria-pressed',v.muted?'false':'true')};
 $('copy').onclick=function(){var t=$('code').textContent,b=this;function ok(){var o=b.innerHTML;b.textContent=T[L].copied;setTimeout(function(){b.innerHTML=o},1500)}
   if(navigator.clipboard)navigator.clipboard.writeText(t).then(ok,function(){});else{var r=document.createRange();r.selectNode($('code'));getSelection().removeAllRanges();getSelection().addRange(r)}};
 $('share').onclick=function(e){e.preventDefault();var u='https://tabbychef.app/?k=paylas',t=T[L].share;
