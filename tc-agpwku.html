@@ -15015,7 +15015,7 @@ function oWinGroup(c){const g=new THREE.Group();
 // ---------- 1) ÖDÜLLÜ REKLAM → p87_adservice.js (V165: AdService; burada reklam kodu kalmadı) ----------
 // Mağaza: üçüncü sekme "Ücretsiz" + elmas paketlerinin TL fiyatları
 const IAP_PRODUCTS={gems_80:{usd:0.99,tl:'₺49,99',gems:80},gems_500:{usd:4.99,tl:'₺249,99',gems:500},gems_1200:{usd:9.99,tl:'₺499,99',gems:1200},gems_2600:{usd:19.99,tl:'₺999,99',gems:2600},gems_6500:{usd:49.99,tl:'₺2.499,99',gems:6500},
-  royalpass:{usd:4.99,tl:'₺249,99',royal:true}};
+  royalpass:{usd:9.99,tl:'₺499,99',royal:true}};   // V262: kullanıcı isteği "royalpass fiyatını 9.99 dolar yap" (kur 11 Kasım 2026 ≈ 50,23 TL → 501,8 → ₺499,99)
 SHOP_GEM.length=0;SHOP_GEM.push({n:80,p:'₺49,99',b:0,id:'gems_80'},{n:500,p:'₺249,99',b:20,id:'gems_500'},{n:1200,p:'₺499,99',b:45,tag:'En popüler',id:'gems_1200'},{n:2600,p:'₺999,99',b:60,id:'gems_2600'},{n:6500,p:'₺2.499,99',b:60,tag:'En iyi değer',id:'gems_6500'});
 {const _rs=renderShop;renderShop=function(){_rs.apply(this,arguments);const w=UI.shopW;if(!w||w.m.hidden)return;try{
     if(UI.shopTab==='gem')w.body.querySelectorAll('[data-bm]').forEach(x=>x.onclick=()=>iapBuy(SHOP_GEM[+x.dataset.bm].id))}catch(e){console.warn('mağaza',e)}}}
@@ -15028,7 +15028,7 @@ async function iapBuy(id){const p=IAP_PRODUCTS[id];if(!p)return false;const B=wi
   try{const r=await B.purchase(id);if(!r||!r.ok)return false;const sb=await sbClient(),v=await sb.functions.invoke('iap-verify',{body:{product:id,store:r.store,receipt:r.receipt}});
     if(v.error||!v.data||!v.data.ok)throw new Error('doğrulanamadı');iapGrant(id);return true}
   catch(e){console.warn('satın alma',e);toast('<b>Satın alma tamamlanamadı</b><br>Paran çekildiyse destek ile iletişime geç',ic('close'),3600);return false}}
-// Royal Pass artık elmasla değil gerçek parayla açılır (4,99 $ = ₺249,99)
+// Royal Pass artık elmasla değil gerçek parayla açılır (V262: 9,99 $ = ₺499,99; önce 4,99 $)
 rpBuy=function(){const R=rpS();if(R.royal)return;iapBuy('royalpass')};
 {const _rp=renderPass;renderPass=function(){const r=_rp.apply(this,arguments);try{const b=$('rpBuy');if(b){b.innerHTML=`${uiIc('i_crown')}Royal’i aç · ${IAP_PRODUCTS.royalpass.tl}`;b.onclick=()=>rpBuy()}}catch(e){}return r}}
 // ---------- 3) APPLE / GOOGLE İLE GİRİŞ ----------
