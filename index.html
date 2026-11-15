@@ -287,7 +287,8 @@ const $=id=>document.getElementById(id);
 // ================= HAFTALIK ETKİNLİK MODU (sayfa açılırken belirlenir) =================
 // Her hafta (pazartesi 00:00 TR) sıradaki ülkenin etkinliği açılır. Oyuncu etkinliğe girince sayfa etkinlik kaydıyla
 // yeniden yüklenir (EVMODE = ülke kodu); ana kafeye dönünce ana kayıtla yüklenir. Hazır olmayan ülkenin haftasında İtalya gelir.
-var EV_LIST=[{id:'it',ready:true},{id:'tr',ready:false}];   // V140 "Dünya Keşfi": ilk durak İtalya; öbür ülkeler hazır olunca (ready:true) sıraya girer. Türkiye verisi duruyor, şimdilik kapalı.
+var EV_LIST=[{id:'it',ready:true},{id:'tr',ready:false},{id:'jp',ready:false}];   // V240: Japonya eklendi (kapalı)
+   // V140 "Dünya Keşfi": ilk durak İtalya; öbür ülkeler hazır olunca (ready:true) sıraya girer. Türkiye verisi duruyor, şimdilik kapalı.
 var EV_EPOCH=Date.UTC(2026,10,8,21,0,0),EV_WEEKMS=7*864e5;   // 9 Kasım 2026 Pazartesi 00:00 (TR)
 function evWeek(t){return Math.floor(((t||Date.now())-EV_EPOCH)/EV_WEEKMS)}
 function evEnds(w){return EV_EPOCH+((w==null?evWeek():w)+1)*EV_WEEKMS}
@@ -470,6 +471,7 @@ const ENV={seaTex:null,boats:[],gulls:[],t:0,hide:{back:null,left:null},wallMesh
 var RING={s1:{x:LOT.x1+2.6,z:LOT.z1+2.6},r:{x:LOT.x1+9,z:LOT.z1+9},s2:{x:LOT.x1+11.4,z:LOT.z1+11.4},lane:{x:LOT.x1+4.3,z:LOT.z1+4.3}};
 const ENV_N0=scene.children.length;
 const IT_ENV=EVMODE==='it';
+const JP_ENV=EVMODE==='jp';   // Japonya Durağı (Kyoto): machiya evleri, pagoda, denizde torii, ufukta Fuji (p114_japonya.js)
 const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı, ahşap evler, cami, Galata Kulesi (kurucular p113_turkiye.js)   // İtalya Durağı (Roma): deniz yok; çevre Roma meydanı (kurucular p112_italya.js)
 {const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
  scene.background=new THREE.Color(0xbfe2f3);scene.fog=new THREE.Fog(0xf3e6da,34,105);
@@ -506,7 +508,7 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
  // kafenin çevresinde açık renk kaldırım (yükseltilmiş)
  ENV.pave=pave;ENV.T=T;ENV.cobble=cobble;if(IT_ENV)ENV.lane=itcRoadTex();outdoorStatic();envShell();   // arsa, kaldırım, araç yolu (sabit) + kapıdan kaldırıma yol (kapıyla taşınır)
  // kapı önüne çiçekli tente
- {const _oc=capStart();const g=new THREE.Group();g.position.set(-ROOM_W/2-0.05,DOOR.h+0.55,DOOR.z);g.userData.wall='left';scene.add(g);for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.04,0.3),T(IT_ENV?[0x3a8f4b,0xfffaf0,0xd9453b][i%3]:TR_ENV?(i%2?0xfbf6ec:0xc8302a):(i%2?0xfbf6ec:0xd9534f)));s.position.set(-0.42,-0.16,-0.75+i*0.3);s.rotation.z=-0.38;g.add(s)}capEnd('door',_oc)}
+ {const _oc=capStart();const g=new THREE.Group();g.position.set(-ROOM_W/2-0.05,DOOR.h+0.55,DOOR.z);g.userData.wall='left';scene.add(g);for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.04,0.3),T(IT_ENV?[0x3a8f4b,0xfffaf0,0xd9453b][i%3]:JP_ENV?(i%2?0xf4efe4:0x2f4f7a):TR_ENV?(i%2?0xfbf6ec:0xc8302a):(i%2?0xfbf6ec:0xd9534f)));s.position.set(-0.42,-0.16,-0.75+i*0.3);s.rotation.z=-0.38;g.add(s)}capEnd('door',_oc)}
  // sokak lambaları, banklar, ağaçlı saksılar, çeşme
  const lamp=(x,z)=>{cyl(0.06,0.09,3.2,T(0x3e4a3a),x,1.3,z,8);cyl(0.16,0.2,0.08,T(0x3e4a3a),x,-0.12,z,10);const h=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.24,0.32,6),T(0x3e4a3a));h.position.set(x,3.05,z);scene.add(h);
    const gl=new THREE.Mesh(new THREE.SphereGeometry(0.15,10,8),new THREE.MeshBasicMaterial({color:0xfff0c0}));gl.position.set(x,2.84,z);scene.add(gl);(ENV.glows=ENV.glows||[]).push(gl)};
@@ -520,17 +522,18 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
  {const ex=LOT.x1+2.15,ez=LOT.z1+2.15;
   for(const v of [-7,0,7]){lamp(-ex,v*0.9);lamp(ex,v*0.9);lamp(v,-ez);lamp(v,ez)}
   for(const [x,z,ry] of [[-ex+0.25,-3.6,-Math.PI/2],[-ex+0.25,3.6,-Math.PI/2],[3.6,ez-0.25,0],[-3.6,ez-0.25,0],[ex-0.25,-3.6,Math.PI/2],[ex-0.25,3.6,Math.PI/2],[3.6,-ez+0.25,Math.PI],[-3.6,-ez+0.25,Math.PI]])bench(x,z,ry);   // oturanlar yola bakar
-  if(IT_ENV)itcStreet();else if(TR_ENV)trcStreet();else for(const sx of [-1,1])for(const sz of [-1,1])planterTree(sx*(LOT.x1+1.3),sz*(LOT.z1+1.3),0.9);
+  if(IT_ENV)itcStreet();else if(TR_ENV)trcStreet();else if(JP_ENV)jpcStreet();else for(const sx of [-1,1])for(const sz of [-1,1])planterTree(sx*(LOT.x1+1.3),sz*(LOT.z1+1.3),0.9);
   /* lamba direklerinin yanındaki çiçek saksıları kaldırıldı */}
  // açık hava masaları (süs): kaldırımda iki şemsiyeli masa
  const parasol=(x,z,c)=>{cyl(0.035,0.035,2.1,T(0xfbf6ec),x,0.9,z,8);const u=new THREE.Mesh(new THREE.ConeGeometry(1.05,0.45,8),T(c));u.position.set(x,2.05,z);u.castShadow=true;scene.add(u);cyl(0.42,0.42,0.04,T(0xfbf6ec),x,0.55,z,16);cyl(0.04,0.06,0.55,T(0x3e4a3a),x,0.27,z,8);
    for(const a of [0,Math.PI]){const ch=box(0.36,0.05,0.36,T(0x9a6a3e),x+Math.cos(a)*0.62,0.32,z+Math.sin(a)*0.62)}};
  /* kaldırımdaki şemsiyeli masalar kaldırıldı */
  // meydan çeşmesi (sağ-arka köşede)
- if(!IT_ENV&&!TR_ENV){const x=23.2,z=22.2;cyl(1.5,1.6,0.45,T(0xe8dcc6),x,-0.05,z,24);const w=cyl(1.32,1.32,0.05,T(0x7fd3dc),x,0.15,z,24);w.castShadow=false;cyl(0.25,0.32,1.1,T(0xe8dcc6),x,0.6,z,12);cyl(0.55,0.4,0.18,T(0xe8dcc6),x,1.2,z,16);const s=sph(0.16,T(0x7fd3dc),x,1.4,z)}
+ if(!IT_ENV&&!TR_ENV&&!JP_ENV){const x=23.2,z=22.2;cyl(1.5,1.6,0.45,T(0xe8dcc6),x,-0.05,z,24);const w=cyl(1.32,1.32,0.05,T(0x7fd3dc),x,0.15,z,24);w.castShadow=false;cyl(0.25,0.32,1.1,T(0xe8dcc6),x,0.6,z,12);cyl(0.55,0.4,0.18,T(0xe8dcc6),x,1.2,z,16);const s=sph(0.16,T(0x7fd3dc),x,1.4,z)}
  // binalar: meydanı çevreleyen pastel cepheler (kiremit ya da düz çatı, panjur, balkon, tente)
  const facade=IT_ENV?[0xf2c078,0xe9a071,0xf6dba6,0xdb8a63,0xf3bf96,0xeed3a0,0xe7a183]:[0xfbf6ec,0xf7d9c4,0xfde8b0,0xd8ecf2,0xf2cdd6,0xe6efcb,0xf4e3d3];
  const bld=(x,z,w,d,h,ry,ci,opt={})=>{const g=new THREE.Group();g.position.set(x,-0.3,z);g.rotation.y=ry;scene.add(g);
+    if(JP_ENV){jpcHouse(g,w,d,h,ci,opt);(ENV.itBlds=ENV.itBlds||[]).push(g);return g}
     if(TR_ENV){trcHouse(g,w,d,h,ci,opt);trcFacade(g,w,d,h,ci,opt);(ENV.itBlds=ENV.itBlds||[]).push(g);return g}
     if(IT_ENV){itcHouse(g,w,d,h,ci,opt);if(opt.vine)itcVine(g,w,d,h,ci,opt.vine);itcFacade(g,w,d,h,ci,opt);(ENV.itBlds=ENV.itBlds||[]).push(g);return g}
    const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),T(facade[ci%facade.length]));body.position.y=h/2;body.castShadow=true;body.receiveShadow=true;g.add(body);
@@ -553,7 +556,7 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
  for(const [x,z,w,d,h,ci,o] of front){if(IT_ENV&&x===0){itcPantheon(0,23.9);continue}bld(x,z,w,d,h,Math.PI,ci,o)}
  // sağ sıra (+x), sokağın karşısı
  for(const [x,z,w,d,h,ci,o] of [[23.4,13.6,5,5.4,7.2,2,{awn:0xf2b134}],[23.8,7.8,5,5.6,8.4,6,{vine:1}],[23.4,2,5,5.2,6.6,3,{flat:true}],[23.6,-3.8,5,5.4,7.8,1,{awn:0xd9534f}],[23.4,-9.6,5,5.2,7,4,{vine:-1}],[23.6,-15.4,5,5.4,8,0,{flat:true}]]){if(TR_ENV&&z===2)trcMosque(-64,6);bld(x,z,w,d,h,-Math.PI/2,ci,o)}
- if(IT_ENV||TR_ENV)itcMergeBuildings();   // 12 bina iki grupta (ön sıra, sağ sıra) malzeme başına tek ağ
+ if(IT_ENV||TR_ENV||JP_ENV)itcMergeBuildings();   // 12 bina iki grupta (ön sıra, sağ sıra) malzeme başına tek ağ
  // ---------- SAHİL (sol -x ve arka -z): binalar yerine korkuluklu gezinti yolu, palmiyeler, begonvilli çardaklar, kumsal, iskele, şapel ----------
  {const G=new THREE.Group();G.name='seaside';scene.add(G);const mc=new Map(),Tm=c=>{if(!mc.has(c))mc.set(c,T(c));return mc.get(c)},Y0=-0.32;   // Y0: kara yüzeyi
   const add=(geo,c,x,y,z)=>{const m=new THREE.Mesh(geo,Tm(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;G.add(m);return m};
@@ -586,13 +589,13 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
   const urn=(x,z,c)=>{cy(0.36,0.22,0.62,0xc9653a,x,Y0+0.31,z,10);cy(0.4,0.38,0.08,0xd9774a,x,Y0+0.64,z,10);for(let i=0;i<6;i++){const a=i*1.05;sp(0.19,i%3===2?0x6f9a4a:c,x+Math.cos(a)*0.2,Y0+0.8+(i%2)*0.1,z+Math.sin(a)*0.2)}};
   // sol gezinti yolu (x≈-23): palmiyeler denize doğru eğik
   const TH={add,bx,cy,sp,Y0};
-  if(TR_ENV)for(const [z,p] of [[26,0],[19.5,1],[6.5,0],[0,1],[-6.5,0]])trcTree(TH,-23.6,z,4.6,p);else for(const z of [26,19.5,6.5,0,-6.5])palm(-23.6,z,4.4+((z*7)%5)*0.12,0.7,Math.PI);
+  if(JP_ENV)for(const [z,p] of [[26,1],[19.5,0],[6.5,1],[0,0],[-6.5,1]])jpcTree(TH,-23.6,z,4.6,p);else if(TR_ENV)for(const [z,p] of [[26,0],[19.5,1],[6.5,0],[0,1],[-6.5,0]])trcTree(TH,-23.6,z,4.6,p);else for(const z of [26,19.5,6.5,0,-6.5])palm(-23.6,z,4.4+((z*7)%5)*0.12,0.7,Math.PI);
   pergola(-22.9,15.4,true);pergola(-22.9,-11,true);
-  for(const z of [23,3.2,-3.2])TR_ENV?trcTulip(TH,-24.1,z):urn(-24.1,z,PINK[1]);
+  for(const z of [23,3.2,-3.2])JP_ENV?jpcToroH(TH,-24.1,z):TR_ENV?trcTulip(TH,-24.1,z):urn(-24.1,z,PINK[1]);
   // arka gezinti yolu (z≈-22.5)
-  if(TR_ENV)for(const [x,p] of [[-15.5,1],[-9,0],[-4,1],[4,0],[9,1],[15.5,0]])trcTree(TH,x,-23.2,4.8,p);else for(const x of [-15.5,-9,-4,4,9,15.5])palm(x,-23.2,4.5+((x*3+20)%5)*0.12,0.7,-Math.PI/2);
+  if(JP_ENV)for(const [x,p] of [[-15.5,1],[-9,0],[-4,1],[4,0],[9,1],[15.5,1]])jpcTree(TH,x,-23.2,4.8,p);else if(TR_ENV)for(const [x,p] of [[-15.5,1],[-9,0],[-4,1],[4,0],[9,1],[15.5,0]])trcTree(TH,x,-23.2,4.8,p);else for(const x of [-15.5,-9,-4,4,9,15.5])palm(x,-23.2,4.5+((x*3+20)%5)*0.12,0.7,-Math.PI/2);
   pergola(-6.5,-22.2,false);pergola(11.8,-22.2,false);
-  for(const x of [-12.4,-2.4,2.4,6.6])TR_ENV?trcTulip(TH,x,-23.6):urn(x,-23.6,x>0?0xf2b134:PINK[0]);
+  for(const x of [-12.4,-2.4,2.4,6.6])JP_ENV?jpcToroH(TH,x,-23.6):TR_ENV?trcTulip(TH,x,-23.6):urn(x,-23.6,x>0?0xf2b134:PINK[0]);
   // iskele: arkada, gezinti yolundan denize uzanır
   {const z0=-24.6,z1=-39,w=2.4,py=Y0-0.02;bx(w,0.14,z0-z1,0xb5835a,0,py,(z0+z1)/2);
    for(let z=z0-0.3;z>z1;z-=0.55)bx(w,0.02,0.05,0x8a5f3c,0,py+0.075,z);
@@ -601,9 +604,9 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
   // kumsal: çizgili şemsiyeler ve havlular (sol kıyı)
   const parasolB=(x,z,c)=>{cy(0.035,0.035,2.2,0xfbf6ec,x,-0.75+1.1,z,6);const u=add(new THREE.ConeGeometry(1.15,0.42,8),c,x,-0.75+2.25,z);const t=add(new THREE.ConeGeometry(0.5,0.2,8),0xfbf6ec,x,-0.75+2.43,z);
     bx(0.62,0.04,1.5,c,x+0.75,-0.72,z+0.2);bx(0.62,0.04,1.5,0xfbf6ec,x-0.75,-0.72,z-0.1)};
-  if(TR_ENV){let i=0;for(const z of [21,17,6.5,2.5,-3.5])trcParasol(TH,-26.9,z,i++)}else{parasolB(-26.8,20,0xd9534f);parasolB(-26.9,5,0x4f86c6);parasolB(-26.8,-4.5,0xf2b134)}
+  if(JP_ENV){let i=0;for(const z of [21,17,6.5,2.5,-3.5])jpcWagasa(TH,-26.9,z,i++)}else if(TR_ENV){let i=0;for(const z of [21,17,6.5,2.5,-3.5])trcParasol(TH,-26.9,z,i++)}else{parasolB(-26.8,20,0xd9534f);parasolB(-26.9,5,0x4f86c6);parasolB(-26.8,-4.5,0xf2b134)}
   // şapel: sağ-arka burunda beyaz badanalı, mavi kubbeli
-  if(TR_ENV)trcGalata(24.6,-21.2);else{const x=25.4,z=-21.6;bx(3.6,3,4.4,0xfbf6ec,x,Y0+1.5,z);const dm=add(new THREE.SphereGeometry(1.55,14,8,0,Math.PI*2,0,Math.PI/2),0x3f7fc0,x,Y0+3,z+0.4);cy(0.07,0.07,0.5,0xf2b134,x,Y0+4.75,z+0.4,6);bx(0.34,0.07,0.07,0xf2b134,x,Y0+4.85,z+0.4);
+  if(JP_ENV)jpcPagoda(24.6,-21.2);else if(TR_ENV)trcGalata(24.6,-21.2);else{const x=25.4,z=-21.6;bx(3.6,3,4.4,0xfbf6ec,x,Y0+1.5,z);const dm=add(new THREE.SphereGeometry(1.55,14,8,0,Math.PI*2,0,Math.PI/2),0x3f7fc0,x,Y0+3,z+0.4);cy(0.07,0.07,0.5,0xf2b134,x,Y0+4.75,z+0.4,6);bx(0.34,0.07,0.07,0xf2b134,x,Y0+4.85,z+0.4);
    bx(1.2,4.8,1.2,0xfbf6ec,x-1.2,Y0+2.4,z-1.6);bx(0.5,0.8,1.24,0x4a2e1c,x-1.2,Y0+3.9,z-1.6);bx(1.24,0.8,0.5,0x4a2e1c,x-1.2,Y0+3.9,z-1.6);sp(0.2,0xf2b134,x-1.2,Y0+3.85,z-1.6);
    const cp=add(new THREE.ConeGeometry(0.95,0.8,4),0x3f7fc0,x-1.2,Y0+5.2,z-1.6);cp.rotation.y=Math.PI/4;
    bx(0.07,1.5,0.9,0x3f7fc0,x-1.82,Y0+0.75,z+0.6);bx(0.07,0.7,0.6,0x3f7fc0,x-1.82,Y0+2.0,z-0.2);blooms(x-1.75,Y0+1.6,z+1.75,8,0.3,1.2,0.4)}
@@ -622,6 +625,7 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
  if(!IT_ENV){const row=(x,z,ry,c)=>{const g=new THREE.Group();g.position.set(x,-1.12,z);g.rotation.y=ry;scene.add(g);const hull=new THREE.Mesh(new THREE.SphereGeometry(1,10,6,0,Math.PI*2,Math.PI/2,Math.PI/2),T(c));hull.scale.set(1.25,0.5,0.52);hull.position.y=0.42;g.add(hull);
     const rim=new THREE.Mesh(new THREE.CylinderGeometry(1,1,0.07,14),T(0xfbf6ec));rim.scale.set(1.25,1,0.52);rim.position.y=0.42;g.add(rim);const inn=new THREE.Mesh(new THREE.CylinderGeometry(0.86,0.86,0.075,14),T(0x9a6a3e));inn.scale.set(1.25,1,0.5);inn.position.y=0.422;g.add(inn);
     for(const sx of [-0.4,0.4]){const s=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.05,0.84),T(0xfbf6ec));s.position.set(sx,0.47,0);g.add(s)}ENV.boats.push({g,ph:Math.random()*6,y0:-1.12})};
+  if(JP_ENV)jpcTorii(-6,-46);
   row(-2.6,-33,1.5,TR_ENV?0xe0483f:0x4f86c6);row(2.7,-29.5,1.62,TR_ENV?0x2f6e9a:0xd9534f);row(2.9,-36.6,1.45,0xf2b134);row(-27.9,12.6,0.2,0x8fae58)}
  // arka plan ağaçları ve selviler
  const cypress=(x,z,s=1)=>{const c=new THREE.Mesh(new THREE.ConeGeometry(0.45*s,3*s,8),T(0x4f7d3a));c.position.set(x,-0.3+1.5*s,z);c.castShadow=true;scene.add(c)};
@@ -631,9 +635,9 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
  const boat=(x,z,ry,c)=>{const g=new THREE.Group();g.position.set(x,-1.1,z);g.rotation.y=ry;scene.add(g);const hull=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.45,0.9),T(0xfbf6ec));hull.position.y=0.15;g.add(hull);
    const st=new THREE.Mesh(new THREE.BoxGeometry(2.42,0.08,0.92),T(c));st.position.y=0.3;g.add(st);const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,2.6,6),M.woodDark);mast.position.y=1.5;g.add(mast);
    const sail=new THREE.Mesh(new THREE.ConeGeometry(0.9,2.1,3),T(0xfff6e8));sail.scale.z=0.08;sail.position.set(0.45,1.55,0);g.add(sail);ENV.boats.push({g,ph:Math.random()*6,y0:-1.1})};
- if(TR_ENV){trcFerry(-37,-6,0.35);trcFerry(-14,-42,-0.25);trcFerry(24,-56,1.0)}else{boat(-37,-4,0.4,0x4f86c6);boat(-15,-41,-0.3,0xd9534f);boat(20,-54,1.1,0x8fae58)}
+ if(JP_ENV){jpcBoat(-37,-6,0.35);jpcBoat(-14,-42,-0.25);jpcBoat(24,-56,1.0)}else if(TR_ENV){trcFerry(-37,-6,0.35);trcFerry(-14,-42,-0.25);trcFerry(24,-56,1.0)}else{boat(-37,-4,0.4,0x4f86c6);boat(-15,-41,-0.3,0xd9534f);boat(20,-54,1.1,0x8fae58)}
  for(const [x,z,rx,rz,c] of [[-42,-72,14,5,0xa7c27c],[-80,-20,8,4,0x9ab86e]]){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,10),T(c));m.scale.set(rx,2.4,rz);m.position.set(x,-1.9,z);scene.add(m)}
- if(TR_ENV)trcMaiden(-44,-36);else{const g=new THREE.Group();g.position.set(-48,-1.2,-48);scene.add(g);const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(2.4,0),T(0xb8ab98));rock.scale.y=0.45;g.add(rock);
+ if(JP_ENV)jpcFuji();else if(TR_ENV)trcMaiden(-44,-36);else{const g=new THREE.Group();g.position.set(-48,-1.2,-48);scene.add(g);const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(2.4,0),T(0xb8ab98));rock.scale.y=0.45;g.add(rock);
   for(let i=0;i<4;i++){const s=new THREE.Mesh(new THREE.CylinderGeometry(0.62-i*0.06,0.68-i*0.06,1.0,16),T(i%2?0xd9534f:0xfbf6ec));s.position.y=0.9+i*1.0;g.add(s)}
   const lp=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.6,12),new THREE.MeshBasicMaterial({color:0xfff0c0}));lp.position.y=4.7;g.add(lp);const cap=new THREE.Mesh(new THREE.ConeGeometry(0.6,0.7,12),T(0xd9534f));cap.position.y=5.35;g.add(cap)}
  }
@@ -1153,7 +1157,19 @@ const RECIPES=[
  {id:'sutlac',name:'Fırın Sütlaç',cat:'dessert',sub:'pudding',lvl:99,br:'tr',disc:'tr_sutlac',prep:4,price:11,station:'dessert',needs:['sut','seker','un']},
  {id:'menemen',name:'Menemen',cat:'main',sub:'egg',lvl:99,br:'tr',disc:'tr_menemen',prep:5,price:14,station:'main',needs:['yum','peynir']},
  {id:'gozleme',name:'Peynirli Gözleme',cat:'main',sub:'flat',lvl:99,br:'tr',disc:'tr_gozleme',prep:5,price:15,station:'main',needs:['un','peynir']},
- {id:'kunefe',name:'Künefe',cat:'dessert',sub:'kunefe',lvl:99,br:'tr',disc:'tr_kunefe',prep:6,price:17,station:'main',needs:['peynir','un','seker']}];
+ {id:'kunefe',name:'Künefe',cat:'dessert',sub:'kunefe',lvl:99,br:'tr',disc:'tr_kunefe',prep:6,price:17,station:'main',needs:['peynir','un','seker']},
+ // V240 Japonya Durağı (Kyoto): tarifler
+ {id:'sencha',name:'Sencha',cat:'drink',sub:'tea',lvl:99,br:'jp',prep:3,price:6,station:'tea',needs:['cay']},
+ {id:'matcha',name:'Matcha Latte',cat:'drink',sub:'milk',lvl:99,br:'jp',prep:4,price:9,station:'tea',needs:['cay','sut']},
+ {id:'dango',name:'Mitarashi Dango',cat:'dessert',sub:'sweets',lvl:99,br:'jp',prep:3,price:6,station:'dessert',needs:['un','seker']},
+ {id:'mochi',name:'Çilekli Mochi',cat:'dessert',sub:'sweets',lvl:99,br:'jp',disc:'jp_mochi',prep:3,price:8,station:'dessert',needs:['un','seker','cilek']},
+ {id:'dorayaki',name:'Dorayaki',cat:'dessert',sub:'pastry',lvl:99,br:'jp',disc:'jp_dorayaki',prep:4,price:10,station:'dessert',needs:['un','yum','seker']},
+ {id:'taiyaki',name:'Taiyaki',cat:'dessert',sub:'pastry',lvl:99,br:'jp',disc:'jp_taiyaki',prep:4,price:10,station:'dessert',needs:['un','yum','kakao']},
+ {id:'tamagoyaki',name:'Tamagoyaki',cat:'main',sub:'egg',lvl:99,br:'jp',disc:'jp_tamago',prep:4,price:12,station:'main',needs:['yum','seker']},
+ {id:'ramen',name:'Ramen',cat:'main',sub:'noodle',lvl:99,br:'jp',disc:'jp_ramen',prep:6,price:16,station:'main',needs:['un','yum','et']},
+ {id:'yakitori',name:'Yakitori',cat:'main',sub:'grill',lvl:99,br:'jp',disc:'jp_yakitori',prep:5,price:14,station:'main',needs:['tavuk']},
+ {id:'matcha_parfe',name:'Matcha Parfe',cat:'dessert',sub:'parfait',lvl:99,br:'jp',disc:'jp_parfe',prep:5,price:15,station:'dessert',needs:['cay','sut','seker']},
+ {id:'tempura',name:'Karides Tempura',cat:'main',sub:'fried',lvl:99,br:'jp',disc:'jp_tempura',prep:6,price:18,station:'main',needs:['balik','un','yum']}];
 const RECIPE=Object.fromEntries(RECIPES.map(r=>[r.id,r]));
 const RCAT=[{id:'drink',name:'İçecekler',icon:'cup'},{id:'dessert',name:'Tatlılar',icon:'cake'},{id:'main',name:'Ana Yemekler',icon:'plate'}];
 const STATION_OF={coffee:'coffee',tea:'kettle',dessert:'vitrine',main:'oven'};
@@ -1270,6 +1286,14 @@ const CATALOG=[
  {id:'d_tr_poster',kind:'walldecor',name:'Galata posteri',price:45,lvl:99,ev:'tr',evLvl:5,desc:'Galata Kulesi ve martılar.'},
  {id:'d_tr_semaver',kind:'decor',name:'Semaver köşesi',price:150,lvl:99,ev:'tr',evLvl:6,half:[0.4,0.32],rot:true,desc:'Bakır semaver ve ince belli bardaklar.'},
  {id:'d_tr_sedir',kind:'decor',name:'Sedir',price:180,lvl:99,ev:'tr',evLvl:7,half:[0.75,0.32],rot:true,desc:'Kilim minderli alçak oturma köşesi.'},
+ {id:'w_jp_shoji',kind:'wall',name:'Kyoto kili',price:40,lvl:99,ev:'jp',evLvl:1,color:0xf1e6cf},
+ {id:'f_jp_tatami',kind:'floor',name:'Tatami',price:70,lvl:99,ev:'jp',evLvl:1,pat:'tile',c1:0xd9cf8f,c2:0xc7bd7c},
+ {id:'d_jp_lantern',kind:'walldecor',name:'Kırmızı fener',price:35,lvl:99,ev:'jp',evLvl:2,desc:'Kapı yanında sallanan kâğıt chōchin.'},
+ {id:'d_jp_bonsai',kind:'decor',name:'Bonsai',price:50,lvl:99,ev:'jp',evLvl:3,half:[0.22,0.22],desc:'Yüz yaşında minik bir çam.'},
+ {id:'d_jp_neko',kind:'decor',name:'Maneki-neko',price:80,lvl:99,ev:'jp',evLvl:4,half:[0.2,0.2],desc:'Patisini sallayan şans kedisi.'},
+ {id:'d_jp_poster',kind:'walldecor',name:'Fuji posteri',price:45,lvl:99,ev:'jp',evLvl:5,desc:'Karlı Fuji ve dalgalar.'},
+ {id:'d_jp_toro',kind:'decor',name:'Taş fener',price:150,lvl:99,ev:'jp',evLvl:6,half:[0.3,0.3],desc:'Bahçeden gelme tōrō taş feneri.'},
+ {id:'d_jp_kotatsu',kind:'decor',name:'Kotatsu köşesi',price:180,lvl:99,ev:'jp',evLvl:7,half:[0.5,0.5],desc:'Yorganlı alçak masa ve minderler.'},
  {id:'d_garland',kind:'walldecor',name:'Bayrak süsü',price:35,lvl:6,desc:'Renkli üçgen bayraklar.'},
  {id:'e_kettle1',kind:'equip',slot:'kettle',elv:1,name:'Çay ocağı',price:30,lvl:1,desc:'Çay ve sıcak içecekler bunsuz hazırlanamaz.'},
  {id:'e_espresso1',kind:'equip',slot:'espresso',elv:1,name:'Espresso makinesi',price:45,lvl:1,desc:'Kahveler bunsuz hazırlanamaz; öğütücüsüyle birlikte gelir.'},
@@ -1280,14 +1304,17 @@ const CATALOG=[
  {id:'e_vitrine',kind:'equip',slot:'vitrine',name:'Pembe pasta vitrini',price:100,lvl:6,desc:'Tatlılar %25 daha hızlı hazırlanır.'},
  {id:'e_oven',kind:'equip',slot:'oven',name:'Taş fırın',price:110,lvl:8,desc:'Ana yemekler ve kruvasan %25 daha hızlı.'}];
 const EV_RECIPES={it:[['espresso',1,1],['cappuccino',1,1],['biscotti',1,1],['gelato',2],['affogato',3],['tiramisu',4],['bruschetta',5],['pizza',6],['cannoli',7],['lasagna',8]],
-  tr:[['turk_kahvesi',1,1],['simit',1,1],['cay',1,1],['lokum',2],['sahlep',3],['ayran',3],['baklava',4],['menemen',5],['sutlac',6],['gozleme',7],['kunefe',8]]};
+  tr:[['turk_kahvesi',1,1],['simit',1,1],['cay',1,1],['lokum',2],['sahlep',3],['ayran',3],['baklava',4],['menemen',5],['sutlac',6],['gozleme',7],['kunefe',8]],
+  jp:[['sencha',1,1],['matcha',1,1],['dango',1,1],['mochi',2],['dorayaki',3],['tamagoyaki',3],['taiyaki',4],['yakitori',5],['ramen',6],['matcha_parfe',7],['tempura',8]]};
 if(EVMODE){const L=EV_RECIPES[EVMODE]||[],keep=[];for(const [id,lv,def] of L){const r=RECIPES.find(x=>x.id===id);if(!r)continue;r.lvl=lv;r.def=!!def;delete r.br;keep.push(r)}RECIPES.length=0;RECIPES.push(...keep);
   for(const c of CATALOG)if(c.ev===EVMODE)c.lvl=c.evLvl}
 // etkinlik kafesinde birleştirme tahtası: ülkeye özgü ürünler bu birleşimlerle keşfedilir (ana kafenin birleşimleri yerine)
 const EV_COMBOS={it:[['sut3','cilek2','it_gelato','Gelato kâsesi'],['kahve3','sut2','it_affogato','Affogato'],['kahve3','yum2','it_tiramisu','Tiramisu kreması'],['un2','peynir2','it_bruschetta','Bruschetta'],
     ['un3','peynir3','it_pizza','Pizza hamuru'],['un2','seker3','it_cannoli','Cannoli'],['un3','yum3','it_lasagna','Lazanya katları']],
   tr:[['seker2','cilek2','tr_lokum','Lokum'],['sut3','seker2','tr_sahlep','Sahlep'],['sut3','limon1','tr_ayran','Ayran'],['un3','seker3','tr_baklava','Baklava yufkası'],
-    ['yum2','peynir2','tr_menemen','Menemen'],['sut3','un2','tr_sutlac','Sütlaç'],['un2','peynir3','tr_gozleme','Gözleme'],['peynir3','seker3','tr_kunefe','Künefe']]};
+    ['yum2','peynir2','tr_menemen','Menemen'],['sut3','un2','tr_sutlac','Sütlaç'],['un2','peynir3','tr_gozleme','Gözleme'],['peynir3','seker3','tr_kunefe','Künefe']],
+  jp:[['un2','cilek2','jp_mochi','Mochi'],['un2','yum2','jp_dorayaki','Dorayaki hamuru'],['yum2','seker2','jp_tamago','Tamago'],['un3','kakao2','jp_taiyaki','Taiyaki'],
+    ['tavuk2','seker2','jp_yakitori','Yakitori şişi'],['un3','et2','jp_ramen','Ramen eriştesi'],['cay3','sut3','jp_parfe','Matcha kreması'],['balik2','un3','jp_tempura','Tempura hamuru']]};
 if(EVMODE&&EV_COMBOS[EVMODE]){COMBOS.length=0;for(const [a,b,r,name] of EV_COMBOS[EVMODE]){const c={a,b,r,name};COMBOS.push(c);ITEMS[r]={id:r,name,chain:null,lv:0,max:0,fam:'combo',next:null,combo:c}}}
 const CAT=Object.fromEntries(CATALOG.map(c=>[c.id,c]));
 const MK_TABS=[{id:'upg',name:'Geliştir',icon:'up'},{id:'table',name:'Masalar',icon:'table'},{id:'chair',name:'Sandalyeler',icon:'chair'},{id:'counter',name:'Tezgâh',icon:'cake'},{id:'wall',name:'Duvar',icon:'paint'},{id:'floor',name:'Zemin',icon:'floor'},{id:'decor',name:'Dekor',icon:'plant'},{id:'equip',name:'Ekipman',icon:'machine'},{id:'clothes',name:'Kıyafet',icon:'shirt'},{id:'store',name:'Depom',icon:'box'},{id:'expand',name:'Genişlet',icon:'plus'}];
@@ -5804,10 +5831,13 @@ const EVENTS={
    tiers:[[2,150],[3,250],[4,400],[5,600],[6,800],[7,1000],[8,1300],[10,2000]]},
  tr:{id:'tr',name:'Türkiye Durağı',country:'Türkiye',city:'İstanbul',cafe:'Galata Kahvecisi',flag:['#e0483f'],wall:'w_tr_cini',floor:'f_tr_cini',
    desc:'İstanbul’da Galata’nın dibinde 0’dan bir kahveci kur: Türk kahvesi, simit, baklava ve künefe.',
+   tiers:[[2,150],[3,250],[4,400],[5,600],[6,800],[7,1000],[8,1300],[10,2000]]},
+ jp:{id:'jp',name:'Japonya Durağı',country:'Japonya',city:'Kyoto',cafe:'Neko Kissa',flag:['#fffaf0','#d9453b'],wall:'w_jp_shoji',floor:'f_jp_tatami',
+   desc:'Kyoto’da kiraz ağaçlarının altında 0’dan bir çayevi kur: matcha, mochi, ramen ve tempura.',
    tiers:[[2,150],[3,250],[4,400],[5,600],[6,800],[7,1000],[8,1300],[10,2000]]}};
 const EV_JOIN_LVL=8;   // V159: etkinlikler 8. seviyede açılır (daha önce katılmış oyuncunun erişimi sürer)
 const evJoinOk=()=>{try{return (S.lvl|0)>=EV_JOIN_LVL||Object.keys(S.evs||{}).length>0}catch(e){return true}};
-const evFlagHTML=E=>E.id==='tr'?`<span class="mflag trf"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#e30a17"/><circle cx="11" cy="10" r="5" fill="#fff"/><circle cx="12.3" cy="10" r="4" fill="#e30a17"/><path d="M16.2 10 L20.6 8.6 L17.9 12.3 L17.9 7.7 L20.6 11.4 Z" fill="#fff"/></svg></span>`:`<span class="mflag">${E.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`;
+const evFlagHTML=E=>E.id==='jp'?`<span class="mflag trf"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="6" fill="#bc002d"/></svg></span>`:E.id==='tr'?`<span class="mflag trf"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#e30a17"/><circle cx="11" cy="10" r="5" fill="#fff"/><circle cx="12.3" cy="10" r="4" fill="#e30a17"/><path d="M16.2 10 L20.6 8.6 L17.9 12.3 L17.9 7.7 L20.6 11.4 Z" fill="#fff"/></svg></span>`:`<span class="mflag">${E.flag.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`;
 function evLeft(){const ms=Math.max(0,evEnds()-Date.now()),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);return d?`${d} gün ${h} sa`:h?`${h} sa ${m} dk`:`${m} dk`}
 const evArch=id=>S.evs&&S.evs[id]||null;
 // etkinlik kafesinin kendi gelişimi (ödül aşamaları): seviye artık ana kafeyle ortak, aşama etkinlikte kazanılan XP'den gelir
@@ -17711,6 +17741,120 @@ function trcStreet(){const C=itcPal(),ex=LOT.x1+2.15,ez=LOT.z1+2.15;ENV.itPieces
 if(EVMODE==='tr'){const _et=envTick;envTick=function(dt){const r=_et.apply(this,arguments);try{controls.maxPolarAngle=itcPolar()}catch(e){}return r};
   try{const T=controls.target,v=camera.position.clone().sub(T),az=Math.atan2(v.x,v.z),d=v.length()*1.13,po=1.19;controls.maxPolarAngle=1.22;
     camera.position.set(T.x+d*Math.sin(po)*Math.sin(az),T.y+d*Math.cos(po),T.z+d*Math.sin(po)*Math.cos(az));controls.update();controls.maxPolarAngle=itcPolar()}catch(e){console.warn('türkiye bakış',e)}}
+
+// ================= V240: JAPONYA DURAĞI (Kyoto) — ürünler, dekorlar, çevre =================
+// Kullanıcı isteği (15 Kasım 2026, 10:05): "sonrasında diğer ülkelere geç" → seçtiği ülke Japonya. Veri: p0 EV_LIST (jp, ready:false = kapalı),
+// p5 tarifler (br:'jp'), EV_RECIPES.jp, EV_COMBOS.jp, katalog (ev:'jp'), p35 EVENTS.jp + bayrak. Burada: 3B ürünler (makeProduct sarmalayıcısı),
+// dekorlar (DECOR_BUILD / WALL_BUILD), çevre (p1b JP_ENV dalları). Dosya düzeyinde const/let yok (p1b'den sonra yüklenir; işlev bildirimleri).
+//  · Çevre: deniz kalır (Seto kıyısı); ufukta karlı Fuji; sahilde sakura ve Japon çamı, taş fenerler, kırmızı şemsiyeler; denizde kırmızı
+//    torii (Itsukushima gibi); şapel yerine beş katlı pagoda; evler machiya (koyu ahşap kafesli zemin, beyaz sıva üst kat, kavisli koyu kiremit
+//    çatı, noren perdeleri, kırmızı fenerler, tabelalar); kaldırımda fener dizileri, ramen arabası (yatai), içecek makinesi, maneki-neko, bonsai.
+// ---- 3B ürünler ----
+{const _mp=makeProduct;makeProduct=function(item){if(!item||!JPC_PROD[item.id])return _mp.apply(this,arguments);const g=new THREE.Group();g.userData.kind=item.id;g.userData.hot=['sencha','matcha','ramen'].includes(item.id);
+  try{JPC_PROD[item.id](g)}catch(e){console.warn('jp ürün',e)}return g}}
+function jpcT(c){return toon(c)}
+function jpcM(geo,c,x,y,z,g){const m=new THREE.Mesh(geo,typeof c==='number'?jpcT(c):c);m.position.set(x,y,z);m.castShadow=true;g.add(m);return m}
+var JPC_PROD={
+ sencha:g=>{jpcM(new THREE.CylinderGeometry(0.045,0.04,0.008,18),0x7a5a3a,0,0.004,0,g);jpcM(new THREE.CylinderGeometry(0.03,0.026,0.05,16),0xd9d2c0,0,0.033,0,g);const f=jpcM(new THREE.CylinderGeometry(0.027,0.027,0.004,16),0x9fbf5a,0,0.055,0,g);g.userData.fill=f},
+ matcha:g=>{jpcM(new THREE.CylinderGeometry(0.046,0.04,0.008,18),0xfff8ec,0,0.004,0,g);const c=jpcM(new THREE.CylinderGeometry(0.036,0.028,0.07,16,1,true),new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:0.35}),0,0.043,0,g);c.material.side=THREE.DoubleSide;
+   jpcM(new THREE.CylinderGeometry(0.033,0.027,0.035,16),0x8fb84a,0,0.026,0,g);jpcM(new THREE.CylinderGeometry(0.034,0.033,0.026,16),0xf6f1e4,0,0.056,0,g);jpcM(new THREE.CylinderGeometry(0.03,0.03,0.004,16),0x9fc35a,0,0.07,0,g)},
+ dango:g=>{jpcM(new THREE.CylinderGeometry(0.055,0.05,0.008,4),0xfff8ec,0,0.004,0,g).rotation.y=Math.PI/4;for(let s=0;s<2;s++){const z=(s-0.5)*0.03;const st=jpcM(new THREE.CylinderGeometry(0.002,0.002,0.11,5),0xd9b98a,0,0.03,z,g);st.rotation.z=Math.PI/2;
+   for(let i=0;i<3;i++){jpcM(new THREE.SphereGeometry(0.014,10,8),i===1?0xf6f1e4:0xc98a42,-0.022+i*0.022,0.03,z,g)}}},
+ mochi:g=>{jpcM(new THREE.CylinderGeometry(0.05,0.045,0.008,18),0x3a4a5a,0,0.004,0,g);for(const [x,z,c] of [[-0.018,0,0xfbe3e8],[0.018,-0.01,0xf7f2ea],[0.01,0.022,0xd9ecc0]]){const m=jpcM(new THREE.SphereGeometry(0.02,12,8),c,x,0.02,z,g);m.scale.y=0.8}
+   jpcM(new THREE.ConeGeometry(0.009,0.016,8),0xe03b3b,-0.018,0.04,0,g)},
+ dorayaki:g=>{jpcM(new THREE.CylinderGeometry(0.05,0.045,0.008,18),0xfff8ec,0,0.004,0,g);jpcM(new THREE.CylinderGeometry(0.035,0.035,0.01,20),0xb8702e,0,0.014,0,g);jpcM(new THREE.CylinderGeometry(0.03,0.03,0.008,20),0x5a2e22,0,0.022,0,g);jpcM(new THREE.CylinderGeometry(0.035,0.035,0.01,20),0xc07a36,0,0.031,0,g)},
+ taiyaki:g=>{jpcM(new THREE.CylinderGeometry(0.05,0.045,0.008,18),0xfff8ec,0,0.004,0,g);const b=jpcM(new THREE.SphereGeometry(0.03,12,8),0xc98a42,0,0.02,0,g);b.scale.set(1.3,0.5,0.8);const t=jpcM(new THREE.ConeGeometry(0.018,0.022,4),0xc98a42,0.045,0.02,0,g);t.rotation.z=Math.PI/2;t.scale.z=0.4;jpcM(new THREE.SphereGeometry(0.004,6,5),0x3a2a1e,-0.026,0.026,0.012,g)},
+ tamagoyaki:g=>{jpcM(new THREE.BoxGeometry(0.1,0.008,0.05),0xfff8ec,0,0.004,0,g);for(let i=0;i<3;i++)jpcM(new THREE.BoxGeometry(0.024,0.026,0.03),0xf6d24a,-0.027+i*0.027,0.021,0,g);jpcM(new THREE.BoxGeometry(0.014,0.01,0.014),0x7fae4a,0.04,0.013,0.012,g)},
+ ramen:g=>{jpcM(new THREE.CylinderGeometry(0.058,0.036,0.05,20,1,true),0xd9453b,0,0.028,0,g).material.side=THREE.DoubleSide;jpcM(new THREE.CylinderGeometry(0.036,0.036,0.004,16),0xd9453b,0,0.004,0,g);
+   const s=jpcM(new THREE.CylinderGeometry(0.054,0.054,0.004,20),0xe8b46a,0,0.046,0,g);g.userData.fill=s;for(let i=0;i<5;i++){const n=jpcM(new THREE.TorusGeometry(0.014,0.003,4,10),0xf6e2a0,-0.02+i*0.01,0.049,0.012,g);n.rotation.x=Math.PI/2}
+   jpcM(new THREE.CylinderGeometry(0.014,0.014,0.004,12),0xf7f2ea,0.02,0.05,-0.015,g);jpcM(new THREE.CylinderGeometry(0.007,0.007,0.005,12),0xf6c84a,0.02,0.052,-0.015,g);jpcM(new THREE.BoxGeometry(0.022,0.003,0.016),0xc98a6a,-0.022,0.05,-0.016,g);
+   const nr=jpcM(new THREE.BoxGeometry(0.003,0.03,0.022),0x1e2a1e,0.04,0.06,0.01,g);for(const z of [-0.004,0.004]){const c=jpcM(new THREE.CylinderGeometry(0.002,0.002,0.12,5),0xd9b98a,0.02,0.07,z+0.03,g);c.rotation.z=1.2}},
+ yakitori:g=>{jpcM(new THREE.BoxGeometry(0.1,0.008,0.05),0x3a3a3a,0,0.004,0,g);for(let s=0;s<2;s++){const z=(s-0.5)*0.024;const st=jpcM(new THREE.CylinderGeometry(0.002,0.002,0.11,5),0xd9b98a,0,0.02,z,g);st.rotation.z=Math.PI/2;for(let i=0;i<4;i++)jpcM(new THREE.BoxGeometry(0.016,0.014,0.016),i%2?0x9a5a2a:0x7a3e1e,-0.03+i*0.018,0.02,z,g)}},
+ matcha_parfe:g=>{jpcM(new THREE.CylinderGeometry(0.03,0.03,0.006,16),0xfff8ec,0,0.003,0,g);const gl=jpcM(new THREE.CylinderGeometry(0.03,0.016,0.1,16,1,true),new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:0.35}),0,0.056,0,g);gl.material.side=THREE.DoubleSide;
+   [[0x8fb84a,0.02],[0xf6f1e4,0.022],[0x5a2e22,0.012],[0x9fc35a,0.02]].reduce((y,[c,h])=>{jpcM(new THREE.CylinderGeometry(0.027,0.022,h,16),c,0,y+h/2,0,g);return y+h},0.012);jpcM(new THREE.SphereGeometry(0.02,12,8),0x9fc35a,0,0.1,0,g);jpcM(new THREE.SphereGeometry(0.009,8,6),0xe03b3b,0.012,0.118,0,g)},
+ tempura:g=>{jpcM(new THREE.BoxGeometry(0.1,0.008,0.06),0xfff8ec,0,0.004,0,g);for(let i=0;i<3;i++){const p=jpcM(new THREE.CapsuleGeometry(0.011,0.05,4,8),0xf2c46a,-0.02+i*0.02,0.02,0,g);p.rotation.x=Math.PI/2;p.rotation.z=0.2*(i-1);jpcM(new THREE.ConeGeometry(0.008,0.012,6),0xe0603a,-0.02+i*0.02,0.02,0.034,g).rotation.x=Math.PI/2}
+   jpcM(new THREE.CylinderGeometry(0.012,0.01,0.01,12),0x3a2a1e,0.04,0.012,-0.02,g)}};
+// ---- dekorlar ----
+WALL_BUILD.d_jp_lantern=()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.SphereGeometry(0.16,14,10),toon(0xd9453b));b.scale.y=1.35;b.position.set(0,-0.05,0.18);g.add(b);
+  for(const y of [-0.27,0.17]){const r=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,0.04,12),toon(0x1e1e1e));r.position.set(0,y,0.18);g.add(r)}
+  const t=new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.2,5),toon(0x1e1e1e));t.position.set(0,0.27,0.18);g.add(t);g.children.forEach(m=>m.castShadow=true);return g};
+WALL_BUILD.d_jp_poster=()=>{const cv=document.createElement('canvas');cv.width=256;cv.height=320;const x=cv.getContext('2d');const gr=x.createLinearGradient(0,0,0,320);gr.addColorStop(0,'#bfe0ee');gr.addColorStop(1,'#f6e7d6');x.fillStyle=gr;x.fillRect(0,0,256,320);
+  x.fillStyle='#e05a4a';x.beginPath();x.arc(190,70,26,0,7);x.fill();x.fillStyle='#4f6f9a';x.beginPath();x.moveTo(20,220);x.lineTo(128,90);x.lineTo(236,220);x.fill();x.fillStyle='#fffaf0';x.beginPath();x.moveTo(98,126);x.lineTo(128,90);x.lineTo(158,126);x.lineTo(140,120);x.lineTo(128,132);x.lineTo(116,120);x.fill();
+  x.fillStyle='#2f5f8f';for(let i=0;i<6;i++){x.beginPath();x.arc(20+i*44,250,26,Math.PI,0);x.fill()}x.fillStyle='#d9453b';x.fillRect(0,270,256,50);x.fillStyle='#fff8ec';x.font='900 40px sans-serif';x.textAlign='center';x.fillText('FUJI',128,310);
+  const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.BoxGeometry(0.46,0.58,0.04),toon(0x2a2a2a)));const p=new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.52),new THREE.MeshToonMaterial({map:tx,gradientMap:grad}));p.position.z=0.022;g.add(p);g.children.forEach(m=>m.position.z+=0.02);return g};
+DECOR_BUILD.d_jp_bonsai=()=>{const G=new THREE.Group();bm(BX(0.34,0.1,0.22),0x3a4a5a,0,0.05,0,G);bm(CY(0.03,0.045,0.25,7),0x6a4a2a,0,0.2,0,G).rotation.z=0.4;for(const [x,y,z,r] of [[-0.08,0.36,0,0.1],[0.06,0.32,0.03,0.08],[0.12,0.4,-0.02,0.07]]){const c=bm(new THREE.SphereGeometry(r,9,6),0x3f6f3a,x,y,z,G);c.scale.y=0.55}return G};
+DECOR_BUILD.d_jp_neko=()=>{const G=new THREE.Group();bm(BX(0.26,0.06,0.2),0xd9453b,0,0.03,0,G);const b=bm(new THREE.SphereGeometry(0.11,14,10),0xfffaf0,0,0.15,0,G);b.scale.set(1,1.1,0.85);bm(new THREE.SphereGeometry(0.09,14,10),0xfffaf0,0,0.3,0.01,G);
+  for(const s of [-1,1])bm(new THREE.ConeGeometry(0.03,0.06,4),0xfffaf0,s*0.055,0.39,0.01,G);const p=bm(CY(0.025,0.025,0.1,8),0xfffaf0,0.08,0.34,0.05,G);p.rotation.z=-0.3;bm(CY(0.035,0.035,0.012,10),0xf2b134,0,0.2,0.1,G).rotation.x=Math.PI/2;bm(BX(0.12,0.02,0.02),0xd9453b,0,0.24,0.08,G);return G};
+DECOR_BUILD.d_jp_toro=()=>{const G=new THREE.Group(),S=0xb9b2a4;bm(BX(0.4,0.08,0.4),S,0,0.04,0,G);bm(CY(0.06,0.08,0.45,6),S,0,0.3,0,G);bm(BX(0.32,0.06,0.32),S,0,0.55,0,G);bm(BX(0.24,0.2,0.24),0xe9e2d0,0,0.68,0,G);
+  const L=bm(BX(0.2,0.14,0.25),new THREE.MeshBasicMaterial({color:0xffe6a0}),0,0.68,0,G);bm(new THREE.ConeGeometry(0.3,0.16,4),S,0,0.86,0,G).rotation.y=Math.PI/4;bm(new THREE.SphereGeometry(0.04,8,6),S,0,0.97,0,G);return G};
+DECOR_BUILD.d_jp_kotatsu=()=>{const G=new THREE.Group();bm(BX(0.8,0.12,0.8),0x8a6a4a,0,0.42,0,G);bm(BX(0.86,0.3,0.86),0xd9453b,0,0.26,0,G);for(let i=0;i<4;i++)bm(BX(0.86,0.02,0.1),0xf2b134,0,0.33,-0.38+i*0.25,G);
+  for(const [x,z] of [[0.62,0],[-0.62,0],[0,0.62],[0,-0.62]])bm(BX(0.34,0.06,0.34),0x3f5f8a,x,0.03,z,G);bm(CY(0.05,0.04,0.06,10),0xf6f1e4,0.1,0.51,0.05,G);bm(new THREE.SphereGeometry(0.04,8,6),0xe0703a,-0.12,0.52,-0.06,G);return G};
+// ---- çevre: evler ----
+function jpcHouse(g,w,d,h,ci,opt){const K=itcKit(g),C=K.C,FD=d/2,WOOD=0x4a3426,WOOD2=0x6b4a32,PL=[0xf4efe4,0xece4d2,0xf1e8da][ci%3],ROOF=0x4f5560,GF=2.7,hh=Math.max(h*0.82,5.2);
+  K.bx(w,GF,d,WOOD,0,GF/2,0);K.bx(w,hh-GF,d,PL,0,GF+(hh-GF)/2,0);
+  // zemin kat: koyu kafes (koshi) + kapı + noren
+  for(let x=-w/2+0.15;x<=w/2-0.15+1e-6;x+=0.12)K.bx(0.04,GF-0.5,0.04,WOOD2,x,GF/2-0.05,FD+0.05);K.bx(w,0.08,0.08,WOOD2,0,GF-0.35,FD+0.06);K.bx(w,0.08,0.08,WOOD2,0,0.25,FD+0.06);
+  K.bx(1.0,1.9,0.06,0x2a1e16,0,0.95,FD+0.08);const nc=[0x2f4f7a,0x7a2a2a,0x2f5a3a][ci%3];for(let i=0;i<3;i++)K.bx(0.32,0.8,0.02,nc,-0.33+i*0.33,1.55,FD+0.13);
+  // ara saçak (hisashi) zemin kat üstünde
+  {const r=K.bx(w+0.4,0.08,1.0,ROOF,0,GF+0.15,FD+0.35);r.rotation.x=0.32;K.bx(w+0.45,0.1,0.1,0x3a3f48,0,GF-0.02,FD+0.83)}
+  // üst kat: kafesli pencereler (mushiko) ve sıva
+  for(let x=-w/2+1;x<=w/2-1+1e-6;x+=Math.max(1.4,(w-2)/2)){K.bx(1.0,0.7,0.06,0x2a1e16,x,GF+(hh-GF)*0.55,FD+0.03);for(let k=0;k<7;k++)K.bx(0.04,0.66,0.04,WOOD2,x-0.45+k*0.15,GF+(hh-GF)*0.55,FD+0.07)}
+  for(const sx of [-1,1])K.bx(0.14,hh,0.14,WOOD,sx*(w/2-0.05),hh/2,FD+0.02);K.bx(w+0.1,0.12,0.12,WOOD,0,hh-0.05,FD+0.03);
+  // kavisli çatı: iki eğimli kanat + mahya
+  for(const s of [-1,1]){const r=K.bx(w+0.9,0.14,d/2+0.9,ROOF,0,hh+0.55,s*(d/4+0.25));r.rotation.x=-s*0.42;const e=K.bx(w+1.0,0.1,0.25,0x3a3f48,0,hh+0.2,s*(d/2+0.6));e.rotation.x=-s*0.2}
+  K.bx(w+0.9,0.22,0.28,0x3a3f48,0,hh+1.15,0);for(const sx of [-1,1])K.bx(0.3,0.36,0.3,0x3a3f48,sx*(w/2+0.35),hh+1.22,0);
+  // fenerler ve tabela
+  for(const sx of [-1,1]){const l=K.sp(0.2,0xd9453b,sx*(w/2-0.45),GF-0.55,FD+0.45,10,8);l.scale.y=1.3;K.bx(0.22,0.05,0.22,0x1e1e1e,sx*(w/2-0.45),GF-0.28,FD+0.45)}
+  const n=jpcHouse.n=(jpcHouse.n|0)+1,names=['RAMEN','MATCHA','SUSHI','DANGO','SOBA','MOCHI','TEMPURA','UDON','SAKE','ONIGIRI','KISSA','YAKITORI','TAIYAKI'],nm=names[(n-1)%names.length];
+  const tex=itcTex(96,320,(c,W,H)=>{c.fillStyle='#f6efe0';c.fillRect(0,0,W,H);c.strokeStyle='#2a1e16';c.lineWidth=8;c.strokeRect(4,4,W-8,H-8);c.fillStyle='#2a1e16';c.font='bold 40px Georgia,serif';c.textAlign='center';c.textBaseline='middle';const L=nm.split('');const st=(H-30)/Math.max(L.length,4);L.forEach((ch,i)=>c.fillText(ch,W/2,24+st*(i+0.5)))});
+  K.add(new THREE.BoxGeometry(0.42,1.4,0.06),itcMat(tex),w/2-0.4,GF+1.2,FD+0.2).castShadow=false;
+  K.done();return g}
+// ---- çevre: kaldırım ----
+function jpcLanterns(K,x0,z0,x1,z1){const C=K.C,N=8,L=Math.hypot(x1-x0,z1-z0),ry=Math.atan2(-(z1-z0),x1-x0),py=t=>2.74-1.4*t*(1-t);
+  for(let i=0;i<10;i++){const t0=i/10,t1=(i+1)/10,ya=py(t0),yb=py(t1),m=K.bx(Math.hypot(L/10,yb-ya)+0.01,0.02,0.02,C.INK,x0+(x1-x0)*(t0+t1)/2,(ya+yb)/2,z0+(z1-z0)*(t0+t1)/2);m.rotation.y=ry;m.rotation.z=Math.atan2(yb-ya,L/10);m.castShadow=false}
+  for(let i=0;i<N;i++){const t=(i+0.5)/N,l=K.sp(0.15,i%2?0xd9453b:0xfff2d6,x0+(x1-x0)*t,py(t)-0.28,z0+(z1-z0)*t,9,7);l.scale.y=1.3;l.castShadow=false}}
+function jpcYatai(K,x,z,ry){const V=K.sub(x,-0.15,z,ry);V.bx(1.5,0.85,0.75,0x6b4a32,0,0.5,0);V.bx(1.6,0.06,0.85,0x8a6a4a,0,0.95,0);for(const sx of [-0.72,0.72])V.bx(0.07,1.3,0.07,0x6b4a32,sx,1.6,0.34);V.bx(1.7,0.1,1.0,0x4f5560,0,2.3,0.1).rotation.x=0.2;
+  for(let i=0;i<4;i++)V.bx(0.36,0.5,0.02,0xd9453b,-0.54+i*0.36,2.0,0.42);for(const s of [-1,1]){const w=V.cy(0.28,0.28,0.06,0x3e3a36,0.3,0.3,s*0.42,12);w.rotation.x=Math.PI/2}
+  V.cy(0.13,0.13,0.2,0xb9b2a4,-0.4,1.08,0,12);V.sp(0.16,0xd9453b,0.75,1.9,0.42,9,7).scale.y=1.3;for(const sx of [-0.4,0.3])V.cy(0.12,0.12,0.45,0x8a6a4a,sx,0.23,0.75,10);return V}
+function jpcVending(K,x,z,ry){const V=K.sub(x,-0.15,z,ry);V.bx(0.9,1.8,0.7,0xe8eef2,0,0.9,0);V.bx(0.8,0.75,0.04,0x2a3a4a,0,1.3,0.36);for(let r=0;r<3;r++)for(let c=0;c<5;c++)V.bx(0.1,0.18,0.03,[0xd9453b,0x3f8fb0,0xf2b134,0x7fae4a,0xffffff][(r+c)%5],-0.3+c*0.15,1.08+r*0.22,0.38);V.bx(0.5,0.15,0.05,0x1e1e1e,0,0.45,0.36);return V}
+function jpcNeko(K,x,z,ry,s){s=s||1.6;const V=K.sub(x,-0.15,z,ry);V.bx(0.4*s,0.1*s,0.32*s,0xd9453b,0,0.05*s,0);const b=V.sp(0.17*s,0xfffaf0,0,0.23*s,0,12,9);b.scale.set(1,1.1,0.85);V.sp(0.14*s,0xfffaf0,0,0.47*s,0.01,12,9);
+  for(const q of [-1,1])V.cn(0.045*s,0.09*s,0xfffaf0,q*0.085*s,0.6*s,0.01,4);const p=V.cy(0.038*s,0.038*s,0.15*s,0xfffaf0,0.12*s,0.53*s,0.08*s,8);p.rotation.z=-0.3;const c=V.cy(0.05*s,0.05*s,0.02*s,0xf2b134,0,0.3*s,0.15*s,10);c.rotation.x=Math.PI/2;return V}
+function jpcBonsai(K,x,z){const y=-0.15;K.bx(0.7,0.25,0.5,0x3a4a5a,x,y+0.13,z);const t=K.cy(0.06,0.1,0.6,0x6a4a2a,x,y+0.5,z,7);t.rotation.z=0.4;for(const [dx,dy,r] of [[-0.18,0.85,0.25],[0.15,0.78,0.2],[0.28,0.95,0.17]]){const c=K.sp(r,0x3f6f3a,x+dx,y+dy,z,9,6);c.scale.y=0.5}}
+function jpcToro(K,x,z,s,y0){s=s||1;const y=y0==null?-0.15:y0,S=0xb9b2a4;K.bx(0.6*s,0.12*s,0.6*s,S,x,y+0.06*s,z);K.cy(0.09*s,0.12*s,0.7*s,S,x,y+0.47*s,z,6);K.bx(0.5*s,0.1*s,0.5*s,S,x,y+0.86*s,z);K.bx(0.38*s,0.32*s,0.38*s,0xe9e2d0,x,y+1.07*s,z);
+  const r=K.cn(0.45*s,0.25*s,S,x,y+1.36*s,z,4);r.rotation.y=Math.PI/4;K.sp(0.06*s,S,x,y+1.52*s,z,8,6)}
+function jpcToroH(H,x,z){const {bx,cy,add,Y0}=H,S=0xb9b2a4;bx(0.6,0.12,0.6,S,x,Y0+0.06,z);cy(0.09,0.12,0.7,S,x,Y0+0.47,z,6);bx(0.5,0.1,0.5,S,x,Y0+0.86,z);bx(0.38,0.32,0.38,0xe9e2d0,x,Y0+1.07,z);const r=add(new THREE.ConeGeometry(0.45,0.25,4),S,x,Y0+1.36,z);r.rotation.y=Math.PI/4}
+function jpcStreet(){const C=itcPal(),ex=LOT.x1+2.15,ez=LOT.z1+2.15;ENV.itPieces=[];const piece=(side,t0,t1,fn)=>{const K=itcKit();fn(K);ENV.itPieces.push({g:K.done(),side,t0,t1})};
+  {const K=itcKit();for(const s of [-1,1]){jpcLanterns(K,s*ex,-6.3,s*ex,0);jpcLanterns(K,s*ex,0,s*ex,6.3);jpcLanterns(K,-7,s*ez,0,s*ez);jpcLanterns(K,0,s*ez,7,s*ez)}K.done()}
+  {const K=itcKit(),qx=LOT.x1+1.3,qz=LOT.z1+1.3;jpcToro(K,-qx,-qz,1.3);jpcBonsai(K,qx,-qz);jpcBonsai(K,-qx,qz);jpcToro(K,qx,qz,1.3);K.done()}
+  const sx=LOT.x1+1.75,sz=LOT.z1+1.6;
+  piece('left',7.4,10,K=>jpcYatai(K,-(LOT.x1+1.5),8.7,Math.PI/2));
+  piece('left',-10,-7.4,K=>jpcVending(K,-sx,-8.6,Math.PI/2));
+  piece('back',-10.8,-7.0,K=>jpcNeko(K,-8.9,-sz,0));
+  piece('back',7.0,10.4,K=>jpcVending(K,8.4,-sz,0));
+  piece('right',-9.8,-7.4,K=>jpcYatai(K,LOT.x1+1.5,-8.6,-Math.PI/2));
+  piece('front',7.0,10.8,K=>jpcNeko(K,8.9,sz,Math.PI));
+  itcDoorClear()}
+// ---- çevre: sahil ----
+function jpcTree(H,x,z,h,sakura){const {cy,sp,Y0,add}=H;if(sakura){cy(0.18,0.26,h*0.5,0x5a3e2e,x,Y0+h*0.25,z,7);for(const s of [-1,1]){const b=cy(0.07,0.11,1.5,0x5a3e2e,x+s*0.4,Y0+h*0.55,z,6);b.rotation.z=-s*0.7}
+    for(let i=0;i<8;i++){const a=i*0.8,r=i?1.1:0,c=sp(i?0.95:1.25,[0xf7c6d6,0xf2a9c2,0xfbe0e8,0xeeb3c8][i%4],x+Math.cos(a)*r,Y0+h*0.75+(i%2)*0.3,z+Math.sin(a)*r);c.scale.y=0.75}}
+  else{cy(0.16,0.24,h*0.6,0x5a4a3a,x,Y0+h*0.3,z,7);for(const [dx,dy,dz,r] of [[0,h*0.95,0,1.3],[0.9,h*0.7,0.3,0.9],[-0.8,h*0.78,-0.2,0.85],[0.3,h*0.55,-0.8,0.7]]){const c=sp(r,0x3f6f3a,x+dx,Y0+dy,z+dz);c.scale.y=0.42}}}
+function jpcWagasa(H,x,z,i){const {add,cy,bx}=H,c=[0xd9453b,0xf2b134,0x3f6f9a][i%3];cy(0.035,0.035,2.2,0x6b4a32,x,0.35,z,6);const u=add(new THREE.ConeGeometry(1.2,0.3,16),c,x,1.5,z);add(new THREE.ConeGeometry(0.2,0.12,12),0x6b4a32,x,1.66,z);bx(0.9,0.12,0.5,0xd9453b,x+0.9,-0.6,z+0.2)}
+function jpcPagoda(x,z){const K=itcKit(),R=0x4f5560,W=0xd9453b,PL=0xf4efe4;K.G.position.set(x,-0.32,z);K.bx(4.6,0.5,4.6,0xb9b2a4,0,0.25,0);let y=0.5,s=3.4;
+  for(let i=0;i<5;i++){const hh=1.5-i*0.08;K.bx(s,hh,s,i%2?W:W,0,y+hh/2,0);for(const sx of [-1,1])for(const sz of [-1,1])K.bx(0.16,hh,0.16,0x8a2a22,sx*s/2,y+hh/2,sz*s/2);K.bx(s*0.5,hh*0.6,0.06,PL,0,y+hh/2,s/2+0.02);
+    const r=K.cn(s*0.95+0.9,0.75,R,0,y+hh+0.3,0,4);r.rotation.y=Math.PI/4;K.bx(s+1.0,0.12,s+1.0,0x3a3f48,0,y+hh,0);y+=hh+0.6;s*=0.86}
+  K.cy(0.08,0.1,3.2,0xc9963a,0,y+1.5,0,8);for(let k=0;k<7;k++)K.cy(0.22,0.22,0.06,0xc9963a,0,y+0.5+k*0.33,0,10);return K.done()}
+function jpcTorii(x,z){const K=itcKit(),R=0xd9453b,BK=0x1e1e1e;K.G.position.set(x,-1.2,z);for(const s of [-1,1]){K.cy(0.35,0.4,7.5,R,s*3,3.75,0,12);K.cy(0.5,0.5,0.6,BK,s*3,0.3,0,12)}
+  K.bx(7.6,0.5,0.6,R,0,6.1,0);const k=K.bx(9.2,0.5,0.8,BK,0,7.1,0);K.bx(9.0,0.25,0.75,R,0,6.75,0);K.bx(0.5,1.0,0.4,R,0,6.6,0);return K.done()}
+function jpcFuji(){const K=itcKit(),x=-118,z=-30;const m=K.cy(9,46,28,0x6f86a8,x,9,z,32);m.castShadow=false;const s=K.cy(3,11.5,7,0xf6f8fb,x,20.5,z,32);s.castShadow=false;
+  for(let i=0;i<10;i++){const a=i/10*Math.PI*2,c=K.cn(2.2,4.5,0xf6f8fb,x+Math.cos(a)*10.5,16.5,z+Math.sin(a)*10.5,6);c.castShadow=false}K.cy(30,52,4,0x9ab86e,x,-1,z,32).castShadow=false;return K.done()}
+function jpcBoat(x,z,ry){const g=new THREE.Group();g.position.set(x,-1.1,z);g.rotation.y=ry;scene.add(g);const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
+  const h=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.5,1.1),T(0x8a6a4a));h.position.y=0.2;g.add(h);const p=new THREE.Mesh(new THREE.ConeGeometry(0.62,1.2,4),T(0x8a6a4a));p.rotation.z=-Math.PI/2;p.rotation.x=Math.PI/4;p.scale.set(1,1,0.9);p.position.set(2.1,0.25,0);g.add(p);
+  const c=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.7,0.9),T(0xf4efe4));c.position.set(-0.6,0.8,0);g.add(c);const r=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.1,1.1),T(0x4f5560));r.position.set(-0.6,1.2,0);g.add(r);
+  const fl=new THREE.Mesh(new THREE.BoxGeometry(0.02,0.45,0.6),T(0xd9453b));fl.position.set(1.4,1.0,0);g.add(fl);ENV.boats.push({g,ph:Math.random()*6,y0:-1.1});return g}
+// ---- kamera açılışı ve eğim ----
+if(EVMODE==='jp'){const _et=envTick;envTick=function(dt){const r=_et.apply(this,arguments);try{controls.maxPolarAngle=itcPolar()}catch(e){}return r};
+  try{const T=controls.target,v=camera.position.clone().sub(T),az=Math.atan2(v.x,v.z),d=v.length()*1.13,po=1.19;controls.maxPolarAngle=1.22;
+    camera.position.set(T.x+d*Math.sin(po)*Math.sin(az),T.y+d*Math.cos(po),T.z+d*Math.sin(po)*Math.cos(az));controls.update();controls.maxPolarAngle=itcPolar()}catch(e){console.warn('japonya bakış',e)}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
