@@ -19549,7 +19549,7 @@ function luxCards(){const g=$('mkGrid');if(!g)return;g.querySelectorAll('.card[d
 // Ödül iki yoldan alınır (biri alınınca öbürü kapanır; sunucu claimed_by ile tek sefer sağlar):
 //  1) Ön kayıttaki e-postayla hesap açan oyuncu: oyun açılınca ve giriş yapınca prereg_claim kendiliğinden çağrılır.
 //  2) Kişisel ön kayıt kodu (TC……): Ayarlar › Hediye kodu (redeem_gift_code ön kayıt kodlarını da tanır, p901).
-// Miktar sunucuda: 100 elmas + 1.000 altın.
+// Miktar sunucuda (prereg_reward, V256): 100 elmas + 1.000 altın + ortak hedefler (100 kayıt +20 elmas, 500 +50 elmas, 1.000 +2.000 altın, 5.000 +150 elmas); sayfadaki TIERS ile aynı.
 let _prBusy=false,_prUid=null;
 async function preregTry(){if(_prBusy||EVMODE||S.preregDone)return;const u=await evrUser().catch(()=>null);if(!u||_prUid===u.id)return;
   _prBusy=true;try{const sb=await sbClient();const {data,error}=await sb.rpc('prereg_claim');if(error)throw error;_prUid=u.id;const d=data||{};
@@ -19562,6 +19562,143 @@ async function preregTry(){if(_prBusy||EVMODE||S.preregDone)return;const u=await
 setTimeout(()=>{try{preregTry()}catch(e){}},9000);
 // giriş yapınca (p19 SIGNED_IN → cloudSync): bulut kaydı yüklendikten sonra dene
 {let _t=0;const _cs=cloudSync;cloudSync=function(){const r=_cs.apply(this,arguments);if(SB.user&&!S.preregDone&&_prUid!==SB.user.id){clearTimeout(_t);_t=setTimeout(()=>{try{preregTry()}catch(e){}},8000)}return r}}
+
+// ================= YÜZ İFADELERİ (V258) =================
+// Kullanıcı isteği (15 Kasım 2026): "oyunumuzdaki kedilere jest mimik ekleyebilir miyiz ?" → seçim: yüz ifadeleri + vücut jestleri, duruma göre.
+// Modelde yüz kemiği/morph yok; yüz dokuya boyalı. İfade = kedinin dokusunun göz çevresi yeniden boyanmış kopyası (malzemenin map'i geçici olarak değişir).
+//  • Göz yeri: posMap (doku pikseli → model konumu) içinde göz sınıfı (6/7) pikselleri; iki göz için ayrı elips.
+//  • İfadeler: blink (göz kırpma), happy (^^), sleepy (yarı kapalı), angry (çatık kaş), sad (üzgün kaş), surprised (kalkık kaş, kocaman göz parıltısı).
+//  • Aynı temel doku + ifade için tek kopya (önbellek, en çok FX_MAX doku; eskiler atılır).
+//  • ch.expr('happy',2.5) → 2,5 sn; süre bitince doğal yüz. Göz kırpma kendiliğinden (2,5–6 sn arası, ekranda olanlar).
+const FX={R:{},cache:new Map(),MAX:28,ok:true};
+function fxGeom(R){if(FX.R[R])return FX.R[R];const M=posMap(R),{pm,cls,cov}=M;
+  // göz pikselleri (iki taraf aynı ölçü: |x| ile)
+  let n=0,sx=0,sy=0,xs=[],ys=[];for(let k=0;k<R*R;k++){if(!cov[k])continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];if(z<0.05||y<1.36||y>1.53)continue;
+    const ax=Math.abs(x);if(Math.hypot((ax-0.088)/0.085,(y-1.445)/0.053)>=1)continue;if(cls[k]!==6&&cls[k]!==7)continue;n++;sx+=ax;sy+=y;xs.push(ax);ys.push(y)}
+  xs.sort((a,b)=>a-b);ys.sort((a,b)=>a-b);const q=(a,f)=>a[Math.max(0,Math.min(a.length-1,Math.round(f*(a.length-1))))];
+  const E={cx:n?sx/n:0.088,cy:n?sy/n:1.445,rx:n?(q(xs,0.98)-q(xs,0.02))/2*1.08:0.05,ry:n?(q(ys,0.98)-q(ys,0.02))/2*1.08:0.04};
+  if(n){E.cx=(q(xs,0.98)+q(xs,0.02))/2;E.cy=(q(ys,0.98)+q(ys,0.02))/2}
+  // yüz bölgesi pikselleri (göz çevresi + kaş alanı)
+  const idx=[],U=[],Vv=[];for(let k=0;k<R*R;k++){if(!cov[k])continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];if(z<0.02)continue;const ax=Math.abs(x);
+    const u=(E.cx-ax)/E.rx,v=(y-E.cy)/E.ry;if(u<-1.9||u>1.6||v<-1.6||v>2.6)continue;idx.push(k);U.push(u);Vv.push(v)}
+  let x0=R,y0=R,x1=0,y1=0;for(const k of idx){const x=k%R,y=(k/R)|0;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  return FX.R[R]={R,E,idx:Int32Array.from(idx),u:Float32Array.from(U),v:Float32Array.from(Vv),n,bb:[x0,y0,x1-x0+1,y1-y0+1]}}
+const fxSm=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)};
+// ifade boyası: her piksel için (kürk örtüsü f, çizgi l, parıltı w) 0..1
+function fxPaint(ex,u,v){const e2=(u/1.22)**2+(v/(v>0?1.38:1.15))**2;let f=0,l=0,w=0;const lid=(y0,th)=>1-fxSm(th*0.55,th,Math.abs(v-y0));
+  if(ex==='blink'){f=1-fxSm(1.0,1.18,Math.sqrt(e2));l=Math.abs(u)<1.02?lid(-0.25+0.28*u*u,0.2):0}
+  else if(ex==='happy'){f=1-fxSm(1.0,1.18,Math.sqrt(e2));l=Math.abs(u)<1.0?lid(0.05+0.62*(1-u*u)-0.25,0.3):0}
+  else if(ex==='sleepy'){const top=fxSm(-0.2,-0.05,v)*(1-fxSm(1.0,1.18,Math.sqrt(e2)));f=top;l=Math.abs(u)<1.0?lid(-0.12,0.16):0}
+  else if(ex==='angry'){const by=1.0-0.55*u;const cut=fxSm(by-0.75,by-0.6,v)*(1-fxSm(1.0,1.15,Math.sqrt(e2)));f=cut;l=(u>-1.25&&u<1.25)?lid(by,0.24):0}
+  else if(ex==='sad'){const by=1.1+0.5*u;const cut=fxSm(by-0.7,by-0.55,v)*(1-fxSm(1.0,1.15,Math.sqrt(e2)))*fxSm(-0.2,0.4,-u);f=cut;l=(u>-1.25&&u<1.25)?lid(by,0.2):0;
+    w=(1-fxSm(0.0,0.16,Math.hypot((u+0.2)/0.9,(v+1.15)/0.35)))*0.9}
+  else if(ex==='surprised'){l=(u>-1.1&&u<1.1)?lid(1.75-0.35*u*u,0.17):0;w=1-fxSm(0.12,0.2,Math.hypot(u+0.25,v-0.32))}
+  return [f,l,w]}
+// doku üretimi ana akışı kesmesin: istenince sıraya girer, boşta tek tek üretilir; hazır değilse ifade atlanır (göz kırpma) ya da hazır olunca uygulanır
+FX.q=[];FX.qk=new Set();
+function fxTex(base,ex,now){if(!base||!base.image)return null;const key=base.uuid+'|'+ex;let t=FX.cache.get(key);if(t){FX.cache.delete(key);FX.cache.set(key,t);return t}
+  if(!now){if(!FX.qk.has(key)){FX.qk.add(key);FX.q.push([base,ex,key]);fxPump()}return null}return fxMake(base,ex,key)}
+function fxPump(){if(FX.busy||!FX.q.length)return;FX.busy=true;const go=()=>{const it=FX.q.shift();FX.busy=false;if(!it)return;FX.qk.delete(it[2]);try{if(!FX.cache.has(it[2]))fxMake(it[0],it[1],it[2])}catch(e){console.warn('ifade dokusu',e)}if(FX.q.length)fxPump()};
+  if(window.requestIdleCallback)requestIdleCallback(go,{timeout:600});else setTimeout(go,60)}
+function fxMake(base,ex,key){let t;
+  const img=base.image,iw=img.width||512;const R=iw>=1024&&posMapReady(1024)?1024:512;const G=fxGeom(R);
+  const cv=document.createElement('canvas');cv.width=cv.height=R;const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(img,0,0,R,R);const [bx,by,bw,bh]=G.bb;const im=cx.getImageData(bx,by,bw,bh),p=im.data;
+  const OFF=k=>(((k/R)|0)-by)*bw+(k%R)-bx;
+  // kürk rengi: göz çevresindeki halkadan (1.5–1.95) açıya göre 48 dilim ortalaması; doldururken pikselin açısındaki dilimler karışır (kürk deseni yönünü korur)
+  const NB=48,BR=new Float32Array(NB*3),BN=new Float32Array(NB);for(let i=0;i<G.idx.length;i++){const u=G.u[i]/1.22,v=G.v[i]/(G.v[i]>0?1.38:1.15),e=Math.hypot(u,v);if(e<1.12||e>1.5)continue;const k=OFF(G.idx[i])*4;const lum=0.3*p[k]+0.59*p[k+1]+0.11*p[k+2];if(lum<60)continue;
+    const b=Math.floor(((Math.atan2(v,u)+Math.PI)/(2*Math.PI))*NB)%NB;BR[b*3]+=p[k];BR[b*3+1]+=p[k+1];BR[b*3+2]+=p[k+2];BN[b]++}
+  let gr=0,gg=0,gb=0,gn=0;for(let b=0;b<NB;b++){gr+=BR[b*3];gg+=BR[b*3+1];gb+=BR[b*3+2];gn+=BN[b]}const GM=gn?[gr/gn,gg/gn,gb/gn]:[230,200,170];
+  for(let b=0;b<NB;b++){if(BN[b]>0)for(let c=0;c<3;c++)BR[b*3+c]/=BN[b]}
+  for(let pass=0;pass<NB;pass++)for(let b=0;b<NB;b++)if(!BN[b]){const a=(b+NB-1)%NB,c2=(b+1)%NB;if(BN[a]||BN[c2]){const s2=BN[a]&&BN[c2]?2:1;for(let c=0;c<3;c++)BR[b*3+c]=((BN[a]?BR[a*3+c]:0)+(BN[c2]?BR[c2*3+c]:0))/s2;BN[b]=0.5}}
+  const furAt=(u,v)=>{const uu=u/1.22,vv=v/(v>0?1.38:1.15);const a=((Math.atan2(vv,uu)+Math.PI)/(2*Math.PI))*NB-0.5;const b0=((Math.floor(a)%NB)+NB)%NB,b1=(b0+1)%NB,t=a-Math.floor(a);
+    const r=Math.min(1,Math.hypot(uu,vv));const o=[0,0,0];for(let c=0;c<3;c++){const ring=BN[b0]||BN[b1]?BR[b0*3+c]*(1-t)+BR[b1*3+c]*t:GM[c];o[c]=GM[c]+(ring-GM[c])*(0.35+0.65*r)}return o};
+  const Lc=[44,26,18],Wc=[255,255,255],Tc=[120,190,245];
+  for(let i=0;i<G.idx.length;i++){const [f,l,w]=fxPaint(ex,G.u[i],G.v[i]);if(f<=0&&l<=0&&w<=0)continue;const k=OFF(G.idx[i])*4;const FC=f>0?furAt(G.u[i],G.v[i]):null;
+    for(let c=0;c<3;c++){let x=p[k+c];if(f>0)x=x+(FC[c]*(0.97+0.06*((G.idx[i]*7919)%13)/13)-x)*f;if(w>0)x=x+((ex==='sad'?Tc:Wc)[c]-x)*w;if(l>0)x=x+(Lc[c]-x)*l;p[k+c]=x}}
+  cx.putImageData(im,bx,by);t=new THREE.CanvasTexture(cv);t.flipY=base.flipY;t.colorSpace=base.colorSpace||THREE.SRGBColorSpace;t.wrapS=base.wrapS;t.wrapT=base.wrapT;
+  FX.cache.set(key,t);while(FX.cache.size>FX.MAX){const [k0,t0]=FX.cache.entries().next().value;FX.cache.delete(k0);if(t0._fxUse>0){FX.cache.set(k0,t0);break}t0.dispose()}
+  return t}
+function posMapReady(R){return !!(CM.maps&&CM.maps[R])}
+// gövde ağı (kıyafet ağları da skinned olabilir): ortak gövde geometrisi, yoksa en çok köşeli
+function fxMesh(ch){if(ch._fxSm!==undefined)return ch._fxSm;let sm=null,best=0;ch.o.traverse(o=>{if(!o.isSkinnedMesh||!o.material||!o.material.map)return;if(o.geometry===CM.geo||o.geometry===CM.geoNT){sm=o;best=1e9}else{const n=o.geometry.attributes.position.count;if(n>best){best=n;sm=o}}});return ch._fxSm=sm}
+// yüz: _mood = süren ruh hâli (null = doğal), _tmp = geçici ifade (göz kırpma vb.)
+Char.prototype._face=function(ex){const sm=fxMesh(this);if(!sm)return;const m=sm.material.map;if(!this._fxBase||(m!==this._fxCur&&m!==this._fxBase))this._fxBase=m;
+  const t=ex?fxTex(this._fxBase,ex):this._fxBase;if(!t){this._fxWant=ex;return}this._fxWant=null;if(t===this._fxCur)return;
+  const old=this._fxCur;if(old&&old!==this._fxBase)old._fxUse=Math.max(0,(old._fxUse||0)-1);if(t!==this._fxBase)t._fxUse=(t._fxUse||0)+1;if(sm.material.map!==t){sm.material.map=t;sm.material.needsUpdate=true}this._fxCur=t};
+Char.prototype.expr=function(ex,dur=2){try{if(!FX.ok)return;this._tmp=ex;this._tmpT=dur;this._face(ex||this._mood)}catch(e){console.warn('ifade',e);FX.ok=false}};
+Char.prototype.mood=function(ex){try{if(!FX.ok||this._mood===ex)return;this._mood=ex||null;if(!this._tmp)this._face(this._mood)}catch(e){console.warn('ifade',e);FX.ok=false}};
+{const _up=Char.prototype.update;Char.prototype.update=function(dt){const r=_up.apply(this,arguments);try{if(!FX.ok)return r;
+  if(this._tmp){this._tmpT-=dt;if(this._tmpT<=0){const was=this._tmp;this._tmp=null;this._face(this._mood);if(was!=='blink')this._blT=1+Math.random()*2}}
+  else{if(this._fxWant&&this._fxWant===this._mood)this._face(this._mood);if(this._blT==null)this._blT=1+Math.random()*5;this._blT-=dt;if(this._blT<=0){this._blT=2.5+Math.random()*3.5;if(this.o.visible!==false&&this._mood!=='happy'&&this._mood!=='sleepy')this.expr('blink',0.13)}}}catch(e){}return r}}
+// ---- duruma göre ruh hâli (müşteriler) ----
+function fxPat(g){const P=g&&g.pat;if(!P)return 1;if(P.bMax)return 1-P.bT/P.bMax;if(P.aMax)return 1-P.aT/P.aMax;return 1}
+let _fxMt=0;
+function fxMoodTick(dt){_fxMt-=dt;if(_fxMt>0)return;_fxMt=0.35;if(!FX.ok)return;
+  for(const c of customers){const ch=c&&c.char;if(!ch||!ch.mood)continue;let m=null;const st=c.state;
+    if(c.angry&&c.angry!=='edit'&&(st==='LEAVING'||c.gone))m='angry';
+    else if(st==='RUNNING')m='surprised';
+    else if(c.bubble==='sorry')m='sad';
+    else if(st==='EATING'||st==='WAITING_FOR_GROUP')m=c.bubble==='heart'?'happy':null;
+    else if(st==='WAITING_TO_ORDER'||st==='ORDER_TAKEN'||st==='WAITING_FOR_FOOD'){const k=fxPat(c.group);m=k<0.25?'angry':k<0.5?'sad':null}
+    else if(c._fxTipT>0){m='happy'}
+    if(c._fxTipT>0)c._fxTipT-=0.35;
+    ch.mood(m)}}
+{const _st=serviceTick;serviceTick=function(dt){const r=_st.apply(this,arguments);try{fxMoodTick(dt)}catch(e){}return r}}
+// ödeme: bahşiş bıraktıysa sevinç
+{const _pay=pay;pay=function(c){const r=_pay.apply(this,arguments);try{setTimeout(()=>{try{if(c&&c.order&&c.order.tip&&c.char){c._fxTipT=2.5;c.char.expr('happy',2.2)}}catch(e){}},350)}catch(e){}return r}}
+
+// ================= VÜCUT JESTLERİ (V258) =================
+// Kullanıcı isteği (15 Kasım 2026): kedilere jest/mimik → vücut jestleri, duruma göre.
+// Animasyon dosyası eklemeden, kemiklere animasyonun ÜSTÜNE yön hedefi verilir (dünya yönüyle; kemik eksenlerinden bağımsız):
+//  cheer (kollar havada), clap (alkış), nod (evet), shake (hayır), shrug (omuz silkme), cross (kollar kavuşturulmuş, sabırsız), wave (el sallama).
+//  ch.gesture('clap',1.6) → süre boyunca; giriş/çıkış yumuşak (env). Oturan kedide de çalışır (yalnız üst gövde).
+const GS={ok:true};
+const _gv1=new THREE.Vector3(),_gv2=new THREE.Vector3(),_gq1=new THREE.Quaternion(),_gq2=new THREE.Quaternion(),_gq3=new THREE.Quaternion();
+// kemiği, çocuğuna giden yön dünyada 'dir' olacak şekilde w oranında döndür
+function gsAim(b,c,dir,w){if(!b||!c||w<=0)return;const q0=b.quaternion.clone();const dn=dir.clone().normalize();
+  const step=to=>{b.updateMatrixWorld(true);const cur=c.getWorldPosition(_gv2).sub(b.getWorldPosition(_gv1)).normalize();_gq1.setFromUnitVectors(cur,to);const bw=b.getWorldQuaternion(_gq2);const tw=_gq1.multiply(bw);const pw=b.parent.getWorldQuaternion(_gq3).invert();b.quaternion.copy(pw.multiply(tw));return cur};
+  b.updateMatrixWorld(true);const cur0=c.getWorldPosition(_gv2).sub(b.getWorldPosition(_gv1)).normalize();
+  if(cur0.dot(dn)<-0.2&&b.parent){// neredeyse ters yön: dönüş ekseni belirsiz olmasın diye önce gövdeden dışa çevir
+    const out=b.getWorldPosition(new THREE.Vector3()).sub(b.parent.parent?b.parent.parent.getWorldPosition(new THREE.Vector3()):new THREE.Vector3());out.y=0;if(out.lengthSq()>1e-8)step(out.normalize())}
+  step(dn);const qT=b.quaternion.clone();b.quaternion.copy(q0).slerp(qT,Math.min(1,w));b.updateMatrixWorld(true)}
+// kemiği dünya ekseni etrafında döndür
+function gsTurn(b,axis,ang,){if(!b||!ang)return;b.updateMatrixWorld(true);const bw=b.getWorldQuaternion(_gq2);_gq1.setFromAxisAngle(axis,ang);const tw=_gq1.multiply(bw);const pw=b.parent.getWorldQuaternion(_gq3).invert();b.quaternion.copy(pw.multiply(tw));b.updateMatrixWorld(true)}
+function gsBones(ch){if(ch._gsB)return ch._gsB;const g=n=>ch.o.getObjectByName('mixamorig'+n);
+  return ch._gsB={head:g('Head'),neck:g('Neck'),sp:g('Spine2'),aL:g('LeftArm'),aR:g('RightArm'),fL:g('LeftForeArm'),fR:g('RightForeArm'),hL:g('LeftHand'),hR:g('RightHand'),sL:g('LeftShoulder'),sR:g('RightShoulder')}}
+const GS_DUR={cheer:1.7,clap:1.7,nod:1.1,shake:1.2,shrug:1.4,cross:3,wave:1.8};
+Char.prototype.gesture=function(name,dur){if(!GS.ok||!GS_DUR[name])return;this._gs={n:name,t:0,d:dur||GS_DUR[name]}};
+function gsApply(ch,dt){const G=ch._gs;if(!G)return;G.t+=dt;if(G.t>=G.d){ch._gs=null;return}const B=gsBones(ch);if(!B.aL||!B.head)return;
+  const t=G.t,env=Math.min(1,t/0.25,(G.d-t)/0.3);ch.o.updateMatrixWorld(true);
+  const yaw=ch.o.getWorldQuaternion(new THREE.Quaternion());const F=new THREE.Vector3(0,0,1).applyQuaternion(yaw),Rt=new THREE.Vector3(-1,0,0).applyQuaternion(yaw),U=new THREE.Vector3(0,1,0);
+  // L = karakterin sol tarafı (+x yerelde)
+  const side=s=>Rt.clone().multiplyScalar(-s);   // s=+1 sol, -1 sağ
+  const D=(f,u,sd,s)=>F.clone().multiplyScalar(f).add(U.clone().multiplyScalar(u)).add(side(s).multiplyScalar(sd));
+  const arms=(fn)=>{for(const s of [1,-1]){const a=s>0?B.aL:B.aR,f=s>0?B.fL:B.fR,h=s>0?B.hL:B.hR;const [d1,d2]=fn(s);gsAim(a,f,d1,env);gsAim(f,h,d2,env)}};
+  switch(G.n){
+    case 'cheer':{const b=Math.sin(t*9)*0.12;arms(s=>[D(0.15,1,0.45,s),D(0.05+b,1,0.2,s)]);gsTurn(B.head,Rt,-0.18*env);break}
+    case 'clap':{const o=(Math.sin(t*15)+1)/2;arms(s=>[D(0.75,-0.45,0.28,s),D(0.75,0.25,-0.62+0.32*o,s)]);gsTurn(B.head,Rt,0.08*env);break}
+    case 'nod':{gsTurn(B.head,Rt,Math.sin(t*9)*0.28*env);break}
+    case 'shake':{gsTurn(B.head,U,Math.sin(t*10)*0.38*env);break}
+    case 'shrug':{arms(s=>[D(0.2,-0.75,0.55,s),D(0.75,0.35,0.55,s)]);if(B.sL)gsTurn(B.sL,F,0.18*env);if(B.sR)gsTurn(B.sR,F,-0.18*env);gsTurn(B.head,F,0.16*env);break}
+    case 'cross':{arms(s=>[D(0.5,-0.85,0.12,s),D(0.55,0.08,-0.85,s)]);gsTurn(B.head,U,Math.sin(t*1.6)*0.12*env);break}
+    case 'wave':{const w=Math.sin(t*11)*0.35;arms(s=>s<0?[D(0.2,0.75,0.6,s),D(0.15,1,0.15+w,s)]:[D(0,-1,0.12,s),D(0.2,-1,0.05,s)]);break}}}
+// animasyonun yazmadığı kemiklerde birikme olmasın: jestten önceki hâl saklanır, sonraki karede güncellemeden önce geri konur
+{const _up=Char.prototype.update;Char.prototype.update=function(dt){if(this._gsSave){for(const [b,q] of this._gsSave)b.quaternion.copy(q);this._gsSave=null}
+  const r=_up.apply(this,arguments);try{if(this._gs){const B=gsBones(this);this._gsSave=Object.values(B).filter(Boolean).map(b=>[b,b.quaternion.clone()]);gsApply(this,dt)}}catch(e){console.warn('jest',e);GS.ok=false;this._gs=null}return r}}
+// ---- duruma göre jestler ----
+function gsCust(){if(!GS.ok)return;for(const c of customers){const ch=c&&c.char;if(!ch||!ch.gesture)continue;const st=c.state,prev=c._gsSt;c._gsSt=st;
+    if(st!==prev){
+      if(st==='ORDER_TAKEN'||(prev==='WAITING_TO_ORDER'&&st==='WAITING_FOR_FOOD'))ch.gesture('nod');
+      else if(st==='EATING')ch.gesture(Math.random()<0.5?'clap':'cheer');
+      else if(st==='LEAVING'&&c.angry&&c.angry!=='edit')ch.gesture('shake');
+      else if(st==='RUNNING')ch.gesture('shrug')}
+    else if((st==='WAITING_TO_ORDER'||st==='WAITING_FOR_FOOD')&&!ch._gs){const k=fxPat(c.group);c._gsW=(c._gsW||0)-0.35;
+      if(k<0.5&&c._gsW<=0){c._gsW=5+Math.random()*4;ch.gesture(k<0.25?'shake':'cross')}}}}
+{let _gt=0;const _st=serviceTick;serviceTick=function(dt){const r=_st.apply(this,arguments);try{_gt-=dt;if(_gt<=0){_gt=0.35;gsCust()}}catch(e){}return r}}
+// bahşiş: müşteri alkışlar, kasiyer başıyla teşekkür eder
+{const _pay=pay;pay=function(c,R){const r=_pay.apply(this,arguments);try{setTimeout(()=>{try{if(c&&c.order&&c.order.tip&&c.char){c.char.gesture('clap');const k=R&&R.ch||(typeof cashier!=='undefined'?cashier:null);if(k&&k.gesture)k.gesture('nod')}}catch(e){}},350)}catch(e){}return r}}
+// seviye atlayınca personel sevinir
+{const _ax=addXP;addXP=function(n){const l0=S.lvl;const r=_ax.apply(this,arguments);try{if(S.lvl>l0){for(const k of [typeof yosun!=='undefined'?yosun:null,typeof posa!=='undefined'?posa:null,typeof cashier!=='undefined'?cashier:null])if(k&&k.gesture){k.gesture('cheer');k.expr&&k.expr('happy',2)}}}catch(e){}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
