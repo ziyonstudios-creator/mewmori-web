@@ -19570,7 +19570,8 @@ setTimeout(()=>{try{preregTry()}catch(e){}},9000);
 //  • İfadeler: blink (göz kırpma), happy (^^), sleepy (yarı kapalı), angry (çatık kaş), sad (üzgün kaş), surprised (kalkık kaş, kocaman göz parıltısı).
 //  • Aynı temel doku + ifade için tek kopya (önbellek, en çok FX_MAX doku; eskiler atılır).
 //  • ch.expr('happy',2.5) → 2,5 sn; süre bitince doğal yüz. Göz kırpma kendiliğinden (2,5–6 sn arası, ekranda olanlar).
-const FX={R:{},cache:new Map(),MAX:28,ok:true};
+// V260: kullanıcı isteği "mutlu ve göz kırpmayı da kaldır… ağzını da değişmesin" → FX.happy=false, FX.blink=false (uykulu, kızgın, üzgün, şaşkın kalır)
+const FX={R:{},cache:new Map(),MAX:28,ok:true,happy:false,blink:false};
 function fxGeom(R){if(FX.R[R])return FX.R[R];const M=posMap(R),{pm,cls,cov}=M;
   // göz pikselleri (iki taraf aynı ölçü: |x| ile)
   let n=0,sx=0,sy=0,xs=[],ys=[];for(let k=0;k<R*R;k++){if(!cov[k])continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];if(z<0.05||y<1.36||y>1.53)continue;
@@ -19640,7 +19641,7 @@ Char.prototype.expr=function(ex,dur=2){try{if(!FX.ok)return;this._tmp=ex;this._t
 Char.prototype.mood=function(ex){try{if(!FX.ok||this._mood===ex)return;this._mood=ex||null;if(!this._tmp)this._face(this._mood)}catch(e){console.warn('ifade',e);FX.ok=false}};
 {const _up=Char.prototype.update;Char.prototype.update=function(dt){const r=_up.apply(this,arguments);try{if(!FX.ok)return r;
   if(this._tmp){this._tmpT-=dt;if(this._tmpT<=0){const was=this._tmp;this._tmp=null;this._face(this._mood);if(was!=='blink')this._blT=1+Math.random()*2}}
-  else{if(this._fxWant&&this._fxWant===this._mood)this._face(this._mood);if(this._blT==null)this._blT=1+Math.random()*5;this._blT-=dt;if(this._blT<=0){this._blT=2.5+Math.random()*3.5;if(this.o.visible!==false&&this._mood!=='happy'&&this._mood!=='sleepy')this.expr('blink',0.13)}}}catch(e){}return r}}
+  else{if(this._fxWant&&this._fxWant===this._mood)this._face(this._mood);if(this._blT==null)this._blT=1+Math.random()*5;this._blT-=dt;if(this._blT<=0){this._blT=2.5+Math.random()*3.5;if(FX.blink&&this.o.visible!==false&&this._mood!=='happy'&&this._mood!=='sleepy')this.expr('blink',0.13)}}}catch(e){}return r}}
 // ---- duruma göre ruh hâli (müşteriler) ----
 function fxPat(g){const P=g&&g.pat;if(!P)return 1;if(P.bMax)return 1-P.bT/P.bMax;if(P.aMax)return 1-P.aT/P.aMax;return 1}
 let _fxMt=0;
@@ -19649,14 +19650,58 @@ function fxMoodTick(dt){_fxMt-=dt;if(_fxMt>0)return;_fxMt=0.35;if(!FX.ok)return;
     if(c.angry&&c.angry!=='edit'&&(st==='LEAVING'||c.gone))m='angry';
     else if(st==='RUNNING')m='surprised';
     else if(c.bubble==='sorry')m='sad';
-    else if(st==='EATING'||st==='WAITING_FOR_GROUP')m=c.bubble==='heart'?'happy':null;
+    else if(st==='EATING'||st==='WAITING_FOR_GROUP')m=FX.happy&&c.bubble==='heart'?'happy':null;
     else if(st==='WAITING_TO_ORDER'||st==='ORDER_TAKEN'||st==='WAITING_FOR_FOOD'){const k=fxPat(c.group);m=k<0.25?'angry':k<0.5?'sad':null}
-    else if(c._fxTipT>0){m='happy'}
+    else if(FX.happy&&c._fxTipT>0){m='happy'}
     if(c._fxTipT>0)c._fxTipT-=0.35;
     ch.mood(m)}}
 {const _st=serviceTick;serviceTick=function(dt){const r=_st.apply(this,arguments);try{fxMoodTick(dt)}catch(e){}return r}}
 // ödeme: bahşiş bıraktıysa sevinç
-{const _pay=pay;pay=function(c){const r=_pay.apply(this,arguments);try{setTimeout(()=>{try{if(c&&c.order&&c.order.tip&&c.char){c._fxTipT=2.5;c.char.expr('happy',2.2)}}catch(e){}},350)}catch(e){}return r}}
+{const _pay=pay;pay=function(c){const r=_pay.apply(this,arguments);try{setTimeout(()=>{try{if(FX.happy&&c&&c.order&&c.order.tip&&c.char){c._fxTipT=2.5;c.char.expr('happy',2.2)}}catch(e){}},350)}catch(e){}return r}}
+
+// ================= MASA TEMİZLİĞİ (V260) =================
+// Kullanıcı isteği (15 Kasım 2026): "müşteri yemeği yediğinde kasaya giderken masayı temizle özelliği olsun garson masayı temizlemeden yeni müşteri o masaya oturamasın"
+//  • Yemeğini yiyen müşteri koltuğundan kalkınca yerinde kirli tabak kalır (boş tabak, kırıntılar, buruşuk peçete).
+//  • Masadaki herkes kalkınca masa "kirli" olur: freeTables kirli masayı vermez → yeni müşteri oturamaz.
+//  • Garsona 'clean' işi düşer: her kirli tabağın servis noktasına gider, toplar (tepsiye), masayı siler; bitince masa yeniden boş.
+//  • Yemeden giden (kızan, düzenlemede çıkarılan) müşteri tabak bırakmaz. Masa düzenlemede taşınır/kaldırılırsa kirli tabaklar hemen kalkar.
+const CLN={mat:null};
+function clnMats(){if(CLN.mat)return CLN.mat;return CLN.mat={plate:toon(0xf7f3ea),rim:toon(0xd9cfbd),crumb:toon(0xb07a3e),sauce:toon(0xc9874a),nap:toon(0xffffff)}}
+function dirtyPlate(){const M=clnMats(),g=new THREE.Group();
+  const p=new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.07,0.012,20),M.plate);p.position.y=0.006;g.add(p);
+  const r=new THREE.Mesh(new THREE.TorusGeometry(0.08,0.006,6,24),M.rim);r.rotation.x=Math.PI/2;r.position.y=0.012;g.add(r);
+  const s=new THREE.Mesh(new THREE.CircleGeometry(0.03,12),M.sauce);s.rotation.x=-Math.PI/2;s.position.set(0.018,0.0125,-0.01);s.scale.set(1,0.7,1);g.add(s);
+  for(let i=0;i<6;i++){const c=new THREE.Mesh(new THREE.SphereGeometry(0.006+Math.random()*0.004,6,4),M.crumb);const a=Math.random()*6.28,d=0.02+Math.random()*0.05;c.position.set(Math.cos(a)*d,0.015,Math.sin(a)*d);g.add(c)}
+  const n=new THREE.Mesh(new THREE.IcosahedronGeometry(0.022,0),M.nap);n.scale.set(1.2,0.6,1);n.position.set(-0.055,0.03,0.04);n.rotation.set(0.4,0.8,0.2);g.add(n);
+  g.traverse(o=>{if(o.isMesh)o.castShadow=true});return g}
+function clnPut(c){try{const s=c.seat,t=c.table;if(!s||!t||!s.spot)return;const m=dirtyPlate();m.position.set(s.spot.x,t.topY+0.002,s.spot.z);m.rotation.y=Math.random()*6.28;scene.add(m);
+  const d=t.dirty||(t.dirty={plates:[],at:t.center?{x:t.center.x,z:t.center.z}:null,queued:false});d.plates.push({m,seat:s})}catch(e){console.warn('kirli tabak',e)}}
+function clnClear(t,instant){const d=t.dirty;if(!d)return;for(const p of d.plates){if(!p.m)continue;if(instant)scene.remove(p.m);else fadeOut(p.m);p.m=null}t.dirty=null}
+// yiyen müşteriyi işaretle
+{const _co=consume;consume=function(o){try{if(o&&o.customer)o.customer._ateReal=true}catch(e){}return _co.apply(this,arguments)}}
+{const _fs=freeSeat;freeSeat=function(c){const first=c&&!c.seatFree;if(first&&c._ateReal&&!c.angry&&!c._clnPut&&!EVMODE){c._clnPut=true;clnPut(c)}
+  const r=_fs.apply(this,arguments);try{const t=c&&c.table;if(t&&t.dirty&&!t.occupant&&!t.dirty.queued){t.dirty.queued=true;clnJob(t)}}catch(e){console.warn('masa temizliği',e)}return r}}
+{const _ft=freeTables;freeTables=function(){return _ft.apply(this,arguments).filter(t=>!t.dirty)}}
+function clnJob(t){enqueue('clean',async w=>{const ch=w.ch;const d=t.dirty;if(!d)return;if(!TABLES.includes(t)){clnClear(t,true);return}
+  const tray=ch.tray;const got=[];
+  const left=d.plates.filter(p=>p.m);while(left.length){let bi=0,bd=1e9;left.forEach((p,i)=>{const q=p.seat.serve;const dd=Math.hypot(q.x-ch.pos.x,q.z-ch.pos.z);if(dd<bd){bd=dd;bi=i}});const p=left.splice(bi,1)[0];
+    if(!t.dirty||!TABLES.includes(t))break;const s=p.seat;await waitSpotClear(w,s.serve);await ch.walkTo(s.serve.x,s.serve.z);await ch.face(s.serveYaw);
+    if(!p.m)continue;if(!got.length){await ch.doFor('IDLE_WORK',0.6)}
+    const m=p.m;p.m=null;
+    if(tray&&got.length<4){if(!ch.carry){ch.carry=tray;await sleep(0.3)}tray.visible=true;const f=TRAY_SLOTS[got.length]||TRAY_SLOTS[0];const from=new THREE.Vector3();m.getWorldPosition(from);
+      const to=new THREE.Vector3(f[0],tray.userData.top,f[1]);tray.localToWorld(to);await tween(0.35,u=>{m.position.lerpVectors(from,to,u);m.position.y+=Math.sin(u*Math.PI)*0.06});
+      tray.attach(m);m.position.set(f[0],tray.userData.top,f[1]);m.userData.cln=true;got.push(m);sfx('clink')}
+    else fadeOut(m)}
+  // masayı siler
+  if(t.dirty&&TABLES.includes(t)){await ch.doFor('IDLE_WORK',0.8)}
+  if(t.dirty){for(const p of t.dirty.plates)if(p.m){fadeOut(p.m);p.m=null}t.dirty=null}
+  // tabakları mutfağa (tezgâh teslim noktası) bırakır
+  if(got.length){try{const k=await claimSpot('pick',w);const P=PICK_SPOTS[k];await ch.walkTo(P.x,P.z);await ch.face(COUNTER_FACE);await sleep(0.25);for(const m of got){fadeOut(m)}sfx('clink');await sleep(0.65);freeSpot('pick',w)}catch(e){}
+    for(const m of got){if(m.parent)m.parent.remove(m)}tray.visible=false;ch.carry=null}})}
+// masa taşındı/kaldırıldı ya da gün bitti: kirli tabaklar kalmasın
+{let _ct=0;const _st=serviceTick;serviceTick=function(dt){const r=_st.apply(this,arguments);try{_ct-=dt;if(_ct<=0){_ct=0.5;
+  for(const x of customers)void x;const all=new Set(TABLES);for(const g of CLN.seen||[])if(g.dirty&&!all.has(g))clnClear(g,true);CLN.seen=TABLES.filter(t=>t.dirty);
+  for(const t of CLN.seen){const d=t.dirty;if(d.at&&t.center&&Math.hypot(t.center.x-d.at.x,t.center.z-d.at.z)>0.05)clnClear(t,true);else if(!d.queued&&!t.occupant){d.queued=true;clnJob(t)}}}}catch(e){}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
