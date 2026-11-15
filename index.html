@@ -552,7 +552,7 @@ const TR_ENV=EVMODE==='tr';   // Türkiye Durağı (İstanbul): Boğaz kıyısı
  const front=[[-16.8,22.6,5,5,6.6,1,{awn:0xd9534f}],[-11.2,23,5.2,5,8,2,{vine:1}],[-5.6,22.6,5.4,5,7,3,{awn:0x5e8c5a,flat:true}],[0,23.1,5.2,5,8.6,4,{vine:-1}],[5.6,22.6,5.4,5,6.8,5,{awn:0x4f86c6}],[11.2,22.9,5,5,7.6,0,{flat:true,vine:1}],[16.6,22.6,5,5,7,6,{awn:0xf2b134}]];
  for(const [x,z,w,d,h,ci,o] of front){if(IT_ENV&&x===0){itcPantheon(0,23.9);continue}bld(x,z,w,d,h,Math.PI,ci,o)}
  // sağ sıra (+x), sokağın karşısı
- for(const [x,z,w,d,h,ci,o] of [[23.4,13.6,5,5.4,7.2,2,{awn:0xf2b134}],[23.8,7.8,5,5.6,8.4,6,{vine:1}],[23.4,2,5,5.2,6.6,3,{flat:true}],[23.6,-3.8,5,5.4,7.8,1,{awn:0xd9534f}],[23.4,-9.6,5,5.2,7,4,{vine:-1}],[23.6,-15.4,5,5.4,8,0,{flat:true}]]){if(TR_ENV&&(z===7.8||z===2||z===-3.8||z===-9.6)){if(z===2)trcMosque(34.5,-0.9);continue}bld(x,z,w,d,h,-Math.PI/2,ci,o)}
+ for(const [x,z,w,d,h,ci,o] of [[23.4,13.6,5,5.4,7.2,2,{awn:0xf2b134}],[23.8,7.8,5,5.6,8.4,6,{vine:1}],[23.4,2,5,5.2,6.6,3,{flat:true}],[23.6,-3.8,5,5.4,7.8,1,{awn:0xd9534f}],[23.4,-9.6,5,5.2,7,4,{vine:-1}],[23.6,-15.4,5,5.4,8,0,{flat:true}]]){if(TR_ENV&&z===2)trcMosque(-64,6);bld(x,z,w,d,h,-Math.PI/2,ci,o)}
  if(IT_ENV||TR_ENV)itcMergeBuildings();   // 12 bina iki grupta (ön sıra, sağ sıra) malzeme başına tek ağ
  // ---------- SAHİL (sol -x ve arka -z): binalar yerine korkuluklu gezinti yolu, palmiyeler, begonvilli çardaklar, kumsal, iskele, şapel ----------
  {const G=new THREE.Group();G.name='seaside';scene.add(G);const mc=new Map(),Tm=c=>{if(!mc.has(c))mc.set(c,T(c));return mc.get(c)},Y0=-0.32;   // Y0: kara yüzeyi
@@ -17628,7 +17628,8 @@ function trcFacade(g,w,d,h,ci,opt){const n=trcFacade.n=(trcFacade.n|0)+1,K=itcKi
   if(n%3===2){if(!trcFacade.flag)trcFacade.flag=itcMat(trcFlagTex(),{side:THREE.DoubleSide});K.bx(0.04,0.04,1.1,0x3e4a3a,w*0.3,h-1.0,d/2+0.55);K.add(new THREE.PlaneGeometry(0.9,0.6),trcFacade.flag,w*0.3,h-1.4,d/2+1.05).rotation.y=Math.PI/2}
   K.done();return g}
 // ---- cami: kafeye (−x) bakan ön revak, merkezi kubbe, dört yarım kubbe, köşe kubbeleri, dört minare ----
-function trcMosque(x,z){const K=itcKit(),ST=0xeee3cf,ST2=0xdccfb5,LEAD=0x8fa3ad,LEAD2=0x7d919b,GOLD=0xf2b134,DK=0x4f6f8f;K.G.position.set(x,-0.32,z);K.G.scale.setScalar(1.25);   // sağ sıranın ortadaki dört evi yerine (avlusuyla birlikte), kafeden rahat görünsün
+function trcMosque(x,z){const K=itcKit(),ST=0xeee3cf,ST2=0xdccfb5,LEAD=0x8fa3ad,LEAD2=0x7d919b,GOLD=0xf2b134,DK=0x4f6f8f;K.G.position.set(x,-0.32,z);K.G.scale.setScalar(1.0);K.G.position.y=-1.0;K.G.rotation.y=Math.PI;   // V239 (kullanıcı: "kafeye çok yakın gözüküyor"): Boğaz'ın karşı kıyısında, tepede; denizin üstünden siluet olarak görünür
+  {const hill=K.add(new THREE.SphereGeometry(1,20,8,0,Math.PI*2,0,Math.PI/2),0x9ab86e,0,-1.3,0);hill.scale.set(20,2.2,22);hill.castShadow=false}
   const B=11,HB=5.2;K.bx(B,HB,B,ST,0,HB/2,0);K.bx(B+0.3,0.25,B+0.3,ST2,0,HB,0);
   for(const [fx,fz,ry] of [[-B/2,0,0],[B/2,0,0],[0,-B/2,1],[0,B/2,1]])for(let i=-2;i<=2;i++)for(const y of [1.6,3.7]){const ww=0.6,hh=y<2?1.4:1.1;const o=ry?[i*2,y,fz+(fz>0?0.03:-0.03)]:[fx+(fx>0?0.03:-0.03),y,i*2];
     K.bx(ry?ww:0.06,hh,ry?0.06:ww,DK,o[0],o[1],o[2]);const a=K.cy(ww/2,ww/2,0.06,DK,o[0],o[1]+hh/2,o[2],10);a.rotation[ry?'x':'z']=Math.PI/2}
