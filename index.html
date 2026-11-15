@@ -308,6 +308,37 @@ const LOT={x0:ROOM_MAX.x0-0.3,x1:ROOM_MAX.x1+0.3,z0:ROOM_MAX.z0-0.3,z1:ROOM_MAX.
 var OP={door:{wall:'left',t:1.8},win:{wall:'back',t:1.6}};   // V160: kapının yanındaki küçük cam ('side') oyundan kaldırıldı
 // (V229) BİRDEN FAZLA PENCERE: ek pencereler OP'de 'win2', 'win3'… anahtarlarıyla durur (hepsi aynı ölçü ve aynı tarz). for(k in OP) dolaşan
 // bütün kurallar (duvar boşluğu, çakışma, raf, duvar süsü yuvası) onları kendiliğinden görür. Ekleme/kaldırma: p110.
+// (V241) PENCERE ve KAPI BİÇİMLERİ: kemerli (klasik) dışında dikdörtgen, kare, uzun, yatay şerit ve yuvarlak pencere; düz ve vasistaslı kapı.
+// Biçim seçili market öğesinin kimliğinden okunur (ow_s_<biçim>_<renk>, od_s_<biçim>_<renk>; katalog p115). Seçim değişince oyun zaten yeniden
+// yüklendiği için biçim açılışta bir kez kurulur: opShapeInit, WIN tanımının hemen ardından çağrılır (build.py) ve WIN ölçülerini biçime göre ayarlar.
+// Duvar boşluğu (winHole / openingHole), cam ve doğrama (winShaped), kapı tepesi (p25 buildDoor) biçime göre kurulur; 2. kat pencereleri de aynı biçimde.
+var OPSH={win:'arch',door:'arch'};
+const OPSH_WIN={arch:{w:2.0,h:1.2,y:1.5},rect:{w:2.0,h:1.4,y:1.6},kare:{w:1.6,h:1.6,y:1.7},uzun:{w:1.1,h:2.0,y:1.9},bant:{w:2.0,h:0.8,y:2.15},yuvarlak:{w:1.5,h:1.5,y:1.75}};
+const OPSH_DOOR={arch:1,duz:1,vasistas:1};
+function opShapeOf(id){const m=/^o([wd])_s_([a-z]+)_/.exec(id||'');if(!m)return null;return (m[1]==='w'?OPSH_WIN:OPSH_DOOR)[m[2]]?m[2]:null}
+function opWinDims(s){const d=OPSH_WIN[s]||OPSH_WIN.arch;WIN.w=d.w;WIN.h=d.h;WIN.y=d.y}
+function opShapeInit(){try{const d=JSON.parse(localStorage.getItem(EVMODE?EV_SAVE:'posa-yosun-kafe-kayit-v3')||'null')||{};OPSH.win=opShapeOf(d.oWin)||'arch';OPSH.door=opShapeOf(d.oDoor)||'arch'}catch(e){}opWinDims(OPSH.win)}
+// küçük resim için biçimi geçici değiştir
+function opWithShape(k,s,fn){const o=OPSH[k],w={w:WIN.w,h:WIN.h,y:WIN.y};OPSH[k]=s||'arch';if(k==='win')opWinDims(OPSH.win);try{return fn()}finally{OPSH[k]=o;Object.assign(WIN,w)}}
+function winHole(path,cx,cy,w,h){const s=OPSH.win;if(s==='arch')return archHole(path,cx,cy,w,h);
+  if(s==='yuvarlak'){path.absarc(cx,cy,w/2,0,Math.PI*2,false);return path}
+  path.moveTo(cx-w/2,cy-h/2);path.lineTo(cx+w/2,cy-h/2);path.lineTo(cx+w/2,cy+h/2);path.lineTo(cx-w/2,cy+h/2);path.lineTo(cx-w/2,cy-h/2);return path}
+// biçimli pencere: cam (ilk çocuk) + çerçeve, denizlik, lento, kayıtlar. Yeşil parçalar boyanabilir (ogPaint)
+function winShaped(WG){const {y:wy,w:ww,h:wh}=WIN,s=OPSH.win;
+  const gl=new THREE.Mesh(new THREE.ShapeGeometry(winHole(new THREE.Shape(),0,wy,ww,wh),32),M.glass);gl.position.z=-0.1;WG.add(gl);
+  const bar=(w,h,x,y,z=-0.1,d=0.06)=>box(w,h,d,M.green,x,y,z);
+  if(s==='yuvarlak'){const r=ww/2;const f=new THREE.Mesh(new THREE.TorusGeometry(r+0.05,0.07,8,40),M.green);f.position.set(0,wy,0.02);f.castShadow=true;WG.add(f);
+    const f2=new THREE.Mesh(new THREE.TorusGeometry(r*0.42,0.035,6,28),M.green);f2.position.set(0,wy,-0.1);WG.add(f2);
+    for(const a of [0,Math.PI/2]){const b=bar(ww,0.06,0,wy);b.rotation.z=a}box(ww*0.6,0.1,0.3,M.woodDark,0,wy-r-0.1,0.06);box(0.22,0.26,0.1,M.woodDark,0,wy+r+0.12,0.05);return}
+  // çerçeve
+  bar(ww+0.24,0.12,0,wy+wh/2+0.06,0.02,0.12);bar(ww+0.24,0.12,0,wy-wh/2-0.0,0.02,0.12);for(const sx of [-1,1])bar(0.12,wh,sx*(ww/2+0.06),wy,0.02,0.12);
+  box(ww+0.34,0.1,0.34,M.woodDark,0,wy-wh/2-0.06,0.07);   // denizlik
+  box(ww+0.44,0.14,0.16,M.woodDark,0,wy+wh/2+0.2,0.05);   // lento
+  // kayıtlar
+  if(s==='rect'){bar(0.06,wh,0,wy);bar(ww,0.06,0,wy+wh*0.22)}
+  else if(s==='kare'){bar(0.06,wh,0,wy);bar(ww,0.06,0,wy)}
+  else if(s==='uzun'){bar(0.06,wh,0,wy);for(const f of [-0.17,0.17])bar(ww,0.06,0,wy+f*wh*2)}
+  else if(s==='bant'){for(const f of [-0.25,0,0.25])bar(0.06,wh,f*ww*1.33,wy)}}
 const opIsWin=k=>k==='win'||/^win\d+$/.test(k);
 const opWinKeys=()=>Object.keys(OP).filter(opIsWin);
 const OP_DIM=()=>{const w={w:WIN.w,h:WIN.h,y:WIN.y},d={door:{w:DOOR.w,h:DOOR.h,y:DOOR.h/2},win:w};for(const k in OP)if(k!=='door'&&k!=='win')d[k]=w;return d};
@@ -331,10 +362,11 @@ function disposeTree(o){o.traverse(m=>{if(m.isMesh){m.geometry&&m.geometry.dispo
 const OPCAP={door:{objs:[],obst:[]},corner:{objs:[],obst:[]}};
 function capStart(){return {n:scene.children.length,o:OBST.length}}
 function capEnd(key,c){OPCAP[key].objs.push(...scene.children.slice(c.n));OPCAP[key].obst.push(...OBST.slice(c.o))}
-function openingHole(path,k,t){const D=OP_DIM()[k];if(k==='door'){path.moveTo(t-D.w/2,0);path.lineTo(t+D.w/2,0);path.lineTo(t+D.w/2,D.h);path.absarc(t,D.h,D.w/2,0,Math.PI,false);path.lineTo(t-D.w/2,0);return path}
-  return archHole(path,t,D.y,D.w,D.h)}
+function openingHole(path,k,t){const D=OP_DIM()[k];if(k==='door'&&OPSH.door!=='arch'){const h=D.h+(OPSH.door==='vasistas'?0.5:0.02);path.moveTo(t-D.w/2,0);path.lineTo(t+D.w/2,0);path.lineTo(t+D.w/2,h);path.lineTo(t-D.w/2,h);path.lineTo(t-D.w/2,0);return path}
+  if(k==='door'){path.moveTo(t-D.w/2,0);path.lineTo(t+D.w/2,0);path.lineTo(t+D.w/2,D.h);path.absarc(t,D.h,D.w/2,0,Math.PI,false);path.lineTo(t-D.w/2,0);return path}
+  return winHole(path,t,D.y,D.w,D.h)}
 // klasik pencere: cam (ilk çocuk) + denizlik, kemer, dikmeler, kayıtlar. PARENT=WG iken çağrılır (buildShell ve market küçük resmi, p84)
-function winClassic(WG){const {y:wy,w:ww,h:wh}=WIN;
+function winClassic(WG){if(OPSH.win!=='arch')return winShaped(WG);const {y:wy,w:ww,h:wh}=WIN;
    const gl=new THREE.Mesh(new THREE.ShapeGeometry(archHole(new THREE.Shape(),0,wy,ww,wh),24),M.glass);gl.position.z=-0.1;WG.add(gl);
    box(ww+0.3,0.1,0.34,M.woodDark,0,wy-wh/2-0.038,0.07);
    const archF=new THREE.Mesh(new THREE.TorusGeometry(ww/2+0.05,0.06,8,32,Math.PI),M.green);archF.position.set(0,wy+wh/2,0.02);archF.castShadow=true;WG.add(archF);
@@ -454,13 +486,13 @@ function obst(minX,maxX,minZ,maxZ){OBST.push({minX,maxX,minZ,maxZ})}
 const floorStrips=[];let floor=null;
 const rug=box(4.3,0.024,3.3,M.pink,1.35,0.012,1.35,{shadow:false,round:0.01});rug.castShadow=false;rug.visible=false;/* başlangıç halısı kaldırıldı: oyuncu Dekor'dan kilim ekleyebilir */const rugIn=box(3.8,0.028,2.8,M.cream,1.35,0.014,1.35,{shadow:false,round:0.01});rugIn.castShadow=false;rugIn.visible=false;   // dikdörtgen halı: dört masanın altında
 // ---------- DUVARLAR (arka: -z, sol: -x) — gerçek pencere ve kapı boşluklu, zemine kadar iner ----------
-const WIN={x:1.6,y:1.5,w:2.0,h:1.2}, DOOR={z:1.8,w:1.2,h:2.3}, SIDEL={z:0.55,y:1.2,w:0.44,h:1.2};
+const WIN={x:1.6,y:1.5,w:2.0,h:1.2}, DOOR={z:1.8,w:1.2,h:2.3}, SIDEL={z:0.55,y:1.2,w:0.44,h:1.2};opShapeInit();
 function archHole(path,cx,cy,w,h){path.moveTo(cx-w/2,cy-h/2);path.lineTo(cx+w/2,cy-h/2);path.lineTo(cx+w/2,cy+h/2);path.absarc(cx,cy+h/2,w/2,0,Math.PI,false);path.lineTo(cx-w/2,cy-h/2);return path}
 buildShell();
 // kapı: pervazlar + kemer, kapalı kanat boşluğun yarısında, açık kanat menteşesinden içeri açılmış
 {const _oc=capStart();const {z:dz,w:dw,h:dh}=DOOR;const x0=-ROOM_W/2;
  box(0.26,dh,0.12,M.steel,x0-0.06,dh/2,dz-dw/2-0.06);box(0.26,dh,0.12,M.steel,x0-0.06,dh/2,dz+dw/2+0.06);
- const arch=new THREE.Mesh(new THREE.TorusGeometry(dw/2+0.06,0.06,8,28,Math.PI),M.steel);arch.rotation.y=Math.PI/2;arch.position.set(x0+0.02,dh,dz);scene.add(arch);
+ if(OPSH.door==='arch'){const arch=new THREE.Mesh(new THREE.TorusGeometry(dw/2+0.06,0.06,8,28,Math.PI),M.steel);arch.rotation.y=Math.PI/2;arch.position.set(x0+0.02,dh,dz);scene.add(arch)}else{const th=OPSH.door==='vasistas'?0.54:0.06;for(const s of [-1,1])box(0.26,th,0.12,M.steel,x0-0.06,dh+th/2,dz+s*(dw/2+0.06));box(0.26,0.14,dw+0.36,M.steel,x0-0.06,dh+th+0.07,dz)}
  const hz=dz+dw/2-0.01,ry=0.9,lw=dw/2;                                              // açık kanat: menteşe (x0+0.03, hz)
  // çan: duvardan çıkan dirsek + kısa ip
  box(0.24,0.03,0.03,M.woodDark,x0+0.12,dh+0.5,dz-dw/2-0.3);cyl(0.006,0.006,0.06,M.dark,x0+0.22,dh+0.46,dz-dw/2-0.3,6);cyl(0.06,0.09,0.12,M.gold,x0+0.22,dh+0.37,dz-dw/2-0.3,12);capEnd('door',_oc);
@@ -5062,12 +5094,19 @@ function doorLeaf(w,h,side){   // side=+1: menteşe alt z kenarında, kanat +z y
   return piv}
 function buildDoor(x0,dz,dw,dh){const W=dw/2-0.005;DOORA.x0=x0;DOORA.dz=dz;
   for(const side of [1,-1]){const p=doorLeaf(W,dh-0.01,side);p.position.set(x0+0.03,0,dz-side*dw/2);scene.add(p);DOORA.leaves.push({p,side})}
-  // kemerdeki tepe camı (yarım daire) + ışınsal kayıtlar
-  const sh=new THREE.Shape();sh.absarc(0,0,dw/2,0,Math.PI,false);sh.lineTo(dw/2,0);const tg=new THREE.Mesh(new THREE.ShapeGeometry(sh,24),M.glass);tg.rotation.y=Math.PI/2;tg.position.set(x0-0.08,dh,dz);scene.add(tg);
-  for(let i=1;i<4;i++){const a=i/4*Math.PI;const r=new THREE.Mesh(new THREE.BoxGeometry(0.04,dw/2,0.04),M.green);r.position.set(x0-0.08,dh+Math.sin(a)*dw/4,dz+Math.cos(a)*dw/4);r.rotation.x=-(Math.PI/2-a);scene.add(r)}
-  const tb=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.06,dw),M.green);tb.position.set(x0-0.06,dh+0.01,dz);scene.add(tb);
+  doorTop(x0,dz,dw,dh);
   // açık kanatların durduğu yer yürünmez (kapının ortası serbest kalır)
   for(const side of [1,-1]){const hz=dz-side*dw/2;obst(x0,x0+0.68,Math.min(hz,hz+side*0.12)-0.03,Math.max(hz,hz+side*0.12)+0.03)}}
+// kapı tepesi: kemerli (klasik) tepe camı, düz kapıda lento, vasistaslı kapıda dikdörtgen üst cam (V241, biçim OPSH.door)
+function doorTop(x0,dz,dw,dh,P){const add=m=>{(P||scene).add(m);return m};
+  if(OPSH.door==='duz'){const l=add(new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,dw+0.1),M.green));l.position.set(x0-0.06,dh+0.0,dz);return}
+  if(OPSH.door==='vasistas'){const g=add(new THREE.Mesh(new THREE.BoxGeometry(0.012,0.46,dw),M.glass));g.position.set(x0-0.08,dh+0.27,dz);
+    for(const [y,h] of [[dh+0.02,0.08],[dh+0.5,0.08]]){const b=add(new THREE.Mesh(new THREE.BoxGeometry(0.08,h,dw+0.04),M.green));b.position.set(x0-0.06,y,dz)}
+    for(const f of [-1/6,1/6]){const b=add(new THREE.Mesh(new THREE.BoxGeometry(0.05,0.46,0.05),M.green));b.position.set(x0-0.07,dh+0.27,dz+f*dw)}return}
+  // kemerdeki tepe camı (yarım daire) + ışınsal kayıtlar
+  const sh=new THREE.Shape();sh.absarc(0,0,dw/2,0,Math.PI,false);sh.lineTo(dw/2,0);const tg=new THREE.Mesh(new THREE.ShapeGeometry(sh,24),M.glass);tg.rotation.y=Math.PI/2;tg.position.set(x0-0.08,dh,dz);add(tg);
+  for(let i=1;i<4;i++){const a=i/4*Math.PI;const r=new THREE.Mesh(new THREE.BoxGeometry(0.04,dw/2,0.04),M.green);r.position.set(x0-0.08,dh+Math.sin(a)*dw/4,dz+Math.cos(a)*dw/4);r.rotation.x=-(Math.PI/2-a);add(r)}
+  const tb=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.06,dw),M.green);tb.position.set(x0-0.06,dh+0.01,dz);add(tb)}
 {const _oc=capStart();buildDoor(-ROOM_W/2,DOOR.z,DOOR.w,DOOR.h);capEnd('door',_oc)}
 function doorTick(dt){if(!DOORA.leaves.length)return;const P=[];for(const c of customers)if(c.char)P.push(c.char.pos);for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)P.push(k.ch.pos);
   if(COURIER&&COURIER.ch.o.visible)P.push(COURIER.ch.pos);if(typeof SUPC!=='undefined'&&SUPC)P.push(SUPC.ch.pos);
@@ -14733,7 +14772,7 @@ pkBootOpen=function(){oMigrate();oMirror();if(!oDoorOf()&&!oWinOf())return;try{p
 // ---- küçük resimler ----
 function oDoorGroup(c){const pack=c.tema&&c.pk!=='gen',g=oStyleGroup(pack?c:{});if(c.pk==='gen')ogPaint(g,c.tema);return g}
 function oWinGroup(c){const g=new THREE.Group();
-  if(c.tema&&c.pk!=='gen'){const {y:wy,w:ww,h:wh}=WIN,gl=new THREE.Mesh(new THREE.ShapeGeometry(archHole(new THREE.Shape(),0,wy,ww,wh),24),M.glass);gl.position.z=-0.1;g.add(gl);const Wg=PK_OPEN[c.pk].win(c.tema);Wg.rotation.y=Math.PI;g.add(Wg)}
+  if(c.tema&&c.pk!=='gen'){const {y:wy,w:ww,h:wh}=WIN,gl=new THREE.Mesh(new THREE.ShapeGeometry(winHole(new THREE.Shape(),0,wy,ww,wh),24),M.glass);gl.position.z=-0.1;g.add(gl);const Wg=PK_OPEN[c.pk].win(c.tema);Wg.rotation.y=Math.PI;g.add(Wg)}
   else{inGroup(g,()=>winClassic(g));if(c.pk==='gen')ogPaint(g,c.tema)}
   return g}
 {const _ft=furnThumb;furnThumb=function(id){const c=CAT[id];if(c&&c.kind==='odoor')return thumb('f:'+id,()=>oDoorGroup(c),{dir:[-1,0.3,0.55],pad:1.0});
@@ -16693,7 +16732,7 @@ function k2Build(){k2Drop();if(!K2.on||!K2.geo){if(K2.view===2)k2View(1,true);k2
   const kw=k2Wins(),wins={back:kw.back.map(v=>v+K2.dx),left:kw.left};
   for(const wall of ['back','left']){const WG=new THREE.Group();WG.userData.wall=wall;G.add(WG);const [a,b]=wall==='back'?[R.x0,R.x1]:[R.z0,R.z1];
     const sh=new THREE.Shape();sh.moveTo(a-0.2,-0.2);sh.lineTo(b+0.2,-0.2);sh.lineTo(b+0.2,WALL_H);sh.lineTo(a-0.2,WALL_H);sh.lineTo(a-0.2,-0.2);
-    for(const t of wins[wall])sh.holes.push(archHole(new THREE.Path(),t,WIN.y,WIN.w,WIN.h));
+    for(const t of wins[wall])sh.holes.push(winHole(new THREE.Path(),t,WIN.y,WIN.w,WIN.h));
     const g=new THREE.ExtrudeGeometry(sh,{depth:0.2,bevelEnabled:false,curveSegments:24}),m=new THREE.Mesh(g,M.wall);m.receiveShadow=true;
     if(wall==='back')m.position.z=R.z0-0.2;else{g.rotateY(-Math.PI/2);m.position.x=R.x0}WG.add(m);
     if(wall==='back')mk(new THREE.BoxGeometry(W,0.18,0.06),M.green,cx,0.09,R.z0+0.03,WG);else mk(new THREE.BoxGeometry(0.06,0.18,D),M.green,R.x0+0.03,0.09,cz,WG);
@@ -17855,6 +17894,31 @@ function jpcBoat(x,z,ry){const g=new THREE.Group();g.position.set(x,-1.1,z);g.ro
 if(EVMODE==='jp'){const _et=envTick;envTick=function(dt){const r=_et.apply(this,arguments);try{controls.maxPolarAngle=itcPolar()}catch(e){}return r};
   try{const T=controls.target,v=camera.position.clone().sub(T),az=Math.atan2(v.x,v.z),d=v.length()*1.13,po=1.19;controls.maxPolarAngle=1.22;
     camera.position.set(T.x+d*Math.sin(po)*Math.sin(az),T.y+d*Math.cos(po),T.z+d*Math.sin(po)*Math.cos(az));controls.update();controls.maxPolarAngle=itcPolar()}catch(e){console.warn('japonya bakış',e)}}
+
+// ================= V241: PENCERE ve KAPI BİÇİMLERİ — market öğeleri =================
+// Kullanıcı isteği (15 Kasım 2026): "oyuna farklı pencere ve kapı türleri eklemeni istiyorum yani sadece tasarımı farklı olmasın kare dikdörtgen
+// şeklinde kapılar pencereler olsun türetebilirsin bunları". Biçim altyapısı p0 (OPSH, winHole, winShaped, opShapeInit) ve p25 (doorTop).
+// Öğeler Market › Pencere / Kapı sekmelerinde; kimlikleri biçimi taşır (ow_s_<biçim>_<renk>, od_s_<biçim>_<renk>). Renk boyası klasik boyalı
+// modellerle aynı yoldan (pk 'gen', OG_TONES, ogPaint); yeşil hâl için OG_TONES.yesil eklenir (rengi değiştirmez, katalogda ayrıca listelenmez).
+OG_TONES.yesil={n:'Yeşil',f:M.green.color.getHex(),p:0x4f7a30,lv:1,d:0,w:0};
+{const W=[['rect','Dikdörtgen pencere','Düz üstlü, geniş dikdörtgen pencere; üstte vasistas kaydı.',2,100,'mese'],
+   ['kare','Kare pencere','Dört bölmeli kare pencere.',2,110,'krem'],
+   ['uzun','Uzun pencere','Dar ve uzun, giyotin kayıtlı pencere.',3,130,'lacivert'],
+   ['bant','Şerit pencere','Duvarın üst kısmında uzanan yatay şerit pencere.',4,140,'siyah'],
+   ['yuvarlak','Yuvarlak pencere','Gemi lombozu gibi yuvarlak pencere.',5,170,'turkuaz']];
+ for(const [s,n,d,lv,pr,t2] of W)for(const t of ['yesil',t2]){const T=OG_TONES[t];
+   ogAdd({id:`ow_s_${s}_${t}`,kind:'owin',pk:'gen',tema:t,sh:s,name:t==='yesil'?n:`${n} (${T.n})`,price:t==='yesil'?pr:pr+40,lvl:t==='yesil'?lv:lv+1,desc:d+' Bütün pencerelerin bu biçimi alır.'})}
+ const D=[['duz','Düz kapı','Kemersiz, düz lentolu çift kanatlı kapı.',2,140,'siyah'],['vasistas','Vasistaslı kapı','Düz üstlü çift kanatlı kapı; üstünde dikdörtgen cam vasistas.',4,200,'mese']];
+ for(const [s,n,d,lv,pr,t2] of D)for(const t of ['yesil',t2]){const T=OG_TONES[t];
+   ogAdd({id:`od_s_${s}_${t}`,kind:'odoor',pk:'gen',tema:t,sh:s,name:t==='yesil'?n:`${n} (${T.n})`,price:t==='yesil'?pr:pr+50,lvl:t==='yesil'?lv:lv+1,desc:d})}}
+// küçük resimler: öğenin biçimiyle kurulur (market listesindeki klasik öğeler de, oyundaki biçimden bağımsız olarak kemerli görünür)
+{const _w=oWinGroup;oWinGroup=function(c){return opWithShape('win',(c&&c.sh)||'arch',()=>_w.apply(this,arguments))}}
+{const _d=oDoorGroup;oDoorGroup=function(c){const s=(c&&c.sh)||'arch';if(s==='arch')return opWithShape('door','arch',()=>_d.apply(this,arguments));
+  return opWithShape('door',s,()=>{const g=new THREE.Group(),W=DOOR.w/2-0.005,H=DOOR.h+(s==='vasistas'?0.55:0.06);
+    for(const side of [1,-1]){const p=doorLeaf(W,DOOR.h-0.01,side);p.position.set(0.03,0,-side*DOOR.w/2);g.add(p)}
+    for(const z of [-1,1]){const m=new THREE.Mesh(new THREE.BoxGeometry(0.26,H,0.12),M.steel);m.position.set(-0.06,H/2,z*(DOOR.w/2+0.06));g.add(m)}
+    const l=new THREE.Mesh(new THREE.BoxGeometry(0.26,0.12,DOOR.w+0.24),M.steel);l.position.set(-0.06,H+0.06,0);g.add(l);
+    doorTop(0,0,DOOR.w,DOOR.h,g);if(c.tema)ogPaint(g,c.tema);return g})}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
