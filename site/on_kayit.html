@@ -11,6 +11,12 @@
 <meta property="og:url" content="https://tabbychef.app/">
 <meta name="theme-color" content="#f7e7cf">
 <link rel="icon" href="site/logo.svg" type="image/svg+xml">
+<script>
+// Oyun sahibinin cihazı (ana ekran simgesi ya da gizli oyun adresini bir kez açmış tarayıcı) → oyuna; herkes ön kayıt sayfasını görür. ?site=1 bu cihazda sayfayı gösterir.
+(function(){var G='tc-agpwku',q=location.search||'',h=location.hash||'';try{if(/[?&]site=1/.test(q)){localStorage.removeItem('tc-oyun');return}
+var me=localStorage.getItem('tc-oyun')==='1',sa=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+if(me||sa||/access_token=|refresh_token=|error_description=/.test(h)||/[?&]code=/.test(q))location.replace(G+q+h)}catch(e){}})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
