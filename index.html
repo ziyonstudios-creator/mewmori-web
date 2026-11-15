@@ -253,7 +253,7 @@ var qs=new URLSearchParams(location.search),saved=null;try{saved=localStorage.ge
 setLang(qs.get('lang')||saved||((navigator.language||'tr').toLowerCase().indexOf('tr')===0?'tr':'en'));
 document.querySelectorAll('.lang button').forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
 var src=(qs.get('k')||qs.get('utm_source')||(/Instagram/i.test(navigator.userAgent)?'instagram':(document.referrer?'ref':'web'))).slice(0,40);
-var TIERS=[[100,20,0],[500,50,0],[1000,0,2000],[5000,150,0]],SHOW=100; // sunucudaki prereg_reward ile aynı olmalı
+var TIERS=[[100,20,0],[500,50,0],[1000,0,2000],[5000,150,0]],SHOW=0; // sunucudaki prereg_reward ile aynı olmalı
 function reward(c){var g=100,k=1000;TIERS.forEach(function(t){if(c>=t[0]){g+=t[1];k+=t[2]}});return [g,k]}
 function showCount(){if(count==null)return;var c=count;
   $('cntBox').hidden=c<SHOW;$('cntOpen').hidden=c>=SHOW;$('cnt').textContent=nf(c);
@@ -263,7 +263,7 @@ function showCount(){if(count==null)return;var c=count;
   document.querySelectorAll('.tier').forEach(function(d,i){d.classList.toggle('on',c>=TIERS[i][0])});
   var r=reward(c);$('rwG').textContent=nf(r[0]);$('rwC').textContent=nf(r[1]);
   var nx=TIERS.filter(function(t){return c<t[0]})[0];
-  $('gNow').innerHTML=(L==='en'?'Current reward: <b>'+nf(r[0])+' gems + '+nf(r[1])+' gold</b>':'Şu anki ödül: <b>'+nf(r[0])+' elmas + '+nf(r[1])+' altın</b>')+(nx?(L==='en'?' · Next goal: '+nf(nx[0])+' sign-ups':' · Sıradaki hedef: '+nf(nx[0])+' kayıt'):'')}
+  $('gNow').innerHTML=(L==='en'?'<b>'+nf(c)+'</b> sign-ups so far · ':'Şu ana kadar <b>'+nf(c)+'</b> kayıt · ')+(L==='en'?'Current reward: <b>'+nf(r[0])+' gems + '+nf(r[1])+' gold</b>':'Şu anki ödül: <b>'+nf(r[0])+' elmas + '+nf(r[1])+' altın</b>')+(nx?(L==='en'?' · Next goal: '+nf(nx[0])+' sign-ups':' · Sıradaki hedef: '+nf(nx[0])+' kayıt'):'')}
 function loadCount(){rpc('prereg_count').then(function(n){count=n|0;showCount()}).catch(function(){})}
 loadCount();setInterval(loadCount,60000);
 var busy=false,msg=$('msg');
