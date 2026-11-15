@@ -100,6 +100,28 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
 .en{display:none}html[lang=en] .en{display:revert}html[lang=en] .tr{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media(max-width:520px){.card{padding:16px}.chip{font-size:14px;padding:4px 10px 4px 4px;gap:5px}.chip img{width:22px;height:22px}.reward{display:grid;grid-template-columns:1fr 1fr;gap:6px}.chip{justify-content:center}.card h2{font-size:24px}.code{font-size:26px;padding:10px 12px}}
+.counter.open{padding:8px 16px}.counter.open span{font:900 14px/1.3 var(--body)}
+.grow{margin:10px 0 0;font:800 14px var(--body);color:var(--green2)}
+.goals{margin:30px 0 0;background:var(--card);border:3px solid var(--ink);border-radius:26px;box-shadow:0 5px 0 var(--ink);padding:6px 16px 18px;text-align:center}
+.goals h3.sec{margin:14px 0 4px}
+.gsub{margin:0 auto 18px;max-width:560px;font:700 15px/1.45 var(--body);color:var(--ink2)}
+.track{position:relative;height:18px;border:3px solid var(--ink);border-radius:999px;background:#f3e2c6;margin:0 2px;overflow:visible}
+.fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;background:linear-gradient(#a6dc6c,var(--green2));transition:width 1s ease}
+.dot{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border:3px solid var(--ink);border-radius:50%;background:#fff}
+.dot.on{background:var(--gold)}
+.tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.tier{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;border:2.5px solid var(--line);border-radius:16px;background:#fffaf1;min-width:0}
+.tier .tn{font:800 20px/1 var(--disp)}.tier .tk{font:800 11.5px var(--body);color:var(--ink2)}
+.tier .tw{display:flex;align-items:center;gap:3px;font:800 15px var(--disp);padding:2px 8px 2px 3px;border-radius:999px;border:2px solid var(--ink);background:linear-gradient(#f4e8ff,#e0c6fa);white-space:nowrap}
+.tier .tw.coin{background:linear-gradient(#fff3cf,#ffe39b)}
+.tier .tw img{width:20px;height:20px}
+.tier .st{font:900 11.5px var(--body);color:var(--ink2)}.tier .ok{display:none!important}
+.tier.on{border-color:var(--green2);background:#f0fae4}.tier.on .lk{display:none!important}.tier.on .ok{display:inline!important;color:var(--green2)}
+html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!important}
+.gnow{margin:14px 0 0;font:800 15px var(--body)}
+@media(max-width:520px){.tier .tn{font-size:17px}.tier .tw{font-size:12.5px;padding:1px 6px 1px 2px}.tier .tw img{width:16px;height:16px}.tiers{gap:4px}}
+[hidden]{display:none!important}
+@media(max-width:520px){.tier .tw{font-size:11.5px;gap:2px;padding:1px 5px 1px 2px}.tier .tw img{width:14px;height:14px}.tier{padding:7px 1px}}
 </style>
 </head>
 <body>
@@ -117,7 +139,8 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
       <span class="soon"><span class="tr">ÇOK YAKINDA</span><span class="en">COMING SOON</span></span>
       <h1><span class="tr">Kedilerle kendi kafeni kur!</span><span class="en">Build your own cat café!</span></h1>
       <p class="sub"><span class="tr">Sipariş al, yemek pişir, kafeni büyüt ve dünyayı gez. App Store ve Google Play'de çok yakında.</span><span class="en">Take orders, cook, grow your café and tour the world. Coming soon to the App Store and Google Play.</span></p>
-      <div class="counter" aria-live="polite"><b id="cnt">…</b><span><span class="tr">kişi ön kayıt oldu</span><span class="en">players pre-registered</span></span></div>
+      <div class="counter" id="cntBox" aria-live="polite" hidden><b id="cnt">…</b><span><span class="tr">kişi ön kayıt oldu</span><span class="en">players pre-registered</span></span></div>
+      <div class="counter open" id="cntOpen"><span><span class="tr">🎉 Ön kayıtlar açıldı! İlk kayıt olanlardan biri ol</span><span class="en">🎉 Pre-registration is open! Be one of the first</span></span></div>
     </div>
     <div class="vid">
       <div class="phone"><video id="vid" playsinline muted loop autoplay preload="metadata" poster="site/poster_tr.jpg"><source src="site/tanitim_tr.mp4" type="video/mp4"></video>
@@ -129,8 +152,8 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
       <h2><span class="tr">Ön kayıt ol, ödülü kap</span><span class="en">Pre-register and get a reward</span></h2>
       <p style="margin:0;font-weight:700;color:var(--ink2)"><span class="tr">Oyun çıkınca hesabına hemen eklenir:</span><span class="en">Added to your account as soon as the game launches:</span></p>
       <div class="reward">
-        <div class="chip gem"><img src="img/ui/i_gem.webp" alt="">100 <span class="tr">elmas</span><span class="en">gems</span></div>
-        <div class="chip"><img src="img/ui/i_coins.webp" alt="">1.000 <span class="tr">altın</span><span class="en">gold</span></div>
+        <div class="chip gem"><img src="img/ui/i_gem.webp" alt=""><span id="rwG">100</span> <span class="tr">elmas</span><span class="en">gems</span></div>
+        <div class="chip"><img src="img/ui/i_coins.webp" alt=""><span id="rwC">1.000</span> <span class="tr">altın</span><span class="en">gold</span></div>
       </div>
       <form id="f" novalidate>
         <label class="f" for="em"><span class="tr">E-posta adresin</span><span class="en">Your email address</span></label>
@@ -144,6 +167,7 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
     <div class="done" id="done">
       <h2><span class="tr">Kaydın alındı! 🎉</span><span class="en">You're in! 🎉</span></h2>
       <p style="margin:0" id="doneTx"></p>
+      <p class="grow"><span class="tr">Ortak hedeflere ulaşıldıkça ödülün büyür. <a href="#hedef">Hedeflere bak</a></span><span class="en">Your reward grows as we hit shared goals. <a href="#hedef">See goals</a></span></p>
       <div class="codebox" id="codeBox"><div class="code" id="code"></div><button class="btn orange" type="button" id="copy"><span class="tr">Kopyala</span><span class="en">Copy</span></button></div>
       <ol class="steps">
         <li><span class="tr">Oyun çıkınca <b>aynı e-postayla</b> hesap açarsan ödülün kendiliğinden gelir.</span><span class="en">Sign up in the game with <b>the same email</b> and your reward arrives automatically.</span></li>
@@ -155,6 +179,14 @@ footer{padding:26px 0 36px;text-align:center;font:700 13px var(--body);color:var
   </section>
     </div>
   </div>
+</section>
+
+<section class="goals" id="hedef">
+  <h3 class="sec"><span class="tr">Birlikte kazanalım!</span><span class="en">Unlock rewards together!</span></h3>
+  <p class="gsub"><span class="tr">Ön kayıt sayısı hedeflere ulaştıkça <b>herkesin</b> ödülü büyür. Arkadaşlarını da çağır!</span><span class="en">As pre-registrations hit each goal, <b>everyone's</b> reward grows. Invite your friends!</span></p>
+  <div class="track" aria-hidden="true"><div class="fill" id="gFill"></div><i class="dot" style="left:12.5%"></i><i class="dot" style="left:37.5%"></i><i class="dot" style="left:62.5%"></i><i class="dot" style="left:87.5%"></i></div>
+  <div class="tiers"><div class="tier" data-t="100"><b class="tn">100</b><span class="tk"><span class="tr">kayıt</span><span class="en">sign-ups</span></span><span class="tw gem"><img src="img/ui/i_gem.webp" alt="">+20</span><span class="st"><span class="tr lk">Kilitli</span><span class="en lk">Locked</span><span class="tr ok">Açıldı!</span><span class="en ok">Unlocked!</span></span></div><div class="tier" data-t="500"><b class="tn">500</b><span class="tk"><span class="tr">kayıt</span><span class="en">sign-ups</span></span><span class="tw gem"><img src="img/ui/i_gem.webp" alt="">+50</span><span class="st"><span class="tr lk">Kilitli</span><span class="en lk">Locked</span><span class="tr ok">Açıldı!</span><span class="en ok">Unlocked!</span></span></div><div class="tier" data-t="1000"><b class="tn">1.000</b><span class="tk"><span class="tr">kayıt</span><span class="en">sign-ups</span></span><span class="tw coin"><img src="img/ui/i_coins.webp" alt="">+2.000</span><span class="st"><span class="tr lk">Kilitli</span><span class="en lk">Locked</span><span class="tr ok">Açıldı!</span><span class="en ok">Unlocked!</span></span></div><div class="tier" data-t="5000"><b class="tn">5.000</b><span class="tk"><span class="tr">kayıt</span><span class="en">sign-ups</span></span><span class="tw gem"><img src="img/ui/i_gem.webp" alt="">+150</span><span class="st"><span class="tr lk">Kilitli</span><span class="en lk">Locked</span><span class="tr ok">Açıldı!</span><span class="en ok">Unlocked!</span></span></div></div>
+  <p class="gnow" id="gNow"></p>
 </section>
 
 <h3 class="sec" style="margin-top:38px"><span class="tr">Oyunda neler var?</span><span class="en">What's inside?</span></h3>
@@ -215,13 +247,24 @@ function setLang(l){L=l==='en'?'en':'tr';document.documentElement.lang=L;
   try{localStorage.setItem('tc-lang',L)}catch(e){}
   $('em').placeholder=L==='en'?'you@example.com':'ornek@mail.com';
   var v=$('vid'),src=L==='en'?'site/tanitim_en.mp4':'site/tanitim_tr.mp4';if(v.querySelector('source').getAttribute('src')!==src){v.querySelector('source').setAttribute('src',src);v.poster=L==='en'?'site/poster_en.jpg':'site/poster_tr.jpg';v.load();var p=v.play();if(p&&p.catch)p.catch(function(){})}
-  if(count!=null)$('cnt').textContent=nf(count);
+  showCount();
   document.title=L==='en'?'TabbyChef · Pre-register':'TabbyChef · Ön kayıt'}
 var qs=new URLSearchParams(location.search),saved=null;try{saved=localStorage.getItem('tc-lang')}catch(e){}
 setLang(qs.get('lang')||saved||((navigator.language||'tr').toLowerCase().indexOf('tr')===0?'tr':'en'));
 document.querySelectorAll('.lang button').forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
 var src=(qs.get('k')||qs.get('utm_source')||(/Instagram/i.test(navigator.userAgent)?'instagram':(document.referrer?'ref':'web'))).slice(0,40);
-function loadCount(){rpc('prereg_count').then(function(n){count=n|0;$('cnt').textContent=nf(count)}).catch(function(){$('cnt').textContent='–'})}
+var TIERS=[[100,20,0],[500,50,0],[1000,0,2000],[5000,150,0]],SHOW=100; // sunucudaki prereg_reward ile aynı olmalı
+function reward(c){var g=100,k=1000;TIERS.forEach(function(t){if(c>=t[0]){g+=t[1];k+=t[2]}});return [g,k]}
+function showCount(){if(count==null)return;var c=count;
+  $('cntBox').hidden=c<SHOW;$('cntOpen').hidden=c>=SHOW;$('cnt').textContent=nf(c);
+  var P=[12.5,37.5,62.5,87.5],w=0,p0=0,t0=0;for(var i=0;i<4;i++){var t=TIERS[i][0];if(c>=t){p0=P[i];t0=t;w=P[i]}else{w=p0+(P[i]-p0)*(c-t0)/(t-t0);break}}
+  if(c>=TIERS[3][0])w=87.5+12.5*Math.min(1,(c-5000)/5000);$('gFill').style.width=w+'%';
+  document.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('on',c>=TIERS[i][0])});
+  document.querySelectorAll('.tier').forEach(function(d,i){d.classList.toggle('on',c>=TIERS[i][0])});
+  var r=reward(c);$('rwG').textContent=nf(r[0]);$('rwC').textContent=nf(r[1]);
+  var nx=TIERS.filter(function(t){return c<t[0]})[0];
+  $('gNow').innerHTML=(L==='en'?'Current reward: <b>'+nf(r[0])+' gems + '+nf(r[1])+' gold</b>':'Şu anki ödül: <b>'+nf(r[0])+' elmas + '+nf(r[1])+' altın</b>')+(nx?(L==='en'?' · Next goal: '+nf(nx[0])+' sign-ups':' · Sıradaki hedef: '+nf(nx[0])+' kayıt'):'')}
+function loadCount(){rpc('prereg_count').then(function(n){count=n|0;showCount()}).catch(function(){})}
 loadCount();setInterval(loadCount,60000);
 var busy=false,msg=$('msg');
 function say(t,ok){msg.className='msg '+(ok?'ok':'bad');msg.textContent=t}
@@ -231,7 +274,7 @@ $('f').addEventListener('submit',function(e){e.preventDefault();if(busy)return;v
   busy=true;$('go').disabled=true;say(T[L].wait,true);
   rpc('prereg_signup',{p_email:em,p_lang:L,p_source:src,p_consent:true}).then(function(d){
     if(!d||!d.ok){say(T[L][d&&d.err]||T[L].net);return}
-    if(d.count!=null){count=d.count;$('cnt').textContent=nf(count)}
+    if(d.count!=null){count=d.count;showCount()}
     $('formArea').style.display='none';$('done').classList.add('on');
     if(d.code){$('code').textContent=d.code.slice(0,2)+'-'+d.code.slice(2);$('doneTx').textContent=d.already?T[L].already:T[L].done}
     else{$('codeBox').style.display='none';$('doneTx').textContent=T[L].already}
