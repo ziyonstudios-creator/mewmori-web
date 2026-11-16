@@ -19716,7 +19716,13 @@ function clnJob(t){enqueue('clean',async w=>{const ch=w.ch;const d=t.dirty;if(!d
 //  • Yazılar ve görseller büyüdü (tarif adı 18px, malzeme adı 16px, alt satır 13px, görsel 44px).
 //  • Üretim rehberi: Hedef başlığının sağ üstünde küçük kitap düğmesi.
 (function(){const M='html.land #game#game #merge.skin',INK='#4a2a14';const st=document.createElement('style');st.id='hedefSade';st.textContent=`
-${M} .info>.box.how{display:none!important}
+/* V265: "sağdaki bilgi ekranını kaldır" → seçili ürün bilgisi de dahil bütün Bilgi kutuları gizli; Sat düğmesi tahtanın üstünde küçük düğme */
+${M} .info>.box{display:none!important}
+${M}{--mwi:clamp(262px,calc(36*var(--vw)),330px)!important;--mc:min(66px,calc((100*var(--vh) - 118px)/6),calc((100*var(--vw) - 100px - var(--mwe) - var(--mwi) - var(--mws,64px) - var(--pkl,84px))/6))!important}
+${M} #pkRaf{--pkl:86px!important}
+${M} #pkRaf .pk i{font-size:14px!important;line-height:1.05!important;right:calc(100% + 7px)!important}
+${M} .board-wrap{position:relative!important}
+${M} .mgSellF{position:absolute!important;right:10px;bottom:-12px;top:auto!important;z-index:5;padding:5px 12px!important;font-size:14px!important;min-height:0!important;height:auto!important;border-radius:999px!important;white-space:nowrap}
 ${M} .info>.thd{flex:1 1 0!important;min-width:0!important}
 ${M} .thd{padding:40px 10px 8px!important;gap:5px!important}
 ${M} .thlbl{font-size:16px!important;padding:3px 18px!important;top:8px!important}
@@ -19732,14 +19738,17 @@ ${M} .thd.empty p{font-size:17px!important}${M} .thd.empty small{font-size:13.5p
 /* enerji kartı tek satır: daha çok malzeme satırı sığsın */
 ${M} #enBox{display:flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;padding:5px 8px!important;height:auto!important;min-height:0!important}
 ${M} #enBox>.eb0{position:static!important;flex:none!important;transform:none!important}${M} #enBox>.eb1{position:static!important;flex:none!important;transform:none!important}${M} #enBox>.eb1 small{display:none!important}
-${M} #enBox>*:not(.eb0):not(.eb1):not(.eb3){position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;flex:1 1 auto!important;width:auto!important;margin:0!important}
+${M} #enBox>.eb2{order:3!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;flex:1 1 0!important;min-width:50px!important;width:auto!important;margin:0!important;grid-column:auto!important}
+${M} #enBox>.eb3{order:4!important;flex:none!important;position:static!important}
 ${M} .thGuide{position:absolute;right:8px;top:6px;width:34px;height:34px;border:2.5px solid ${INK};border-radius:50%;background:linear-gradient(#fff3d0,#f6c86a);display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 2px 0 ${INK}}
 ${M} .thGuide svg{width:19px;height:19px}
 `;document.head.appendChild(st)})();
 function hdGuide(){const d=document.querySelector('#merge .info>.thd');if(!d||d.querySelector('.thGuide')||typeof nyOpenAll!=='function')return;const b=document.createElement('button');b.type='button';b.className='thGuide';b.setAttribute('aria-label','Üretim rehberi');b.title='Üretim rehberi';
   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#4a2a14" stroke-width="2.4" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg>';
   b.onclick=e=>{e.stopPropagation();try{sfx('tap')}catch(_){}nyOpenAll()};d.appendChild(b)}
-{const _ri=renderInfo;renderInfo=function(){const r=_ri.apply(this,arguments);try{hdGuide()}catch(e){}return r}}
+// Sat düğmesi: Bilgi kutusundan tahtanın sağ üstüne taşınır (kutu her çizimde yeniden kurulur)
+function hdSell(){const bw=document.querySelector('#merge .board-wrap');if(!bw)return;bw.querySelectorAll('.mgSellF').forEach(b=>b.remove());const d=$('mgDel');if(!d||UI.mgSel==null)return;d.classList.add('mgSellF');bw.appendChild(d)}
+{const _ri=renderInfo;renderInfo=function(){const r=_ri.apply(this,arguments);try{hdGuide();hdSell()}catch(e){}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
