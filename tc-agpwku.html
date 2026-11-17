@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794922080",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794922462",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19880,6 +19880,17 @@ discoverItem=function(id){if(S.items[id])return;S.items[id]=true;const r=recipeB
   if(r&&!S.recipes[r.id]&&!S.unlocked[r.id]){S.recipes[r.id]=true;S.stats.disc++;sfx('discover');
     toast(`<b>Tarif ipucu: ${r.name}</b><br>Tarif Defteri'nde keşif aşamalarını tamamla`,`<img src="${productThumb(r.id)}" alt="">`,3200);try{checkObj()}catch(e){}}markDirty()};
 {const _d=tkDeliver;tkDeliver=function(id,it){const ok=_d.apply(this,arguments);if(ok)try{addXP(CONFIG.xp.deliver(it))}catch(e){}return ok}}
+
+// ================= BİRLEŞTİR: SIRADAKİ ADIM PARLAMASI DAHA BELİRGİN (V273) =================
+// Kullanıcı isteği (17 Kasım 2026): hedeflenince tıklanması gereken öğenin etrafındaki sarı-kırmızımsı alan daha belirgin renkte olsun.
+// Sarı/turuncu parlama krem-turuncu tahtada kayboluyordu. Artık parlak mavi çerçeve + beyaz iç halka + mavi ışıma + hafif mavi dolgu
+// (tahtadaki hücre, paket rafındaki paket ve hedef kartındaki işaret). Aynı adlı @keyframes sonra tanımlandığı için p111'dekini ezer.
+{const st=document.createElement('style');st.textContent=`
+#board .cell.nx{border-radius:12px;animation:nxcell 1s ease-in-out infinite;position:relative;z-index:1;background-color:rgba(40,160,255,.22)!important}
+@keyframes nxcell{0%,100%{box-shadow:0 0 0 3px #1e8fff inset,0 0 0 5px #fff inset,0 0 0 2px #1e8fff,0 0 6px 2px rgba(30,143,255,.6)}50%{box-shadow:0 0 0 4px #0a6cff inset,0 0 0 6px #fff inset,0 0 0 3px #0a6cff,0 0 16px 7px rgba(30,143,255,.95)}}
+#pkRaf .pk.nx{animation:nxpk 1s ease-in-out infinite;z-index:2}
+@keyframes nxpk{0%,100%{box-shadow:0 0 0 3px #fff,0 0 0 6px #1e8fff,0 2px 0 #4a2e1c;transform:scale(1)}50%{box-shadow:0 0 0 3px #fff,0 0 0 7px #0a6cff,0 0 16px 8px rgba(30,143,255,.95);transform:scale(1.08)}}
+@keyframes nxdv{50%{transform:scale(1.18);box-shadow:0 0 0 4px rgba(30,143,255,.9)}}`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
