@@ -121,6 +121,25 @@ html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!importa
 .gnow{margin:14px 0 0;font:800 15px var(--body)}
 @media(max-width:520px){.tier .tn{font-size:17px}.tier .tw{font-size:12.5px;padding:1px 6px 1px 2px}.tier .tw img{width:16px;height:16px}.tiers{gap:4px}}
 [hidden]{display:none!important}
+/* Beta testi (isteğe bağlı, ön kayıttan ayrı) */
+.beta{margin:30px 0 0;display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+@media(min-width:860px){.beta{grid-template-columns:.9fr 1.1fr}}
+.beta .intro{text-align:center}
+@media(min-width:860px){.beta .intro{text-align:left}}
+.beta .intro h3.sec{margin:6px 0 8px}
+@media(min-width:860px){.beta .intro h3.sec{text-align:left}}
+.opt{display:inline-block;padding:3px 12px;border:2.5px solid var(--ink);border-radius:999px;background:#eef6ff;font:900 12.5px var(--body);letter-spacing:.04em}
+.beta .intro p{margin:0 0 10px;font:700 15px/1.5 var(--body);color:var(--ink2)}
+.beta ul.why{margin:0;padding-left:20px;text-align:left;font:700 14.5px/1.55 var(--body)}
+.plat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border:0;margin:0;padding:0}
+.plat legend{font:900 14px var(--body);margin-bottom:6px;padding:0}
+.plat label{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 6px;border:3px solid var(--line);border-radius:16px;background:#fff;font:800 15px var(--body);cursor:pointer;text-align:center}
+.plat input{position:absolute;opacity:0;pointer-events:none}
+.plat label:has(input:checked){border-color:var(--green2);background:#f0fae4}
+.plat label:has(input:focus-visible){outline:3px solid var(--orange);outline-offset:2px}
+.hint{margin:-4px 0 0;font:700 12.5px/1.4 var(--body);color:var(--ink2)}
+.btn.blue{background:linear-gradient(#8cc8f2,#3f8ac4)}
+.betalink{margin:12px 0 0;font:800 14px var(--body)}
 @media(max-width:520px){.tier .tw{font-size:11.5px;gap:2px;padding:1px 5px 1px 2px}.tier .tw img{width:14px;height:14px}.tier{padding:7px 1px}}
 </style>
 </head>
@@ -175,8 +194,49 @@ html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!importa
         <li><span class="tr">Kodun ekran görüntüsünü almayı unutma.</span><span class="en">Take a screenshot of your code.</span></li>
       </ol>
       <p style="margin:14px 0 0"><a class="btn ghost" href="#" id="share"><span class="tr">Arkadaşına gönder</span><span class="en">Share with a friend</span></a></p>
+      <p class="betalink"><a href="#beta" id="toBeta"><span class="tr">🧪 Oyunu herkesten önce denemek ister misin? Beta testine katıl →</span><span class="en">🧪 Want to play before everyone else? Join the beta →</span></a></p>
     </div>
   </section>
+    </div>
+  </div>
+</section>
+
+<section class="beta" id="beta">
+  <div class="intro">
+    <span class="opt"><span class="tr">İSTEĞE BAĞLI</span><span class="en">OPTIONAL</span></span>
+    <h3 class="sec"><span class="tr">🧪 Beta testine katıl</span><span class="en">🧪 Join the beta test</span></h3>
+    <p><span class="tr">TabbyChef'i herkesten önce oyna, fikirlerinle oyunu birlikte şekillendirelim. Bu form ön kayıttan ayrıdır; ön kayıt ödülün bundan etkilenmez.</span><span class="en">Play TabbyChef before everyone else and help us shape the game. This is separate from pre-registration and doesn't affect your reward.</span></p>
+    <ul class="why">
+      <li><span class="tr">Testler küçük gruplarla başlayacak; yer açıldıkça sırayla davet göndereceğiz.</span><span class="en">Testing starts in small groups; we'll send invites in waves.</span></li>
+      <li><span class="tr">Android'de Google Play kapalı testi, iPhone'da TestFlight kullanılacak.</span><span class="en">Android uses a Google Play closed test, iPhone uses TestFlight.</span></li>
+      <li><span class="tr">Test sürümünde hatalar olabilir ve ilerlemen sıfırlanabilir.</span><span class="en">The test build may have bugs and your progress may be reset.</span></li>
+    </ul>
+  </div>
+  <div class="card">
+    <div id="bArea">
+      <form id="bf" novalidate>
+        <label class="f" for="bem"><span class="tr">E-posta adresin</span><span class="en">Your email address</span></label>
+        <input type="email" id="bem" autocomplete="email" inputmode="email" required placeholder="ornek@mail.com">
+        <fieldset class="plat">
+          <legend><span class="tr">Telefonun</span><span class="en">Your phone</span></legend>
+          <label><input type="radio" name="pf" value="ios"><span>🍎 iPhone</span></label>
+          <label><input type="radio" name="pf" value="android"><span>🤖 Android</span></label>
+          <label><input type="radio" name="pf" value="both"><span class="tr">İkisi de</span><span class="en">Both</span></label>
+        </fieldset>
+        <div id="gpBox" hidden>
+          <label class="f" for="bgp"><span class="tr">Google Play hesabının e-postası</span><span class="en">Your Google Play account email</span></label>
+          <input type="email" id="bgp" autocomplete="email" inputmode="email" placeholder="ornek@gmail.com">
+          <p class="hint"><span class="tr">Android testine davet, Play Store'da kullandığın Google hesabına gönderilir.</span><span class="en">Android test invites go to the Google account you use on the Play Store.</span></p>
+        </div>
+        <label class="consent"><input type="checkbox" id="bok">
+          <span><span class="tr">Beta testine davet edilmek için e-posta adreslerimin ve telefon türümün saklanmasını kabul ediyorum. <a href="#kvkk">Aydınlatma metni</a></span><span class="en">I agree that my email addresses and phone type are stored to invite me to the beta test. <a href="#kvkk">Privacy notice</a></span></span></label>
+        <button class="btn blue" type="submit" id="bgo"><span class="tr">Beta listesine katıl</span><span class="en">Join the beta list</span></button>
+        <p class="msg" id="bmsg" aria-live="polite"></p>
+      </form>
+    </div>
+    <div class="done" id="bDone">
+      <h2><span class="tr">Beta listesindesin! 🧪</span><span class="en">You're on the beta list! 🧪</span></h2>
+      <p style="margin:0" id="bDoneTx"></p>
     </div>
   </div>
 </section>
@@ -210,6 +270,7 @@ html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!importa
       <li><b>Hukuki sebep:</b> açık rızan.</li>
       <li><b>Saklama yeri:</b> Supabase bulut sunucuları (Frankfurt, Almanya). Bu, verinin yurt dışında saklanması anlamına gelir; onay kutusunu işaretleyerek buna da rıza vermiş olursun.</li>
       <li><b>Saklama süresi:</b> oyunun çıkışından sonra en çok 12 ay ya da sen silinmesini isteyene kadar.</li>
+      <li><b>Beta başvurusu (isteğe bağlı):</b> beta formunu doldurursan e-posta adresin, telefon türün ve Android seçtiysen Google Play hesabının e-postası saklanır. Tek amacı seni test sürümüne davet etmektir; Google Play kapalı testi için bu e-posta Google'ın test listesine eklenir. Beta testleri bitince ya da sen istediğinde silinir.</li>
       <li><b>Hakların:</b> KVKK 11. madde kapsamında verine erişme, düzeltme, silme ve rızanı geri alma hakkın var. Bunun için <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a> adresine yazman yeterli.</li>
     </ul>
   </div>
@@ -222,6 +283,7 @@ html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!importa
       <li><b>Legal basis:</b> your consent.</li>
       <li><b>Storage:</b> Supabase cloud servers in Frankfurt, Germany.</li>
       <li><b>Retention:</b> up to 12 months after launch, or until you ask us to delete it.</li>
+      <li><b>Beta sign-up (optional):</b> if you fill in the beta form, we store your email, phone type and, for Android, your Google Play account email. It is used only to invite you to the test build; for the Google Play closed test that email is added to Google's tester list. Deleted when beta testing ends or whenever you ask.</li>
       <li><b>Your rights:</b> access, correction, deletion and withdrawing consent. Just write to <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a>.</li>
     </ul>
   </div>
@@ -245,7 +307,7 @@ var count=null;
 function setLang(l){L=l==='en'?'en':'tr';document.documentElement.lang=L;
   document.querySelectorAll('.lang button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.l===L?'true':'false')});
   try{localStorage.setItem('tc-lang',L)}catch(e){}
-  $('em').placeholder=L==='en'?'you@example.com':'ornek@mail.com';
+  $('em').placeholder=$('bem').placeholder=L==='en'?'you@example.com':'ornek@mail.com';$('bgp').placeholder=L==='en'?'you@gmail.com':'ornek@gmail.com';
   var v=$('vid'),src=L==='en'?'site/tanitim_en.mp4':'site/tanitim_tr.mp4';if(v.querySelector('source').getAttribute('src')!==src){v.querySelector('source').setAttribute('src',src);v.poster=L==='en'?'site/poster_en.jpg':'site/poster_tr.jpg';v.load();var p=v.play();if(p&&p.catch)p.catch(function(){})}
   showCount();
   document.title=L==='en'?'TabbyChef · Pre-register':'TabbyChef · Ön kayıt'}
@@ -280,6 +342,30 @@ $('f').addEventListener('submit',function(e){e.preventDefault();if(busy)return;v
     else{$('codeBox').style.display='none';$('doneTx').textContent=T[L].already}
     $('kayit').scrollIntoView({behavior:'smooth',block:'start'});
   }).catch(function(){say(T[L].net)}).then(function(){busy=false;$('go').disabled=false})});
+// ---- Beta testi (isteğe bağlı, ön kayıttan ayrı) ----
+var BT={tr:{platform:'Telefonunu seç (iPhone, Android ya da ikisi).',play:'Android testi için Google Play hesabının e-postasını yaz.',consent:'Beta listesine katılmak için onay kutusunu işaretle.',
+  done:'Test başladığında davetini e-postayla göndereceğiz. Biraz sabır, kedi şefler hazırlanıyor 🐾',updated:'Bilgilerin güncellendi. Test başladığında davetini e-postayla göndereceğiz 🐾'},
+  en:{platform:'Choose your phone (iPhone, Android or both).',play:'For the Android test, enter your Google Play account email.',consent:'Please tick the consent box to join the beta list.',
+  done:"We'll email your invite when testing starts. Hang tight, the cat chefs are getting ready 🐾",updated:"Your details were updated. We'll email your invite when testing starts 🐾"}};
+var bbusy=false,bmsg=$('bmsg');
+function bsay(t,ok){bmsg.className='msg '+(ok?'ok':'bad');bmsg.textContent=t}
+function pfVal(){var r=document.querySelector('input[name=pf]:checked');return r?r.value:''}
+function syncPf(){var v=pfVal(),need=v==='android'||v==='both';$('gpBox').hidden=!need;
+  if(need&&!$('bgp').value){var em=$('bem').value.trim().toLowerCase();if(/@(gmail|googlemail)\.com$/.test(em))$('bgp').value=em}}
+document.querySelectorAll('input[name=pf]').forEach(function(r){r.addEventListener('change',syncPf)});
+$('bem').addEventListener('change',syncPf);
+$('toBeta').onclick=function(e){e.preventDefault();if(!$('bem').value)$('bem').value=$('em').value.trim();syncPf();$('beta').scrollIntoView({behavior:'smooth',block:'start'})};
+$('bf').addEventListener('submit',function(e){e.preventDefault();if(bbusy)return;var em=$('bem').value.trim(),pf=pfVal(),gp=$('bgp').value.trim();
+  var re=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  if(!re.test(em)){bsay(T[L].email);$('bem').focus();return}
+  if(!pf){bsay(BT[L].platform);return}
+  if((pf==='android'||pf==='both')&&!re.test(gp)){bsay(BT[L].play);$('bgp').focus();return}
+  if(!$('bok').checked){bsay(BT[L].consent);return}
+  bbusy=true;$('bgo').disabled=true;bsay(T[L].wait,true);
+  rpc('beta_signup',{p_email:em,p_platform:pf,p_play_email:pf==='ios'?null:gp,p_lang:L,p_source:src,p_consent:true}).then(function(d){
+    if(!d||!d.ok){bsay((d&&(BT[L][d.err]||T[L][d.err]))||T[L].net);return}
+    $('bArea').style.display='none';$('bDone').classList.add('on');$('bDoneTx').textContent=d.updated?BT[L].updated:BT[L].done;
+  }).catch(function(){bsay(T[L].net)}).then(function(){bbusy=false;$('bgo').disabled=false})});
 $('snd').onclick=function(){var v=$('vid');v.muted=!v.muted;if(!v.muted){v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){})}this.setAttribute('aria-pressed',v.muted?'false':'true')};
 $('copy').onclick=function(){var t=$('code').textContent,b=this;function ok(){var o=b.innerHTML;b.textContent=T[L].copied;setTimeout(function(){b.innerHTML=o},1500)}
   if(navigator.clipboard)navigator.clipboard.writeText(t).then(ok,function(){});else{var r=document.createRange();r.selectNode($('code'));getSelection().removeAllRanges();getSelection().addRange(r)}};
