@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794906018",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794919156",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19787,6 +19787,49 @@ function mgNameDraw(){const mg=$('merge');if(!mg)return;let n=$('mgName');if(!n)
   n.innerHTML=`<span class="mi2">${itemArt(id)}</span><b>${it.name}</b>`;const d=$('mgDel');if(d){d.classList.add('mgSellF');n.appendChild(d)}n.hidden=false}
 hdSell=function(){try{document.querySelectorAll('#merge .board-wrap>.mgSellF').forEach(b=>b.remove());mgNameDraw()}catch(e){}};
 {const _sm=setMode;setMode=function(){const r=_sm.apply(this,arguments);try{mgNameDraw()}catch(e){}return r}}
+
+// ================= KURYE MOTORU: KALDIRIMDAKİ EŞYALARA GİRMEYEN GÜZERGÂH (V269) =================
+// Motor, kapının hizasından kaldırımı dik keserek yola iner (p40 opDerived: park → sw → ln → köşeler). Bu hat kaldırımdaki bir
+// bankın, lambanın, saksının ya da tema süsünün tam üstüne gelebiliyordu (varsayılan kapıda sol kaldırımdaki bankın içinden geçiyordu).
+// Motor yola çıkmadan (ve dönmeden) önce kaldırım şeridindeki engeller sahneden okunur; kaldırımı kesen hat, hiçbir engele
+// çarpmayan en yakın hatta kaydırılır. Engel bulunmazsa güzergâh olduğu gibi kalır.
+const SCOOT_PAD=0.45;   // motor + sürücünün yarı genişliği ve pay (m)
+function scootObst(){const out=[],bx=new THREE.Box3(),lx=RING.lane.x+0.6,lz=RING.lane.z+0.6;
+  const visit=(o,d)=>{if(!o.visible||o===SCOOT.g||o.isLight||o.isCamera)return;
+    if(o.isSkinnedMesh||(o.getObjectByProperty&&o.getObjectByProperty('isSkinnedMesh',true)))return;   // karakterler (yürüyen müşteri vb.) engel sayılmaz
+    bx.setFromObject(o);if(bx.isEmpty())return;const w=bx.max.x-bx.min.x,dd=bx.max.z-bx.min.z;
+    if(w>4.5||dd>4.5){if(d<5)for(const k of o.children)visit(k,d+1);return}   // büyük gruplar (zemin, tema şeritleri): parçalarına bak
+    if(bx.max.y<0.12||bx.min.y>1.3)return;                                     // yere gömülü ya da başın üstündekiler (tente, fener başı)
+    const cx=(bx.min.x+bx.max.x)/2,cz=(bx.min.z+bx.max.z)/2;
+    if(Math.abs(cx)<LOT.x1&&Math.abs(cz)<LOT.z1)return;                        // arsanın içi (kafe, bahçe)
+    if(Math.abs(cx)>lx||Math.abs(cz)>lz)return;                                // motorun gittiği şeridin ötesi
+    out.push({x0:bx.min.x,x1:bx.max.x,z0:bx.min.z,z1:bx.max.z})};
+  for(const o of scene.children)visit(o,0);return out}
+function scootSegHit(a,b,B,m){const x0=B.x0-m,x1=B.x1+m,z0=B.z0-m,z1=B.z1+m;let t0=0,t1=1;const dx=b.x-a.x,dz=b.z-a.z;
+  for(const [p,q,lo,hi] of [[a.x,dx,x0,x1],[a.z,dz,z0,z1]]){if(Math.abs(q)<1e-9){if(p<lo||p>hi)return false;continue}
+    let u0=(lo-p)/q,u1=(hi-p)/q;if(u0>u1){const t=u0;u0=u1;u1=t}t0=Math.max(t0,u0);t1=Math.min(t1,u1);if(t0>t1)return false}return true}
+function scootPathHits(pts,obs){let n=0;for(let i=0;i<pts.length-1;i++)for(const B of obs)if(scootSegHit(pts[i],pts[i+1],B,SCOOT_PAD))n++;return n}
+// güzergâh: [kapı önü, kaldırım (sw), şerit (ln), köşe, köşe]; sw ve ln aynı "kesme" koordinatını paylaşır (sol/sağ duvarda z, ön/arka duvarda x).
+// Bahçeli duvarda park yeri de kaldırıma düşer ve bir bankın içine gelebilir: o zaman park yeri (park, parkIn, kapı önü noktası) duvar boyunca kaydırılır.
+function scootFixRoute(){try{const R=SCOOT.route;if(!R||R.length<4||!SCOOT.parkIn)return;
+    if(SCOOT._fixFor!==R){SCOOT._fixFor=R;SCOOT._base={pk:{x:SCOOT.park.x,z:SCOOT.park.z},pin:{...SCOOT.parkIn},r0:{...R[0]},sw:{...R[1]},ln:{...R[2]}}}
+    const B=SCOOT._base,az=Math.abs(B.sw.z-B.ln.z)<1e-6,a={x:(B.pk.x-B.pin.x)/0.6,z:(B.pk.z-B.pin.z)/0.6};
+    const obs=scootObst();
+    const sh=(p,s)=>({x:p.x+a.x*s,z:p.z+a.z*s}),cut=(p,t)=>az?{x:p.x,z:t}:{x:t,z:p.z};
+    const pts=(s,t)=>[sh(B.pk,s),sh(B.pin,s),sh(B.r0,s),cut(B.sw,t),cut(B.ln,t),R[3]];
+    const t0=az?B.sw.z:B.sw.x,lim=(az?RING.lane.z:RING.lane.x)-1.2;let best=null;
+    if(obs.length)search:for(let i=0;i<=40;i++){const s=(i%2?1:-1)*Math.ceil(i/2)*0.2;
+      for(let k=0;k<=80;k++){const t=t0+(k%2?1:-1)*Math.ceil(k/2)*0.2;if(Math.abs(t)>lim)continue;
+        if(!scootPathHits(pts(s,t),obs)){best=[s,t];break search}}}
+    const [s,t]=best||[0,t0],P=pts(s,t);
+    Object.assign(SCOOT.park,P[0]);Object.assign(SCOOT.parkIn,P[1]);Object.assign(R[0],P[2]);Object.assign(R[1],P[3]);Object.assign(R[2],P[4]);
+    if(SCOOT.g&&!SCOOT.rider&&SCOOT.g.visible){SCOOT.g.position.set(SCOOT.park.x,-0.15,SCOOT.park.z);SCOOT.g.rotation.y=SCOOT.park.yaw}
+  }catch(e){}}
+{const _out=rideOut,_back=rideBack,_od=opDerived;
+ rideOut=async function(ch){scootFixRoute();return _out(ch)};
+ rideBack=async function(ch){scootFixRoute();return _back(ch)};
+ opDerived=function(){const r=_od.apply(this,arguments);scootFixRoute();return r}}
+setTimeout(scootFixRoute,0);
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
