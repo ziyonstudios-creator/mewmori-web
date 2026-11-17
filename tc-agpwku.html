@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794920724",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794921558",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19864,6 +19864,22 @@ function cafeNameAsk(done,old){if(CFN.open)return;CFN.open=true;try{sfx('goal')}
 setInterval(()=>{try{if(CFN.open||S.cafeName||S.seen.cafeNamed||S.tut!=='done'||!S.created||S.tur!=null)return;
   if(UI.mode!=='cafe'||UI.modal||!$('coach').hidden||document.querySelector('.modal:not([hidden])'))return;
   if(typeof EVMODE!=='undefined'&&EVMODE)return;cafeNameAsk(null,true)}catch(e){}},4000);
+
+// ================= BİRLEŞTİRME EKRANINDA XP: YALNIZ TESLİM VE KEŞİF (V271) =================
+// Kullanıcı isteği (17 Kasım 2026): "birleştirme ekranında bir ürün için gerekli malzemeyi verdiğinde ve ürünü keşfettiğinde exp gelsin.
+// her tıklamasına ve her birleştirmesine exp vermesin oyun".
+// Önce: tahtada ilk kez çıkan her malzeme (paket dokunuşu ya da birleştirme) +3 XP (CONFIG.xp.newItem), bir tarifin ipucunu açan
+// malzeme ayrıca +25 XP (CONFIG.xp.discover) veriyordu.
+// Şimdi: discoverItem XP vermez (malzeme yine "bilinir", tarif ipucu yine açılır, istatistik sayılır).
+//   • Bir ürün için gerekli malzeme teslim edilince (tkDeliver başarılı): malzeme başına 2 + 2 × malzeme seviyesi XP (lmn1 → 4, lmn3 → 8).
+//   • Ürün keşfedilince (tkUnlock, tarif açılır): CONFIG.xp.discover (25) — değişmedi.
+// Görevler (Görevler penceresindeki "N kez birleştir" gibi hedefler) bir kerelik ödül olduğu için olduğu gibi kaldı.
+CONFIG.xp.newItem=0;
+CONFIG.xp.deliver=it=>{const m=String(it||'').match(/(\d+)$/);return 2+2*Math.max(1,m?+m[1]:1)};
+discoverItem=function(id){if(S.items[id])return;S.items[id]=true;const r=recipeByDisc[id];
+  if(r&&!S.recipes[r.id]&&!S.unlocked[r.id]){S.recipes[r.id]=true;S.stats.disc++;sfx('discover');
+    toast(`<b>Tarif ipucu: ${r.name}</b><br>Tarif Defteri'nde keşif aşamalarını tamamla`,`<img src="${productThumb(r.id)}" alt="">`,3200);try{checkObj()}catch(e){}}markDirty()};
+{const _d=tkDeliver;tkDeliver=function(id,it){const ok=_d.apply(this,arguments);if(ok)try{addXP(CONFIG.xp.deliver(it))}catch(e){}return ok}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
