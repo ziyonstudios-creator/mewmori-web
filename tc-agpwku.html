@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794905255",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794906018",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19760,21 +19760,33 @@ function hdSell(){const bw=document.querySelector('#merge .board-wrap');if(!bw)r
 //  • Tahta 6×6 → 8×5 (CONFIG.board, p5; eski kayıtlar boardFrom6 ile taşınır, p10).
 //  • Paket rafı tahtanın üstünde yatay şerit (adlar paketin altında); sağda Hedef paneli iki satır boyunca.
 (function(){const M='html.land #game#game#game #merge#merge.skin',INK='#4a2a14';const st=document.createElement('style');st.id='tahtaGenis';st.textContent=`
-${M}{--pkh:68px;--mc:min(62px,calc((100*var(--vh) - 120px - var(--pkh))/5),calc((100*var(--vw) - 76px - var(--mwi))/8))!important}
+${M}{--pkh:80px;--mc:min(62px,calc((100*var(--vh) - 116px - var(--pkh))/5),calc((100*var(--vw) - 76px - var(--mwi))/8))!important}
 ${M} .skwin>.scroll{display:grid!important;grid-template-columns:auto var(--mwi)!important;grid-template-rows:var(--pkh) auto!important;grid-template-areas:"raf info" "tahta info"!important;column-gap:12px!important;row-gap:0!important;justify-content:center!important;align-content:start!important;align-items:start!important;padding-top:52px!important;padding-bottom:4px!important;box-sizing:border-box!important;height:100%!important}
 ${M} .skwin>.scroll>#pkRaf{grid-area:raf!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;grid-row:1!important;grid-column:1!important;width:auto!important;height:var(--pkh)!important;flex-direction:row!important;justify-content:space-around!important;align-items:flex-start!important;gap:0!important;
-  padding:4px 10px 0!important;margin:0 14px!important;border:3px solid ${INK}!important;border-bottom:0!important;border-radius:16px 16px 0 0!important;align-self:end!important;box-sizing:border-box!important}
-${M} #pkRaf .pk{width:40px!important;height:40px!important;flex:none!important;margin:0!important}
-${M} #pkRaf .pk i{right:auto!important;left:50%!important;top:41px!important;transform:translateX(-50%)!important;width:max-content!important;max-width:80px!important;text-align:center!important;font-size:12.5px!important;line-height:1!important;white-space:normal!important;max-width:60px!important;font-size:11px!important;line-height:.95!important}
-${M} #pkRaf .pk img,${M} #pkRaf .pk svg{width:38px!important;height:38px!important}
+  padding:4px 2px 0!important;margin:0 4px!important;border:3px solid ${INK}!important;border-bottom:0!important;border-radius:16px 16px 0 0!important;align-self:end!important;box-sizing:border-box!important}
+${M} #pkRaf .pk{width:48px!important;height:48px!important;flex:none!important;margin:0!important}
+${M} #pkRaf .pk i{right:auto!important;left:50%!important;top:49px!important;transform:translateX(-50%)!important;width:max-content!important;max-width:80px!important;text-align:center!important;font-size:12.5px!important;line-height:1!important;white-space:normal!important;max-width:60px!important;font-size:12.5px!important;line-height:.95!important}
+${M} #pkRaf .pk img,${M} #pkRaf .pk svg{width:46px!important;height:46px!important}
 ${M} .skwin>.scroll>.board-wrap{grid-area:tahta!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;grid-row:2!important;grid-column:1!important;margin:0!important;align-self:start!important}
 ${M} .skwin>.scroll>.info{grid-area:info!important;grid-row:1 / 3!important;grid-column:2!important;align-self:stretch!important;height:auto!important;max-height:calc(var(--pkh) + 5*var(--mc) + 60px)!important}
 /* ipucu şeridi üst çubuğa (para ile elmas arası), rafın üstüne binmesin */
-${M} .board-wrap>.k3plq{top:calc(-1*var(--pkh) - 50px)!important;bottom:auto!important}
+${M} .board-wrap>.k3plq{display:none!important}
 ${M} .skwin>.scroll>.info{margin-top:6px!important;max-height:calc(100*var(--vh) - 64px)!important}
-${M} .board-wrap>.mgSellF{bottom:auto!important;top:calc(-1*var(--pkh) - 46px)!important;right:auto!important;left:calc(100% + 24px)!important}
+${M} #mgName{position:absolute;left:50%;top:max(10px,var(--sat,0px));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:8px;height:42px;padding:0 6px 0 8px;max-width:min(360px,calc(100*var(--vw) - 420px));box-sizing:border-box;
+  border:3px solid ${INK};border-radius:999px;background:#fffaf0;box-shadow:0 3px 0 ${INK};font:800 16px var(--font-display);color:${INK};white-space:nowrap}
+${M} #mgName[hidden]{display:none!important}
+${M} #mgName .mi2{width:32px;height:32px;flex:none;display:grid;place-items:center}${M} #mgName .mi2>*{width:100%;height:100%}
+${M} #mgName b{overflow:hidden;text-overflow:ellipsis;min-width:0}
+${M} #mgName .mgSellF{position:static!important;flex:none;padding:4px 10px!important;font-size:13px!important;transform:none!important}
 ${M} .board{grid-template-columns:repeat(8,var(--cell))!important;grid-template-rows:repeat(5,var(--cell))!important}
 `;document.head.appendChild(st)})();
+
+// Seçili ürünün adı üst çubukta (ipucu şeridi yerine); Sat düğmesi aynı kutuda
+function mgNameDraw(){const mg=$('merge');if(!mg)return;let n=$('mgName');if(!n){n=document.createElement('div');n.id='mgName';n.hidden=true;mg.appendChild(n)}
+  const i=UI.mgSel,id=i!=null?S.board[i]:null,it=id&&ITEMS[id];if(!it||UI.mode!=='merge'){n.hidden=true;n.innerHTML='';return}
+  n.innerHTML=`<span class="mi2">${itemArt(id)}</span><b>${it.name}</b>`;const d=$('mgDel');if(d){d.classList.add('mgSellF');n.appendChild(d)}n.hidden=false}
+hdSell=function(){try{document.querySelectorAll('#merge .board-wrap>.mgSellF').forEach(b=>b.remove());mgNameDraw()}catch(e){}};
+{const _sm=setMode;setMode=function(){const r=_sm.apply(this,arguments);try{mgNameDraw()}catch(e){}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
