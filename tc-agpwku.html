@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795014278",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795022139",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19997,6 +19997,74 @@ if(typeof IT_ENV!=='undefined'&&IT_ENV)itcGarden();
  try{urunImgSet()}catch(e){}
  const IT=['it_gelato','it_affogato','it_tiramisu','it_bruschetta','it_pizza','it_cannoli','it_lasagna','it_spagetti','jp_mochi','jp_dorayaki','jp_tamago','jp_taiyaki','jp_yakitori','jp_ramen','jp_parfe','jp_tempura','tr_lokum','tr_sahlep','tr_ayran','tr_baklava','tr_menemen','tr_sutlac','tr_gozleme','tr_kunefe'];
  for(const id of IT)try{Object.defineProperty(ITEM_ART,id,{configurable:true,enumerable:true,writable:true,value:`<img src="img/items/${id}.webp" alt="" draggable="false">`})}catch(e){}}
+
+// ================= KURUCU ŞEF TAKIMI (V282): ilk 1.000 ön kayda özel kıyafet =================
+// Kullanıcı isteği (18 Kasım 2026): "ilk 1000 ön kayıt yaptıran oyunculara özel bir kedi kıyafeti hediye etmek istiyorum ... üzerinde bizim logomuz olsun."
+// Takım: TabbyChef logolu krem önlük (göğüste kedi şef, eteğinde TabbyChef yazısı, karamel kenar + altın dikiş),
+// altın bantlı ve önünde logo rozetli aşçı şapkası, turuncu-krem fular. Yalnız kazanılınca dolapta görünür (davet önlüğü gibi).
+// Hak: sunucu (prereg_claim / redeem_gift_code, geçiş v282_kurucu) ön kayıt sırası ≤ 1000 ise outfit:true döner → S.clothes'a eklenir.
+// Logo görselleri: img/ui/logo_kedi.webp (kedi başı), img/ui/logo_yazi.webp (TabbyChef yazısı). Önlük dokusu oyunun kendi doku boyamasıyla
+// (apronColor) çizilir; görseller yüklenmeden önce kurulan çalışanlar yüklenince yeniden boyanır.
+const KUR_IDS=['set_kurucu','ap_kurucu','hat_kurucu','nk_kurucu'];
+const KUR_LOGO={kedi:null,yazi:null,tex:null};
+{const load=(k,src)=>{const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);
+      KUR_LOGO[k]={w:c.width,h:c.height,d:g.getImageData(0,0,c.width,c.height).data};if(k==='kedi'){const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;KUR_LOGO.tex=t}
+      kurRepaint()}catch(e){console.warn('kurucu logo',e)}};im.src=src};
+  load('kedi','img/ui/logo_kedi.webp');load('yazi','img/ui/logo_yazi.webp')}
+// logo örnekleme: (u,v) 0..1 → [r,g,b,a]; çift doğrusal
+function kurSample(L,u,v,o){if(!L||u<0||v<0||u>=1||v>=1){o[3]=0;return}const x=u*(L.w-1),y=v*(L.h-1),x0=x|0,y0=y|0,x1=Math.min(L.w-1,x0+1),y1=Math.min(L.h-1,y0+1),fx=x-x0,fy=y-y0;
+  for(let c=0;c<4;c++){const a=L.d[(y0*L.w+x0)*4+c],b=L.d[(y0*L.w+x1)*4+c],d=L.d[(y1*L.w+x0)*4+c],e=L.d[(y1*L.w+x1)*4+c];o[c]=(a*(1-fx)+b*fx)*(1-fy)+(d*(1-fx)+e*fx)*fy}}
+const KUR_S=[0,0,0,0];
+{const _ac=apronColor;apronColor=function(ap,x,y,z,out){
+  if(ap.pat!=='tclogo')return _ac(ap,x,y,z,out);
+  const ax=Math.abs(x);let c=ap.c;
+  // ince karamel biye: etek ucu, yan kenarlar, göğüs üstü; içinde kesik altın dikiş
+  const hem=y<0.664,side=ax>0.205&&y<1.0,top=y>1.2,bib=y>1.0&&ax>0.112;
+  if(hem||side||top||bib)c=ap.c2;
+  const st=(Math.abs(y-0.678)<0.004&&ax<0.19)||(Math.abs(ax-0.19)<0.004&&y>0.678&&y<0.985)||(y>1.0&&Math.abs(ax-0.1)<0.0035&&y<1.188)||(Math.abs(y-1.188)<0.0035&&ax<0.1);
+  if(st&&!hem&&!side&&!top&&!bib&&Math.sin((x+y)*260)>-0.2)c=ap.c3;
+  out[0]=c[0];out[1]=c[1];out[2]=c[2];
+  if(z>0.02){
+    // göğüs: kedi şef
+    const K=KUR_LOGO.kedi;if(K){const hh=0.15,ww=hh*K.w/K.h;kurSample(K,(x+ww/2)/ww,(1.178-y)/hh,KUR_S);const a=KUR_S[3]/255;if(a>0){for(let i=0;i<3;i++)out[i]=out[i]*(1-a)+KUR_S[i]*a}}
+    // etek: TabbyChef yazısı
+    const Y=KUR_LOGO.yazi;if(Y){const ww=0.31,hh=ww*Y.h/Y.w;kurSample(Y,(x+ww/2)/ww,(0.86-y)/hh,KUR_S);const a=KUR_S[3]/255;if(a>0){for(let i=0;i<3;i++)out[i]=out[i]*(1-a)+KUR_S[i]*a}}
+    // küçük altın yıldızlar (logodaki gibi)
+    for(const [sx,sy,r] of [[0.15,0.93,0.02],[-0.15,0.72,0.018],[0.14,0.725,0.014],[-0.155,0.935,0.014]]){const dx=Math.abs(x-sx),dy=Math.abs(y-sy);if(Math.pow(dx/r,0.6)+Math.pow(dy/r,0.6)<1){out[0]=ap.c3[0];out[1]=ap.c3[1];out[2]=ap.c3[2]}}
+  }}}
+// şapka: aşçı şapkası + altın bant + önde logo rozeti
+ACC_BUILD.chefgold=function(n,h,c){ACC_BUILD.chef(n,h,c);
+  accMesh(h,new THREE.CylinderGeometry(0.0795,0.0795,0.02,22,1,true),c.c2,0,0.318,0.0).material.side=THREE.DoubleSide;
+  accMesh(h,new THREE.CylinderGeometry(0.039,0.039,0.008,22),c.c2,0,0.343,0.077,Math.PI/2,0,0);
+  const t=KUR_LOGO.tex;if(t){const m=new THREE.Mesh(new THREE.CircleGeometry(0.034,28),new THREE.MeshBasicMaterial({map:t,transparent:true}));
+    m.position.set(0,0.343,0.0818);m.userData.cacc=true;h.add(m)}};
+const KUR_CLO=[
+  {id:'ap_kurucu',slot:'apron',name:'Kurucu Şef önlüğü',roles:['waiter','barista','cashier'],price:0,kur:true,ap:{c:[252,245,228],c2:[192,116,56],c3:[242,177,52],pat:'tclogo'}},
+  {id:'hat_kurucu',slot:'hat',name:'Kurucu Şef şapkası',roles:['waiter','barista','cashier'],price:0,kur:true,acc:'chefgold',c:0xfffaf0,c2:0xf2b134},
+  {id:'nk_kurucu',slot:'neck',name:'Kurucu Şef fuları',roles:['waiter','barista','cashier'],price:0,kur:true,acc:'scarf',c:0xe8954a,c2:0xfff6e2},
+  {id:'set_kurucu',slot:'outfit',name:'Kurucu Şef takımı',roles:['waiter','barista','cashier'],price:0,kur:true,set:{apron:'ap_kurucu',hat:'hat_kurucu',neck:'nk_kurucu'}}];
+for(const c of KUR_CLO)CLO[c.id]=c;
+{const sync=()=>{try{for(const c of KUR_CLO){const on=!!(S&&S.clothes&&S.clothes[c.id]),i=CLOTHES.indexOf(c);if(on&&i<0)CLOTHES.push(c);else if(!on&&i>=0)CLOTHES.splice(i,1)}}catch(e){}};sync();setInterval(sync,3000)}
+// önlük küçük resmi: desenin kendisi (p77 pkApronIcon)
+{const _ci=clothIcon;clothIcon=function(id){const c=CLO[id];if(c&&c.kur&&c.slot==='apron'){try{const u=pkApronIcon(c);if(u)return `<img class="pkci" src="${u}" alt="" draggable="false">`}catch(e){}}return _ci.apply(this,arguments)}}
+function kurGrant(){S.clothes=S.clothes||{};let nw=false;for(const id of KUR_IDS)if(!S.clothes[id]){S.clothes[id]=true;nw=true}if(!nw)return;
+  markDirty();try{saveNow()}catch(e){}try{cloudSync()}catch(e){}
+  setTimeout(()=>{try{toast('<b>Kurucu Şef takımı senin!</b><br>İlk 1.000 ön kayda özel · Kıyafet Dolabı’nda',ic('gift'),4600)}catch(e){}},4800)}
+// logo yüklenince: bu takımı giyen çalışanları ve önizlemeyi yeniden boya
+function kurRepaint(){if(!KUR_LOGO.kedi||!KUR_LOGO.yazi)return;try{TH.cache.forEach((v,k)=>{if(String(k).startsWith('ap:ap_kurucu'))TH.cache.delete(k)})}catch(e){}
+  try{for(const r in (S&&S.chars)||{}){const w=S.chars[r]&&S.chars[r].wear;if(w&&(w.apron==='ap_kurucu'||w.hat==='hat_kurucu'))applyCharToGame(r)}}catch(e){}
+  try{if(typeof CE!=='undefined'&&CE.cfg&&PV&&PV.model)pvShow(CE.cfg)}catch(e){}}
+// sunucu hakkı: ön kayıt ödülü / ön kayıt kodu outfit:true döndürür
+{const wrap=sb=>{if(sb.__kur)return sb;const _r=sb.rpc.bind(sb);sb.rpc=async function(f,a){const res=await _r(f,a);try{const d=res&&res.data;
+      if((f==='prereg_claim'||f==='redeem_gift_code')&&d&&d.outfit)kurGrant()}catch(e){}return res};sb.__kur=true;return sb};
+  const _sc=sbClient;sbClient=async function(){return wrap(await _sc.apply(this,arguments))}}
+// ödülünü bu sürümden önce almış ön kayıtlılar: oturumda bir kez sunucuya sor (prereg_outfit)
+let _kurChk=false;async function kurCheck(){if(_kurChk||EVMODE||!S||!S.preregDone||(S.clothes&&S.clothes.ap_kurucu))return;const u=await evrUser().catch(()=>null);if(!u)return;
+  _kurChk=true;try{const sb=await sbClient();const {data,error}=await sb.rpc('prereg_outfit');if(!error&&data&&data.outfit)kurGrant()}catch(e){_kurChk=false}}
+setTimeout(()=>{try{kurCheck()}catch(e){}},12000);
+{const _cs=cloudSync;cloudSync=function(){const r=_cs.apply(this,arguments);if(SB.user&&!_kurChk)setTimeout(()=>{try{kurCheck()}catch(e){}},10000);return r}}
+// bu takımda önizleme ve küçük resimler 1024 dokuyla: logo okunaklı kalsın
+{const _bc=buildCat;buildCat=function(cfg,R){const w=cfg&&cfg.wear;if(w&&w.apron==='ap_kurucu'&&(!R||R<1024))R=1024;return _bc.call(this,cfg,R)}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
