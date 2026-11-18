@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795027206",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795030380",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -20035,9 +20035,9 @@ const KUR_S=[0,0,0,0];
 // şapka: aşçı şapkası + altın bant + önde logo rozeti
 ACC_BUILD.chefgold=function(n,h,c){ACC_BUILD.chef(n,h,c);
   accMesh(h,new THREE.CylinderGeometry(0.0795,0.0795,0.02,22,1,true),c.c2,0,0.318,0.0).material.side=THREE.DoubleSide;
-  accMesh(h,new THREE.CylinderGeometry(0.039,0.039,0.008,22),c.c2,0,0.343,0.077,Math.PI/2,0,0);
-  const t=KUR_LOGO.tex;if(t){const m=new THREE.Mesh(new THREE.CircleGeometry(0.034,28),new THREE.MeshBasicMaterial({map:t,transparent:true}));
-    m.position.set(0,0.343,0.0818);m.userData.cacc=true;h.add(m)}};
+  accMesh(h,new THREE.CylinderGeometry(0.034,0.034,0.008,22),c.c2,0,0.352,0.078,Math.PI/2,0,0);
+  const t=KUR_LOGO.tex;if(t){const m=new THREE.Mesh(new THREE.CircleGeometry(0.03,28),new THREE.MeshBasicMaterial({map:t,transparent:true}));
+    m.position.set(0,0.352,0.0828);m.userData.cacc=true;h.add(m)}};
 const KUR_CLO=[
   {id:'ap_kurucu',slot:'apron',name:'Kurucu Şef önlüğü',roles:['waiter','barista','cashier'],price:0,kur:true,ap:{c:[252,245,228],c2:[192,116,56],c3:[242,177,52],pat:'tclogo'}},
   {id:'hat_kurucu',slot:'hat',name:'Kurucu Şef şapkası',roles:['waiter','barista','cashier'],price:0,kur:true,acc:'chefgold',c:0xfffaf0,c2:0xf2b134},
@@ -20065,6 +20065,25 @@ setTimeout(()=>{try{kurCheck()}catch(e){}},12000);
 {const _cs=cloudSync;cloudSync=function(){const r=_cs.apply(this,arguments);if(SB.user&&!_kurChk)setTimeout(()=>{try{kurCheck()}catch(e){}},10000);return r}}
 // bu takımda önizleme ve küçük resimler 1024 dokuyla: logo okunaklı kalsın
 {const _bc=buildCat;buildCat=function(cfg,R){const w=cfg&&cfg.wear;if(w&&w.apron==='ap_kurucu'&&(!R||R<1024))R=1024;return _bc.call(this,cfg,R)}}
+
+// ================= FULAR UÇLARI GÖVDEYE GİRMESİN (V284) =================
+// Kullanıcı isteği (18 Kasım 2026): "kıyafet animasyonda da çalışanın içinden geçiyor onu da düzelt".
+// Ölçüm (garson yürürken, 50 kare): fuların göğse sarkan iki ucunun alt noktaları her karede gövdeye ~7 mm giriyordu.
+// Çözüm: kıyafet takılınca her ucun alt yarısındaki noktalardan, göğsün önünden geriye doğru gövdeye ışın atılır. Uç gövdenin
+// en az SCARF_CLR önünde değilse önce biraz daha öne yatırılır (toplam en çok 0.36 rad), yetmezse kısaltılır.
+// Yalnız fular uçları değişir; boyun halkası ve düğüm aynı kalır. Bütün fularlar (acc:'scarf') için geçerli.
+const SCARF_CLR=0.016;
+function scarfTailFix(root,gn){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o});const sp=root.getObjectByName('mixamorigSpine2');if(!sm||!sp)return;
+  const tails=[];gn.traverse(m=>{if(m.isMesh&&m.geometry.type==='BoxGeometry'){const q=m.geometry.parameters;if(Math.abs(q.width-0.048)<1e-4&&Math.abs(q.depth-0.016)<1e-4)tails.push(m)}});
+  if(!tails.length)return;root.updateMatrixWorld(true);sm.skeleton.update();
+  const fwd=new THREE.Vector3(0,0,1).transformDirection(sp.matrixWorld).normalize(),back=fwd.clone().negate();
+  const rc=new THREE.Raycaster();rc.far=0.3;const v=new THREE.Vector3(),o=new THREE.Vector3();
+  for(const t of tails){const a=t.geometry.attributes.position,len=t.geometry.parameters.height;
+    const need=()=>{t.updateMatrixWorld(true);let n=-1;for(let j=0;j<a.count;j++){v.fromBufferAttribute(a,j);if(v.y>-len*0.4)continue;v.applyMatrix4(t.matrixWorld);
+        o.copy(v).addScaledVector(fwd,0.25);rc.set(o,back);const h=rc.intersectObject(sm,false);if(h.length){const d=0.25-h[0].distance;if(d+SCARF_CLR>n)n=d+SCARF_CLR}}return n};
+    let tilt=0;for(let k=0;k<12;k++){if(need()<=0)break;if(tilt<0.36){t.rotation.x-=0.06;tilt+=0.06}else t.scale.y*=0.9}
+    t.userData.fix={tilt:+tilt.toFixed(2),sy:+t.scale.y.toFixed(2)}}}
+{const _aa=attachAcc;attachAcc=function(root,build){const r=_aa.apply(this,arguments);try{if(r&&r[1]&&r[1].parent)scarfTailFix(root,r[1])}catch(e){console.warn('fular ucu',e)}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
