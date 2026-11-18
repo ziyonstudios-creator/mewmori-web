@@ -333,7 +333,7 @@ var qs=new URLSearchParams(location.search),saved=null;try{saved=localStorage.ge
 setLang(qs.get('lang')||saved||((navigator.language||'tr').toLowerCase().indexOf('tr')===0?'tr':'en'));
 document.querySelectorAll('.lang button').forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
 // ---- Meta Pikseli: yalnız izin verilirse yüklenir; ön kayıtta "Lead", beta başvurusunda "CompleteRegistration" ----
-var PX='',leadDone=false,ck=null;try{ck=localStorage.getItem('tc-cerez')}catch(e){}
+var PX='1662847365515780',leadDone=false,ck=null;try{ck=localStorage.getItem('tc-cerez')}catch(e){}
 function pxLoad(){if(!PX||window.fbq)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
   fbq('init',PX);fbq('track','PageView')}
 function pxEv(n,o){try{if(window.fbq)fbq('track',n,o||{})}catch(e){}}
