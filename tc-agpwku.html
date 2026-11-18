@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794930110",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1794989219",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19878,7 +19878,12 @@ CONFIG.xp.newItem=0;
 CONFIG.xp.deliver=it=>{const m=String(it||'').match(/(\d+)$/);return 2+2*Math.max(1,m?+m[1]:1)};
 discoverItem=function(id){if(S.items[id])return;S.items[id]=true;const r=recipeByDisc[id];
   if(r&&!S.recipes[r.id]&&!S.unlocked[r.id]){S.recipes[r.id]=true;S.stats.disc++;sfx('discover');
-    toast(`<b>Tarif ipucu: ${r.name}</b><br>Tarif Defteri'nde keşif aşamalarını tamamla`,`<img src="${productThumb(r.id)}" alt="">`,3200);try{checkObj()}catch(e){}}markDirty()};
+    // V275: etkinlik kafesinde Hedef/keşif aşaması yok (TK_ON kapalı): ürünü birleştirmede bulmak keşfin kendisidir → XP burada verilir
+    // ve mesaj eski (doğru) metindir: "Yeni tarif keşfedildi! · Tarifler'den ürünü açabilirsin".
+    if(!TK_ON()){try{addXP(CONFIG.xp.discover)}catch(e){}
+      toast(`<b>Yeni tarif keşfedildi!</b><br>${r.name}${S.lvl<r.lvl?` · Seviye ${r.lvl}’de açılabilir`:' · Tarifler’den ürünü açabilirsin'}`,`<img src="${productThumb(r.id)}" alt="">`,3600)}
+    else toast(`<b>Tarif ipucu: ${r.name}</b><br>Tarif Defteri'nde keşif aşamalarını tamamla`,`<img src="${productThumb(r.id)}" alt="">`,3200);
+    try{checkObj()}catch(e){}}markDirty()};
 {const _d=tkDeliver;tkDeliver=function(id,it){const ok=_d.apply(this,arguments);if(ok)try{addXP(CONFIG.xp.deliver(it))}catch(e){}return ok}}
 
 // ================= BİRLEŞTİR: SIRADAKİ ADIM PARLAMASI DAHA BELİRGİN (V273) =================
