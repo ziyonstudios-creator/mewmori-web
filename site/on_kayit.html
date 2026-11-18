@@ -334,7 +334,14 @@ setLang(qs.get('lang')||saved||((navigator.language||'tr').toLowerCase().indexOf
 document.querySelectorAll('.lang button').forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
 // ---- Meta Pikseli: yalnız izin verilirse yüklenir; ön kayıtta "Lead", beta başvurusunda "CompleteRegistration" ----
 var PX='1662847365515780',leadDone=false,ck=null;try{ck=localStorage.getItem('tc-cerez')}catch(e){}
+// ?pxtest=1 (sahip testi): çerez iznini sıfırlar, üstte piksel durumunu gösterir (Meta kodu yüklendi mi, engellendi mi)
+if(qs.get('pxtest')==='1'&&PX){try{localStorage.removeItem('tc-cerez')}catch(e){}ck=null;
+  setTimeout(function(){var db=document.createElement('div');db.id='pxdbg';db.style.cssText='position:fixed;top:8px;left:8px;right:8px;z-index:70;background:#2d1c10;color:#fff;font:800 14px/1.4 var(--body);padding:10px 14px;border-radius:14px;box-shadow:0 4px 0 rgba(0,0,0,.3)';document.body.appendChild(db);
+    var t0=Date.now();(function tick(){var sc=document.querySelector('script[src*="fbevents.js"]'),ok=false;try{ok=localStorage.getItem('tc-cerez')==='1'}catch(e){}
+      var lib=window.fbq&&window.fbq.callMethod?'yüklendi ✓ (PageView gönderildi)':(sc&&sc.getAttribute('data-err')?'ENGELLENDİ ✗':(sc?'yükleniyor…':'izin bekleniyor'));
+      db.textContent='Piksel testi · izin: '+(ok?'verildi':'yok')+' · Meta kodu: '+lib;if(Date.now()-t0<120000)setTimeout(tick,500)})()},0)}
 function pxLoad(){if(!PX||window.fbq)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  var sc=document.querySelector('script[src*="fbevents.js"]');if(sc)sc.addEventListener('error',function(){sc.setAttribute('data-err','1')});
   fbq('init',PX);fbq('track','PageView')}
 function pxEv(n,o){try{if(window.fbq)fbq('track',n,o||{})}catch(e){}}
 function ckSet(v){try{localStorage.setItem('tc-cerez',v)}catch(e){}$('ckb').hidden=true}
