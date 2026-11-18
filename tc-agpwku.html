@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795001175",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795013825",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19987,6 +19987,16 @@ function itcGarden(){try{if(!ENV.out)return;const Wm=LOT.x1-LOT.x0,Dm=LOT.z1-LOT
   const m=new THREE.Mesh(new THREE.PlaneGeometry(Wm,Dm),new THREE.MeshToonMaterial({color:0xffffff,map:itcGardenTex(),gradientMap:grad,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}));
   m.rotation.x=-Math.PI/2;m.position.set((LOT.x0+LOT.x1)/2,-0.208,(LOT.z0+LOT.z1)/2);m.receiveShadow=true;m.name='itGarden';m.userData.noPick=true;m.raycast=()=>{};ENV.out.add(m);ENV.itGarden=m}catch(e){console.warn('itcGarden',e)}}
 if(typeof IT_ENV!=='undefined'&&IT_ENV)itcGarden();
+
+// Dünya Keşfi görselleri (toplu üretilmiş sayfalardan kesildi): ülke ürünleri img/urun (256px), ülke birleşim öğeleri img/items (192px).
+// Ürünler URUN_IMG'ye eklenir (tarif kartı, menü, sipariş balonu). Birleşim öğeleri için p35'teki "ürün resmi" yedeği yerine kendi çizimi kullanılır.
+// Türkiye birleşim öğeleri (tr_*) henüz yok: onlar ürün resmiyle görünmeye devam eder.
+{const P=['cappuccino','biscotti','gelato','affogato','bruschetta','cannoli','lasagna','turk_kahvesi','simit','lokum','sahlep','ayran','baklava','menemen','sutlac','gozleme','kunefe',
+  'sencha','matcha','dango','mochi','dorayaki','tamagoyaki','taiyaki','yakitori','ramen','matcha_parfe','tempura'];
+ for(const id of P)if(!URUN_IMG.includes(id))URUN_IMG.push(id);
+ try{urunImgSet()}catch(e){}
+ const IT=['it_gelato','it_affogato','it_tiramisu','it_bruschetta','it_pizza','it_cannoli','it_lasagna','it_spagetti','jp_mochi','jp_dorayaki','jp_tamago','jp_taiyaki','jp_yakitori','jp_ramen','jp_parfe','jp_tempura'];
+ for(const id of IT)try{Object.defineProperty(ITEM_ART,id,{configurable:true,enumerable:true,writable:true,value:`<img src="img/items/${id}.webp" alt="" draggable="false">`})}catch(e){}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
