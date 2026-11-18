@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795030380",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795033295",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -20084,6 +20084,29 @@ function scarfTailFix(root,gn){let sm;root.traverse(o=>{if(o.isSkinnedMesh)sm=o}
     let tilt=0;for(let k=0;k<12;k++){if(need()<=0)break;if(tilt<0.36){t.rotation.x-=0.06;tilt+=0.06}else t.scale.y*=0.9}
     t.userData.fix={tilt:+tilt.toFixed(2),sy:+t.scale.y.toFixed(2)}}}
 {const _aa=attachAcc;attachAcc=function(root,build){const r=_aa.apply(this,arguments);try{if(r&&r[1]&&r[1].parent)scarfTailFix(root,r[1])}catch(e){console.warn('fular ucu',e)}return r}}
+
+// ================= ŞAPKA / FULAR HER ZAMAN AYNI DİK DURUŞTA YERLEŞTİRİLİR (V285) =================
+// Kullanıcı isteği (18 Kasım 2026): "kafede şapka neden küçülüyor? onu da düzeltir misin"
+// Sebep: kıyafet kafedeki kediye takılırken şapka/fular kedinin O ANKİ hareket duruşuna göre yerleşiyordu (kafa eğik, kulaklar
+// başka yerde). Ölçüm (Kurucu Şef şapkası): önizlemede ölçek 0.86; kafede yürürken 0.74, bazı anlarda uygun yer bulunamayıp
+// 0.6 + kulaklara giriyordu. Çözüm: aksesuarlar takılırken kemikler bir anlığına modelin el değmemiş kopyasındaki (TEMPLATE,
+// düzenleyici önizlemesi de bunu kullanır) duruşa alınır; yerleşim önizlemedekiyle birebir aynı hesaplanır, sonra kemikler eski
+// duruşlarına döner (görüntüde sıçrama olmaz; aksesuar kafa/göğüs kemiğiyle birlikte hareket eder).
+// İkinci sebep: yerleşim hesapları kedinin dünyada +z'ye baktığını varsayıyordu; kafede başka yöne bakan kedide şapka yanlış eğilip
+// kulaklara değiyor, bu yüzden küçültülüyordu. Hesap sırasında kedi geçici olarak önizlemedeki yöne döndürülür.
+let _tplBones=null;
+function tplBones(){if(_tplBones)return _tplBones;if(typeof TEMPLATE==='undefined'||!TEMPLATE)return null;const m={};TEMPLATE.traverse(o=>{if(o.isBone)m[o.name]=o});return _tplBones=m}
+{const _aa=attachAcc;attachAcc=function(root,build){let sm=null;root.traverse(o=>{if(o.isSkinnedMesh&&!sm)sm=o});
+  if(!sm||!sm.skeleton||root===TEMPLATE)return _aa.apply(this,arguments);
+  const B=sm.skeleton.bones,saved=B.map(b=>[b.position.clone(),b.quaternion.clone(),b.scale.clone()]),T=tplBones();
+  const rq=root.quaternion.clone(),rp=root.position.clone();
+  try{if(T){for(const b of B){const t=T[b.name];if(t){b.position.copy(t.position);b.quaternion.copy(t.quaternion);b.scale.copy(t.scale)}}}else sm.skeleton.pose();
+    // yerleşim hesapları dünyada +z'yi kedinin önü sayar (şapka eğimi, kafatası yüksekliği): kedi o an başka yöne bakıyorsa geçici olarak
+    // önizlemedeki gibi öne (+z) döndürülür ve önizlemedeki yerine alınır (boy ölçeği applyLook'ta zaten iki yerde de aynı)
+    if(typeof TEMPLATE!=='undefined'&&TEMPLATE){const pq=new THREE.Quaternion();if(root.parent){root.parent.updateMatrixWorld(true);root.parent.getWorldQuaternion(pq)}
+      root.quaternion.copy(pq.invert().multiply(TEMPLATE.quaternion));root.position.copy(root.parent?root.parent.worldToLocal(TEMPLATE.position.clone()):TEMPLATE.position)}
+    root.updateMatrixWorld(true);return _aa.apply(this,arguments)}
+  finally{for(let i=0;i<B.length;i++){B[i].position.copy(saved[i][0]);B[i].quaternion.copy(saved[i][1]);B[i].scale.copy(saved[i][2])}root.quaternion.copy(rq);root.position.copy(rp);root.updateMatrixWorld(true)}}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
