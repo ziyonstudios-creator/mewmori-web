@@ -45,6 +45,11 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 h1{font:800 clamp(32px,7.4vw,56px)/1.03 var(--disp);margin:12px 0 8px;text-shadow:0 3px 0 var(--ink),0 0 18px rgba(0,0,0,.25)}
 .txt p.sub{margin:0;max-width:540px;font:800 17px/1.4 var(--body);text-shadow:0 2px 0 rgba(74,46,28,.85)}
 @media(max-width:859px){.txt p.sub{margin:0 auto}}
+/* telefonda ön kayıt formu ilk ekranda: video formun altına iner, başlık kısmı sıkılaşır (18 Kasım 2026: 171 ziyaret / 34 kayıt) */
+@media(max-width:859px){.stin{grid-template-areas:"txt" "frm" "vid";gap:12px;padding:16px 12px 18px}
+  .txt h1{font-size:clamp(28px,7.6vw,40px);margin:8px 0 6px}.txt p.sub{font-size:14.5px;line-height:1.35}
+  .soon{font-size:12px;padding:3px 12px}.txt .counter{margin-top:10px;padding:6px 12px}.txt .counter.open{display:none}
+  #kayit h2{font-size:22px;margin:0 0 4px}#kayit .reward{margin:8px 0}#kayit form{margin-top:6px}}
 
 .counter{display:inline-flex;align-items:center;gap:10px;margin:16px 0 0;padding:8px 16px;background:var(--card);color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 3px 0 var(--ink)}
 .counter b{font:800 26px/1 var(--disp);color:var(--orange2);min-width:1ch}
