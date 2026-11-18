@@ -12,8 +12,8 @@
 <meta name="theme-color" content="#f7e7cf">
 <link rel="icon" href="site/logo.svg" type="image/svg+xml">
 <script>
-// Oyun sahibinin cihazı (ana ekran simgesi ya da gizli oyun adresini bir kez açmış tarayıcı) → oyuna; herkes ön kayıt sayfasını görür. ?site=1 bu cihazda sayfayı gösterir; ?onizle=1 yalnız o açılışta gösterir (oyun yönlendirmesi bozulmaz; ör. Meta olay testi).
-(function(){var G='tc-agpwku',q=location.search||'',h=location.hash||'';try{if(/[?&]site=1/.test(q)){localStorage.removeItem('tc-oyun');return}if(/[?&]onizle=1/.test(q))return;
+// Oyun sahibinin cihazı (ana ekran simgesi ya da gizli oyun adresini bir kez açmış tarayıcı) → oyuna; herkes ön kayıt sayfasını görür. ?site=1 bu cihazda sayfayı gösterir.
+(function(){var G='tc-agpwku',q=location.search||'',h=location.hash||'';try{if(/[?&]site=1/.test(q)){localStorage.removeItem('tc-oyun');return}
 var me=localStorage.getItem('tc-oyun')==='1',sa=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 if(me||sa||/access_token=|refresh_token=|error_description=/.test(h)||/[?&]code=/.test(q))location.replace(G+q+h)}catch(e){}})();
 </script>
