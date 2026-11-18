@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795014021",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795014278",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19927,9 +19927,9 @@ const TK_DONE={id:null,until:0,rows:null};
 // tarif Spagetti; stok: un + yum). Burada yalnız görünüş: ürün görseli ve 3D tabak, ana kafedeki domates soslu makarnayla aynı çizim
 // (fesleğenli, domates soslu spagetti). Ana kafede de diğer İtalya tarifleri gibi Dünya Keşfi'nden getirilir.
 // V278: Pizza Margherita ve Tiramisu için kullanıcının çizimleri (img/urun/pizza.webp, tiramisu.webp): 3D küçük resim yerine bunlar.
-for(const id of ['pizza','tiramisu'])if(!URUN_IMG.includes(id))URUN_IMG.push(id);
-{const _s=urunImgSet;urunImgSet=function(){_s.apply(this,arguments);TH.cache.set('p:spagetti','img/urun/makarna_domates.webp')}}
-urunImgSet();for(const id of ['pizza','tiramisu']){const i=new Image();i.src='img/urun/'+id+'.webp'}
+// V281: Spagetti'nin kendi çizimi (img/urun/spagetti.webp); 3D tabak hâlâ domates soslu makarnadan.
+for(const id of ['pizza','tiramisu','spagetti'])if(!URUN_IMG.includes(id))URUN_IMG.push(id);
+urunImgSet();for(const id of ['pizza','tiramisu','spagetti']){const i=new Image();i.src='img/urun/'+id+'.webp'}
 try{if(NEWP.makarna_domates)NEWP.spagetti=NEWP.makarna_domates}catch(e){}
 
 // ================= İTALYA DURAĞI: ARSADA İTALYAN BAHÇESİ (V277) =================
