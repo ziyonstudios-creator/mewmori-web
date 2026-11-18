@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795013825",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795014021",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19990,12 +19990,12 @@ if(typeof IT_ENV!=='undefined'&&IT_ENV)itcGarden();
 
 // Dünya Keşfi görselleri (toplu üretilmiş sayfalardan kesildi): ülke ürünleri img/urun (256px), ülke birleşim öğeleri img/items (192px).
 // Ürünler URUN_IMG'ye eklenir (tarif kartı, menü, sipariş balonu). Birleşim öğeleri için p35'teki "ürün resmi" yedeği yerine kendi çizimi kullanılır.
-// Türkiye birleşim öğeleri (tr_*) henüz yok: onlar ürün resmiyle görünmeye devam eder.
+// Türkiye birleşim öğeleri (tr_*) de kendi çizimleriyle (V280).
 {const P=['cappuccino','biscotti','gelato','affogato','bruschetta','cannoli','lasagna','turk_kahvesi','simit','lokum','sahlep','ayran','baklava','menemen','sutlac','gozleme','kunefe',
   'sencha','matcha','dango','mochi','dorayaki','tamagoyaki','taiyaki','yakitori','ramen','matcha_parfe','tempura'];
  for(const id of P)if(!URUN_IMG.includes(id))URUN_IMG.push(id);
  try{urunImgSet()}catch(e){}
- const IT=['it_gelato','it_affogato','it_tiramisu','it_bruschetta','it_pizza','it_cannoli','it_lasagna','it_spagetti','jp_mochi','jp_dorayaki','jp_tamago','jp_taiyaki','jp_yakitori','jp_ramen','jp_parfe','jp_tempura'];
+ const IT=['it_gelato','it_affogato','it_tiramisu','it_bruschetta','it_pizza','it_cannoli','it_lasagna','it_spagetti','jp_mochi','jp_dorayaki','jp_tamago','jp_taiyaki','jp_yakitori','jp_ramen','jp_parfe','jp_tempura','tr_lokum','tr_sahlep','tr_ayran','tr_baklava','tr_menemen','tr_sutlac','tr_gozleme','tr_kunefe'];
  for(const id of IT)try{Object.defineProperty(ITEM_ART,id,{configurable:true,enumerable:true,writable:true,value:`<img src="img/items/${id}.webp" alt="" draggable="false">`})}catch(e){}}
 
 // ================= BAŞLAT =================
