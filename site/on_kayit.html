@@ -146,6 +146,13 @@ html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!importa
 .btn.blue{background:linear-gradient(#8cc8f2,#3f8ac4)}
 .betalink{margin:12px 0 0;font:800 14px var(--body)}
 @media(max-width:520px){.tier .tw{font-size:11.5px;gap:2px;padding:1px 5px 1px 2px}.tier .tw img{width:14px;height:14px}.tier{padding:7px 1px}}
+.ckb{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;max-width:600px;margin:0 auto;background:var(--card);border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink);padding:12px 14px;display:flex;gap:12px;align-items:center;font-size:14px;line-height:1.4}
+.ckb[hidden]{display:none}
+.ckb p{margin:0;flex:1}
+.ckbB{display:flex;gap:8px;flex-shrink:0}
+.ckb button{font:800 15px/1 var(--body);border-radius:12px;padding:10px 16px;border:2px solid var(--ink);cursor:pointer;color:var(--ink);background:var(--cream)}
+.ckb .ckOk{background:linear-gradient(#93d15b,var(--green2));color:#fff}
+@media(max-width:560px){.ckb{flex-direction:column;align-items:stretch;gap:10px}.ckbB{justify-content:flex-end}}
 </style>
 </head>
 <body>
@@ -275,6 +282,7 @@ html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!importa
       <li><b>Hukuki sebep:</b> açık rızan.</li>
       <li><b>Saklama yeri:</b> Supabase bulut sunucuları (Frankfurt, Almanya). Bu, verinin yurt dışında saklanması anlamına gelir; onay kutusunu işaretleyerek buna da rıza vermiş olursun.</li>
       <li><b>Saklama süresi:</b> oyunun çıkışından sonra en çok 12 ay ya da sen silinmesini isteyene kadar.</li>
+      <li><b>Çerezler (isteğe bağlı):</b> izin verirsen reklamlarımızın kaç kayıt getirdiğini ölçmek için bu sayfada Meta Pikseli çalışır. Meta; tarayıcın ve bu sayfadaki işlemlerin (sayfayı açma, kayıt olma) bilgisini alır. E-posta adresin Meta ile paylaşılmaz. İzin vermezsen piksel hiç yüklenmez; kararını sayfanın altındaki “Çerez tercihi” bağlantısıyla değiştirebilirsin.</li>
       <li><b>Beta başvurusu (isteğe bağlı):</b> beta formunu doldurursan e-posta adresin, telefon türün ve Android seçtiysen Google Play hesabının e-postası saklanır. Tek amacı seni test sürümüne davet etmektir; Google Play kapalı testi için bu e-posta Google'ın test listesine eklenir. Beta testleri bitince ya da sen istediğinde silinir.</li>
       <li><b>Hakların:</b> KVKK 11. madde kapsamında verine erişme, düzeltme, silme ve rızanı geri alma hakkın var. Bunun için <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a> adresine yazman yeterli.</li>
     </ul>
@@ -288,13 +296,18 @@ html[lang=tr] .tier.on .en.ok,html[lang=en] .tier.on .tr.ok{display:none!importa
       <li><b>Legal basis:</b> your consent.</li>
       <li><b>Storage:</b> Supabase cloud servers in Frankfurt, Germany.</li>
       <li><b>Retention:</b> up to 12 months after launch, or until you ask us to delete it.</li>
+      <li><b>Cookies (optional):</b> if you allow it, the Meta Pixel runs on this page to measure how many sign-ups our ads bring. Meta receives information about your browser and your actions on this page (opening it, signing up). Your email is never shared with Meta. If you don't allow it, the pixel is never loaded; you can change your choice with the “Cookie settings” link at the bottom of the page.</li>
       <li><b>Beta sign-up (optional):</b> if you fill in the beta form, we store your email, phone type and, for Android, your Google Play account email. It is used only to invite you to the test build; for the Google Play closed test that email is added to Google's tester list. Deleted when beta testing ends or whenever you ask.</li>
       <li><b>Your rights:</b> access, correction, deletion and withdrawing consent. Just write to <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a>.</li>
     </ul>
   </div>
 </details>
 
-<footer>© 2026 TabbyChef · <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a> · <a href="/gizlilik/"><span class="tr">Gizlilik politikası</span><span class="en">Privacy policy</span></a></footer>
+<div class="ckb" id="ckb" hidden role="region" aria-label="Çerez izni">
+  <p><span class="tr">Reklamlarımızın kaç kayıt getirdiğini ölçmek için Meta çerezlerini kullanmak istiyoruz. E-posta adresin paylaşılmaz. <a href="/gizlilik/#cerez">Ayrıntılar</a></span><span class="en">We'd like to use Meta cookies to measure how many sign-ups our ads bring. Your email is never shared. <a href="/privacy/#cookies">Details</a></span></p>
+  <div class="ckbB"><button type="button" id="ckNo"><span class="tr">Hayır</span><span class="en">No thanks</span></button><button type="button" class="ckOk" id="ckOk"><span class="tr">İzin ver</span><span class="en">Allow</span></button></div>
+</div>
+<footer>© 2026 TabbyChef · <a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a> · <a href="/gizlilik/"><span class="tr">Gizlilik politikası</span><span class="en">Privacy policy</span></a><span id="ckReW" hidden> · <a href="#" id="ckRe"><span class="tr">Çerez tercihi</span><span class="en">Cookie settings</span></a></span></footer>
 </div>
 
 <script>
@@ -319,6 +332,16 @@ function setLang(l){L=l==='en'?'en':'tr';document.documentElement.lang=L;
 var qs=new URLSearchParams(location.search),saved=null;try{saved=localStorage.getItem('tc-lang')}catch(e){}
 setLang(qs.get('lang')||saved||((navigator.language||'tr').toLowerCase().indexOf('tr')===0?'tr':'en'));
 document.querySelectorAll('.lang button').forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
+// ---- Meta Pikseli: yalnız izin verilirse yüklenir; ön kayıtta "Lead", beta başvurusunda "CompleteRegistration" ----
+var PX='',leadDone=false,ck=null;try{ck=localStorage.getItem('tc-cerez')}catch(e){}
+function pxLoad(){if(!PX||window.fbq)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init',PX);fbq('track','PageView')}
+function pxEv(n,o){try{if(window.fbq)fbq('track',n,o||{})}catch(e){}}
+function ckSet(v){try{localStorage.setItem('tc-cerez',v)}catch(e){}$('ckb').hidden=true}
+if(PX){$('ckReW').hidden=false;if(ck==='1')pxLoad();else if(ck!=='0')$('ckb').hidden=false;
+  $('ckOk').onclick=function(){ckSet('1');pxLoad();if(leadDone)pxEv('Lead',{content_name:'prereg'})};
+  $('ckNo').onclick=function(){ckSet('0')};
+  $('ckRe').onclick=function(e){e.preventDefault();try{localStorage.removeItem('tc-cerez')}catch(x){}$('ckb').hidden=false}}
 var src=(qs.get('k')||qs.get('utm_source')||(/Instagram/i.test(navigator.userAgent)?'instagram':(document.referrer?'ref':'web'))).slice(0,40);
 var TIERS=[[100,20,0],[500,50,0],[1000,0,2000],[5000,150,0]],SHOW=0; // sunucudaki prereg_reward ile aynı olmalı
 function reward(c){var g=100,k=1000;TIERS.forEach(function(t){if(c>=t[0]){g+=t[1];k+=t[2]}});return [g,k]}
@@ -341,6 +364,7 @@ $('f').addEventListener('submit',function(e){e.preventDefault();if(busy)return;v
   busy=true;$('go').disabled=true;say(T[L].wait,true);
   rpc('prereg_signup',{p_email:em,p_lang:L,p_source:src,p_consent:true}).then(function(d){
     if(!d||!d.ok){say(T[L][d&&d.err]||T[L].net);return}
+    if(!d.already){leadDone=true;pxEv('Lead',{content_name:'prereg'})}
     if(d.count!=null){count=d.count;showCount()}
     $('formArea').style.display='none';$('done').classList.add('on');
     if(d.code){$('code').textContent=d.code.slice(0,2)+'-'+d.code.slice(2);$('doneTx').textContent=d.already?T[L].already:T[L].done}
@@ -369,6 +393,7 @@ $('bf').addEventListener('submit',function(e){e.preventDefault();if(bbusy)return
   bbusy=true;$('bgo').disabled=true;bsay(T[L].wait,true);
   rpc('beta_signup',{p_email:em,p_platform:pf,p_play_email:pf==='ios'?null:gp,p_lang:L,p_source:src,p_consent:true}).then(function(d){
     if(!d||!d.ok){bsay((d&&(BT[L][d.err]||T[L][d.err]))||T[L].net);return}
+    if(!d.updated)pxEv('CompleteRegistration',{content_name:'beta'});
     $('bArea').style.display='none';$('bDone').classList.add('on');$('bDoneTx').textContent=d.updated?BT[L].updated:BT[L].done;
   }).catch(function(){bsay(T[L].net)}).then(function(){bbusy=false;$('bgo').disabled=false})});
 $('snd').onclick=function(){var v=$('vid');v.muted=!v.muted;if(!v.muted){v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){})}this.setAttribute('aria-pressed',v.muted?'false':'true')};
