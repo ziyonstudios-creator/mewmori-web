@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795178621",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795178720",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -20235,13 +20235,13 @@ function goldNudge(){if(!AD_LIVE()||EVMODE)return;const now=Date.now();if(now-_g
 // Kafe açıkken her BOOST_EVERY saniyede bir sol taraftaki çip yığınında (#req, #dlvChip'in altı) "2× gelir · reklam izle" önerisi
 // BOOST_SHOW saniye görünür. Reklam tamamlanınca BOOST_SEC (120 sn) boyunca masa satışı, bahşiş ve paket siparişi geliri 2 katına çıkar
 // (uçan altın yazısı da 2 katı gösterir); süre çipte geri sayılır. Çevrimdışı hasılat (afk), görev/hediye altını etkilenmez.
-// Reklam kategorisi BOOST (günde 6). Mağaza › Ücretsiz'de de kart olarak durur ve günlük sandık sayacına katılır. Ödül {boost:120}
+// Reklam kategorisi BOOST (günde 5; V290 kullanıcı isteği: "günde en fazla 5 kez tıklayabilsin"). Mağaza › Ücretsiz'de de kart olarak durur ve günlük sandık sayacına katılır. Ödül {boost:120}
 // adApplyReward ile uygulanır: tarayıcıda yalnız geliştirme anahtarı açıkken, mobilde AdMob Aşama 2'de sunucunun döndürdüğü ödülle.
 // Öneri yalnız reklam gerçekten verilebiliyorsa çıkar (AD_LIVE, p928). Etkinlik kafelerinde yok.
 const BOOST_SEC=120,BOOST_EVERY=8*60,BOOST_SHOW=45,BOOST_FIRST=3*60;
 const boostOn=()=>!EVMODE&&!!S&&(S.boostUntil||0)>nowT();
 const boostLeft=()=>Math.max(0,Math.ceil(((S.boostUntil||0)-nowT())/1000));
-try{AD_CATS.BOOST={limit:6,t:'2× gelir',s:'2 dakika',art:'coin'};if(!AD_ORDER.includes('BOOST'))AD_ORDER.push('BOOST');AD_DEV_REWARD.BOOST={boost:BOOST_SEC}}catch(e){console.warn('2× gelir',e)}
+try{AD_CATS.BOOST={limit:5,t:'2× gelir',s:'2 dakika',art:'coin'};if(!AD_ORDER.includes('BOOST'))AD_ORDER.push('BOOST');AD_DEV_REWARD.BOOST={boost:BOOST_SEC}}catch(e){console.warn('2× gelir',e)}
 {const _u=AdService.useful.bind(AdService);AdService.useful=function(cat){if(cat==='BOOST')return !EVMODE&&shopOpen()&&!boostOn();return _u(cat)}}
 function boostStart(sec){if(EVMODE)return;const now=nowT();S.boostUntil=Math.max(now,S.boostUntil||0)+sec*1000;BST.offer=0;BST.next=now+(sec+BOOST_EVERY)*1000;markDirty();
   try{sfx('levelup')}catch(e){}toast(`<b>2× gelir başladı!</b><br>${Math.round(sec/60)} dakika boyunca satışlar iki kat`,ic('coin'),2600);boostDraw()}
