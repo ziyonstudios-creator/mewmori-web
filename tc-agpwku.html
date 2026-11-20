@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795203202",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795206646",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -20348,6 +20348,24 @@ function mkTabFit(){try{
 {const st=document.createElement('style');st.textContent='#mkTabs>.tab>.tbl{display:block;max-width:100%;white-space:nowrap}';document.head.appendChild(st)}
 {const _rm=renderMarket;renderMarket=function(){const r=_rm.apply(this,arguments);mkTabFit();requestAnimationFrame(mkTabFit);setTimeout(mkTabFit,150);return r}}
 addEventListener('resize',()=>setTimeout(mkTabFit,120));
+
+// ================= ANA EKRAN: PROFİLİN ALTINDAKİ DÜĞMELER SOLDA DİKEY SÜTUN (V294) =================
+// Kullanıcı isteği (20 Kasım 2026, 23:14): "profilin altındaki menüleri sol taraftan aşağıya doğru yapabilir misin".
+// Görevler · Davet · Etkinlikler · Pass · Duyurular artık profil tabelasının altında, sol kenarda yukarıdan aşağı dizilir
+// (sağdaki Tarifler…Market sütununun aynası). Sütun Keşfet/Düzenle düğmelerinin üstünde biter: sığması için sütunda daire
+// 38 px (önce 40), düğme boyu 46 px, aralık 2 px (5 düğme = 238 sanal px; telefonlarda sanal ekran boyu ~390).
+// Sol çip yığını (sipariş, paket, stok …) ve etkinlik kafesi çipi sütunun sağına, profilin hemen altına taşındı.
+{const Y='html.land #game#game #y2',G='html.land #game#game',NX=':not(#_a#_b#_c)';const st=document.createElement('style');st.id='solMenuCss';st.textContent=`
+${Y} .k3mini${NX}{flex-direction:column!important;height:auto!important;gap:2px!important;left:calc(var(--el) - 5px)!important;top:calc(var(--et) + 62px)!important}
+${Y} .k3mini${NX} .k3b{width:50px!important;height:46px!important}
+${Y} .k3mini${NX} .k3c{left:6px!important;top:0!important;width:38px!important;height:38px!important;padding-top:3px!important}
+${Y} .k3mini${NX} .k3c svg{width:21px!important;height:21px!important}
+${Y} .k3mini${NX} .k3t{top:30px!important}
+${Y} .k3chips${NX}{left:calc(var(--el) + 52px)!important;top:calc(var(--et) + 62px)!important;z-index:4}
+html.evmode.land #game#game #y2 .k3chips${NX}{top:calc(var(--et) + 114px)!important}
+${Y} .k3mini${NX} #evBtn .rhlk{left:42px!important;right:auto!important;top:11px!important}   /* "Sv 8" kilidi: sütunda dairenin sağında (üstteki düğmenin yazısına binmesin) */
+${G} #evChip${NX}{left:calc(var(--elR) + var(--u)*52px)!important;top:calc(var(--etR) + var(--u)*62px)!important}
+`;document.head.appendChild(st)}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
