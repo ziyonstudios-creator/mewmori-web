@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795175070",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795175528",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -20108,22 +20108,18 @@ function tplBones(){if(_tplBones)return _tplBones;if(typeof TEMPLATE==='undefine
     root.updateMatrixWorld(true);return _aa.apply(this,arguments)}
   finally{for(let i=0;i<B.length;i++){B[i].position.copy(saved[i][0]);B[i].quaternion.copy(saved[i][1]);B[i].scale.copy(saved[i][2])}root.quaternion.copy(rq);root.position.copy(rp);root.updateMatrixWorld(true)}}}
 
-// ================= BETA SÜRÜMÜ: HESAP YOK, ÖN KAYIT HEDİYESİ YOK (V286) =================
-// Kullanıcı isteği (20 Kasım 2026): "beta sürümünde hesapla giriş olmasını istemiyorum ön kayıt yaptıranlar hediyelerini
-// beta sürümde almasınlar". TC_BETA=true iken: açılıştaki giriş kartı gösterilmez (oyuncu misafir başlar), "Hesap" düğmeleri
-// giriş penceresi yerine bilgi verir, ön kayıt ödülü / Kurucu Şef kontrolü çağrılmaz. Asıl kilit sunucuda: app_flags.
-// prereg_gifts_open=false iken prereg_claim, prereg_outfit ve redeem_gift_code ön kayıt kodları hediye vermez (err 'not_yet').
-// ÇIKIŞTA: TC_BETA=false yap + update app_flags set val=true where key='prereg_gifts_open'.
+// ================= BETA SÜRÜMÜ: ÖN KAYIT HEDİYESİ OYUN ÇIKINCA (V286–V287) =================
+// Kullanıcı isteği (20 Kasım 2026): "ön kayıt yaptıranlar hediyelerini beta sürümde almasınlar"; ardından (V287):
+// "hesapla giriş olsun ancak ödül oyun çıkınca olacak şekilde ayarlayabilir misin". Hesapla giriş betada açık kalır;
+// TC_BETA=true iken yalnız ön kayıt ödülü / Kurucu Şef kontrolü çağrılmaz. Asıl kilit sunucuda: app_flags.prereg_gifts_open=false
+// iken prereg_claim, prereg_outfit ve redeem_gift_code ön kayıt kodları hediye vermez (err 'not_yet'); çıkışta açılınca
+// betada giriş yapmış ön kayıtlılar hediyelerini kendiliğinden alır (S.preregDone betada hiç işaretlenmez).
+// ÇIKIŞTA: TC_BETA=false + update app_flags set val=true where key='prereg_gifts_open'.
 const TC_BETA=true;
 try{GIFT_ERR.not_yet='Ön kayıt hediyen oyun çıkınca hesabına eklenecek.'}catch(e){}
 if(TC_BETA){
-  const _betaMsg=()=>{try{toast('<b>Beta sürümü</b><br>Hesap ve ön kayıt hediyeleri oyun çıkınca açılacak',ic('paw'),3000)}catch(e){}};
-  authGate=async function(next){try{setGuest(true)}catch(e){}next&&next()};
-  authOpen=function(){_betaMsg()};
   preregTry=async function(){};
   kurCheck=async function(){};
-  {const _ab=authBadge;authBadge=function(){const r=_ab.apply(this,arguments);const box=$('gdAcct');
-    if(box&&!SB.user)box.innerHTML=`<span>${ic('paw')}Beta: misafir olarak oynuyorsun</span>`;return r}}
 }
 
 // ================= BAŞLAT =================
