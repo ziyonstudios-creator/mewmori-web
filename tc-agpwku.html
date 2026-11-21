@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795276160",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795276955",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -2583,7 +2583,7 @@ const CLOTHES=[
  {id:'hat_none',slot:'hat',name:'Şapkasız',roles:['waiter','barista','cashier'],free:true},
  {id:'hat_paper',slot:'hat',name:'Garson kâğıt şapka',roles:['waiter'],free:true,acc:'paper',c:0xffffff},
  {id:'hat_chef',slot:'hat',name:'Aşçı şapkası',roles:['barista'],free:true,acc:'chef',c:0xffffff},
- {id:'hat_cap',slot:'hat',name:'Siperlikli kep',roles:['cashier','barista'],free:true,acc:'cap',c:0x5f8a3a},
+   // V301: 'hat_cap' (Siperlikli kep) oyundan kaldırıldı (kullanıcı isteği); giyenler şapkasız olur (p939)
  {id:'hat_beret',slot:'hat',name:'Lacivert bere',roles:['waiter','barista','cashier'],price:60,acc:'beret',c:0x2e4f8a},
  {id:'hat_beret_red',slot:'hat',name:'Kırmızı bere',roles:['waiter','barista','cashier'],price:60,acc:'beret',c:0xd9534f},
  {id:'hat_beanie',slot:'hat',name:'Ponponlu bere',roles:['barista','cashier'],price:70,acc:'beanie',c:0xf2a6a0},
@@ -2591,7 +2591,7 @@ const CLOTHES=[
  {id:'hat_flower',slot:'hat',name:'Çiçek tacı',roles:['waiter','barista','cashier'],gems:5,acc:'flowers',c:0x8fae58},
  {id:'set_classic',slot:'outfit',name:'Klasik garson takımı',roles:['waiter'],price:150,set:{neck:'bow_black',apron:'ap_black',hat:'hat_bowler'}},
  {id:'set_master',slot:'outfit',name:'Kahve ustası takımı',roles:['barista'],price:180,set:{apron:'ap_barista',hat:'hat_beret',neck:'nk_none'}},
- {id:'set_cashier',slot:'outfit',name:'Güler yüzlü kasiyer',roles:['cashier'],price:150,set:{hat:'hat_cap',neck:'bow_red',apron:'ap_stripe'}},
+ {id:'set_cashier',slot:'outfit',name:'Güler yüzlü kasiyer',roles:['cashier'],price:150,set:{hat:'hat_none',neck:'bow_red',apron:'ap_stripe'}},
  {id:'set_winter',slot:'outfit',name:'Kış kafesi',roles:['waiter','barista','cashier'],gems:12,set:{neck:'scarf_winter',apron:'ap_gingham',hat:'hat_beanie'}},
  {id:'set_spring',slot:'outfit',name:'Bahar şenliği',roles:['waiter','barista','cashier'],gems:10,set:{hat:'hat_flower',apron:'ap_polka',neck:'scarf_mint'}}];
 const CLO=Object.fromEntries(CLOTHES.map(c=>[c.id,c]));
@@ -2599,7 +2599,7 @@ const ROLES=[{id:'waiter',name:'Garson',desc:'Siparişleri alır, tepsiyle servi
 const ROLE_DEF={
   waiter:{name:'Pamuk',look:{...LOOK_DEF},wear:{apron:'ap_olive',top:'top_none',neck:'nk_none',hat:'hat_none',bottom:'bt_none'}},
   barista:{name:'Tarçın',look:{...LOOK_DEF,fur1:0,fur2:9},wear:{apron:'ap_pink',top:'top_none',neck:'nk_none',hat:'hat_chef',bottom:'bt_none'}},
-  cashier:{name:'Fındık',look:{...LOOK_DEF,fur1:1,fur2:3},wear:{apron:'ap_mint',top:'top_none',neck:'nk_none',hat:'hat_cap',bottom:'bt_brown'}}};
+  cashier:{name:'Fındık',look:{...LOOK_DEF,fur1:1,fur2:3},wear:{apron:'ap_mint',top:'top_none',neck:'nk_none',hat:'hat_none',bottom:'bt_brown'}}};
 const isDefaultLook=cfg=>false;   // iç çamaşırı katmanı her zaman boyanır
 
 // ---- konum haritası (bir kez) ----
@@ -5207,7 +5207,7 @@ const sfxSafe=k=>{try{sfx(k)}catch(e){}};
 const SUP_DROP={x:-5.45,z:0.7},SUP_ENTRY=[{x:-8.9,z:9.6},{x:-8.9,z:3.7},{x:-5.9,z:0.78}],SUP_STAND={x:-5.88,z:0.76};
 // koliler tezgahın sol ucuna taşınır (müşteri tarafı), sonra stoğa girer
 const BOX_COUNTER={stand:{x:-4.38,z:-1.1},top:{x:-4.43,y:0.72,z:-1.95}};   // duvar dibindeki boş tezgah ucu
-const SUPC_CFG={name:'Tuğra',look:{...LOOK_DEF,fur1:5,fur2:1},wear:{apron:'ap_olive',top:'top_none',neck:'nk_none',hat:'hat_cap',bottom:'bt_none'}};
+const SUPC_CFG={name:'Tuğra',look:{...LOOK_DEF,fur1:5,fur2:1},wear:{apron:'ap_olive',top:'top_none',neck:'nk_none',hat:'hat_none',bottom:'bt_none'}};
 let SUPC=null,SUPBOX=null;
 function boxMesh(s=1){const bx=new THREE.Group();const T=c=>new THREE.MeshToonMaterial({color:c,gradientMap:grad});
   const body=new THREE.Mesh(new RoundedBoxGeometry(0.34*s,0.24*s,0.28*s,2,0.02),T(0xc9a06a));body.position.y=0.12*s;body.castShadow=true;bx.add(body);
@@ -20770,6 +20770,22 @@ ${G} #motoM .mtuse,${G} #motoM .mtlock{margin-top:auto;height:40px;display:flex;
 ${G} #motoM .mtuse{color:#3f7d1f}
 ${G} #motoM .mtuse .uic,${G} #motoM .mtlock .uic{width:18px;height:18px}
 `;document.head.appendChild(st)}
+
+// ================= YERLEŞTİRME: ZEMİN TAMAMEN YEŞİL, ENGELLİ YERDE EŞYA KIRMIZI (V301) =================
+// Kullanıcı isteği (21 Kasım 2026, 18:57, ekran görüntüsüyle): "bir objeyi yer değiştireceği zaman alttaki alan komple yeşil olsun.
+// Ancak oyuncu mesela masayı engelli bir yere sürüklediğinde masa kırmızı renk olsun, yerleştirme izni verilmesin."
+// Eskiden (p74 uygunluk haritası): her kare ayrı hesaplanıp yeşil ya da kırmızı boyanıyordu (duvar dipleri ve eşya çevreleri kırmızı
+// damalı görünüyordu). Yeni: mobilya ve tezgâh/kasa taşınırken bütün kareler yeşildir, hesap yapılmaz. Uygunluğu eşyanın kendisi
+// gösterir: konamayacağı yerde kırmızıya döner, altındaki kareler kırmızı olur, "Yerleştir" düğmesi kapalıdır (p11/p74'te zaten böyle).
+// Kapı/pencere taşımada duvar dibindeki aday şeridi eskisi gibi kalır.
+function vmTamYesil(){vmEnsure();VM.job=null;const c=VM.ctx;c.clearRect(0,0,VM.cv.width,VM.cv.height);VM.cov=new Uint8Array(VM.nx*VM.nz);
+  for(let i=0;i<VM.nx;i++)for(let k=0;k<VM.nz;k++)vmPaint(i,k,true);VM.tex.needsUpdate=true;VM.mesh.visible=true;VM.on=true;try{gridRefresh()}catch(e){}}
+vmFurn=function(){if(!PL||!PL.rec||CAT[PL.rec.id].kind==='walldecor'){vmHide();return}vmTamYesil()};
+vmBlock=function(b){vmTamYesil()};
+// konamayan eşya daha belirgin kırmızı
+{const _gh=ghostify;ghostify=function(G,ok){const r=_gh.apply(this,arguments);try{if(!ok)G.traverse(m=>{if(m.isMesh&&m.userData.mBad&&!m.userData.mBad._v301){const c=m.userData.mBad;if(c.color)c.color.setHex(0xe8392c);if(c.emissive)c.emissive.setHex(0x5a0808);c.opacity=0.9;c._v301=1}})}catch(e){}return r}}
+// ---- Siperlikli kep kaldırıldı: giyen çalışanlar şapkasız olur, dolaptan silinir ----
+{const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{for(const k in (S.chars||{})){const c=S.chars[k];if(c&&c.wear&&c.wear.hat==='hat_cap')c.wear.hat='hat_none'}if(S.clothes)delete S.clothes.hat_cap}catch(e){}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
