@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795272330",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795273694",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -2820,11 +2820,11 @@ function cleanLines(d,M,L,top){MPM=M.pm;const keepFur=L.pattern==='original'&&L.
   for(let k=0;k<N;k++){const c=cls[k];if(!c)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];TLK=M.tl[k];TOPV=M.tm[k];
     if(y>1.54&&Math.abs(x)>0.09&&c!==8&&((headEll(x,y,z)>1.0&&M.nzm[k]>0.3)||(y>1.5&&Math.abs(x)>0.1&&M.nzm[k]>0.35&&(headEll(x,y,z))>0.9)||box(I5,k%R,(k/R)|0,hw)>0.4*box(IC,k%R,(k/R)|0,hw)))mask[k]=2;   // kulak içi: düz pembe
     else if(c>=1&&c<=3&&(y<1.3||!keepFur)&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))){const face=z>0.05&&(Math.hypot((Math.abs(x)-0.088)/0.105,(y-1.452)/0.075)<1||(Math.abs(x)<0.08&&y<1.43&&y>1.33&&z>0.1));if(!face)mask[k]=1}}
-  const pk=L.inner?CPAL.pink[L.inner][1]:M.earMean;
+  const pk=M.earMean;   // V297: kulak içi rengi seçeneği kaldırıldı; hep modelin kendi pembesi
   // kulak içi: çizimler yerine yumuşak tek renk; kenara doğru hafif koyulaşma için kulak tabanından uzaklık
   for(let k=0;k<N;k++)if(mask[k]===2){const y=pm[k*3+1];const f=0.93+0.07*Math.min(1,Math.max(0,(y-1.56)/0.12));d[k*4]=pk[0]*f;d[k*4+1]=pk[1]*f;d[k*4+2]=pk[2]*f}
   // yüzde/kolda kalan tek tük pembe-beyaz lekeler: burun, ağız, pati tabanı dışındaki pembe texel'ler komşu kürkle doldurulur
-  const hole=new Uint8Array(N);for(let k=0;k<N;k++){if(cls[k]!==5||mask[k]===2)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];
+  const hole=new Uint8Array(N);for(let k=0;k<N;k++){if(cls[k]!==5||mask[k]===2||(M.scl&&M.scl[k]))continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];
     const keep=(y>1.3&&R_.nose(x,y,z))||R_.hands(x,y,z)||R_.feet(x,y,z)||(z>0.1&&y>1.33&&y<1.43&&Math.abs(x)<0.07)||inShorts(x,y,z)||y<0.95&&!R_.head(x,y,z)&&false;if(!keep)hole[k]=1}
   for(let pass=0;pass<14;pass++){let any=0;const nh=hole.slice();for(let k=0;k<N;k++){if(!hole[k])continue;const x=k%R,y=(k/R)|0;let r=0,g=0,b=0,n=0;
       for(const q of [k-1,k+1,k-R,k+R]){if(q<0||q>=N||hole[q]||!cls[q]||cls[q]===4||cls[q]>5||!near3(k,q))continue;if(Math.abs((q%R)-x)>1)continue;r+=d[q*4];g+=d[q*4+1];b+=d[q*4+2];n++}
@@ -2843,7 +2843,7 @@ function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,ori
   const wc=L.whiskCol==='light'?[245,240,232]:null;
   const SCL=M.scl||(M.scl=gozAki(M));   // V296: göz akı (ve göz içi gölgesi) kürk rengine boyanmaz (p934)
   for(let k=0;k<R*R;k++){const i4=k*4;let r=orig[i4],g=orig[i4+1],b=orig[i4+2];let c=cls[k];TLK=tl[k];TOPV=M.tm[k];
-    if(SCL[k]){d[i4]=r;d[i4+1]=g;d[i4+2]=b;d[i4+3]=255;continue}
+    if(SCL[k]){if(SCL[k]===2){const v=Math.min(1,Math.max(0.62,lum[k]/0.84));r=246*v;g=242*v;b=236*v}d[i4]=r;d[i4+1]=g;d[i4+2]=b;d[i4+3]=255;continue}
     if(c>=5&&c<=7){const y=pm[k*3+1],x=pm[k*3],z=pm[k*3+2];if(y<1.28&&!R_.hands(x,y,z)&&!R_.feet(x,y,z)&&(!keepFur||(top&&inTop(x,y,z))))c=1}   // gövdede kalan pembe/koyu lekeler kürk/kıyafet rengini alır
     const cc=(c===3&&(!keepFur||M.f3[k]<0.42))?2:(c===1&&M.clsH[k]?2:c);   // yeniden renklendirilen kürkte eski koyu lekeler ve kafadaki küçük açık kırıntılar zemin rengini alır
     if(c){const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];const det=Math.min(1.05,Math.max(0.92,M.detm[k]));
@@ -2851,7 +2851,7 @@ function composeTexture(cfg,R=1024){const M=posMap(R);const {pm,cls,lum,mean,ori
         else{furColor(L,x,y,z,1,o);if(top&&inTop(x,y,z))topColor(top,x,y,z,o);else if(W.tunicTop){/* müşteri: modeldeki önlük kalıbı önlüğe benzemesin — bel üstü gömlek deseni, bel altı pantolon rengi; cep/askı çizgileri düz gölgeyle silinir */const sh=Math.min(1.05,Math.max(0.93,lum[k]/mean[4]));const bc=(CLO[W.bottom]||{}).bt;if(y<0.86&&bc){o[0]=bc[0];o[1]=bc[1];o[2]=bc[2]}else topColor(W.tunicTop,x,y,z,o);o[0]*=sh;o[1]*=sh;o[2]*=sh}
         else if(SK){const sh=Math.min(1.2,Math.max(0.75,lum[k]/mean[4]));o[0]=SK[0]*sh;o[1]=SK[1]*sh;o[2]=SK[2]*sh}if(BT&&y>0.5&&y<0.95)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
       else if(c<=3){const sh=!!BT&&inShorts(x,y,z);if(keepFur&&!sh&&M.cls0[k]!==4&&!(top&&inTop(x,y,z)&&!R_.hands(x,y,z))&&!furMarkHit(L,x,y,z)){}else{const fx=pm[k*3],fy=pm[k*3+1],fz=pm[k*3+2];const face=fz>0.05&&Math.hypot((Math.abs(fx)-0.088)/0.1,(fy-1.452)/0.058)<1;furColor(L,x,y,z,face?c:cc,o);if(top&&inTop(x,y,z)&&!R_.hands(x,y,z))topColor(top,x,y,z,o);if(sh)shortsC(x,y,z,o,k);r=o[0]*det;g=o[1]*det;b=o[2]*det}}
-      else if(c===5){const sh=lum[k]/mean[5];const t=R_.ear(x,y,z)?(L.inner?inner:null):(y>1.3&&R_.nose(x,y,z))?(L.nose?nose:null):null;if(BT&&inShorts(x,y,z)){shortsC(x,y,z,o,k);r=o[0];g=o[1];b=o[2]}else if(t){r=t[0]*sh;g=t[1]*sh;b=t[2]*sh}}
+      else if(c===5){const sh=lum[k]/mean[5];const t=R_.ear(x,y,z)?null:(y>1.3&&R_.nose(x,y,z))?(L.nose?nose:null):null;if(BT&&inShorts(x,y,z)){shortsC(x,y,z,o,k);r=o[0];g=o[1];b=o[2]}else if(t){r=t[0]*sh;g=t[1]*sh;b=t[2]*sh}}
       else if(c===6&&(L.eye||L.odd)){const e=L.odd&&x<0?eye2:eye;const sh=Math.min(1.5,lum[k]/mean[6]);r=e[0]*sh;g=e[1]*sh;b=e[2]*sh}
       else if(c===8&&wc){r=wc[0];g=wc[1];b=wc[2]}}
     if(!c){const f=furRGB(L.fur1);if(!keepFur){r=f[0];g=f[1];b=f[2]}}
@@ -3899,6 +3899,8 @@ function pvShow(cfg){clearTimeout(pvTimer);pvTimer=setTimeout(()=>{if(PV.model)P
 const CE={role:null,cfg:null,orig:null,mode:'create',step:0,tab:'look',cat:'fur',err:'',busy:false};
 const CE_CATS=[['fur','Kürk'],['pattern','Desen'],['marks','İşaretler'],['eyes','Gözler'],['ears','Kulaklar'],['face','Yüz'],['body','Vücut']];
 const CW_SLOTS=[['outfit','Takımlar'],['apron','Önlük'],['neck','Boyun'],['hat','Şapka']];
+// V297 (kullanıcı isteği): ilk ekip oluşturulurken Kıyafet sekmesinde yalnız ücretsiz (zaten sahip olunan) kıyafetler görünür; takımlar ve ücretliler sonra Ekip/Kıyafet Dolabı'nda
+const ceUcretsiz=()=>CE.mode==='create'&&!S.created;
 {const st=document.createElement('style');st.textContent=`
 #ce .pv{position:relative;height:min(calc(36*var(--vh)),300px);margin:6px 14px 0;border:3px solid var(--ink);border-radius:18px;background:radial-gradient(circle at 50% 40%,#fff8ec,#f3e2c6);overflow:hidden;flex:none}
 #ce .pv canvas{display:block}
@@ -3977,8 +3979,8 @@ function renderCE(){const R=ROLES.find(r=>r.id===CE.role),idx=ROLES.indexOf(R);
   const inp=$('ceName');inp.value=CE.cfg.name;$('ceCnt').textContent=`${CE.cfg.name.length}/12`;inp.oninput=()=>{CE.cfg.name=inp.value.slice(0,12);$('ceCnt').textContent=`${CE.cfg.name.length}/12`;const [,e]=validName(CE.cfg.name);$('ceErr').textContent=e;renderCEFoot()};
   $('cePv').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{PV.yaw=+b.dataset.v});
   $('ceTabs').innerHTML=[['look','Görünüm','paw'],['wear','Kıyafet','shirt']].map(([id,n,i])=>`<button class="tab" role="tab" type="button" data-t="${id}" aria-selected="${CE.tab===id}">${ic(i)}${n}</button>`).join('');
-  $('ceTabs').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;CE.tab=b.dataset.t;CE.cat=CE.tab==='look'?'fur':'outfit';renderCE()};
-  const cats=CE.tab==='look'?CE_CATS:CW_SLOTS;$('ceCats').innerHTML=cats.map(([id,n])=>`<button class="chip" type="button" data-c="${id}" aria-pressed="${CE.cat===id}">${n}</button>`).join('');
+  $('ceTabs').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;CE.tab=b.dataset.t;CE.cat=CE.tab==='look'?'fur':(ceUcretsiz()?'apron':'outfit');renderCE()};
+  const cats=CE.tab==='look'?CE_CATS:CW_SLOTS.filter(([id])=>!ceUcretsiz()||id!=='outfit');if(!cats.some(([id])=>id===CE.cat))CE.cat=cats[0][0];$('ceCats').innerHTML=cats.map(([id,n])=>`<button class="chip" type="button" data-c="${id}" aria-pressed="${CE.cat===id}">${n}</button>`).join('');
   $('ceCats').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;CE.cat=b.dataset.c;renderCE()};
   renderCEOpts();renderCEFoot()}
 function swRow(title,path,pal){const [a,b]=path.split('.');const cur=CE.cfg[a][b];return `<div class="ce-row"><b>${title}</b><div class="wrap">${pal.map(([n,c],i)=>`<button class="sw" type="button" title="${n}" aria-label="${n}" data-p="${path}" data-v="${i}" aria-pressed="${cur===i}" style="background:${hexS(c)}"></button>`).join('')}</div></div>`}
@@ -3992,10 +3994,10 @@ function renderCEOpts(){const o=$('ceOpts');let h='';const L=CE.cfg.look;
     case 'pattern':h=chRow('Desen tipi','look.pattern',LOOK_OPTS.pattern)+(['tabby','spots','bicolor'].includes(L.pattern)?chRow('Desenin yeri','look.place',LOOK_OPTS.place):'');break;
     case 'marks':h=chRow('Yüz işareti','look.face',LOOK_OPTS.face)+chRow('Pati işareti','look.paws',LOOK_OPTS.paws);break;
     case 'eyes':h=chRow('Göz çeşidi','look.odd',[[false,'İki göz aynı'],[true,'Farklı renkli gözler']])+(L.odd?`<div class="eyepair">${eyeSw('Soldaki göz','look.eye2',L.eye2??((L.eye+2)%CPAL.eye.length))}${eyeSw('Sağdaki göz','look.eye',L.eye)}</div>`:swRow('Göz rengi','look.eye',CPAL.eye));break;
-    case 'ears':h=chRow('Kulak şekli','look.earShape',LOOK_OPTS.earShape)+chRow('Kulak boyu','look.earSize',LOOK_OPTS.earSize)+swRow('Kulak içi rengi','look.inner',CPAL.pink);break;
+    case 'ears':h=chRow('Kulak şekli','look.earShape',LOOK_OPTS.earShape)+chRow('Kulak boyu','look.earSize',LOOK_OPTS.earSize);break;   // V297: "Kulak içi rengi" seçeneği kaldırıldı (kullanıcı isteği)
     case 'face':h=swRow('Burun rengi','look.nose',CPAL.pink)+chRow('Yanak','look.cheek',LOOK_OPTS.cheek)+chRow('Bıyık','look.whisk',LOOK_OPTS.whisk)+chRow('Bıyık rengi','look.whiskCol',LOOK_OPTS.whiskCol);break;
     case 'body':h=chRow('Vücut','look.body',LOOK_OPTS.body);break}}
-  else{const slot=CE.cat;const items=CLOTHES.filter(c=>c.slot===slot&&c.roles.includes(CE.role));const W=CE.cfg.wear;
+  else{const slot=CE.cat;const items=CLOTHES.filter(c=>c.slot===slot&&c.roles.includes(CE.role)&&(!ceUcretsiz()||ownsCloth(c.id)));const W=CE.cfg.wear;
     const isOn=c=>c.set?Object.entries(c.set).every(([k,v])=>W[k]===v):W[slot]===c.id;
     h=`<div class="ce-row"><div class="wrap">${items.map(c=>{const own=ownsCloth(c.id);return `<button class="cl" type="button" data-w="${c.id}" aria-pressed="${isOn(c)}"><span class="ic">${clothIcon(c.id)}</span>${own?'<span class="ow" title="Sende"></span>':''}${c.name}${own?'':`<span class="pr">${c.gems?ic('gem')+c.gems:ic('coin')+c.price}</span>`}</button>`}).join('')}</div></div>`;
     const need=unownedWorn();if(need.length)h+=`<div class="banner">${ic('lock')}<div>${need.map(id=>CLO[id].name).join(', ')} henüz senin değil. Önizleme ücretsiz; giymek için satın al.</div></div>`}
@@ -20430,27 +20432,44 @@ if(!RP_ACIK){try{
 // Çözüm: göz akı dokuda dağınık parçalarda olduğu için 3B konumdan bulunur. Her göz için önden bakışta 2 mm'lik ızgara kurulur;
 // iris piksellerinden başlayıp koyu göz çizgisine (kirpik/kenar çizgisi, göz bebeği) kadar yayılan bölge göz içidir. O bölgedeki
 // açık pikseller (ak + üst kapağın gölgesi + parıltı) özgün dokudaki hâliyle kalır. Yayılma gözün dar elipsinin dışına çıkamaz.
-// Izgara bir kez, 1024'lük haritadan kurulur (CM.gozIzgara); 512'lik dokular (telefon) aynı ızgaraya 3B konumla bakar, böylece seyrek
-// dokuda da aynı bölge korunur.
-const GOZ={G:0.002,CX:0.085,CY:1.4445,RX:0.0445,RY:0.0385};   // gözün dar elipsi (ölçüler modelden: ak x 0,042–0,127, y 1,409–1,480)
-function gozIzgara(){if(CM.gozIzgara)return CM.gozIzgara;const {G,CX,CY,RX,RY}=GOZ,W=Math.ceil(2*RX/G)+2,H=Math.ceil(2*RY/G)+2,M=posMap(1024),{R,pm,cls}=M,N=R*R,out={};
-  for(const sg of [-1,1]){const dark=new Uint8Array(W*H),iris=new Uint8Array(W*H),has=new Uint8Array(W*H),fill=new Uint8Array(W*H);
-    for(let k=0;k<N;k++){const c=cls[k];if(!c)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];if(z<0.05||x*sg<0)continue;
-      const ex=(x-sg*CX)/RX,ey=(y-CY)/RY;if(ex*ex+ey*ey>=1)continue;
-      const q=Math.floor((x-sg*CX+RX)/G)+1+(Math.floor((y-CY+RY)/G)+1)*W;has[q]=1;if(c===7||c===3)dark[q]=1;else if(c===6)iris[q]++}
-    const st=[];for(let q=0;q<W*H;q++)if(iris[q]>=2&&!dark[q]){fill[q]=1;st.push(q)}
-    while(st.length){const q=st.pop(),x=q%W,y=(q/W)|0;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=W||yy>=H)continue;const p=yy*W+xx;
-        if(fill[p]||dark[p]||!has[p])continue;fill[p]=1;st.push(p)}}
-    // koyu çizgiyle aynı hücreye düşen ak pikseller: komşuları göz içiyse onlar da göz akıdır (çizginin içinde renkli halka kalmasın): 2
-    for(let q=0;q<W*H;q++){if(fill[q]||!dark[q])continue;const x=q%W,y=(q/W)|0;let n=0;
-      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H&&fill[yy*W+xx]===1)n++}if(n>=3)fill[q]=2}
-    out[sg]=fill}
-  return CM.gozIzgara={W,H,g:out}}
+// V297 (kullanıcı: "sol gözde hala bir sorun var, beyaz çizik gibi yerler oluyor"): ızgara-yayılma yöntemi göz çizgisinin
+// ince yerlerinden sızıyor, çizgiyle aynı hücreye düşen pikselleri de atlıyordu (ak içinde kürk renkli benekler, çizginin dışında
+// beyaz çizikler, üst kapağın kahverengi gölgesi açık kürkte turuncu leke). Yeni yöntem kutupsal ve pürüzsüz:
+//  • göz merkezi = iris piksellerinin ortası; 96 açı dilimi. Her dilimde irisin dış yarıçapı (rI) ve iristen dışarı doğru
+//    yürürken açık pikselden sonra gelen ilk koyu çizginin yarıçapı (rO) bulunur. Çizgide boşluk olan dilimler komşulardan
+//    doldurulur, sonra dizi ortanca ve ortalama süzgecinden geçer: sınır kesintisiz, düzgün bir eğridir.
+//  • sınırın içindeki açık pikseller göz akıdır: beyazlar özgün hâliyle kalır; kahverengi gölge pikselleri nötr gri-beyaz gölgeye
+//    çevrilir (kürk rengi ne olursa olsun ak beyaz, gölgesi gri). İrisin içindeki pikseller hiç değişmez.
+// Ölçü bir kez 1024'lük haritadan çıkar (CM.gozKutup); 512'lik dokular aynı eğriye 3B konumla bakar.
+const GOZ={NB:96,DR:0.0016,CX:0.085,CY:1.4445,RX:0.0445,RY:0.0385};
+function gozKutup(){if(CM.gozKutup)return CM.gozKutup;const {NB,DR,CX,CY,RX,RY}=GOZ,M=posMap(1024),{R,pm,cls}=M,N=R*R,out={};const NR=Math.ceil(0.07/DR);
+  for(const sg of [-1,1]){let n=0,sx=0,sy=0;const ks=[];
+    for(let k=0;k<N;k++){const c=cls[k];if(!c)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];if(z<0.05||x*sg<0)continue;const ex=(x-sg*CX)/(RX*1.25),ey=(y-CY)/(RY*1.25);if(ex*ex+ey*ey>=1)continue;ks.push(k);
+      if(c===6&&((x-sg*CX)/RX)**2+((y-CY)/RY)**2<1){n++;sx+=x;sy+=y}}
+    const cx=n?sx/n:sg*CX,cy=n?sy/n:CY;const dark=new Uint16Array(NB*NR),light=new Uint16Array(NB*NR),rI=new Float32Array(NB);
+    for(const k of ks){const c=cls[k],dx=pm[k*3]-cx,dy=pm[k*3+1]-cy,r=Math.hypot(dx,dy);const b=Math.floor((Math.atan2(dy,dx)/(2*Math.PI)+1)*NB)%NB,q=Math.min(NR-1,Math.floor(r/DR));
+      if(c===6){if(r>rI[b])rI[b]=r}else if(c===7||c===3)dark[b*NR+q]++;else if(c===1||c===2||c===5)light[b*NR+q]++}
+    // iris yarıçapı: boş dilimler komşudan, sonra ortanca
+    const fix=(A,bad)=>{for(let p=0;p<3;p++)for(let b=0;b<NB;b++)if(bad(A[b])){let v=0,m=0;for(const d of [-2,-1,1,2]){const w=A[(b+d+NB)%NB];if(!bad(w)){v+=w;m++}}if(m)A[b]=v/m}};
+    const med=(A,h)=>{const O=new Float32Array(NB);for(let b=0;b<NB;b++){const t=[];for(let d=-h;d<=h;d++)t.push(A[(b+d+NB)%NB]);t.sort((a,c)=>a-c);O[b]=t[h]}return O};
+    const avg=(A,h)=>{const O=new Float32Array(NB);for(let b=0;b<NB;b++){let v=0;for(let d=-h;d<=h;d++)v+=A[(b+d+NB)%NB];O[b]=v/(2*h+1)}return O};
+    fix(rI,v=>v<=0);const rIs=med(rI,2);
+    // dış sınır: iris kenarından dışarı; açık hücre görüldükten sonraki ilk koyu hücre. İris doğrudan çizgiye değiyorsa sınır iris kenarıdır.
+    const rO=new Float32Array(NB).fill(-1);
+    for(let b=0;b<NB;b++){const dxn=Math.cos((b+0.5)/NB*2*Math.PI),dyn=Math.sin((b+0.5)/NB*2*Math.PI);let seen=false,q0=Math.max(0,Math.floor(rIs[b]/DR));
+      for(let q=q0;q<NR;q++){const r=(q+0.5)*DR,x=cx+dxn*r,y=cy+dyn*r;if(((x-sg*CX)/(RX*1.22))**2+((y-CY)/(RY*1.22))**2>=1)break;
+        const d=dark[b*NR+q],l=light[b*NR+q];if(d>l&&d>0){if(seen||q>q0+1){rO[b]=seen?q*DR:rIs[b];break}}else if(l>0)seen=true}}
+    fix(rO,v=>v<0);for(let b=0;b<NB;b++)if(rO[b]<0)rO[b]=rIs[b];
+    const rOs=avg(med(rO,2),1);
+    out[sg]={cx,cy,rI:avg(rIs,1),rO:rOs}}
+  return CM.gozKutup=out}
+// 0: göz akı değil · 1: özgün hâliyle kalır (beyaz ak, parıltı, iris içi) · 2: akın gölgesi (nötr griye çevrilir)
 function gozAki(M){const {R,pm,cls}=M,N=R*R,out=new Uint8Array(N);
-  try{const {G,CX,CY,RX,RY}=GOZ,{W,g}=gozIzgara();
-    for(let k=0;k<N;k++){const c=cls[k];if(c!==1&&c!==2)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];if(z<0.05||y<CY-RY||y>CY+RY)continue;const sg=x<0?-1:1;
-      const ex=(x-sg*CX)/RX,ey=(y-CY)/RY;if(ex*ex+ey*ey>=1)continue;
-      const f=g[sg][Math.floor((x-sg*CX+RX)/G)+1+(Math.floor((y-CY+RY)/G)+1)*W];if(f===1||(f===2&&c===1))out[k]=1}
+  try{const {NB,CX,CY,RX,RY}=GOZ,K=gozKutup();
+    for(let k=0;k<N;k++){const c=cls[k];if(c!==1&&c!==2&&c!==5)continue;const x=pm[k*3],y=pm[k*3+1],z=pm[k*3+2];if(z<0.05||y<CY-RY*1.25||y>CY+RY*1.25)continue;const E=K[x<0?-1:1];
+      const dx=x-E.cx,dy=y-E.cy,r=Math.hypot(dx,dy);if(r>0.07)continue;const f=(Math.atan2(dy,dx)/(2*Math.PI)+1)*NB-0.5,b0=Math.floor(f),t=f-b0,a=(b0+NB)%NB,b=(b0+1)%NB;
+      const ro=E.rO[a]*(1-t)+E.rO[b]*t,ri=E.rI[a]*(1-t)+E.rI[b]*t;
+      if(r<ri){if(c!==5)out[k]=1}else if(r<ro-0.0004)out[k]=c===1?1:2}   // 5: akın pembemsi gölgesi (eskiden "pembe leke" sayılıp komşu kürkle dolduruluyordu)
   }catch(e){console.warn('göz akı',e)}
   return out}
 
@@ -20502,6 +20521,21 @@ rhWelcome=function(){if(S.created)return;S.tut='create';try{markDirty()}catch(e)
   coach({owner:'rh',title:'Hoş geldin, şefim!',dim:true,center:true,text:'Ben <b>Tabby</b>. Kafemiz hazır, şimdi ekibimizi kuralım!',
     buttons:[{label:'Hadi başlayalım!',green:true,icon:'paw',onClick:()=>{coachOff();RH.shown='';UI.backTo='cafe';openEditor('waiter','create')}}]})};
 // "Ekibimiz tamam!" metni p18_tutorial.js'te kısaltıldı (p917 o işlevi sarmalıyor: burada yeniden atanmaz).
+
+// ================= ŞAPKA HER KEDİDE AYNI BOY, KAFAYA TAM OTURUR; KULAKLAR ŞAPKANIN İÇİNDEN ÇIKAR (V297) =================
+// Kullanıcı bildirimi (21 Kasım 2026, 17:49): "kulak boyu değiştiğinde şapka boyutu değişiyor" + "şapka kafaya tam otursun ...
+// kulak boyları bunu etkilemesin, kulakları kesmesin, kafasına tam otursun şapkalar".
+// Eskiden (p14 fitHat): şapka kulaklara değmeyene dek küçültülüyordu → büyük kulakta minicik, küçük kulakta kocaman şapka.
+// Yeni: şapkanın boyu sabittir (HAT_K). Yalnız kafatasına bakılarak (kulaklar hesaba katılmaz) kafanın eğimine yatırılır, tam
+// değecek kadar indirilir, alt kenarı kafaya uydurulur. Kulakların geçtiği yerde şapkaya oval delik açılır (cutEarHoles: parça
+// gölgelendiricide kulak konisinin içi çizilmez, çevresine ince koyu pervaz): kulak hiç kesilmez, şapkanın içinden çıkar.
+const HAT_K=1.12;
+fitHat=function(root,g){let sm;root.traverse(o=>{if(o.isSkinnedMesh&&!sm)sm=o});if(!sm)return 0;if(sm.geometry.attributes.position.count!==CM.P0.length/3)return 0;
+  root.updateMatrixWorld(true);sm.skeleton.update();const SK=skullGrid(root,sm);
+  const s0=g.scale.x,rx0=g.rotation.x,rz0=g.rotation.z;g.scale.setScalar(s0*HAT_K);
+  hatTilt(g,SK,rx0,rz0);hatFlush(g,SK);hatConform(g,SK);
+  let holes=0;try{holes=cutEarHoles(root,g)}catch(e){console.warn('kulak deliği',e)}
+  g.userData.fit={hits:0,scale:HAT_K,holes};return 0};
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
