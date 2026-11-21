@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795277024",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795277108",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -20180,7 +20180,9 @@ if(TC_BETA){
 //    Reklam seçenekleri yalnız reklam gerçekten verilebiliyorsa görünür (tarayıcı simülasyonu ya da AdMob Aşama 2 hazır: AD_LIVE).
 const EKO_ON=!EVMODE;
 // ---------- 1) XP ----------
-if(EKO_ON){CONFIG.xpNeed=lv=>Math.round(45*Math.pow(lv,1.45));CONFIG.xp.serve=3;CONFIG.xp.complete=6;CONFIG.xp.perPrice=1/4}
+// V303 (kullanıcı, 21 Kasım 19:04: "level çok hızlı alınıyor yine ... daha zor olsun"): eğri 45·lv^1.45 → 80·lv^1.6. Seviye 5'e toplam
+// XP 725 → 1.522 (2,1 kat), seviye 10'a 4.556 → 10.698 (2,35 kat), seviye 20'ye ~2,6 kat. XP kazançları (servis 3, tamamlama 6, fiyat/4) aynı.
+if(EKO_ON){CONFIG.xpNeed=lv=>Math.round(80*Math.pow(lv,1.6));CONFIG.xp.serve=3;CONFIG.xp.complete=6;CONFIG.xp.perPrice=1/4}
 CONFIG.xp.deliver=()=>0;   // p918'in malzeme başına XP'si kapalı (aşama sonunda toplu verilir)
 const tkStageXP=st=>st&&st.d?st.d.reduce((a,[it,n])=>{const m=String(it||'').match(/(\d+)$/);return a+n*(1+Math.max(1,m?+m[1]:1))},0):0;
 {const _d=tkDeliver;tkDeliver=function(id,it){const b=tkInfo(id);const ok=_d.apply(this,arguments);
