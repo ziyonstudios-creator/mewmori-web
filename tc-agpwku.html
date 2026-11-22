@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795363187",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795363868",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -22907,7 +22907,7 @@ layConfirm=function(){const why=layoutCheck();if(why){toast(why,ic('close'),2200
 //    3) Boya: ustalar rulo ile zemini cilalar/boyar; tahtalar kafenin zemin rengine döner, parıltı çıkar.
 //    Sonunda alanın önüne kurdele gerilir; "Kurdeleyi kes" → kurdele kopar, konfeti, ustalar el sallar, alan kafeye katılır.
 //  • V318: oyuncu oynar — işarete dokun (usta gelir), sonra ilerleme halkasına tekrar tekrar dokun (vuruş). Ustalar kendiliğinden çalışmaz.
-//  • Yıldız: toplam süreye göre 1–3 (dokundukça kısalır) · ödül fiyatın %3 / %6 / %10'u altın, 3 yıldızda +2 elmas (ilk tahmin). "Atla" = 1 yıldız.
+//  • Yıldız: toplam süreye göre 1–3 · ödül fiyatın %3 / %6 / %10'u altın, 3 yıldızda +2 elmas (ilk tahmin). (V319: "Atla" kaldırıldı.)
 //  • Asıl satın alma kurdele kesilince yapılır (altın o anda düşer). Kafe bu sırada çalışmaya devam eder.
 const TD={on:false,gec:0};
 const tdAcik=()=>{try{return !!started&&!!S.created&&S.tut==='done'&&UI.mode==='cafe'&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!(typeof k2Up==='function'&&k2Up())}catch(e){return false}};
@@ -22924,7 +22924,7 @@ function tdTik(dt){TD_T+=dt;for(let i=TD_BEK.length-1;i>=0;i--)if(TD_BEK[i].t<=T
   if(!TD.on)return;for(const u of TD.us)u.ch.update(dt);
   for(const f of TD.fx.slice()){f.t+=dt;if(f.fn(f.t)===false){const i=TD.fx.indexOf(f);if(i>=0)TD.fx.splice(i,1)}}
   // işaretler: yüzme + dokunulabilir olanlar
-  for(const j of TD.isler){if(!j.isaret)continue;j.isaret.visible=!j.bitti&&!j.usta&&j.asama===TD.a;if(j.hs)j.hs.position.y=0.85+Math.sin(TD_T*4+j.z)*0.04;j.isaret.position.y=j.iy+Math.sin(TD_T*3+j.x)*0.08;j.isaret.scale.setScalar(0.42*(1+0.08*Math.sin(TD_T*5+j.z)))}
+  for(const j of TD.isler){if(!j.isaret)continue;j.isaret.visible=!j.bitti&&!j.usta&&j.asama===TD.a;if(j.hs)j.hs.position.y=0.85+Math.sin(TD_T*4+j.z)*0.04;j.isaret.position.y=j.iy+Math.sin(TD_T*3+j.x)*0.08;j.isaret.scale.setScalar(0.78*(1+0.06*Math.sin(TD_T*5+j.z)))}
   tdKamera(dt)}
 {const _ss=simStep;simStep=function(dt){_ss.apply(this,arguments);try{tdTik(dt)}catch(e){console.warn('tadilat',e)}}}
 // ---- kamera: alana yaklaşır, bitince geri döner ----
@@ -22941,10 +22941,33 @@ function tdAlet(u,tur){if(u.alet){u.alet.parent&&u.alet.parent.remove(u.alet);u.
   else if(tur==='rulo'){sap.position.y=-0.1;g.add(sap);const r=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,0.16,12),tdM(TD.renk||0xf4d9b0));r.rotation.z=Math.PI/2;r.position.y=-0.24;g.add(r)}
   else{sap.position.y=-0.2;g.add(sap);const f=tdKutu(0.16,0.07,0.04,0xd9b45a);f.position.y=-0.48;g.add(f)}
   g.rotation.set(Math.PI*0.5,0,0);el.add(g);u.alet=g}
-function tdIsaret(){if(!TD.isTex){const cv=document.createElement('canvas');cv.width=cv.height=128;const c=cv.getContext('2d');c.fillStyle='#ffd24a';c.strokeStyle='#5a2f12';c.lineWidth=9;
-    c.beginPath();c.arc(64,58,46,0,7);c.fill();c.stroke();c.beginPath();c.moveTo(48,98);c.lineTo(64,124);c.lineTo(80,98);c.fill();c.stroke();c.fillStyle='#5a2f12';c.font='900 64px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('!',64,62);
-    TD.isTex=new THREE.CanvasTexture(cv);TD.isTex.colorSpace=THREE.SRGBColorSpace}
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:TD.isTex,depthTest:false,transparent:true}));s.renderOrder=20;return s}
+// (V319) işaret: oyunun "Pati Tabela" diliyle tabela rozeti — altın çerçeve, krem iç, kalın kahve kontur, altta sivri uç,
+// içinde işin aleti (kutu / süpürge / çekiç / rulo), üstte parıltı. Her iş türünün kendi rozeti; arkada yumuşak ışık halkası.
+function tdIsaretCiz(tur){const R=256,cv=document.createElement('canvas');cv.width=cv.height=R;const c=cv.getContext('2d');const INK='#5a2f12';
+  c.lineJoin=c.lineCap='round';
+  // yumuşak ışık
+  const gl=c.createRadialGradient(128,108,40,128,108,124);gl.addColorStop(0,'rgba(255,226,120,.55)');gl.addColorStop(1,'rgba(255,226,120,0)');c.fillStyle=gl;c.fillRect(0,0,R,R);
+  // gövde: daire + sivri uç (tabela iğnesi)
+  const yol=()=>{c.beginPath();c.arc(128,104,74,Math.PI*0.62,Math.PI*0.38+Math.PI*2);c.lineTo(128,226);c.closePath()};
+  c.save();c.translate(0,7);yol();c.fillStyle='rgba(90,47,18,.35)';c.fill();c.restore();   // gölge
+  yol();const ag=c.createLinearGradient(0,30,0,226);ag.addColorStop(0,'#ffe590');ag.addColorStop(1,'#f0a92e');c.fillStyle=ag;c.fill();c.lineWidth=11;c.strokeStyle=INK;c.stroke();
+  // iç krem daire
+  c.beginPath();c.arc(128,104,52,0,Math.PI*2);c.fillStyle='#fff8ec';c.fill();c.lineWidth=7;c.stroke();
+  // alet
+  c.save();c.translate(128,104);c.lineWidth=6;c.strokeStyle=INK;
+  if(tur==='tasi'){c.fillStyle='#d9a05a';c.beginPath();c.rect(-28,-20,56,42);c.fill();c.stroke();c.fillStyle='#f2d27a';c.beginPath();c.rect(-28,-20,56,12);c.fill();c.stroke();c.beginPath();c.moveTo(0,-20);c.lineTo(0,22);c.stroke()}
+  else if(tur==='supur'){c.rotate(-0.5);c.fillStyle='#a8703c';c.beginPath();c.rect(-4,-40,8,46);c.fill();c.stroke();c.fillStyle='#f2c14e';c.beginPath();c.moveTo(-20,6);c.lineTo(20,6);c.lineTo(26,34);c.lineTo(-26,34);c.closePath();c.fill();c.stroke();
+    for(const x of [-12,0,12]){c.beginPath();c.moveTo(x,14);c.lineTo(x*1.2,32);c.stroke()}}
+  else if(tur==='cak'){c.rotate(-0.6);c.fillStyle='#a8703c';c.beginPath();c.rect(-5,-8,10,48);c.fill();c.stroke();c.fillStyle='#8d939e';c.beginPath();c.rect(-26,-30,52,22);c.fill();c.stroke();c.fillStyle='rgba(255,255,255,.45)';c.fillRect(-20,-26,30,5)}
+  else{c.fillStyle='#e86aa8';c.beginPath();c.rect(-30,-30,48,22);c.fill();c.stroke();c.beginPath();c.moveTo(18,-19);c.lineTo(28,-19);c.lineTo(28,0);c.lineTo(0,0);c.lineTo(0,10);c.stroke();
+    c.fillStyle='#a8703c';c.beginPath();c.rect(-5,10,10,28);c.fill();c.stroke()}
+  c.restore();
+  // parıltı
+  c.fillStyle='rgba(255,255,255,.75)';c.beginPath();c.ellipse(92,58,16,8,-0.6,0,Math.PI*2);c.fill();
+  c.fillStyle='#fff';c.save();c.translate(196,44);c.beginPath();for(let i=0;i<8;i++){const r=i%2?5:16,a=i*Math.PI/4;c.lineTo(Math.cos(a)*r,Math.sin(a)*r)}c.closePath();c.fill();c.strokeStyle=INK;c.lineWidth=3;c.stroke();c.restore();
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t}
+function tdIsaret(tur){TD.isTex=TD.isTex||{};const k=tur||'tasi';if(!TD.isTex[k])TD.isTex[k]=tdIsaretCiz(k);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:TD.isTex[k],depthTest:false,transparent:true}));s.renderOrder=20;return s}
 function tdPuf(x,y,z,renk,n=10){const G=new THREE.Group();G.position.set(x,y,z);scene.add(G);const P=[];
   for(let i=0;i<n;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(0.05+Math.random()*0.05,6,5),new THREE.MeshBasicMaterial({color:renk||0xd8cbb6,transparent:true}));const a=Math.random()*Math.PI*2;P.push([m,Math.cos(a)*(0.5+Math.random()),0.8+Math.random()*1.2,Math.sin(a)*(0.5+Math.random())]);G.add(m)}
   TD.fx.push({t:0,fn:t=>{for(const [m,vx,vy,vz] of P){m.position.set(vx*t,vy*t-1.6*t*t,vz*t);m.material.opacity=Math.max(0,1-t/0.9)}if(t>0.9){scene.remove(G);return false}}})}
@@ -22984,7 +23007,7 @@ function tdSahne(A){const [x0,x1,z0,z1]=A,G=new THREE.Group();scene.add(G);TD.G=
     for(let k=0;k<sayi;k++){const m=tdKutu(uzunX?w*0.98:w/sayi*0.92,0.035,uzunX?dd/sayi*0.92:dd*0.98,0xd9b98a);if(uzunX)m.position.set(0,0.018,-dd/2+dd*(k+0.5)/sayi);else m.position.set(-w/2+w*(k+0.5)/sayi,0.018,0);m.receiveShadow=true;g.add(m);tahta.push(m)}
     g.scale.y=0.01;g.visible=false;G.add(g);const p={g,tahta,x:(a+b)/2,z:(c+d)/2};TD.par.push(p);
     TD.isler.push({asama:1,tur:'cak',x:p.x,z:p.z,p});TD.isler.push({asama:2,tur:'boya',x:p.x,z:p.z,p})}
-  for(const j of TD.isler){j.isaret=tdIsaret();j.iy=j.tur==='tasi'?0.95:0.75;j.isaret.position.set(j.x,j.iy,j.z);j.isaret.visible=false;G.add(j.isaret)}}
+  for(const j of TD.isler){j.isaret=tdIsaret(j.tur);j.iy=j.tur==='tasi'?0.95:0.75;j.isaret.position.set(j.x,j.iy,j.z);j.isaret.visible=false;G.add(j.isaret)}}
 // ---- ustalar ----
 // ---- ustalar: inşaatçı tulumu (turuncu, reflektörlü bantlar, askılar) + baret (V318) ----
 const TD_TULUM_BT={id:'bt_tulum',slot:'bottom',len:'long',name:'Tulum',bt:[222,108,34]};CLO.bt_tulum=TD_TULUM_BT;
@@ -23047,11 +23070,11 @@ function tdSoz(t){const z=document.querySelector('#tdHud .tdSoz');if(z){z.textCo
 function tdHud(zorla){if(zorla){const h0=$('tdHud');if(h0)h0.dataset.k=''}let h=$('tdHud');if(!h){h=document.createElement('div');h.id='tdHud';$('game').appendChild(h)}if(!TD.on){h.hidden=true;return}h.hidden=false;
   const s=TD_ASAMA[Math.min(2,TD.a)];
   const yeni=`<div class="tdUst"><div class="tdBasl"><b>Tadilat</b><small data-dilyok="1"></small></div><div class="tdAd">${TD_ASAMA.map((x,i)=>`<span class="tdA${i<TD.a||TD.kurdele?' ok':i===TD.a?' on':''}"><img class="uic" src="${UIIMG(x.ic)}" alt="">${x.ad}</span>`).join('<em></em>')}</div>
-      ${TD.kurdele?'':`<span class="tdBar"><i style="width:${TD.yuz|0}%"></i></span><button type="button" class="tdAtla">Atla ${ic('right')}</button>`}</div>
+      ${TD.kurdele?'':`<span class="tdBar"><i style="width:${TD.yuz|0}%"></i></span>`}</div>
     <div class="tdKed"><img src="${UIIMG('cat_hammer')}" alt=""><div class="tdSoz">${TD.kurdele?'Hazır! Kurdeleyi kes, yeni alan kafene katılsın.':s.soz}</div></div>
     ${TD.kurdele?`<button type="button" class="btn green tdKes">✂ Kurdeleyi kes</button>`:''}`;
   if(h.dataset.k!==yeni){h.dataset.k=yeni;h.innerHTML=yeni;h.querySelector('.tdBasl small').textContent=TD.ad;
-    const at=h.querySelector('.tdAtla');if(at)at.onclick=()=>{try{sfx('tap')}catch(e){}TD.atla=1;tdKurdele(true)};
+    
     const k=h.querySelector('.tdKes');if(k)k.onclick=()=>{try{sfx('coin')}catch(e){}tdKes()}}
   else{const b=h.querySelector('.tdBar i');if(b)b.style.width=(TD.yuz|0)+'%'}}
 // ---- kurdele ve bitiş ----
