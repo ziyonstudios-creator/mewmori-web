@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795307186",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795307880",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -22525,6 +22525,108 @@ html.land #game#game #skDaily .skscroll>.grs{flex:1 1 0!important;min-height:0!i
 @keyframes grNabiz{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
 #skDaily .skfoot #grAl .uic{width:22px;height:22px;object-fit:contain;margin-right:5px}
 `;document.head.appendChild(st)}
+
+// ================= MEVSİMLER: KIŞ TEMASI + ARA SIRA KAR YAĞIŞI (V311) =================
+// Kullanıcı isteği (22 Kasım 2026, 02:32): "her 3 ayda bir mevsim değişmesini istiyorum; şu anda kış teması yapabilirsin, oyunu etraf karlı
+// olsun kafenin. her zaman değil ancak zaman zaman kar yağışı ekle."
+//  • Mevsim takvimden gelir (Türkiye saati): Aralık–Şubat kış · Mart–Mayıs ilkbahar · Haziran–Ağustos yaz · Eylül–Kasım sonbahar.
+//    Kullanıcı kışı ŞİMDİ istediği için 22–30 Kasım 2026 da kış sayılır (mevsimSimdi). Deneme: adrese ?mevsim=kis|ilkbahar|yaz|sonbahar.
+//  • Mevsim oyun açılırken bir kez uygulanır (uzak nesneler 2,6 sn sonra birleştirildiği için çalışırken değiştirilmez; mevsim dönünce
+//    bir sonraki açılışta yeni görünüm gelir). Yalnız ana kafede; ülke etkinliklerinin kendi iklimi var.
+//  • KIŞ: arsa çimi → kar dokusu; kaldırım ve yolda kar öbekleri (saydam kaplama); ağaç yaprakları, çamlar ve çatılar karlı;
+//    çeşme buz; sokak lambalarında, banklarda, ağaç saksılarında kar; kaldırımda iki kardan adam ve kar yığınları; gökyüzü biraz soluk.
+//  • KAR YAĞIŞI: ara sıra (her zaman değil): 2,5–4 dakikalık yağış, arada 5–11 dakika; oyun açılınca %45 ihtimalle yağarak başlar.
+//    Tek nokta bulutu (850 tane; düşük grafikte 360), kamerayla baktığı yer arasında yağar (ekranın tamamında görünür); kafenin içine kar girmez.
+//  • İlkbahar ve yaz şimdiki görünümdür. Sonbahar teması henüz yok (Eylül 2027'den önce yapılacak).
+const MEVSIM_AD={kis:'Kış',ilkbahar:'İlkbahar',yaz:'Yaz',sonbahar:'Sonbahar'};
+function mevsimSimdi(d=new Date(Date.now()+3*36e5)){const y=d.getUTCFullYear(),m=d.getUTCMonth()+1,g=d.getUTCDate();
+  if(y===2026&&m===11&&g>=22)return 'kis';
+  return m===12||m<=2?'kis':m<=5?'ilkbahar':m<=8?'yaz':'sonbahar'}
+const MEVSIM=(()=>{try{const q=new URLSearchParams(location.search).get('mevsim');if(q&&MEVSIM_AD[q])return q}catch(e){}return mevsimSimdi()})();
+const KIS=MEVSIM==='kis'&&!(typeof EVMODE!=='undefined'&&EVMODE);
+const KAR={on:false,pts:null,N:0,t:0,bit:0,sonraki:0,op:0,ilk:true,duyuru:false};
+const KAR_BEYAZ=0xf6fafd;
+function kisRenk(mat,hedef,k){try{if(mat&&mat.color)mat.color.lerp(new THREE.Color(hedef),k)}catch(e){}}
+function kisDoku(w,ciz,rep){const cv=document.createElement('canvas');cv.width=cv.height=w;ciz(cv.getContext('2d'),w);const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;if(rep)t.repeat.set(rep,rep);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t}
+function kisUygula(){
+  let s=11;const rnd=()=>(s=(s*9301+49297)%233280)/233280;
+  // 1) arsa: kar
+  try{const lot=ENV.out.children.find(m=>m.isMesh&&m.material&&m.material.map&&Math.abs(m.position.y+0.36)<1e-6);
+    if(lot){const eski=lot.material.map;lot.material.map=kisDoku(256,(x,N)=>{x.fillStyle='#f1f6fb';x.fillRect(0,0,N,N);
+        for(let i=0;i<4;i++){x.fillStyle='rgba(196,216,238,.2)';x.fillRect(0,i*64,N,32)}   // çim şeritlerinin yerinde hafif mavi gölge
+        for(let i=0;i<26;i++){const px=rnd()*N,py=rnd()*N,r=10+rnd()*22,g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,'rgba(255,255,255,.75)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(px-r,py-r,r*2,r*2)}
+        for(let i=0;i<380;i++){x.fillStyle=i%4?'rgba(255,255,255,.9)':'rgba(170,200,232,.55)';x.fillRect(rnd()*N,rnd()*N,i%7?1.5:2.5,i%7?1.5:2.5)}
+        for(let i=0;i<9;i++){const px=rnd()*N,py=rnd()*N;x.strokeStyle='rgba(180,205,232,.4)';x.lineWidth=2;x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+18,py-7,px+38,py+2);x.stroke()}});
+      lot.material.map.repeat.copy(eski.repeat);lot.material.needsUpdate=true}}catch(e){console.warn('kış: arsa',e)}
+  // 2) kaldırım ve yolda kar öbekleri: dikdörtgen halka biçiminde saydam kaplamalar
+  try{const tex=kisDoku(256,(x,N)=>{x.clearRect(0,0,N,N);
+      for(let i=0;i<30;i++){const px=rnd()*N,py=rnd()*N,r=12+rnd()*30,g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,'rgba(250,252,255,.95)');g.addColorStop(0.6,'rgba(250,252,255,.7)');g.addColorStop(1,'rgba(250,252,255,0)');
+        for(const [ox,oy] of [[0,0],[N,0],[-N,0],[0,N],[0,-N]]){x.fillStyle=g;x.save();x.translate(ox,oy);x.fillRect(px-r,py-r,r*2,r*2);x.restore()}}
+      for(let i=0;i<220;i++){x.fillStyle='rgba(255,255,255,.85)';x.fillRect(rnd()*N,rnd()*N,2,2)}});
+    const halka=(ax,az,bx,bz,y,op)=>{const sh=new THREE.Shape();sh.moveTo(-bx,-bz);sh.lineTo(bx,-bz);sh.lineTo(bx,bz);sh.lineTo(-bx,bz);sh.closePath();const h=new THREE.Path();h.moveTo(-ax,-az);h.lineTo(-ax,az);h.lineTo(ax,az);h.lineTo(ax,-az);h.closePath();sh.holes.push(h);
+      const g=new THREE.ShapeGeometry(sh);g.rotateX(-Math.PI/2);const P=g.attributes.position,U=g.attributes.uv;for(let i=0;i<P.count;i++)U.setXY(i,P.getX(i)/7,P.getZ(i)/7);U.needsUpdate=true;
+      const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:op,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));m.position.y=y;m.renderOrder=1;ENV.out.add(m)};
+    const S1=RING.s1,RR=RING.r,S2=RING.s2;
+    halka(LOT.x1+0.07,LOT.z1+0.07,S1.x-0.11,S1.z-0.11,-0.146,0.9);halka(S1.x+0.11,S1.z+0.11,RR.x-0.11,RR.z-0.11,-0.296,0.6);halka(RR.x+0.11,RR.z+0.11,S2.x,S2.z,-0.146,0.9)}catch(e){console.warn('kış: kaldırım',e)}
+  // 3) çevredeki ağaçlar, çamlar, çatılar, çeşme
+  try{const YAPRAK=new Set(['7fae4a','86a064','a7c27c','9ab86e']);
+    for(const o of ENV_OBJS)o.traverse(m=>{if(!m.isMesh||!m.material||!m.material.color||m.material.map)return;const g=m.geometry,t=g&&g.type,h=m.material.color.getHexString();
+      if(t==='SphereGeometry'&&YAPRAK.has(h))kisRenk(m.material,KAR_BEYAZ,0.74);
+      else if(t==='ConeGeometry'&&g.parameters.radialSegments===8&&h==='4f7d3a')kisRenk(m.material,KAR_BEYAZ,0.58);
+      else if(t==='ConeGeometry'&&g.parameters.radialSegments===4)kisRenk(m.material,KAR_BEYAZ,0.8);
+      else if(t==='BoxGeometry'&&h==='ece2d0')kisRenk(m.material,KAR_BEYAZ,0.7);
+      else if(h==='7fd3dc')kisRenk(m.material,0xe2f2f9,0.75)})}catch(e){console.warn('kış: çevre',e)}
+  // 4) kar şapkaları, kardan adamlar, kar yığınları (tek ağ)
+  try{const T=rezToplayici(),B=KAR_BEYAZ,ex=LOT.x1+2.15,ez=LOT.z1+2.15;
+    for(const v of [-7,0,7])for(const [x,z] of [[-ex,v*0.9],[ex,v*0.9],[v,-ez],[v,ez]])T.ekle('kure',B,x,3.22,z,0,0,0,0.25,0.11,0.25);                       // sokak lambaları
+    for(const [x,z,ry] of [[-ex+0.25,-3.6,-Math.PI/2],[-ex+0.25,3.6,-Math.PI/2],[3.6,ez-0.25,0],[-3.6,ez-0.25,0],[ex-0.25,-3.6,Math.PI/2],[ex-0.25,3.6,Math.PI/2],[3.6,-ez+0.25,Math.PI],[-3.6,-ez+0.25,Math.PI]]){
+      const c=Math.cos(ry),sn=Math.sin(ry),yer=(lx,lz)=>[x+lx*c+lz*sn,z-lx*sn+lz*c];const a=yer(0,0),b=yer(0,-0.24);
+      T.ekle('kutu',B,a[0],0.345,a[1],0,ry,0,1.56,0.06,0.4).ekle('kutu',B,b[0],0.77,b[1],0,ry,0,1.56,0.05,0.09)}                                            // banklar
+    for(const sx of [-1,1])for(const sz of [-1,1]){const x=sx*(LOT.x1+1.3),z=sz*(LOT.z1+1.3);T.ekle('kutu',B,x,0.35,z,0,0,0,0.76,0.06,0.76).ekle('kure',B,x,2.15,z,0,0,0,0.5,0.2,0.5)}   // ağaç saksıları + tepe karı
+    const kardan=(x,z,ry)=>{const c=Math.cos(ry),sn=Math.sin(ry),on=(d)=>[x+sn*d,z+c*d];
+      T.ekle('kure2',B,x,0.2,z,0,0,0,0.42,0.38,0.42).ekle('kure2',B,x,0.74,z,0,0,0,0.3,0.28,0.3).ekle('kure2',B,x,1.14,z,0,0,0,0.21);
+      const n=on(0.26);T.ekle('koni',0xf08a3c,n[0],1.14,n[1],Math.PI/2,ry,0,0.035,0.2,0.035);
+      for(const e of [-1,1]){const p=[x+sn*0.185+c*e*0.075,z+c*0.185-sn*e*0.075];T.ekle('kure',0x2e2a2a,p[0],1.2,p[1],0,0,0,0.028)}
+      for(const [yy,d] of [[0.86,0.275],[0.74,0.3],[0.62,0.285]]){const p=on(d);T.ekle('kure',0x2e2a2a,p[0],yy,p[1],0,0,0,0.026)}
+      T.ekle('halka',0xd9412e,x,0.98,z,Math.PI/2,0,0,0.17).ekle('kutu',0xd9412e,x+sn*0.17+c*0.07,0.86,z+c*0.17-sn*0.07,0,ry,0.15,0.07,0.24,0.03);
+      T.ekle('sil',0x2e2a2a,x,1.33,z,0,0,0,0.2,0.025,0.2).ekle('sil',0x2e2a2a,x,1.45,z,0,0,0,0.135,0.22,0.135).ekle('sil',0xd9412e,x,1.37,z,0,0,0,0.138,0.04,0.138);
+      for(const e of [-1,1])T.ekle('sil',0x6a4526,x+c*e*0.42,0.86,z-sn*e*0.42,0,ry,e*1.05,0.014,0.42,0.014)};
+    kardan(-(LOT.x1+1.35),1.6,Math.PI/2+0.5);kardan(-1.8,LOT.z1+1.35,0.35);
+    for(const [x,z,r] of [[-(LOT.x1+0.75),-6.2,0.55],[-(LOT.x1+0.9),7.4,0.7],[6.6,LOT.z1+0.8,0.6],[-7.2,LOT.z1+0.85,0.5],[LOT.x1+0.8,5.5,0.6],[4.8,-(LOT.z1+0.8),0.65],[-(LOT.x1+1.9),-1.2,0.4],[1.2,LOT.z1+1.95,0.45]])
+      T.ekle('kure2',B,x,-0.13,z,0,0,0,r,r*0.42,r*0.85);                                                                                                         // kar yığınları
+    const m=T.mesh(true);m.receiveShadow=true;m.name='kisSus';scene.add(m);ENV.kis=m;try{ENV_OBJS.push(m)}catch(e){}}catch(e){console.warn('kış: süsler',e)}
+  // 5) gökyüzü ve ışık: biraz daha soluk ve serin
+  try{const k=(h,hedef,o)=>{const c=new THREE.Color(h).lerp(new THREE.Color(hedef),o);return c.getHex()};
+    for(const K of DAY_KEYS){const gece=K.name==='Gece',o=gece?0.1:0.3;for(const a of ['top','mid','hor','bg'])K[a]=k(K[a],0xe3ecf4,o);K.fog=k(K.fog,0xeaf1f7,gece?0.1:0.45);K.hc=k(K.hc,0xf2f6ff,gece?0.05:0.35);K.sun=k(K.sun,0xffffff,gece?0:0.25)}
+    try{dayTick(true)}catch(e){}}catch(e){console.warn('kış: gökyüzü',e)}}
+// ---------- kar yağışı ----------
+function karKur(){if(KAR.pts)return;const dusuk=(()=>{try{return PERF.q==='eco'||PERF.q==='low'}catch(e){return false}})(),N=KAR.N=dusuk?360:850;
+  const P=new Float32Array(N*3),V=KAR.v=new Float32Array(N*2);for(let i=0;i<N;i++){P[i*3]=(Math.random()-0.5)*34;P[i*3+1]=Math.random()*13;P[i*3+2]=(Math.random()-0.5)*34;V[i*2]=1.0+Math.random()*1.3;V[i*2+1]=Math.random()*6.283}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(P,3));
+  const cv=document.createElement('canvas');cv.width=cv.height=32;const x=cv.getContext('2d'),gr=x.createRadialGradient(16,16,0,16,16,16);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(0.5,'rgba(255,255,255,.85)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,32,32);
+  const m=new THREE.PointsMaterial({size:0.3,map:new THREE.CanvasTexture(cv),transparent:true,opacity:0,depthWrite:false,sizeAttenuation:true,color:0xffffff});
+  const pts=new THREE.Points(g,m);pts.frustumCulled=false;pts.renderOrder=6;pts.visible=false;scene.add(pts);KAR.pts=pts}
+function karTik(dt){if(!KIS)return;const now=performance.now();
+  if(!KAR.sonraki){KAR.sonraki=now+(Math.random()<0.45?4000:(60+Math.random()*240)*1000)}
+  if(!KAR.on&&now>=KAR.sonraki){KAR.on=true;KAR.bit=now+(150+Math.random()*90)*1000;karKur();KAR.pts.visible=true;
+    if(!KAR.duyuru){KAR.duyuru=true;try{if(typeof started!=='undefined'&&started&&S.created&&S.tut==='done'&&UI.mode==='cafe')toast('<b>Kar yağıyor!</b><br>Kış kafene çok yakıştı',uiIc('i_sparkle'),2600)}catch(e){}}}
+  if(KAR.on&&now>=KAR.bit){KAR.on=false;KAR.sonraki=now+(300+Math.random()*360)*1000}
+  const pts=KAR.pts;if(!pts||!pts.visible)return;
+  KAR.op+=((KAR.on?0.92:0)-KAR.op)*Math.min(1,dt*0.9);pts.material.opacity=KAR.op;if(!KAR.on&&KAR.op<0.02){pts.visible=false;return}
+  // Kar, kamerayla baktığı yer arasındaki bir hacimde yağar (ekranın tamamında görünsün; beyaz zeminde seçilmediği için kafenin önünden geçmeli).
+  // Hacim uzaklıkla büyür. Kafenin içine (duvar yüksekliğinin altına) düşen tane yukarı alınır: yakın planda içeride kar görünmez.
+  const P=pts.geometry.attributes.position,A=P.array,V=KAR.v,N=KAR.N,T=controls.target,cam=camera.position,t=now/1000,d=Math.min(0.1,dt||0.016);
+  const L=Math.max(3,cam.distanceTo(T)),k=0.42,cx=cam.x+(T.x-cam.x)*k,cy=cam.y+(T.y-cam.y)*k,cz=cam.z+(T.z-cam.z)*k,hx=0.36*L+2,hy=0.25*L+1.5;
+  const x0=RM.x0-0.3,x1=RM.x1+0.3,z0=RM.z0-0.3,z1=RM.z1+0.3,ust=WALL_H+0.25,kat=T.x>200?400:0;
+  for(let i=0;i<N;i++){const j=i*3;let x=A[j],y=A[j+1]-V[i*2]*d,z=A[j+2];x+=Math.sin(t*0.9+V[i*2+1])*0.35*d;z+=Math.cos(t*0.7+V[i*2+1])*0.3*d;
+    if(y<cy-hy||y>cy+hy+1){y=cy+hy*(0.6+Math.random()*0.4);x=cx+(Math.random()*2-1)*hx;z=cz+(Math.random()*2-1)*hx}
+    else if(Math.abs(x-cx)>hx||Math.abs(z-cz)>hx){x=cx+(Math.random()*2-1)*hx;z=cz+(Math.random()*2-1)*hx;y=cy+(Math.random()*2-1)*hy}
+    if(y<ust){const lx=x-kat;if(lx>x0&&lx<x1&&z>z0&&z<z1){y=Math.max(ust,cy+hy*(0.5+Math.random()*0.5));x=cx+(Math.random()*2-1)*hx;z=cz+(Math.random()*2-1)*hx}}
+    if(y<-0.3){y=cy+hy;}
+    A[j]=x;A[j+1]=y;A[j+2]=z}
+  P.needsUpdate=true}
+if(KIS){try{kisUygula()}catch(e){console.warn('kış teması',e)}
+  const _et=envTick;envTick=function(dt){const r=_et.apply(this,arguments);try{karTik(dt)}catch(e){if(!KAR.hata){KAR.hata=1;console.warn('kar yağışı',e)}}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
