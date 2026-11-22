@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795364639",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795365348",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -16278,14 +16278,17 @@ const PACK_IMG=['firin','mandira','kafe','meyve','manav','kasap'];   // gerçek 
 for(const P of PACKS){BAG_OUT[P.k]=P.out.map(x=>x.slice());const id='bag_'+P.k;
   ITEMS[id]={...(ITEMS[id]||{}),id,name:P.n+' paketi',fam:'bag',bag:P.k,lv:0};
   ITEM_ART[id]=PACK_IMG.includes(P.k)?`<img src="img/packs/${P.k}.webp" alt="" draggable="false">`:P.img?`<img src="${P.img}" alt="" draggable="false">`:`<span class="pktmp">${ITEM_ART[P.tmp]||''}</span>`}
+// (V322) Kullanıcı (22 Kasım 19:19): "italya gibi etkinlik kafelerindeki hammaddeleri merge tahtasında değil, ana kafedeki gibi tahtanın
+// üzerinde konumlandır" → etkinlik kafesinde de raf var: o kafenin iki torbası (Yiyecek, İçecek) tahtadan çıkıp rafta durur.
+if(EVMODE){PACKS.length=0;for(const [k,n] of [['food','Yiyecek'],['drink','İçecek']])if(BAG_OUT[k])PACKS.push({k,n,out:BAG_OUT[k].map(x=>x.slice())})}
 const packOf=chain=>PACKS.find(P=>P.out.some(([i])=>i===chain+'1'));
 
 // ---- tahtadan paketleri kaldır; eski yerleştirme kodları devre dışı ----
 placeNewBags=function(){};fixBags=function(){return false};
 function stripBags(b){let ch=false;for(let i=0;i<b.length;i++){const v=b[i];if(v&&ITEMS[v]&&ITEMS[v].fam==='bag'){b[i]=null;ch=true}}return ch}
-{const _db=defaultBoard;defaultBoard=function(){const b=_db.apply(this,arguments);if(!EVMODE)stripBags(b);return b}}
-{const _as=applyState;applyState=function(){const r=_as.apply(this,arguments);try{if(!EVMODE&&Array.isArray(S.board)&&stripBags(S.board))markDirty()}catch(e){}return r}}
-setInterval(()=>{try{if(!EVMODE&&started&&Array.isArray(S.board)&&!mgDrag&&stripBags(S.board)){markDirty();if(UI.mode==='merge')renderMerge()}}catch(e){}},2000);
+{const _db=defaultBoard;defaultBoard=function(){const b=_db.apply(this,arguments);stripBags(b);return b}}
+{const _as=applyState;applyState=function(){const r=_as.apply(this,arguments);try{if(Array.isArray(S.board)&&stripBags(S.board))markDirty()}catch(e){}return r}}
+setInterval(()=>{try{if(started&&Array.isArray(S.board)&&!mgDrag&&stripBags(S.board)){markDirty();if(UI.mode==='merge')renderMerge()}}catch(e){}},2000);
 
 // ---- hedef tarif: paket o tarifin eksik malzemesini daha sık verir ----
 targetBases=function(){try{const I=S.tkT&&tkInfo(S.tkT);if(!I||!I.stage)return null;const s=new Set();for(const [it,n] of I.stage.d)if((I.dl[it]|0)<n)s.add(it.replace(/\d+$/,'')+'1');return s.size?s:null}catch(e){return null}};
@@ -16324,8 +16327,8 @@ html.land #game#game #merge.skin{--mc:min(64px,calc((100*var(--vh) - 124px)/6),c
 #pkRaf .pk.tg{box-shadow:0 0 0 3px #ffd34d,0 2px 0 #4a2a14}
 #pkRaf .pk.pop{animation:pkpop .3s ease}#pkRaf .pk.shake{animation:pkshake .35s}
 @keyframes pkpop{50%{transform:scale(1.12)}}@keyframes pkshake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
-`;document.head.appendChild(st)})();
-function packEnsure(){const sc=document.querySelector('#merge .scroll'),bw=document.querySelector('#merge .board-wrap');if(!sc||!bw||EVMODE)return null;let r=$('pkRaf');
+`+(EVMODE?'#pkRaf{justify-content:flex-start}#pkRaf .pk{flex:0 0 auto;aspect-ratio:1}':'');document.head.appendChild(st)})();
+function packEnsure(){const sc=document.querySelector('#merge .scroll'),bw=document.querySelector('#merge .board-wrap');if(!sc||!bw)return null;let r=$('pkRaf');
   if(!r){r=document.createElement('div');r.id='pkRaf';r.setAttribute('aria-label','Paketler');
     r.innerHTML=PACKS.map(P=>`<button type="button" class="pk" data-pk="${P.k}" aria-label="${P.n} paketi">${itemArt('bag_'+P.k)}<b></b></button>`).join('');
     r.addEventListener('click',e=>{const b=e.target.closest('[data-pk]');if(b)packTap(b.dataset.pk)})}
@@ -16338,7 +16341,7 @@ function packDraw(){if(UI.mode!=='merge')return;const r=packEnsure();if(!r)retur
 {const _rm=renderMerge;renderMerge=function(){const r=_rm.apply(this,arguments);try{packDraw()}catch(e){console.warn('raf',e)}return r}}
 setInterval(()=>{try{if(UI.mode==='merge')packDraw()}catch(e){}},1000);
 // etkinlik kafeleri eski tahta paketlerini kullanır: raf yalnız ana kafede
-setInterval(()=>{try{const r=$('pkRaf');if(r)r.hidden=!!EVMODE}catch(e){}},1500);
+
 
 // ================= V197: enerji Hedef kartının altına taşındı; raf paketlerinin adları solda =================
 (()=>{const M='html.land #game#game #merge.skin',INK='#4a2a14';const st=document.createElement('style');st.textContent=`
@@ -23165,6 +23168,20 @@ SFX.purr=function(t){const ctx=AU.ctx,d=1.3;const out=gainTo(AU.sfx,0);out.gain.
   const r=_rm.apply(this,arguments);
   const geri=()=>{try{if(!L)return;for(const [cl,t,l] of k){const e=[...L.querySelectorAll('.mlist,#mnCards,.supgrid')].find(x=>x.className===cl);if(e){if(t)e.scrollTop=t;if(l)e.scrollLeft=l}}}catch(e){}};
   geri();requestAnimationFrame(geri);return r}}
+// ---- (V322) etkinlik kafesinin kendi başlangıç dekoru ----
+// Kullanıcı (19:19): "etkinlik kafesinin başlangıç dekorları ana kafeden farklı olacak: İtalya, İstanbul, Japonya vb. için başlangıç dekorları
+// (tezgâh, pencere, kapı, zemin, duvar)". Her ülkenin paketindeki takımlardan biri kafeyle birlikte kurulu ve sahipli gelir:
+const EV_DEKOR={
+  it:{k:'k_it_bar',o:'it_trattoria',w:'w_it_toscana',f:'f_it_toscana'},        // Bar Italiano tezgâhı · Trattoria kapı/pencere · Toskana duvar/zemin
+  tr:{k:'k_tr_kahveci',o:'tr_carsi',w:'w_tr_cini',f:'f_tr_cini'},              // Kahveci tezgâhı · Çarşı kapı/pencere · İznik çinisi
+  jp:{k:'k_jp_matcha',o:'jp_ryokan',w:'w_jp_shoji',f:'f_jp_tatami'},           // Matcha çayevi · Ryokan kapı/pencere · Kyoto kili + tatami
+  fr:{k:'k_fr_patisserie',o:'fr_bistro',w:'w_fr_bistro',f:'f_fr_bistro'}};      // Pastane tezgâhı · Bistro kapı/pencere · Bistro duvar/zemin
+if(EVMODE){const _ls=loadState;loadState=function(){const r=_ls.apply(this,arguments);try{const D=EV_DEKOR[EVMODE];
+    if(D&&!S.evDekor){S.evDekor=1;S.owned=S.owned||{};const sahip=id=>{if(CAT[id]){S.owned[id]=true;return true}return false};
+      if(sahip(D.k))S.kTheme=D.k;if(sahip('od_'+D.o))S.oDoor='od_'+D.o;if(sahip('ow_'+D.o))S.oWin='ow_'+D.o;sahip('o_'+D.o);
+      if(sahip(D.w))S.wall=D.w;if(sahip(D.f))S.floor=D.f;try{markDirty()}catch(e){}
+      // tezgâh ve kapı/pencere temaları açılışta bundan önce kuruldu: oyun başlayınca yerinde yeniden kurulur (p952)
+      const kur=()=>{if(typeof started==='undefined'||!started)return setTimeout(kur,400);try{buildKitchen();cnBlok();cnAcikliklar()}catch(e){console.warn('etkinlik dekoru kurulum',e)}};setTimeout(kur,300)}}catch(e){console.warn('etkinlik dekoru',e)}return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
