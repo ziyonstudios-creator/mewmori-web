@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795366183",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795366571",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19112,8 +19112,13 @@ async function evrClaim(){if(EVMODE||EVR.claiming)return;EVR.claiming=true;try{i
     await new Promise(r=>setTimeout(r,1500))}}catch(e){console.warn('sıralama ödülü',e)}finally{EVR.claiming=false}}
 if(!EVMODE)setTimeout(evrClaim,8000);
 // ---- pencere ----
+// (V324) Kullanıcı (22 Kasım 19:19): "etkinlik kafelerinde ise etkinlik parası, lükslük ve beğeni sıralaması olacak; bu veriler etkinlik kafesi
+// için geçerli olacak" → haftalık etkinlik sıralamasında iki sekme: Etkinlik altını (o hafta etkinlik kafesinde kazanılan satış) | Lüks (etkinlik
+// kafesinin kendi lüks puanı; ev_submit_lux). Beğeni: etkinlik kafeleri gezilemediği için şimdilik yok.
+async function evrLuks(){try{if(!EVMODE||!await evrUser())return;const n=luksPuan().n;if(n===EVR.lxSent)return;const sb=await sbClient();const {error}=await sb.rpc('ev_submit_lux',{p_lux:n,p_ev:EVMODE});if(!error)EVR.lxSent=n}catch(e){}}
+if(EVMODE)setInterval(evrLuks,60000);
 async function evrLoad(){if(EVR.busy)return;EVR.busy=true;EVR.err='';evrDraw();try{if(!await evrUser())throw new Error('auth');const sb=await sbClient();
-  if(EVMODE)await evrSubmit();const {data,error}=await sb.rpc('ev_ranking');if(error)throw error;EVR.d=data}
+  if(EVMODE){await evrSubmit();await evrLuks()}const k=EVR.tur||'score';let r=await sb.rpc('ev_ranking_kind',{p_kind:k});if(r.error&&k==='score')r=await sb.rpc('ev_ranking');if(r.error)throw r.error;EVR.d=r.data}
   catch(e){EVR.err=e&&e.message==='auth'?'Sıralama için hesabına giriş yap.':'Bağlantı kurulamadı, biraz sonra tekrar dene.'}EVR.busy=false;evrDraw()}
 function openEvRank(){try{sfx('tap')}catch(e){}const back=(()=>{const p=$('evP');return !!(p&&!p.hidden)})();if(back)closeEvents();
   const W=skWin('skEvRank','Haftalık sıralama','cat_peek');UI.evrW=W;if(back){const x=W.m.querySelector('.skclose');x.onclick=()=>{W.close();try{openEvents()}catch(e){}}}evrDraw();evrLoad()}
@@ -19126,7 +19131,8 @@ function evrDraw(){const W=UI.evrW;if(!W||W.m.hidden)return;const D=EVR.d,me=D&&
       <p class="evrT">${ic('clock')} Bitmesine ${evLeft()}</p>
       <div class="evrMe">${me?`<span>Sıran</span><b>${me.rank}.</b><small>${ksFmt?ksFmt(me.score):me.score} puan</small>`:`<span>Henüz puanın yok</span><small>Etkinlik kafesinde satış yap</small>`}</div>
       <h4>Hafta sonu ödülleri</h4><ul class="evrTiers">${tiers}</ul><p class="evrNote">Puan: bu hafta etkinlik kafesinde kazandığın satış altını. Ödül, hafta bitince ana kafene gelir.</p></section>
-    <section class="evrMain"><h4>İlk 50${D&&D.count?` · ${D.count} oyuncu`:''}</h4>${list}</section></div>`;
+    <section class="evrMain"><div class="ksSub evrSub">${[['score','Etkinlik altını','coin'],['lux','Lüks','lux']].map(([id,n,i])=>`<button type="button" data-evk="${id}" aria-pressed="${(EVR.tur||'score')===id}">${ic(i)}${n}</button>`).join('')}</div><h4>İlk 50${D&&D.count?` · ${D.count} oyuncu`:''}</h4>${list}</section></div>`;
+  W.body.querySelectorAll('[data-evk]').forEach(b=>b.onclick=()=>{if((EVR.tur||'score')===b.dataset.evk)return;EVR.tur=b.dataset.evk;EVR.d=null;try{sfx('tap')}catch(e){}evrDraw();evrLoad()});
   if(D)W.body.querySelectorAll('.evrList .evrC').forEach((e,i)=>e.textContent=adGoster(D.top[i].name))}
 // Etkinlikler penceresi: "Yakında" kartı → Haftalık sıralama
 {const _re=renderEvents;renderEvents=function(){const r=_re.apply(this,arguments);try{const p=$('evP');const soon=p&&p.querySelector('.evcard.soon');if(soon){
@@ -19160,6 +19166,8 @@ function evrDraw(){const W=UI.evrW;if(!W||W.m.hidden)return;const D=EVR.d,me=D&&
 #skEvRank .evrMsg{margin:auto;max-width:320px;text-align:center;font-size:12.5px;font-weight:800;opacity:.8}
 html.land #game#game #skEvRank#skEvRank#skEvRank.skmodal .skscroll{overflow:hidden!important;display:block!important}
 `;document.head.appendChild(st)}
+// (V324) sıralama listesi tek sütun, alt alta (kullanıcı isteği V310 ile aynı)
+{const st=document.createElement('style');st.textContent=`#game#game #skEvRank .evrList{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:5px!important;overflow-y:auto!important;overflow-x:hidden!important}#game#game #skEvRank .evrList>li{flex:none!important;width:auto!important}#skEvRank .evrSub{margin:0 0 6px}`;document.head.appendChild(st)}
 
 // ================= LÜKS TAKIMLAR (V251 taslağı): elmasla alınan dört takım =================
 // Kullanıcı isteği (15 Kasım 2026): "marketteki tüm menülere 4-6 paket elmasla alınabilecek kaliteli gözüken ürünler tasarla bana görüntülerini
@@ -22686,7 +22694,7 @@ if(KIS){try{kisUygula()}catch(e){console.warn('kış teması',e)}
 //    hafta başındaki en yüksek puanın üstüne çıkılan miktar; eşyayı kaldırıp geri koymak kazandırmaz). Kafe yayımlanırken lux, lux_w0, lux_wk gider.
 //  • Etkinlik kafesinde yok (yıldız da puan da): orada sıralama ve yayın yok. Öğretici bitene kadar da görünmez (V314).
 // Kayıt: S.lux = {kt: kutlanan en yüksek kafe kademesi, top: görülen en yüksek puan, w: hafta (pazartesi, UTC), n0: hafta başındaki en yüksek puan}.
-const LUKS_ON=!EVMODE;
+const LUKS_ON=true;   // (V324) etkinlik kafesinde de: o kafenin kendi lüks puanı (etkinlik sıralamasının Lüks sekmesi)
 const LUKS_AD=['','Sıradan','Hoş','Şık','Seçkin','Lüks'];
 const LUKS_PUAN=[0,1,2,4,7,12];
 const LUKS_ESIK={table:[130,195,280],chair:[65,90,110],decor:[90,200,320],walldecor:[35,50,90],wall:[45,100,220],floor:[70,130,260],ktheme:[300,600,1000],odoor:[180,250,500],owin:[140,180,400]};
