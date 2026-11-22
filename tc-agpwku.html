@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795345480",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795354679",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -2421,7 +2421,7 @@ function spawnCustomer(forceSeat,g0,idx=0){
   const used=new Set(customers.map(c=>c.look).concat(g.members.map(m=>m.look)));const looks=LOOKS.filter(l=>!used.has(l));const look=(looks.length?looks:LOOKS)[Math.floor(Math.random()*(looks.length||LOOKS.length))];
   const vip=g.size===1&&wantVIP();const look2=vip?VIP_LOOK:look;
   const seat=forceSeat||t.seats[Math.floor(Math.random()*t.seats.length)];const P=PERSONA[look2.name]||{pref:{drink:1,dessert:1,main:1},eat:1,tip:CONFIG.tipChanceBase,look:0.2};
-  const ch=new Char(cloneLook(look2.tex,look2),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;{const AG=attachAcc(ch.o,(h,n)=>look2.hat(h,n));if(look2.itHat&&AG&&AG[0])AG[0].position.set(0,0,0)}   // (V147) paket müşterileri: kubbe şapka kafaya gömülmesin
+  const ch=new Char(cloneLook(look2.tex,look2),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;attachAcc(ch.o,(h,n)=>look2.hat(h,n));   // (V315) paket müşterilerinde şapka konumunu sıfırlayan V147 satırı kaldırıldı: V297'nin oturtmasını bozup şapkayı havada bırakıyordu
   {const n=DOOR_OUTN,j=idx%2?0.25:-0.1;ch.pos.set(OUTSIDE.x+n.x*idx*0.7-n.z*j,0,OUTSIDE.z+n.z*idx*0.7+n.x*j);ch.o.rotation.y=Math.atan2(-n.x,-n.z)}   // grup kaldırımdan arka arkaya, birlikte yürür
   const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip,group:g};ch.sitMode=g.size>1?'chat':(Math.random()<0.55?'phone':'calm');ch.sitT=2+Math.random()*4;g.members.push(c);if(!g.leader)g.leader=c;
   custTag(c);seat.occupant=c;customers.push(c);
@@ -5714,11 +5714,11 @@ function dressGarments(root,sm,wear){clearGarments(root);garmentPrep();const geo
   let any=false;const hideF=[];
   const C=!!wear.cust;   // müşteri: önlük yok — modelin önlük kalıbını gömlek (uzun tunik) örter; cep/askı kabartması düzlenir
   if(wear.bottom){const bt=C?{...wear.bottom,cust:true}:wear.bottom;hideF.push(GREG.bottom(geo,bt));addGarment(sm,mk('b'+bt.len+(C?'C':''),GREG.bottom(geo,bt),{off:C?0.005:0.008,lip:C?0.003:bt.len==='long'?0.007:0.01,shape:legTube(bt)}),garmentMat(null,bottomTex(bt)),'bottom');any=true}
-  if(wear.top){const top=C?{...wear.top,cust:true}:wear.top;hideF.push(GREG.top(geo,top));addGarment(sm,mk('t'+top.kind+(C?'C':''),GREG.top(geo,top),{off:C?0.0095:0.0075,lip:0.0045,smooth:C?40:0,flatten:C?14:0}),garmentMat(null,topTex(top)),'top');any=true}
+  if(wear.top){const top=C?{...wear.top,cust:true}:wear.top;hideF.push(GREG.top(geo,top));addGarment(sm,mk('t'+top.kind+(top.sleeve||'')+(C?'C':''),GREG.top(geo,top),{off:C?0.0095:0.0075,lip:0.0045,smooth:C?40:0,flatten:C?14:0}),garmentMat(null,topTex(top)),'top');any=true}
   if(any&&C)hideF.push(GREG.apron(geo));
   else if(any){const am=sm.material.clone();am.side=THREE.DoubleSide;am.vertexColors=true;addGarment(sm,mk('apron',GREG.apron(geo),{off:0.012,lip:0.002,wallIn:0.002}),am,'apron');hideF.push(GREG.apron(geo))}
   // giysinin altında kalan gövde üçgenleri çizilmez: eklem bükülünce kürk kumaştan dışarı taşamaz (kenar payı korunur)
-  if(hideF.length){const key=base?'h'+(C?'C':'')+(wear.top?wear.top.kind:'')+'|'+(wear.bottom?wear.bottom.len:''):null;let ng=key&&GCACHE.get(key);
+  if(hideF.length){const key=base?'h'+(C?'C':'')+(wear.top?wear.top.kind+(wear.top.sleeve||''):'')+'|'+(wear.bottom?wear.bottom.len:''):null;let ng=key&&GCACHE.get(key);
     if(!ng){const I=geo.index.array,n=geo.attributes.position.count;const F=new Float32Array(n).fill(-9);for(const f of hideF)for(let i=0;i<n;i++){const v=f(i);if(v>F[i])F[i]=v}
       const keep=[];for(let t=0;t<I.length;t+=3){if(F[I[t]]>HIDE_M&&F[I[t+1]]>HIDE_M&&F[I[t+2]]>HIDE_M)continue;keep.push(I[t],I[t+1],I[t+2])}
       ng=new THREE.BufferGeometry();for(const k in geo.attributes)ng.setAttribute(k,geo.attributes[k]);ng.morphAttributes=geo.morphAttributes;ng.setIndex(keep);ng.boundingSphere=geo.boundingSphere;ng.userData.hidden=true;if(key)GCACHE.set(key,ng)}
@@ -22417,7 +22417,7 @@ function rezKameraBasla(P){try{if(UI.mode!=='cafe')return;const ust=typeof k2Up=
     const L1=Math.min(Lc,(controls.minDistance||5)+0.35);   // yakın plan mesafesi (en yakın sınırın hemen gerisi)
     if(eski&&eski.raf)cancelAnimationFrame(eski.raf);
     RZK={on:true,P,T0,L0,L1,Lc,dir:d.normalize(),t0:performance.now(),son:performance.now(),dokundu:false,faz:'gel',raf:0};
-    if(!rezKameraBasla.dinle){rezKameraBasla.dinle=1;const el=renderer.domElement,kes=()=>{const K=RZK;if(!K||!K.faz||K.faz==='yok')return;K.dokundu=true;if(K.faz==='gel'){K.on=false;K.faz='bitti'}};
+    if(!rezKameraBasla.dinle){rezKameraBasla.dinle=1;const el=renderer.domElement,kes=()=>{const K=RZK;if(!K||!K.faz||K.faz==='yok'||K.faz==='don')return;K.dokundu=true;rezKameraDon()};   // (V315) dokununca bakış noktası hemen eski yerine kayar; yakınlık oyuncuda kalır
       for(const ev of ['pointerdown','wheel','touchstart'])el.addEventListener(ev,kes,{passive:true,capture:true})}
     RZK.raf=requestAnimationFrame(rezKameraKare)}catch(e){console.warn('rezervasyon kamerası',e)}}
 function rezKameraKare(){const K=RZK;K.raf=0;if(!K.on)return;const now=performance.now(),dt=Math.min(0.3,(now-K.son)/1000);K.son=now;
@@ -22426,14 +22426,17 @@ function rezKameraKare(){const K=RZK;K.raf=0;if(!K.on)return;const now=performan
     if(K.faz==='don'){const kT=1-Math.exp(-dt*2.8),dx=(K.T0.x-T.x)*kT,dy=(K.T0.y-T.y)*kT,dz=(K.T0.z-T.z)*kT;T.x+=dx;T.y+=dy;T.z+=dz;camera.position.x+=dx;camera.position.y+=dy;camera.position.z+=dz;   // bakış noktası yerine kayar
       let zoom=true;if(!K.dokundu){const off=camera.position.clone().sub(T),L=off.length(),Ln=L+(K.L0-L)*(1-Math.exp(-dt*2.4));camera.position.copy(T).addScaledVector(off.normalize(),Ln);zoom=Math.abs(Ln-K.L0)<0.06}
       controls.update();if(Math.hypot(T.x-K.T0.x,T.z-K.T0.z)<0.03&&zoom){K.on=false;K.faz='yok';return}if(now-K.t0>12000){K.on=false;K.faz='yok';return}}
+    else if(K.faz==='tut'){if(now-K.t1>2500){K.faz='don';K.t0=now}}   // (V315) misafirler oturdu: kısa bir an bekle, sonra eski görünüme dön
     else{const hedef=new THREE.Vector3(),M=(K.P.g.members||[]).filter(m=>customers.includes(m)&&!m.gone),c=K.P.t.center;let oturdu=false;
       const yolda=M.filter(m=>m.state==='ENTERING'||m.state==='WALKING_TO_TABLE');
       if(yolda.length){for(const m of yolda)hedef.add(m.char.pos);hedef.multiplyScalar(1/yolda.length)}else{hedef.set(c.x,0,c.z);oturdu=true}
       hedef.y=K.T0.y;T.lerp(hedef,1-Math.exp(-dt*3.2));K.Lc+=(K.L1-K.Lc)*(1-Math.exp(-dt*2.0));camera.position.copy(T).addScaledVector(K.dir,K.Lc);controls.update();
-      if((oturdu&&Math.hypot(T.x-hedef.x,T.z-hedef.z)<0.06&&Math.abs(K.Lc-K.L1)<0.06)||now-K.t0>60000){K.on=false;K.faz='bitti';return}}}catch(e){K.on=false;return}
+      if((oturdu&&Math.hypot(T.x-hedef.x,T.z-hedef.z)<0.06&&Math.abs(K.Lc-K.L1)<0.06)||now-K.t0>60000){K.faz='tut';K.t1=now}}}catch(e){K.on=false;return}
   K.raf=requestAnimationFrame(rezKameraKare)}
 // parti bitince bakış noktası eski yerine döner (oyuncu dokunmadıysa yakınlık da)
-function rezKameraDon(){const K=RZK;if(!K||!K.T0||!(K.faz==='bitti'||K.faz==='gel'))return;K.faz='don';K.on=true;K.son=performance.now();K.t0=performance.now();if(!K.raf)K.raf=requestAnimationFrame(rezKameraKare)}
+// (V315) kullanıcı bildirimi: "kamera odağı masaya kilitleniyor, uzaklaştırınca da orada uzaklaşıyor" → misafirler oturunca 2,5 sn sonra
+// görünüm kendiliğinden eski yerine ve yakınlığına döner; oyuncu dokunursa hemen döner (yakınlık oyuncuda kalır).
+function rezKameraDon(){const K=RZK;if(!K||!K.T0||!(K.faz==='bitti'||K.faz==='gel'||K.faz==='tut'))return;K.faz='don';K.on=true;K.son=performance.now();K.t0=performance.now();if(!K.raf)K.raf=requestAnimationFrame(rezKameraKare)}
 
 // ================= GÜNLÜK ARDIŞIK GİRİŞ HEDİYESİ (V310) =================
 // Kullanıcı isteği (22 Kasım 2026, 02:32): "günlük ardışık giriş hediye sistemi olsun; 7. 14. 21. ve 28. günlerde ödüller güzel olsun:
@@ -22793,6 +22796,57 @@ html.land #game#game .pfL.pfLx{gap:2px}html.land #game#game .pfL.pfLx .pfLogo{wi
 .ksSc.lxSc b{display:inline-flex;align-items:center;gap:3px}.ksSc.lxSc b .ic,.ksSc.lxSc b .ic svg{width:15px!important;height:15px!important}.ksSc.lxSc small em{font-style:normal}.ksSc.lxSc small .ic,.ksSc.lxSc small .ic svg{width:12px!important;height:12px!important}
 .toast .lxY.t{vertical-align:-2px}
 `;document.head.appendChild(st)}
+
+// ================= MÜŞTERİ AKSESUARLARI YERİNDE + MEVSİME GÖRE KIYAFET (V315) =================
+// Kullanıcı bildirimi (22 Kasım 2026, 15:28):
+//  1) "bazı müşterilerin aksesuarları modelden çok uzakta gözükebiliyor; boynuna, yüzüne veya kafasına taktığı objeler alakasız yerlerde"
+//     Neden: V297'den beri başa takılan HER şey şapka sayılıyordu (fitHat: büyütülür, kafatasının tepesine indirilir, kenarı kafaya uydurulur).
+//     Kulak yanındaki çiçek, toka, fiyonk gibi küçük süsler de "şapka" diye kafanın ortasına/aşağısına sürükleniyor; yanağa, omza, göze
+//     düşüyordu. Ayrıca paket müşterilerinde (İtalya/Türkiye/Japonya/Fransa) şapka oturtulduktan SONRA konumu sıfırlanıyordu (V147'den
+//     kalma satır, p10) → şapka/alın bandı kafanın üstünde havada (hale gibi) kalıyordu.
+//     Çözüm: başa takılan grup yalnız kafanın tepesini örtüyorsa şapka sayılır ve eskisi gibi oturtulur; değilse süs sayılır, yazıldığı
+//     yerde kalır ve yalnız kafaya doğru değene kadar yaklaştırılır. p10'daki konum sıfırlama kaldırıldı.
+//  2) "müşterilerin hepsi bulunduğu mevsime göre uygun kıyafetler giyinip gelsin; şu an kış, kar var ama müşteriler tişörtle geliyor"
+//     Kışın (p948 KIS): üst giysi uzun kollu örgü kazak (bilek hizasına kadar, ince örgü dokusu), alt giysi uzun pantolon (şortlar ve
+//     kapriler uzar), boynunda bir şey olmayana atkı, başında bir şey olmayanların bir kısmına bere. Yazın/baharda eskisi gibi.
+//     Etkinlik kafelerinde mevsim yok (KIS=false).
+const KIS_KOL=1.9;   // kol boyu: üst kol uzunluğu cinsinden (1 = dirsek, ~2 = bilek); tişört 0,62
+function accSapkaMi(g){const b=new THREE.Box3();g.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(g.parent.matrixWorld).invert(),bb=new THREE.Box3();
+  g.traverse(m=>{if(m.isMesh){if(!m.geometry.boundingBox)m.geometry.computeBoundingBox();bb.copy(m.geometry.boundingBox).applyMatrix4(m.matrixWorld).applyMatrix4(inv);b.union(bb)}});
+  if(b.isEmpty())return false;
+  // şapka: kafanın tepesindeki orta noktanın (x≈0, z≈0) üstünü örter
+  if(g.userData.bant)return false;   // alın bandı: kafanın çevresinde halka, tepeye oturtulmaz
+  return b.min.x<-0.03&&b.max.x>0.03&&b.min.z<0.03&&b.max.z>-0.03&&b.max.y>0.3}
+// alın bandı (hachimaki): eskiden y 0,31'de dar bir halkaydı → şapka gibi tepeye oturtulunca kafanın üstünde hale gibi duruyordu.
+// Artık alın hizasında, kafayı saran daha geniş halka; önü biraz aşağı eğik; şapka işlemine girmez.
+if(typeof ACC_BUILD!=='undefined'&&ACC_BUILD.hachimaki)ACC_BUILD.hachimaki=function(n,h,c){h.userData.bant=1;   // ölçüler kafanın baş kemiğine göre ölçülmüş biçiminden (y 0,27: ön z 0,13 · arka −0,09)
+  const g=new THREE.Group();g.position.set(0,0.27,0.02);g.rotation.x=0.12;h.add(g);
+  const t=accMesh(g,new THREE.TorusGeometry(0.118,0.016,8,36),c.c,0,0,0,Math.PI/2,0,0);t.scale.set(1.18,1,1);
+  if(c.c3)accMesh(g,new THREE.CylinderGeometry(0.02,0.02,0.004,14),c.c3,0,0.002,0.134,Math.PI/2,0,0);
+  accMesh(g,new THREE.SphereGeometry(0.02,8,6),c.c2||c.c,0,0.002,-0.13);
+  for(const s of [-1,1])accMesh(g,new THREE.BoxGeometry(0.022,0.06,0.006),c.c2||c.c,s*0.018,-0.035,-0.135,0.3,0,s*0.35)};
+attachAcc=function(root,build){const h=root.getObjectByName('mixamorigHead'),n=root.getObjectByName('mixamorigNeck'),sp=root.getObjectByName('mixamorigSpine2');
+  const gh=new THREE.Group(),gn=new THREE.Group();gh.userData.cacc=gn.userData.cacc=true;h.add(gh);n.add(gn);build(gh,gn);
+  root.updateMatrixWorld(true);if(gn.children.length&&sp){sp.attach(gn)}else n.remove(gn);
+  if(!gh.children.length)h.remove(gh);
+  if(gh.parent){if(accSapkaMi(gh)){if(!seatHat(root,gh))seatAcc(root,gh,new THREE.Vector3(0,-1,0));fitHat(root,gh);gh.userData.sapka=1}
+    else gh.userData.sapka=0}   // süs: yazıldığı yerde kalır (kafaya doğru itmek bazılarını kafanın içine gömüyordu)
+  if(gn.parent)seatAcc(root,gn,new THREE.Vector3(0,0,-1));
+  return [gh,gn]};
+// ---- kış kıyafeti ----
+if(typeof KIS!=='undefined'&&KIS){
+  {const _dg=dressGarments;dressGarments=function(root,sm,wear){if(wear&&wear.cust){wear={...wear};if(wear.top)wear.top={...wear.top,sleeve:KIS_KOL,kis:1};if(wear.bottom)wear.bottom={...wear.bottom,len:'long'}}return _dg.call(this,root,sm,wear)}}
+  // örgü dokusu: ince dikey ilmek çizgileri (kumaşın kendi rengi biraz koyulaşıp açılır)
+  {const _tc=topColor;topColor=function(t,x,y,z,o){_tc(t,x,y,z,o);if(t&&t.kis){const k=0.86+0.14*Math.abs(Math.sin((x*0.8+z*0.6)*230))*(0.85+0.15*Math.abs(Math.sin(y*520)));o[0]*=k;o[1]*=k;o[2]*=k}}}
+  const KIS_RENK=[[0xd9534f,0xfff4e0],[0x3f6fb5,0xffffff],[0x5f8a3a,0xf2d06b],[0xf2b134,0x8a5a2b],[0x8e5bb0,0xf6c9e0],[0x2e8a8a,0xf4efe6],[0xc8783a,0xfff0d8],[0x4a4a58,0xe86a6a]];
+  const kisSira=ad=>{let s=0;for(const ch of String(ad||''))s=(s*31+ch.charCodeAt(0))%9973;return s};
+  {const _cl=cloneLook;cloneLook=function(tex,lk){const r=_cl.apply(this,arguments);try{if(lk&&r)r.userData.kisLk=lk}catch(e){}return r}}
+  {const _aa=attachAcc;attachAcc=function(root,build){const lk=root&&root.userData&&root.userData.kisLk;if(!lk||lk.vip)return _aa.apply(this,arguments);
+    const i=kisSira(lk.name),R=KIS_RENK[i%KIS_RENK.length];
+    return _aa.call(this,root,(h,n)=>{build(h,n);
+      if(!n.children.length)ACC_BUILD.scarf(n,h,{c:R[0],c2:R[1]});                       // boynu boş olana atkı
+      if(!h.children.length&&i%3!==0)ACC_BUILD.beanie(n,h,{c:KIS_RENK[(i+3)%KIS_RENK.length][0]})})}}   // başı boş olanların çoğuna bere
+}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
