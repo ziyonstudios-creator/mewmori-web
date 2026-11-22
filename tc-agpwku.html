@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795364113",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795364639",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -22578,7 +22578,7 @@ function mevsimSimdi(d=new Date(Date.now()+3*36e5)){const y=d.getUTCFullYear(),m
   if(y===2026&&m===11&&g>=22)return 'kis';
   return m===12||m<=2?'kis':m<=5?'ilkbahar':m<=8?'yaz':'sonbahar'}
 const MEVSIM=(()=>{try{const q=new URLSearchParams(location.search).get('mevsim');if(q&&MEVSIM_AD[q])return q}catch(e){}return mevsimSimdi()})();
-const KIS=MEVSIM==='kis'&&!(typeof EVMODE!=='undefined'&&EVMODE);
+const KIS=MEVSIM==='kis';   // (V321) etkinlik kafesinde de ana kafenin mevsimi
 const KAR={on:false,pts:null,N:0,t:0,bit:0,sonraki:0,op:0,ilk:true,duyuru:false};
 const KAR_BEYAZ=0xf6fafd;
 function kisRenk(mat,hedef,k){try{if(mat&&mat.color)mat.color.lerp(new THREE.Color(hedef),k)}catch(e){}}
@@ -23138,6 +23138,33 @@ const tdYonOf=e=>e.key;
 html.td-on #y2 .y2l, html.td-on #nav{opacity:.35;pointer-events:none}
 `;document.head.appendChild(st)}
 setInterval(()=>{try{document.documentElement.classList.toggle('td-on',!!TD.on)}catch(e){}},300);
+
+// ================= KÜÇÜK İSTEKLER (V321) =================
+// Kullanıcı (22 Kasım 2026, 19:19):
+//  • "müdavim ve VIP müşteri geldiğinde garson kediler sevinçli kedi sesleri çıkartsın; müşteri bahşiş bıraktığında kasiyer kedi mırlasın;
+//     yeni bir tarif keşfedildiğinde sevinçli bir miyavlama sesi çıksın."
+//  • "fiyat değişimi yaparken liste başa alıyor, bu durumu düzelt."
+//  • (mevsim: "etkinlik kafesiyle ana kafenin mevsimi aynı olacak" → p948'de KIS artık etkinlik kafesinde de geçerli)
+// ---- sesler (WebAudio ile üretilir; dosya yok) ----
+// sevinçli miyav: kısa "mrrp" + yükselen tiz "miyav"
+SFX.happyMeow=function(t){const ctx=AU.ctx;const tek=(t0,f0,fp,f1,d,v)=>{const out=gainTo(AU.sfx,0);out.gain.setValueAtTime(0.0001,t0);out.gain.linearRampToValueAtTime(v,t0+0.03);out.gain.setValueAtTime(v,t0+d*0.55);out.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+    const a=filt('bandpass',1100,4,out),b=filt('bandpass',2400,5,out);const mix=ctx.createGain();mix.connect(a);mix.connect(b);
+    const o=osc('sawtooth',f0,t0,t0+d+0.05,mix);o.frequency.linearRampToValueAtTime(fp,t0+d*0.35);o.frequency.linearRampToValueAtTime(f1,t0+d);
+    a.frequency.setValueAtTime(900,t0);a.frequency.linearRampToValueAtTime(1400,t0+d*0.35);a.frequency.linearRampToValueAtTime(900,t0+d)};
+  tek(t,520,700,620,0.13,0.14);tek(t+0.16,640,980,720,0.36,0.19)};
+// mırlama: alçak, nefes alıp veren titreşim (~26 Hz vuruş), 1,3 sn
+SFX.purr=function(t){const ctx=AU.ctx,d=1.3;const out=gainTo(AU.sfx,0);out.gain.setValueAtTime(0.0001,t);out.gain.linearRampToValueAtTime(0.16,t+0.15);out.gain.setValueAtTime(0.16,t+0.55);out.gain.linearRampToValueAtTime(0.05,t+0.68);out.gain.linearRampToValueAtTime(0.15,t+0.85);out.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  const am=ctx.createGain();am.gain.value=0;am.connect(out);const lfo=ctx.createOscillator();lfo.frequency.value=26;const lg=ctx.createGain();lg.gain.value=0.9;lfo.connect(lg);lg.connect(am.gain);lfo.start(t);lfo.stop(t+d+0.1);
+  const lp=filt('lowpass',420,1.2,am);noiseSrc(t,d+0.1,lp);osc('triangle',52,t,t+d,gainTo(am,0.5))};
+{const _sfx=sfx;sfx=function(name){const r=_sfx.apply(this,arguments);try{if(name==='discover')_sfx('happyMeow',0,0.45);else if(name==='tip')_sfx('purr',0,0.35)}catch(e){}return r}}
+// müdavim (2+ ziyaret kademesi) ya da VIP içeri girince garson sevinir: ses + kısa el sallama
+{const _sc=spawnCustomer;spawnCustomer=function(){const c=_sc.apply(this,arguments);try{if(c&&(c.vip||regTier(c.look.name)>=1)){const t0=Date.now();
+      const bak=()=>{if(!customers.includes(c))return;if(c.state==='WALKING_TO_TABLE'||Date.now()-t0>9000){sfx('happyMeow');try{const w=(typeof WSTAFF!=='undefined'?WSTAFF:[]).find(k=>!k.busy&&!k.ch.path.length&&!k.ch.act&&!k.ch.carry);if(w)w.ch.doFor('Wave_One_Hand',1.2)}catch(e){}return}setTimeout(bak,300)};setTimeout(bak,600)}}catch(e){}return c}}
+// ---- fiyat değişince menü listesi yerinde kalsın ----
+{const _rm=renderMenu;renderMenu=function(){const L=$('menuList'),k=[];try{if(L)L.querySelectorAll('.mlist,#mnCards,.supgrid').forEach(e=>k.push([e.className,e.scrollTop,e.scrollLeft]))}catch(e){}
+  const r=_rm.apply(this,arguments);
+  const geri=()=>{try{if(!L)return;for(const [cl,t,l] of k){const e=[...L.querySelectorAll('.mlist,#mnCards,.supgrid')].find(x=>x.className===cl);if(e){if(t)e.scrollTop=t;if(l)e.scrollLeft=l}}}catch(e){}};
+  geri();requestAnimationFrame(geri);return r}}
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
