@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795326267",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795345480",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -22678,7 +22678,7 @@ if(KIS){try{kisUygula()}catch(e){console.warn('kış teması',e)}
 //    penceresi); Profil'de satır; Keşfet › Kafem'de satır; kafe kademesi yükselince bildirim.
 //  • SIRALAMA (p905 + sunucu lux_ranking): Dünya sıralaması › "Lüks" (toplam puan) ve Haftalık › "Lüks" (bu hafta puanını en çok ARTIRANLAR:
 //    hafta başındaki en yüksek puanın üstüne çıkılan miktar; eşyayı kaldırıp geri koymak kazandırmaz). Kafe yayımlanırken lux, lux_w0, lux_wk gider.
-//  • Etkinlik kafesinde yok (yıldız da puan da): orada sıralama ve yayın yok.
+//  • Etkinlik kafesinde yok (yıldız da puan da): orada sıralama ve yayın yok. Öğretici bitene kadar da görünmez (V314).
 // Kayıt: S.lux = {kt: kutlanan en yüksek kafe kademesi, top: görülen en yüksek puan, w: hafta (pazartesi, UTC), n0: hafta başındaki en yüksek puan}.
 const LUKS_ON=!EVMODE;
 const LUKS_AD=['','Sıradan','Hoş','Şık','Seçkin','Lüks'];
@@ -22716,18 +22716,19 @@ function luksTik(){if(!luksAcik())return;const P=luksPuan(),yeni=!S.lux,D=luksDu
   if(P.n!==_lxSon){const ilk=_lxSon<0;_lxSon=P.n;luksCip();if(!yeni&&!ilk)markDirty()}}   // puan değişince kayıt (ve ardından kafe yayını) tetiklenir; açılıştaki ilk okuma saymaz
 setInterval(()=>{try{luksTik()}catch(e){}},3000);
 // ---- Market: kartlarda yıldız, ayrıntıda satır, taç çipi ----
-function luksCip(){try{const mk=$('market');if(!mk)return;let b=$('lxCip');const goster=LUKS_ON&&UI.mode==='market'&&UI.mkSec==='decor'&&!mk.classList.contains('choose');
+function luksCip(){try{const mk=$('market');if(!mk)return;let b=$('lxCip');const goster=luksAcik()&&UI.mode==='market'&&UI.mkSec==='decor'&&!mk.classList.contains('choose');
     if(!goster){if(b)b.hidden=true;return}
     if(!b){b=document.createElement('button');b.id='lxCip';b.type='button';b.setAttribute('aria-label','Lüks puanı');b.onclick=e=>{e.stopPropagation();try{sfx('tap')}catch(_){}luksPencere()};mk.appendChild(b)}
     const P=luksPuan();b.hidden=false;const eski=b.dataset.n;b.innerHTML=`${ic('lux')}<b data-dilyok="1">${P.n}</b>`;b.dataset.n=P.n;
     if(eski!=null&&eski!==''&&+eski!==P.n){b.classList.remove('zip');void b.offsetWidth;b.classList.add('zip')}}catch(e){}}
-function luksMarket(){if(!LUKS_ON)return;const g=$('mkGrid');if(!g)return;
+function luksMarket(){if(!luksAcik()){luksCip();return}const g=$('mkGrid');if(!g)return;   // (V314) öğretici bitmeden yıldız, rozet ve tanıtım yok: ilk dakikalar eskisi gibi sade
+
   g.querySelectorAll('.card').forEach(b=>{if(b.querySelector('.lxY'))return;let c=null;if(b.dataset.id)c=CAT[b.dataset.id];else if(b.dataset.uid){const f=(S.furniture||[]).find(x=>String(x.uid)===b.dataset.uid);c=f&&CAT[f.id]}
     const y=luksYildiz(c),th=b.querySelector('.th');if(y&&th){th.insertAdjacentHTML('afterend',luksYildizHTML(y,'k'));b.classList.add('lxK')}});
   luksCip();
   if(UI.mkSec==='decor'&&S.seen&&!S.seen.luksTanit&&g.querySelector('.lxY')){S.seen.luksTanit=1;markDirty();
     setTimeout(()=>toast(`<b>Yeni: Lüks yıldızları</b><br>Yıldızı çok olan eşya kafenin lüks puanını daha çok artırır`,ic('lux'),4600),500)}}
-function luksDetay(){if(!LUKS_ON)return;const d=$('mkDetail');if(!d||d.hidden)return;const tx=d.querySelector('.tx');if(!tx||tx.querySelector('.lxD'))return;
+function luksDetay(){if(!luksAcik())return;const d=$('mkDetail');if(!d||d.hidden)return;const tx=d.querySelector('.tx');if(!tx||tx.querySelector('.lxD'))return;
   let c=null;const sel=UI.sel;if(typeof sel==='string'&&sel[0]==='u'&&UI.tab==='store'){const f=(S.furniture||[]).find(x=>'u'+x.uid===sel);c=f&&CAT[f.id]}else c=CAT[sel];
   const y=luksYildiz(c);if(!y)return;const b=tx.querySelector('b');if(!b)return;
   b.insertAdjacentHTML('afterend',`<div class="lxD">${luksYildizHTML(y)}<em>${LUKS_AD[y]}</em><span>Lüks puanı <i data-dilyok="1">+${LUKS_PUAN[y]}</i></span></div>`)}
