@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795434909",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795436369",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -23579,6 +23579,348 @@ function dkSiraCiz() {
 // Dünya sıralamasındaki Puan & Altın ve Altın sekmeleri kalkar. Haftalık sekmesi zaten Beğeni | Lüks.
 KS_SUB.splice(0, KS_SUB.length, ['lux', 'Lüks', 'lux'], ['likes', 'Beğeni', 'heart'], ['lvl', 'Seviye', 'up']);
 if (!KS_SUB.some(x => x[0] === KS.sub)) KS.sub = 'lux';
+
+// ================= KURYE KOŞUSU: ÖZEL SİPARİŞLER (V333) =================
+// Kullanıcı (23 Kasım 2026, 15:02): "kuryeye mini oyun ekletme oyuncu isterse kurye ekranından özel siparişleri getirebileceği bir mini oyun
+// subway surfs gibi ... bölüm bölüm özel siparişler olur". Seçimler: şimdi, tek ayarla açılıp kapanabilir; 3B, oyunun kendi tarzı.
+//  • Giriş: Ekip › Kurye kartı ve Motorlar penceresinde "Özel siparişler" (motor gerekir). Bölüm haritası: 12 bölüm, 4 semt (Mahalle, Sahil,
+//    Akşam Çarşısı, Gece Turu); her bölüm bir müşterinin özel siparişi. Bölüm, öncekini bitirince açılır.
+//  • Oyun: kurye kedi scooter'ıyla 3 şeritli sokakta ilerler. Sağa/sola kaydır: şerit · yukarı: zıpla · aşağı: eğil (klavye: oklar/WASD/boşluk).
+//    Dubalar, bariyerler, koli yığınları (zıpla), asma tabelalar (eğil), park etmiş arabalar (şerit değiştir). Altınları ve siparişin
+//    malzemelerini (tabağın resmi) topla; 3 can; kapıya varınca teslim.
+//  • Yıldız: teslim 1 · siparişin bütün parçaları +1 · en çok 1 çarpma +1. Ödül: ilk teslimde bölüm altını (sonra %25), toplanan altınlar,
+//    ilk kez 3 yıldızda elmas. Kayıt S.kos.
+//  • AYAR: KOS_ON=false yaparsan (ya da sunucuda app_flags 'kurye_kosu'=false) düğmeler hiç görünmez; oyunun geri kalanına dokunmaz.
+const KOS_ON = true;
+const KOS = { on: false, flag: null, flagT: 0 };
+// dil: metinler burada iki dilli (çevirmen dokunmaz, data-dilyok)
+const kosEN = () => { try { return window.__DIL && __DIL.lang === 'en' } catch (e) { return false } };
+const kt = (tr, en) => kosEN() ? en : tr;
+const kosYad = k => { const n = RECIPE[k] ? RECIPE[k].name : ''; try { return kosEN() && __DIL.t ? __DIL.t(n) : n } catch (e) { return n } };
+const KOS_SEMT_EN = { gun: 'Neighborhood', sahil: 'Seaside', aksam: 'Evening Bazaar', gece: 'Night Tour' };
+const KOS_MUS_EN = { 'Pamuk Nine': 'Granny Pamuk', 'Fındık Amca': 'Uncle Fındık', 'Tarçın Hanım': 'Mrs. Tarçın', 'Mırmır Teyze': 'Auntie Mırmır', 'Ay Işığı': 'Moonlight' };
+const kosMus = m => kosEN() ? (KOS_MUS_EN[m] || m) : m;
+const kosSemtAd = s => kosEN() ? KOS_SEMT_EN[s] : KOS_SEMT[s].ad;
+const KOS_SEMT = {
+  gun: { ad: 'Mahalle', sky: 0xbfe6f5, fog: 0xd9f0f8, yer: 0xa8d88a, yol: '#7d8597', kal: '#e9dcc4', isik: 1.0, gece: false },
+  sahil: { ad: 'Sahil', sky: 0xbdeaf8, fog: 0xd6f3fb, yer: 0xf2dca6, yol: '#8a8f9e', kal: '#f6ead0', isik: 1.05, gece: false, deniz: true },
+  aksam: { ad: 'Akşam Çarşısı', sky: 0xffc79a, fog: 0xffd9b8, yer: 0xb9cf86, yol: '#7a7389', kal: '#ead2b8', isik: 0.85, gece: false, sicak: true },
+  gece: { ad: 'Gece Turu', sky: 0x2a3466, fog: 0x3a4478, yer: 0x5d7a5a, yol: '#4b4f63', kal: '#9ea3b8', isik: 0.55, gece: true },
+};
+// b: bölüm · semt · müşteri · yemek · uzunluk (m) · hız (başlangıç→son, m/s) · engel aralığı (m) · sipariş parçası · engel türleri
+const KOS_BOL = [
+  { semt: 'gun', mus: 'Pamuk Nine', y: ['kurabiye', 'cay'], m: 300, v: [8, 9.5], ar: 26, n: 3, tur: ['duba', 'koli'] },
+  { semt: 'gun', mus: 'Boncuk', y: ['latte', 'espresso'], m: 340, v: [8.5, 10], ar: 24, n: 3, tur: ['duba', 'koli', 'bariyer'] },
+  { semt: 'gun', mus: 'Fındık Amca', y: ['tost', 'sicak_sut'], m: 380, v: [9, 10.5], ar: 22, n: 4, tur: ['duba', 'koli', 'bariyer', 'araba'] },
+  { semt: 'sahil', mus: 'Limon', y: ['limonata', 'meyveli_cay'], m: 400, v: [9.5, 11], ar: 21, n: 4, tur: ['duba', 'bariyer', 'araba', 'tabela'] },
+  { semt: 'sahil', mus: 'Zeytin', y: ['gelato', 'cupcake'], m: 430, v: [10, 11.5], ar: 20, n: 4, tur: ['koli', 'bariyer', 'araba', 'tabela'], cift: true },
+  { semt: 'sahil', mus: 'Karamel', y: ['pasta', 'tart'], m: 460, v: [10, 12], ar: 19, n: 5, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true },
+  { semt: 'aksam', mus: 'Duman', y: ['moka', 'sicak_cik'], m: 480, v: [10.5, 12.5], ar: 18, n: 5, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true },
+  { semt: 'aksam', mus: 'Tarçın Hanım', y: ['kruvasan', 'tart'], m: 500, v: [11, 13], ar: 17.5, n: 5, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
+  { semt: 'aksam', mus: 'Biber', y: ['omlet', 'sandvic'], m: 530, v: [11, 13.5], ar: 17, n: 6, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
+  { semt: 'gece', mus: 'Mırmır Teyze', y: ['sicak_cik', 'kurabiye'], m: 560, v: [11.5, 14], ar: 16.5, n: 6, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
+  { semt: 'gece', mus: 'Kömür', y: ['kahvalti', 'latte'], m: 600, v: [12, 14.5], ar: 16, n: 6, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
+  { semt: 'gece', mus: 'Ay Işığı', y: ['pasta', 'moka'], m: 650, v: [12.5, 15.5], ar: 15, n: 7, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
+];
+const KOS_SERIT = [-1.45, 0, 1.45];
+const kosS = () => S.kos || (S.kos = { y: {}, gem: {}, ilk: {} });
+const kosYemek = b => { for (const k of KOS_BOL[b].y) if (typeof RECIPE !== 'undefined' && RECIPE[k]) return k; return (RECIPES[0] || {}).id };
+const kosAcik = b => b === 0 || (kosS().y[b - 1] | 0) > 0;
+const kosOdul = b => 40 + b * 15;
+// ---- uzaktan açma/kapama (sunucu: app_flags 'kurye_kosu'; okunamazsa açık sayılır) ----
+async function kosBayrak() { if (Date.now() - KOS.flagT < 300000 && KOS.flag !== null) return KOS.flag; KOS.flagT = Date.now();
+  try { const sb = await sbClient(); const { data, error } = await sb.rpc('flag_get', { p_key: 'kurye_kosu' }); if (!error && typeof data === 'boolean') KOS.flag = data } catch (e) { }
+  if (KOS.flag === null) KOS.flag = true; return KOS.flag }
+const kosVar = () => KOS_ON && !EVMODE && KOS.flag !== false && (typeof motoVar !== 'function' || motoVar());
+setTimeout(() => { try { kosBayrak() } catch (e) { } }, 4000);
+// ---- giriş düğmeleri: kurye kartı ve motorlar penceresi ----
+function kosDugme() { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm kosGir'; b.dataset.kos = '1'; b.innerHTML = `${ic('star')}${kt('Özel siparişler', 'Special orders')}`; b.setAttribute('data-dilyok', '1'); b.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (er) { } kosHarita() }; return b }
+setInterval(() => { try { if (!kosVar()) { document.querySelectorAll('.kosGir').forEach(x => x.remove()); return }
+  document.querySelectorAll('[data-moto]').forEach(m => { const p = m.parentElement; if (p && !p.querySelector('.kosGir')) m.insertAdjacentElement('afterend', kosDugme()) });
+  const mm = $('motoM'); if (mm && !mm.hidden && !mm.querySelector('.kosGir')) { const w = mm.firstElementChild; if (w) { const b = kosDugme(); b.classList.add('kosGirM'); if (getComputedStyle(w).position === 'static') w.style.position = 'relative'; w.appendChild(b) } } } catch (e) { } }, 700);
+// ---- bölüm haritası ----
+function kosHarita() {
+  if (!kosVar()) return; try { $('motoM') && ($('motoM').hidden = true) } catch (e) { }
+  const W = skWin('kosM', kt('Özel siparişler', 'Special orders'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); KOS.W = W; const K = kosS();
+  const toplam = Object.values(K.y).reduce((a, v) => a + (v | 0), 0);
+  W.body.innerHTML = `<p class="kosUst">${kt("Kurye kedi scooter'ına atlıyor! Sokaktaki engellerden kaç, siparişin parçalarını topla, kapıya zamanında yetiştir.", 'The courier cat hops on the scooter! Dodge the obstacles, grab every part of the order and get it to the door in time.')} <b>${ic('star')} ${toplam}/${KOS_BOL.length * 3}</b></p>
+   <div class="kosIzgara">${KOS_BOL.map((B, i) => { const ac = kosAcik(i), y = K.y[i] | 0, k = kosYemek(i), sm = KOS_SEMT[B.semt];
+     return `<button type="button" class="kosBol s_${B.semt}${ac ? '' : ' kilit'}" data-b="${i}" ${ac ? '' : 'disabled'}>
+       <span class="kosNo">${i + 1}</span><span class="kosSemt">${kosSemtAd(B.semt)}</span>
+       <img src="${ac ? productThumb(k) : ''}" alt="" ${ac ? '' : 'hidden'}>${ac ? '' : `<span class="kosKilit">${ic('lock')}</span>`}
+       <b>${ac ? kosMus(B.mus) : kt('Kilitli', 'Locked')}</b><small>${ac ? kosYad(k) : kt(`${i}. bölümü bitir`, `Finish level ${i}`)}</small>
+       <span class="kosY">${[0, 1, 2].map(j => `<i class="${j < y ? 'on' : ''}">★</i>`).join('')}</span></button>` }).join('')}</div>`;
+  W.body.querySelectorAll('.kosBol:not(.kilit)').forEach(b => b.onclick = () => { try { sfx('tap') } catch (e) { } W.close(); kosBasla(+b.dataset.b) });
+}
+// ---- 3B ----
+const kosM = c => new THREE.MeshToonMaterial({ color: c, gradientMap: grad });
+const KOSG = {}; // paylaşılan geometri/malzeme
+function kosHazirla() {
+  if (KOSG.ok) return; KOSG.ok = 1;
+  KOSG.kutu = new THREE.BoxGeometry(1, 1, 1); KOSG.kon = new THREE.ConeGeometry(0.22, 0.6, 12); KOSG.sil = new THREE.CylinderGeometry(1, 1, 1, 16);
+  KOSG.para = new THREE.CylinderGeometry(0.3, 0.3, 0.08, 20); KOSG.top = new THREE.SphereGeometry(1, 14, 10);
+  KOSG.m = {}; for (const [k, c] of Object.entries({ tur: 0xff8a3d, bey: 0xfffaf0, kir: 0xd9473a, sar: 0xf2c14e, kah: 0xc9a06a, kah2: 0x9a7246, gri: 0x6b7080, cam: 0xbfe0ef, siy: 0x3a3a44, yes: 0x7cb85e, yes2: 0x5f9a48, ahs: 0x8a5a34, pem: 0xf6a8b8, mav: 0x6aa9e0, mor: 0x9b7ad6 })) KOSG.m[k] = kosM(c);
+  KOSG.para_m = new THREE.MeshToonMaterial({ color: 0xffc83d, gradientMap: grad, emissive: 0x5a3a00 });
+}
+function kosB(G, mat, sx, sy, sz, x, y, z) { const m = new THREE.Mesh(KOSG.kutu, typeof mat === 'string' ? KOSG.m[mat] : mat); m.scale.set(sx, sy, sz); m.position.set(x, y, z); G.add(m); return m }
+// sokak yapıları (iki yanda, geri dönüştürülür)
+const KOS_EV_RENK = [0xf6c9a8, 0xf8e3b0, 0xcfe6c4, 0xbfdcef, 0xf3c3cf, 0xe8d3f0, 0xfff1d6, 0xd6efe8];
+function kosEv(sm, sag) {
+  const G = new THREE.Group(), r = KOS_EV_RENK[Math.floor(Math.random() * KOS_EV_RENK.length)], w = 3.2 + Math.random() * 1.6, h = 2.6 + Math.random() * 2.2, d = 3;
+  const gov = kosB(G, kosM(r), w, h, d, 0, h / 2, 0);
+  const cat = new THREE.Mesh(new THREE.ConeGeometry(Math.max(w, d) * 0.78, 1.3, 4), kosM([0xd9473a, 0x9a5a3a, 0x5a7ab8, 0x7a8a5a][Math.floor(Math.random() * 4)])); cat.rotation.y = Math.PI / 4; cat.position.y = h + 0.62; cat.scale.z = d / w; G.add(cat);
+  const yon = sag ? -1 : 1, on = yon * (w / 2 + 0.01); // yola bakan yüz (x ekseninde)
+  const pm = sm.gece ? new THREE.MeshBasicMaterial({ color: 0xffe08a }) : KOSG.m.cam;
+  for (let i = 0; i < Math.floor(h / 1.2); i++) for (const z of [-0.8, 0.8]) { const p = new THREE.Mesh(KOSG.kutu, pm); p.scale.set(0.05, 0.55, 0.6); p.position.set(on, 1.1 + i * 1.15, z); G.add(p) }
+  if (Math.random() < 0.6) { // tente
+    for (let i = 0; i < 5; i++) { const t = new THREE.Mesh(KOSG.kutu, i % 2 ? KOSG.m.bey : KOSG.m[['kir', 'mav', 'yes', 'tur'][Math.floor(Math.random() * 4)]]); t.scale.set(0.7, 0.08, 0.5); t.position.set(on + yon * 0.35, 1.0, -1 + i * 0.5); t.rotation.z = -yon * 0.35; G.add(t) }
+  }
+  G.position.x = sag ? 5.6 + w / 2 : -5.6 - w / 2; G.userData.uz = d + 0.8 + Math.random() * 1.5; return G;
+}
+function kosAgac(sm) { const G = new THREE.Group();
+  if (sm.deniz) { const g = new THREE.Mesh(KOSG.sil, KOSG.m.kah2); g.scale.set(0.09, 2.2, 0.09); g.position.y = 1.1; g.rotation.z = 0.12; G.add(g);
+    for (let i = 0; i < 6; i++) { const y = new THREE.Mesh(KOSG.top, KOSG.m.yes); y.scale.set(0.9, 0.12, 0.3); const a = i / 6 * Math.PI * 2; y.position.set(Math.cos(a) * 0.55 + 0.25, 2.25, Math.sin(a) * 0.55); y.rotation.y = -a; y.rotation.z = -0.35; G.add(y) } }
+  else { const g = new THREE.Mesh(KOSG.sil, KOSG.m.ahs); g.scale.set(0.12, 1.1, 0.12); g.position.y = 0.55; G.add(g); const t = new THREE.Mesh(KOSG.top, sm.gece ? KOSG.m.yes2 : KOSG.m.yes); t.scale.set(0.75, 0.85, 0.75); t.position.y = 1.55; G.add(t) }
+  return G }
+function kosLamba(sm) { const G = new THREE.Group(); const d = new THREE.Mesh(KOSG.sil, KOSG.m.siy); d.scale.set(0.05, 2.4, 0.05); d.position.y = 1.2; G.add(d);
+  const l = new THREE.Mesh(KOSG.top, sm.gece ? new THREE.MeshBasicMaterial({ color: 0xfff0b0 }) : KOSG.m.bey); l.scale.setScalar(0.18); l.position.y = 2.45; G.add(l); return G }
+// engeller
+function kosEngel(tur) { const G = new THREE.Group(); let h = 0.6, uz = 0.6;
+  if (tur === 'duba') { for (const x of [-0.35, 0.35]) { const c = new THREE.Mesh(KOSG.kon, KOSG.m.tur); c.position.set(x, 0.3, 0); G.add(c); const s = new THREE.Mesh(KOSG.sil, KOSG.m.bey); s.scale.set(0.15, 0.08, 0.15); s.position.set(x, 0.32, 0); G.add(s); kosB(G, 'tur', 0.42, 0.04, 0.42, x, 0.02, 0) } h = 0.6; uz = 0.5 }
+  else if (tur === 'koli') { kosB(G, 'kah', 0.75, 0.5, 0.6, -0.25, 0.25, 0); kosB(G, 'kah', 0.6, 0.45, 0.55, 0.35, 0.22, 0.05); kosB(G, 'kah2', 0.5, 0.35, 0.5, 0.0, 0.68, 0); kosB(G, 'kir', 0.76, 0.05, 0.1, -0.25, 0.5, 0); h = 0.86; uz = 0.65 }
+  else if (tur === 'bariyer') { for (const x of [-0.55, 0.55]) kosB(G, 'gri', 0.08, 0.7, 0.08, x, 0.35, 0); for (let i = 0; i < 6; i++) kosB(G, i % 2 ? 'bey' : 'kir', 0.2, 0.2, 0.08, -0.5 + i * 0.2, 0.58, 0); h = 0.7; uz = 0.3 }
+  else if (tur === 'tabela') { for (const x of [-0.65, 0.65]) kosB(G, 'siy', 0.07, 2.0, 0.07, x, 1.0, 0); const t = kosB(G, 'sar', 1.4, 0.55, 0.08, 0, 1.5, 0); kosB(G, 'kah2', 1.44, 0.06, 0.1, 0, 1.2, 0);
+    const k = new THREE.Mesh(new THREE.CircleGeometry(0.15, 16), KOSG.m.kah2); k.position.set(0, 1.5, 0.05); G.add(k); h = -1.1; uz = 0.3 }   // h<0: alttan geçilir (eğil)
+  else if (tur === 'araba') { const c = [0x6aa9e0, 0xf3a2b4, 0x9ed8c4, 0xf6c453][Math.floor(Math.random() * 4)]; kosB(G, kosM(c), 1.15, 0.55, 2.4, 0, 0.45, 0); kosB(G, kosM(c), 1.0, 0.45, 1.3, 0, 0.95, 0.15); kosB(G, 'cam', 1.02, 0.32, 1.1, 0, 0.98, 0.15);
+    for (const x of [-0.5, 0.5]) for (const z of [-0.8, 0.8]) { const t = new THREE.Mesh(KOSG.sil, KOSG.m.siy); t.scale.set(0.2, 0.12, 0.2); t.rotation.z = Math.PI / 2; t.position.set(x, 0.2, z); G.add(t) } h = 9; uz = 2.4 }
+  G.userData = { tur, h, uz }; return G }
+function kosPara() { const m = new THREE.Mesh(KOSG.para, KOSG.para_m); m.rotation.x = Math.PI / 2; return m }
+function kosParca(k) { // siparişin parçası: tabağın resmi krem bir madalyonda
+  if (!KOSG.tex) KOSG.tex = {}; let t = KOSG.tex[k];
+  if (!t) { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#5a2f12'; x.beginPath(); x.arc(64, 64, 62, 0, 7); x.fill(); x.fillStyle = '#fff8ec'; x.beginPath(); x.arc(64, 64, 55, 0, 7); x.fill();
+    t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; KOSG.tex[k] = t; const im = new Image(); im.onload = () => { x.drawImage(im, 18, 18, 92, 92); t.needsUpdate = true }; im.src = productThumb(k) }
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false })); s.scale.set(0.85, 0.85, 1); return s }
+function kosYolDoku(sm) { const c = document.createElement('canvas'); c.width = 256; c.height = 512; const x = c.getContext('2d');
+  x.fillStyle = sm.yol; x.fillRect(0, 0, 256, 512); x.fillStyle = 'rgba(255,255,255,.06)'; for (let i = 0; i < 260; i++) x.fillRect(Math.random() * 256, Math.random() * 512, 2, 2);
+  x.fillStyle = '#fff6d8'; for (const lx of [85, 171]) for (let y = 0; y < 512; y += 128) x.fillRect(lx - 3, y + 20, 6, 70);
+  x.fillStyle = '#f2c14e'; x.fillRect(4, 0, 5, 512); x.fillRect(247, 0, 5, 512);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 14); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t }
+function kosKaldirimDoku(sm) { const c = document.createElement('canvas'); c.width = 128; c.height = 128; const x = c.getContext('2d'); x.fillStyle = sm.kal; x.fillRect(0, 0, 128, 128);
+  x.strokeStyle = 'rgba(90,47,18,.18)'; x.lineWidth = 3; for (let i = 0; i <= 128; i += 32) { x.beginPath(); x.moveTo(0, i); x.lineTo(128, i); x.stroke(); x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 128); x.stroke() }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 28); t.colorSpace = THREE.SRGBColorSpace; return t }
+// basit tohumlu rastgele (bölüm her oynanışta aynı dizilir)
+function kosRnd(s) { let a = s * 9301 + 49297; return () => { a = (a * 9301 + 49297) % 233280; return a / 233280 } }
+function kosPlan(bi) { const B = KOS_BOL[bi], R = kosRnd(bi + 7), E = [], P = [], I = []; let d = 45;
+  const tek = () => B.tur[Math.floor(R() * B.tur.length)], atla = t => t === 'duba' || t === 'koli' || t === 'bariyer';
+  while (d < B.m - 40) { const r = R(); let bos;
+    if (B.ucl && r < 0.18) { const t = ['bariyer', 'koli', 'tabela'][Math.floor(R() * 3)]; for (let l = 0; l < 3; l++) E.push({ d, l, t: l === 1 ? t : (R() < 0.5 ? 'araba' : t === 'tabela' ? 'tabela' : 'koli') }); bos = 1 }
+    else if (B.cift && r < 0.5) { bos = Math.floor(R() * 3); for (let l = 0; l < 3; l++) if (l !== bos) E.push({ d, l, t: tek() }) }
+    else { const l = Math.floor(R() * 3); E.push({ d, l, t: tek() }); bos = (l + 1 + Math.floor(R() * 2)) % 3 }
+    const n = 4 + Math.floor(R() * 4); for (let i = 0; i < n; i++) P.push({ d: d - 10 + i * 2.2, l: bos, y: 0.55 });
+    const last = E[E.length - 1]; if (atla(last.t) && R() < 0.5) for (let i = -2; i <= 2; i++) P.push({ d: last.d + i * 1.3, l: last.l, y: 0.55 + (1.0 - Math.abs(i) * 0.33) });
+    d += B.ar * (0.8 + R() * 0.45) }
+  for (let i = 0; i < B.n; i++) { const pd = 70 + (B.m - 120) * (i + 0.5) / B.n; const ob = E.filter(e => Math.abs(e.d - pd) < 6); const dolu = new Set(ob.map(e => e.l)); let l = Math.floor(R() * 3); for (let k = 0; k < 3 && dolu.has(l); k++)l = (l + 1) % 3; I.push({ d: pd, l, y: 0.8 }) }
+  return { E, P, I } }
+// ---- oyuna başla ----
+function kosBasla(bi) {
+  kosHazirla(); const B = KOS_BOL[bi], sm = KOS_SEMT[B.semt], k = kosYemek(bi);
+  let P = $('kosP'); if (!P) { P = document.createElement('div'); P.id = 'kosP'; P.setAttribute('data-dilyok', '0'); $('game').appendChild(P) }
+  P.hidden = false; P.setAttribute('data-dilyok', '1'); UI.modal = true; document.documentElement.classList.add('kosOn');
+  P.innerHTML = `<canvas class="kosCv"></canvas>
+   <div class="kosHud"><button class="kosX" type="button" aria-label="Çık">${ic('close')}</button>
+     <div class="kosYol"><i class="kosYolD"></i><span class="kosMoto">🛵</span><span class="kosEv">🏠</span></div>
+     <div class="kosSag"><span class="kosCan">${'<i>❤</i>'.repeat(3)}</span><span class="kosPar">${uiIc('i_coin')}<b>0</b></span><span class="kosSip"><img src="${productThumb(k)}" alt=""><b>0/${B.n}</b></span></div></div>
+   <div class="kosIp">${kt(`${kosMus(B.mus)} için <b>${kosYad(k)}</b>`, `<b>${kosYad(k)}</b> for ${kosMus(B.mus)}`)}<small>${kt('Kaydır: ← → şerit · ↑ zıpla · ↓ eğil', 'Swipe: ← → lane · ↑ jump · ↓ duck')}</small></div>
+   <div class="kosSay"></div>`;
+  // ayrı WebGL çizici (oyunun ana sahnesine dokunmaz; çıkışta kapatılır)
+  const cv = P.querySelector('.kosCv');
+  const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' });
+  r.setPixelRatio(Math.min(devicePixelRatio || 1, (typeof PERF !== 'undefined' && GFX[PERF.q] || { pr: 2 }).pr || 2)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping;
+  const sc = new THREE.Scene(); sc.background = new THREE.Color(sm.sky); sc.fog = new THREE.Fog(sm.fog, 30, 78);
+  sc.add(new THREE.HemisphereLight(sm.gece ? 0x8aa0ff : 0xffffff, sm.sicak ? 0xc98a5a : 0xbfa58a, 1.05 * sm.isik));
+  const gl = new THREE.DirectionalLight(sm.sicak ? 0xffd2a0 : 0xffffff, 1.5 * sm.isik); gl.position.set(6, 12, 4); sc.add(gl);
+  const cam = new THREE.PerspectiveCamera(58, 1, 0.1, 140);
+  // zemin, yol, kaldırımlar, deniz
+  const zem = new THREE.Mesh(new THREE.PlaneGeometry(80, 160), kosM(sm.yer)); zem.rotation.x = -Math.PI / 2; zem.position.set(0, -0.02, -60); sc.add(zem);
+  const yt = kosYolDoku(sm), yol = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 160), new THREE.MeshToonMaterial({ map: yt, gradientMap: grad })); yol.rotation.x = -Math.PI / 2; yol.position.set(0, 0, -60); sc.add(yol);
+  const kt = kosKaldirimDoku(sm); const KAL = [];
+  for (const s of [-1, 1]) { const k2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.16, 160), new THREE.MeshToonMaterial({ map: kt, gradientMap: grad })); k2.position.set(s * 3.8, 0.08, -60); sc.add(k2); KAL.push(k2) }
+  if (sm.deniz) { const de = new THREE.Mesh(new THREE.PlaneGeometry(60, 160), new THREE.MeshToonMaterial({ color: 0x6ec6e6, gradientMap: grad })); de.rotation.x = -Math.PI / 2; de.position.set(38, 0.01, -60); sc.add(de) }
+  // yan yapılar
+  const YAN = []; const yanEkle = (z, sag) => { let g; const r2 = Math.random(); g = sm.deniz && sag ? (r2 < 0.7 ? kosAgac(sm) : kosLamba(sm)) : r2 < 0.62 ? kosEv(sm, sag) : r2 < 0.85 ? kosAgac(sm) : kosLamba(sm);
+    if (!g.userData.uz) { g.position.x = sag ? 5.6 + Math.random() * 1.2 : -5.6 - Math.random() * 1.2; g.userData.uz = 2.5 + Math.random() * 2 } g.position.z = z; sc.add(g); YAN.push(g); return g.userData.uz };
+  for (const sag of [false, true]) { let z = 8; while (z > -90) z -= yanEkle(z, sag) }
+  // kurye: motor + sürücü kedi
+  const O = new THREE.Group(); sc.add(O); const OK = new THREE.Group(); OK.scale.setScalar(1.55); O.add(OK);   // kurye biraz büyük: arkadan iyi görünsün
+  let moto; try { moto = SCOOT.g.clone(true); moto.visible = true; moto.traverse(o => { o.visible = true }) } catch (e) { moto = new THREE.Group(); kosB(moto, 'kir', 0.36, 0.3, 0.9, 0, 0.3, 0) }
+  moto.position.set(0, 0, 0); moto.rotation.set(0, Math.PI, 0); OK.add(moto);
+  let surucu = null, mix = null;
+  try { const cfg = S.chars.courier || COURIER_CFG; const rr = SkeletonUtils.clone(TEMPLATE); applyLook(rr, cfg, 1024); rr.scale.set(YS, YS, YS); rr.position.set(0.14, 0.27, 0.02); rr.rotation.y = Math.PI;
+    rr.traverse(o => { if (o.isMesh) o.frustumCulled = false }); OK.add(rr); surucu = rr; mix = new THREE.AnimationMixer(rr); const clip = CLIPS.SIT_BASE || CLIPS.Chair_Sit_Idle_F; if (clip) mix.clipAction(clip).play() } catch (e) { console.warn('kurye kedi', e) }
+  const golge = new THREE.Mesh(new THREE.CircleGeometry(0.5, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false })); golge.rotation.x = -Math.PI / 2; golge.position.y = 0.02; sc.add(golge);
+  const plan = kosPlan(bi);
+  const G = { bi, B, sm, k, r, sc, cam, O, moto, surucu, mix, golge, yt, kt, YAN, yanEkle, plan, d: 0, v: B.v[0], serit: 1, x: 0, y: 0, vy: 0, egil: 0, can: 3, carp: 0, dok: 0, para: 0, sip: 0, bitti: false, bas: 2.6, t: 0,
+    E: [], P: [], I: [], ei: 0, pi: 0, ii: 0, ev: null, sallan: 0, son: performance.now() };
+  KOS.G = G; KOS.on = true; kosBoyut();
+  // dokunma / klavye
+  let t0 = null; P.onpointerdown = e => { if (e.target.closest('button')) return; t0 = { x: e.clientX, y: e.clientY, t: performance.now() } };
+  P.onpointerup = e => { if (!t0) return; const dx = e.clientX - t0.x, dy = e.clientY - t0.y; t0 = null; const a = Math.abs(dx), b = Math.abs(dy); if (Math.max(a, b) < 24) return; if (a > b) kosHareket(dx > 0 ? 'sag' : 'sol'); else kosHareket(dy < 0 ? 'zipla' : 'egil') };
+  P.onpointercancel = () => { t0 = null };
+  KOS.tus = e => { const m = { ArrowLeft: 'sol', KeyA: 'sol', ArrowRight: 'sag', KeyD: 'sag', ArrowUp: 'zipla', KeyW: 'zipla', Space: 'zipla', ArrowDown: 'egil', KeyS: 'egil' }[e.code]; if (m) { e.preventDefault(); kosHareket(m) } };
+  addEventListener('keydown', KOS.tus);
+  P.querySelector('.kosX').onclick = () => kosCik(true);
+  try { if (typeof AU !== 'undefined' && AU.ctx && AU.ctx.state === 'suspended') AU.ctx.resume() } catch (e) { }
+  KOS.raf = requestAnimationFrame(kosKare);
+}
+function kosBoyut() { const G = KOS.G; if (!G) return; const cv = G.r.domElement, w = cv.clientWidth || innerWidth, h = cv.clientHeight || innerHeight; G.r.setSize(w, h, false); G.cam.aspect = w / h; G.cam.fov = w / h < 1.2 ? 70 : 58; G.cam.updateProjectionMatrix() }
+addEventListener('resize', () => { try { kosBoyut() } catch (e) { } });
+function kosHareket(m) { const G = KOS.G; if (!G || G.bitti || G.bas > 0) return;
+  if (m === 'sol' && G.serit > 0) { G.serit--; try { sfx('swap') } catch (e) { } }
+  else if (m === 'sag' && G.serit < 2) { G.serit++; try { sfx('swap') } catch (e) { } }
+  else if (m === 'zipla' && G.y <= 0.001) { G.vy = 6.6; G.egil = 0; try { sfx('pop') } catch (e) { } }
+  else if (m === 'egil') { G.egil = 0.65; if (G.y > 0) G.vy = Math.min(G.vy, -8); try { sfx('tap') } catch (e) { } } }
+function kosKare(now) {
+  const G = KOS.G; if (!KOS.on || !G) return; KOS.raf = requestAnimationFrame(kosKare);
+  const dt = Math.min(0.05, (now - G.son) / 1000); G.son = now; G.t += dt; const P = $('kosP');
+  // geri sayım
+  if (G.bas > 0) { const o = Math.ceil(G.bas - 0.6); G.bas -= dt; const el = P.querySelector('.kosSay'); const n = G.bas > 0.6 ? String(o) : kt('Hadi!', 'Go!');
+    if (el.textContent !== n) { el.textContent = n; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); try { sfx(G.bas > 0.6 ? 'tap' : 'chime') } catch (e) { } } if (G.bas <= 0) { el.textContent = ''; setTimeout(() => { const ip = P.querySelector('.kosIp'); if (ip) ip.classList.add('git') }, 2500) } }
+  const yuruyor = G.bas <= 0 && !G.bitti;
+  if (yuruyor) { const u = Math.min(1, G.d / G.B.m); G.v = G.B.v[0] + (G.B.v[1] - G.B.v[0]) * u; if (G.yavas > 0) { G.yavas -= dt } G.d += G.v * (G.yavas > 0 ? 0.6 : 1) * dt }
+  const adim = yuruyor ? G.v * (G.yavas > 0 ? 0.6 : 1) * dt : 0;
+  // kayan dokular
+  G.yt.offset.y += adim / (160 / 14); G.kt.offset.y += adim / (160 / 28);
+  // yan yapılar
+  let minZ = { l: 0, r: 0 }; for (const g of G.YAN) { g.position.z += adim; const s = g.position.x > 0 ? 'r' : 'l'; minZ[s] = Math.min(minZ[s], g.position.z - (g.userData.uz || 3)) }
+  for (let i = G.YAN.length - 1; i >= 0; i--) { const g = G.YAN[i]; if (g.position.z > 12) { G.sc.remove(g); G.YAN.splice(i, 1) } }
+  for (const s of ['l', 'r']) { let z = minZ[s]; while (z > -90) z -= G.yanEkle(z, s === 'r') }
+  // kurye hareketi
+  const hx = KOS_SERIT[G.serit]; G.x += (hx - G.x) * Math.min(1, dt * 14); G.O.position.x = G.x; G.O.rotation.z = (G.x - hx) * 0.25;
+  if (G.vy || G.y > 0) { G.vy -= 19 * dt; G.y = Math.max(0, G.y + G.vy * dt); if (G.y === 0) G.vy = 0 }
+  if (G.egil > 0) G.egil -= dt; G.O.position.y = G.y; const eg = G.egil > 0 ? 1 : 0; G.O.scale.y += ((eg ? 0.62 : 1) - G.O.scale.y) * Math.min(1, dt * 16); G.O.rotation.x = eg ? 0.12 : 0;
+  G.O.visible = !(G.dok > 0 && Math.floor(G.t * 14) % 2); if (G.dok > 0) G.dok -= dt;
+  G.golge.position.x = G.x; G.golge.scale.setScalar(1 - Math.min(0.5, G.y * 0.35));
+  if (G.mix) G.mix.update(dt);
+  // nesneleri ekle (önümüzdeki 75 m)
+  const ileri = G.d + 75, pl = G.plan;
+  while (G.ei < pl.E.length && pl.E[G.ei].d < ileri) { const e = pl.E[G.ei++]; const m = kosEngel(e.t); m.position.set(KOS_SERIT[e.l], 0, -(e.d - G.d)); G.sc.add(m); G.E.push({ e, m }) }
+  while (G.pi < pl.P.length && pl.P[G.pi].d < ileri) { const p = pl.P[G.pi++]; const m = kosPara(); m.position.set(KOS_SERIT[p.l], p.y, -(p.d - G.d)); G.sc.add(m); G.P.push({ p, m }) }
+  while (G.ii < pl.I.length && pl.I[G.ii].d < ileri) { const it = pl.I[G.ii++]; const m = kosParca(G.k); m.position.set(KOS_SERIT[it.l], it.y, -(it.d - G.d)); G.sc.add(m); G.I.push({ it, m }) }
+  if (!G.ev && G.B.m - G.d < 75) { G.ev = kosVaris(G); G.sc.add(G.ev) }
+  if (G.ev) G.ev.position.z = -(G.B.m - G.d) - 1.5;
+  const ust = G.egil > 0 ? 0.8 : 1.35;
+  for (let i = G.E.length - 1; i >= 0; i--) { const o = G.E[i]; o.m.position.z = -(o.e.d - G.d); const z = o.m.position.z, ud = o.m.userData;
+    if (z > 8) { G.sc.remove(o.m); G.E.splice(i, 1); continue }
+    if (G.dok <= 0 && !o.vuruldu && Math.abs(o.m.position.x - G.x) < 0.75 && z + ud.uz / 2 > -0.35 && z - ud.uz / 2 < 0.35) {
+      const carpti = ud.h < 0 ? (G.y + ust > -ud.h) : (G.y < ud.h - 0.05);
+      if (carpti) { o.vuruldu = true; kosCarp(G) } } }
+  for (let i = G.P.length - 1; i >= 0; i--) { const o = G.P[i]; o.m.position.z = -(o.p.d - G.d); o.m.rotation.z += dt * 4; const z = o.m.position.z;
+    if (z > 8) { G.sc.remove(o.m); G.P.splice(i, 1); continue }
+    if (Math.abs(z) < 0.6 && Math.abs(o.m.position.x - G.x) < 0.7 && Math.abs(o.m.position.y - (G.y + 0.55)) < 0.75) { G.sc.remove(o.m); G.P.splice(i, 1); G.para++; try { sfx('coin') } catch (e) { } } }
+  for (let i = G.I.length - 1; i >= 0; i--) { const o = G.I[i]; o.m.position.z = -(o.it.d - G.d); o.m.position.y = o.it.y + Math.sin(G.t * 4 + i) * 0.1; const z = o.m.position.z;
+    if (z > 8) { G.sc.remove(o.m); G.I.splice(i, 1); continue }
+    if (Math.abs(z) < 0.7 && Math.abs(o.m.position.x - G.x) < 0.8 && Math.abs(o.m.position.y - (G.y + 0.6)) < 0.9) { G.sc.remove(o.m); G.I.splice(i, 1); G.sip++; try { sfx('discover') } catch (e) { } kosUcan(P) } }
+  // kamera: arkadan, hafif yukarıdan; çarpınca sarsılır
+  if (G.sallan > 0) G.sallan -= dt; const sh = G.sallan > 0 ? (Math.random() - 0.5) * 0.18 : 0;
+  G.cam.position.set(G.x * 0.6 + sh, 3.45 + G.y * 0.3, 5.6); G.cam.lookAt(G.x * 0.75, 0.7 + G.y * 0.25, -8);
+  // gösterge
+  const hud = P.querySelector('.kosHud'); if (hud) { const u = Math.min(1, G.d / G.B.m); hud.querySelector('.kosYolD').style.width = (u * 100).toFixed(1) + '%'; hud.querySelector('.kosMoto').style.left = `calc(${(u * 100).toFixed(1)}% - 12px)`;
+    hud.querySelector('.kosPar b').textContent = G.para; hud.querySelector('.kosSip b').textContent = `${G.sip}/${G.B.n}`;
+    hud.querySelectorAll('.kosCan i').forEach((h, i) => h.classList.toggle('bos', i >= G.can)) }
+  if (!G.bitti && G.d >= G.B.m) kosBitir(true);
+  try { G.r.render(G.sc, G.cam) } catch (e) { console.warn('koşu çizim', e) }
+}
+function kosVaris(G) { // sokağın sonunda müşterinin kapısı ve el sallayan müşteri
+  const V = new THREE.Group(); const ev = new THREE.Group(); kosB(ev, kosM(0xfff1d6), 6, 3.4, 2.4, 0, 1.7, -1.6);
+  const cat = new THREE.Mesh(new THREE.ConeGeometry(4.6, 1.5, 4), KOSG.m.kir); cat.rotation.y = Math.PI / 4; cat.scale.z = 0.45; cat.position.set(0, 4.1, -1.6); ev.add(cat);
+  kosB(ev, 'ahs', 1.1, 2.0, 0.1, 0, 1.0, -0.38); kosB(ev, 'sar', 0.08, 0.08, 0.06, 0.38, 1.0, -0.3);
+  for (let i = 0; i < 7; i++) { const t = kosB(ev, i % 2 ? 'bey' : 'tur', 0.86, 0.08, 0.6, -2.6 + i * 0.86, 2.55, -0.2); t.rotation.x = 0.35 }
+  V.add(ev);
+  // kutlama kemeri
+  for (const x of [-2.3, 2.3]) kosB(V, 'bey', 0.15, 2.6, 0.15, x, 1.3, 0.6);
+  for (let i = 0; i < 9; i++) kosB(V, i % 2 ? 'kir' : 'sar', 0.52, 0.32, 0.1, -2.1 + i * 0.52, 2.55, 0.6);
+  try { const rr = SkeletonUtils.clone(TEMPLATE); applyLook(rr, (typeof randomLook === 'function' ? randomLook() : null) || COURIER_CFG, 512); rr.scale.set(YS, YS, YS); rr.position.set(-1.1, 0, 0.2); rr.traverse(o => { if (o.isMesh) o.frustumCulled = false }); V.add(rr);
+    const mx = new THREE.AnimationMixer(rr); const c = CLIPS.Wave_One_Hand || CLIPS.Idle_12; if (c) mx.clipAction(c).play(); V.userData.mx = mx; KOS.G.mx2 = mx } catch (e) { }
+  return V }
+function kosUcan(P) { const s = P.querySelector('.kosSip'); if (!s) return; s.classList.remove('vur'); void s.offsetWidth; s.classList.add('vur') }
+function kosCarp(G) { G.can--; G.carp++; G.dok = 1.3; G.yavas = 0.9; G.sallan = 0.35; try { sfx('nope') } catch (e) { }
+  try { navigator.vibrate && navigator.vibrate(60) } catch (e) { } const P = $('kosP'); P.classList.remove('kirmizi'); void P.offsetWidth; P.classList.add('kirmizi');
+  if (G.can <= 0) kosBitir(false) }
+function kosBitir(ok) {
+  const G = KOS.G; if (!G || G.bitti) return; G.bitti = true; const K = kosS(), bi = G.bi;
+  let yil = 0, odul = 0, gem = 0;
+  if (ok) { yil = 1 + (G.sip >= G.B.n ? 1 : 0) + (G.carp <= 1 ? 1 : 0); const ilk = !K.ilk[bi]; odul = Math.round(kosOdul(bi) * (ilk ? 1 : 0.25)) + G.para;
+    if (yil === 3 && !K.gem[bi]) { gem = 3 + Math.floor(bi / 3); K.gem[bi] = true } K.ilk[bi] = true; K.y[bi] = Math.max(K.y[bi] | 0, yil);
+    try { addCoins(odul, 'bonus') } catch (e) { S.coins += odul } if (gem) { S.gems += gem; try { hudGems() } catch (e) { } } try { addXP(20 + bi * 6) } catch (e) { }
+    try { sfx('levelup') } catch (e) { } }
+  else { odul = Math.round(G.para / 2); if (odul) try { addCoins(odul, 'bonus') } catch (e) { } try { sfx('nope') } catch (e) { } }
+  try { markDirty(); saveNow() } catch (e) { }
+  const P = $('kosP'), k = G.k, sonraki = bi + 1 < KOS_BOL.length && kosAcik(bi + 1);
+  setTimeout(() => { if (!P || P.hidden) return; const s = document.createElement('div'); s.className = 'kosSon';
+    s.innerHTML = `<div class="kosKart"><img src="${productThumb(k)}" alt=""><h3>${ok ? kt('Sipariş teslim edildi!', 'Order delivered!') : kt('Sipariş yolda kaldı', 'The order didn’t make it')}</h3>
+      <p>${ok ? kt(`${kosMus(G.B.mus)} çok mutlu, teşekkür ediyor!`, `${kosMus(G.B.mus)} is so happy. Thank you!`) : kt('Canların bitti. Bir daha dene, bu sefer kapıya yetişirsin!', 'Out of hearts. Try again, you’ll make it this time!')}</p>
+      ${ok ? `<div class="kosYY">${[0, 1, 2].map(j => `<i class="${j < yil ? 'on' : ''}">★</i>`).join('')}</div>
+      <ul class="kosOz"><li class="${G.sip >= G.B.n ? 'on' : ''}">${kt('Siparişin bütün parçaları', 'Every part of the order')} · ${G.sip}/${G.B.n}</li><li class="${G.carp <= 1 ? 'on' : ''}">${kt('En çok 1 çarpma', 'At most 1 bump')} · ${G.carp}</li></ul>` : ''}
+      <div class="kosOd"><span>${uiIc('i_coin')}+${odul}</span>${gem ? `<span>${uiIc('i_gem')}+${gem}</span>` : ''}</div>
+      <div class="kosDug"><button class="btn light" type="button" data-k="harita">${kt('Bölümler', 'Levels')}</button><button class="btn" type="button" data-k="tekrar">${kt('Tekrar', 'Retry')}</button>${ok && sonraki ? `<button class="btn green" type="button" data-k="sonraki">${kt('Sonraki bölüm', 'Next level')}</button>` : ''}</div></div>`;
+    P.appendChild(s);
+    s.querySelector('[data-k=harita]').onclick = () => { kosCik(false); kosHarita() };
+    s.querySelector('[data-k=tekrar]').onclick = () => { kosCik(false); kosBasla(bi) };
+    const n = s.querySelector('[data-k=sonraki]'); if (n) n.onclick = () => { kosCik(false); kosBasla(bi + 1) } }, ok ? 1400 : 700);
+  if (ok) { const f = () => { if (!KOS.on || KOS.G !== G) return; if (G.mx2) G.mx2.update(1 / 60); requestAnimationFrame(f) }; f() }
+}
+function kosCik(sor) {
+  const G = KOS.G; if (sor && G && !G.bitti && G.bas <= 0 && !(KOS.cikT && Date.now() - KOS.cikT < 2500)) { KOS.cikT = Date.now(); const ip = $('kosP').querySelector('.kosIp'); if (ip) { ip.classList.remove('git'); ip.innerHTML = kt('Çıkmak için <b>✕</b>’e bir daha dokun<small>Sipariş yarıda kalır, topladığın altınlar gelmez</small>', 'Tap <b>✕</b> again to quit<small>The order stays undelivered and you lose the coins you collected</small>'); setTimeout(() => ip.classList.add('git'), 2400) } return }
+  KOS.cikT = 0;
+  KOS.on = false; cancelAnimationFrame(KOS.raf); removeEventListener('keydown', KOS.tus);
+  try { if (G) { G.sc.traverse(o => { if (o.material && o.material.map && o.material.map.isCanvasTexture && o.material.map !== (KOSG.tex || {})[G.k]) { } }); G.r.dispose(); try { G.r.forceContextLoss() } catch (e) { } } } catch (e) { }
+  KOS.G = null; const P = $('kosP'); if (P) { P.hidden = true; P.innerHTML = '' } document.documentElement.classList.remove('kosOn'); UI.modal = false; try { hudDots() } catch (e) { }
+}
+// ana sahne koşu sırasında çizilmez (ekran kartı tek işe odaklansın)
+{ const _rr = renderer.render.bind(renderer); renderer.render = function () { if (KOS.on) return; return _rr.apply(null, arguments) } }
+{ const st = document.createElement('style'); st.textContent = `
+html.kosOn #game>*:not(#kosP){visibility:hidden!important}
+#kosP{position:absolute;inset:0;z-index:9000;background:#bfe6f5;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;font-family:var(--font-display,"Baloo 2",system-ui)}
+#kosP[hidden]{display:none}#kosP .kosCv{position:absolute;inset:0;width:100%;height:100%;display:block}
+#kosP.kirmizi::after{content:"";position:absolute;inset:0;background:rgba(217,71,58,.28);animation:kosKir .45s ease forwards;pointer-events:none}@keyframes kosKir{to{opacity:0}}
+#kosP .kosHud{position:absolute;left:10px;right:10px;top:8px;display:flex;align-items:center;gap:10px;pointer-events:none}
+#kosP .kosHud button{pointer-events:auto}
+#kosP .kosX{flex:none;width:40px;height:40px;border:3px solid #5a2f12;border-radius:50%;background:#fff8ec;box-shadow:0 3px 0 #5a2f12;display:grid;place-items:center;cursor:pointer}#kosP .kosX .ic{width:20px;height:20px}
+#kosP .kosYol{position:relative;flex:1;height:16px;border:3px solid #5a2f12;border-radius:999px;background:#fff8ec;box-shadow:0 3px 0 #5a2f12;max-width:420px;margin:0 auto}
+#kosP .kosYolD{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(#ffd56b,#f0a33a)}
+#kosP .kosMoto{position:absolute;top:-14px;font-size:22px;line-height:1;transform:scaleX(-1)}#kosP .kosEv{position:absolute;right:-12px;top:-14px;font-size:22px;line-height:1}
+#kosP .kosSag{display:flex;align-items:center;gap:6px}
+#kosP .kosSag>span{display:flex;align-items:center;gap:4px;padding:3px 10px;border:3px solid #5a2f12;border-radius:999px;background:#fff8ec;box-shadow:0 3px 0 #5a2f12;font-weight:900;font-size:15px;color:#4a2a14}
+#kosP .kosSag img{width:22px;height:22px;object-fit:contain}
+#kosP .kosCan i{font-style:normal;color:#e0483f;font-size:16px;transition:transform .2s,opacity .2s}#kosP .kosCan i.bos{opacity:.25;transform:scale(.8)}
+#kosP .kosSip.vur{animation:kosVur .4s ease}@keyframes kosVur{40%{transform:scale(1.25)}}
+#kosP .kosIp{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);padding:6px 18px;border:3px solid #5a2f12;border-radius:16px;background:#fff8ec;box-shadow:0 3px 0 #5a2f12;text-align:center;color:#4a2a14;font-size:15px;white-space:nowrap;transition:opacity .5s,transform .5s}
+#kosP .kosIp small{display:block;font:800 12px var(--font-body,system-ui);opacity:.8}#kosP .kosIp.git{opacity:0;transform:translate(-50%,20px)}
+#kosP .kosSay{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:84px;font-weight:900;color:#fff8ec;text-shadow:0 0 0 #5a2f12,4px 4px 0 #5a2f12,-4px 4px 0 #5a2f12,4px -4px 0 #5a2f12,-4px -4px 0 #5a2f12,0 8px 0 #5a2f12;pointer-events:none}
+#kosP .kosSay.pop{animation:kosPop .5s cubic-bezier(.3,1.6,.5,1)}@keyframes kosPop{from{transform:translate(-50%,-50%) scale(.4);opacity:0}}
+#kosP .kosSon{position:absolute;inset:0;display:grid;place-items:center;background:rgba(40,20,10,.35);animation:syAc .3s ease both}
+#kosP .kosKart{width:min(420px,88%);max-height:92%;overflow:auto;padding:14px 18px 16px;border:4px solid #5a2f12;border-radius:22px;background:#fff8ec;box-shadow:0 6px 0 #5a2f12;text-align:center;color:#4a2a14;animation:kosPop2 .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes kosPop2{from{transform:scale(.7);opacity:0}}
+#kosP .kosKart>img{width:64px;height:64px;object-fit:contain;margin-top:-4px}#kosP .kosKart h3{margin:2px 0;font-size:22px}#kosP .kosKart p{margin:2px 0 6px;font:800 13px var(--font-body,system-ui)}
+#kosP .kosYY{display:flex;justify-content:center;gap:6px;font-size:34px;line-height:1}#kosP .kosYY i{font-style:normal;color:#e6d8c2;-webkit-text-stroke:2px #5a2f12}#kosP .kosYY i.on{color:#f6c94a}
+#kosP .kosOz{list-style:none;margin:6px 0;padding:0;font:800 12px var(--font-body,system-ui);display:flex;flex-direction:column;gap:2px}#kosP .kosOz li::before{content:"○ "}#kosP .kosOz li.on::before{content:"✔ ";color:#2f8f7f}
+#kosP .kosOd{display:flex;justify-content:center;gap:10px;margin:6px 0 10px;font-size:20px;font-weight:900}#kosP .kosOd span{display:flex;align-items:center;gap:3px}#kosP .kosOd img{width:24px;height:24px}
+#kosP .kosDug{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}
+/* bölüm haritası */
+#kosM .skscroll{display:block!important;columns:auto!important}
+#kosM .kosUst{margin:0 0 8px;font:800 12.5px var(--font-body,system-ui);color:#4a2a14;display:flex;align-items:center;gap:8px;justify-content:space-between}#kosM .kosUst b{display:flex;align-items:center;gap:3px;white-space:nowrap;font-family:var(--font-display)}#kosM .kosUst .ic{width:16px;height:16px}
+#kosM .kosIzgara{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+#kosM .kosBol{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:16px 4px 6px;border:3px solid #5a2f12;border-radius:16px;background:#fff8ec;box-shadow:0 3px 0 #5a2f12;cursor:pointer;color:#4a2a14;font-family:var(--font-display);min-width:0}
+#kosM .kosBol.s_gun{background:linear-gradient(#e2f4fb,#fff8ec 55%)}#kosM .kosBol.s_sahil{background:linear-gradient(#d7f1f8,#fbefd2 60%)}#kosM .kosBol.s_aksam{background:linear-gradient(#ffd9b8,#fff3e3 60%)}#kosM .kosBol.s_gece{background:linear-gradient(#bcc4ea,#eef0fb 60%)}
+#kosM .kosBol.kilit{opacity:.6;cursor:default}
+#kosM .kosNo{position:absolute;left:-6px;top:-8px;width:26px;height:26px;display:grid;place-items:center;border:2.5px solid #5a2f12;border-radius:50%;background:#f6c94a;font-weight:900;font-size:13px}
+#kosM .kosSemt{position:absolute;right:6px;top:3px;font:800 9px var(--font-body,system-ui);opacity:.7}
+#kosM .kosBol img{width:44px;height:44px;object-fit:contain}#kosM .kosKilit{width:44px;height:44px;display:grid;place-items:center}#kosM .kosKilit .ic{width:26px;height:26px}
+#kosM .kosBol b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}#kosM .kosBol small{font:800 10px var(--font-body,system-ui);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#kosM .kosY{display:flex;gap:1px;font-size:15px;line-height:1}#kosM .kosY i{font-style:normal;color:#e6d8c2;-webkit-text-stroke:1.2px #5a2f12}#kosM .kosY i.on{color:#f6c94a}
+.kosGir{display:inline-flex;align-items:center;gap:4px}
+.kosGirM{position:absolute!important;right:64px;top:8px;z-index:2;padding:6px 14px!important;border:3px solid #5a2f12!important;border-radius:999px!important;background:linear-gradient(#ffe590,#f0b52e)!important;box-shadow:0 3px 0 #5a2f12!important;font:900 14px var(--font-display)!important;color:#4a2a14!important}.kosGirM .ic{width:18px;height:18px}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
