@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795472224",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795472794",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24543,7 +24543,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261124-0116';
+const OLC_DERLEME = '20261124-0123';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -24747,11 +24747,11 @@ function hkKur() { if (EVMODE || !S || S.hk) return; const H = hkS();
   else H.gor.ozet = 1;
   try { markDirty() } catch (e) { } }
 // ---- durum takibi: rehber sonu, seviye, düğmeler ----
-setInterval(() => { try { if (typeof S === 'undefined' || !S || EVMODE || !S.created) return; if (!S.hk) hkKur(); const H = hkS();
+setInterval(() => { try { if (typeof S === 'undefined' || !S || EVMODE) return; if (!S.created) { if (S.hk) hkGizle(); return } if (!S.hk) hkKur(); const H = hkS();
     if (H.acil && !H.giris && S.tut === 'done' && S.tur == null) { H.giris = 1; markDirty() }
     for (const A of HK_AC) if (!H.ac[A.k] && (S.lvl | 0) >= A.lv) { H.ac[A.k] = 1; if (H.acil) H.kuy.push(A.sahne); else H.gor[A.sahne] = 1; markDirty() }
     hkGizle() } catch (e) { console.warn('hikâye', e) } }, 700);
-function hkGizle() { const g = $('game'); if (!g) return; const H = S.hk, on = hkAcik(); for (const A of HK_AC) { const gz = !!(on && H && H.acil && !H.ac[A.k]); if (g.classList.contains('hkG-' + A.k) !== gz) g.classList.toggle('hkG-' + A.k, gz) } }
+function hkGizle() { const g = $('game'); if (!g) return; const H = S.hk, on = (() => { try { return !EVMODE && HK.bayrak !== false && !!S && !!S.hk } catch (e) { return false } })();   /* V353: açılışta ve ekip kurulurken de (S.created öncesi) */ for (const A of HK_AC) { const gz = !!(on && H && H.acil && !H.ac[A.k]); if (g.classList.contains('hkG-' + A.k) !== gz) g.classList.toggle('hkG-' + A.k, gz) } }
 function hkParla(sel) { setTimeout(() => { try { const e = document.querySelector(sel); if (!e) return; e.classList.add('hkYeni'); setTimeout(() => e.classList.remove('hkYeni'), 7000) } catch (er) { } }, 350) }
 // ---- gösterim ----
 const hkUygun = () => { try { if (!hkAcik() || !started || S.tut !== 'done' || S.tur != null || UI.mode !== 'cafe' || UI.modal) return false;
