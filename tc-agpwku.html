@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795468894",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795469734",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -16272,7 +16272,7 @@ function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
     if(nx.length){const b=()=>document.querySelector(`#merge [data-thdv="${X}"]`);RH2.allow=[b];rh2Show('mgdv'+X+(I.dl[X]|0),{title:'Teslim et',text:`<b>${ITEMS[X].name}</b> hazır! Hedefteki onaya dokun.`,target:b,place:'head'});return}
     if(ny.length>=2){const a=ny[0],z=ny[1];RH2.pair=[a,z];RH2.allow=[()=>cellEl(a)];cellEl(z)&&cellEl(z).classList.add('tuthl');
       rh2Show('mgmg'+X+a+z,{title:'Birleştir',text:`İki <b>${ITEMS[Y].name}</b>’ü üst üste sürükle.`,target:()=>cellEl(a),drag:{from:()=>cellEl(a),to:()=>cellEl(z)},place:'head'});return}
-    const pk=bagK.slice(4);const b=()=>document.querySelector(`#pkRaf [data-pk="${pk}"]`);RH2.allow=[b];
+    const pk=bagK.slice(4);const b=()=>(typeof pkHucre==='function'&&pkHucre(pk))||document.querySelector(`#pkRaf [data-pk="${pk}"]`);RH2.allow=[b];   // V351: paket tahtanın içinde
     rh2Show('mgbag'+X+ny.length,{title:ny.length?'Bir tane daha':'Pakete dokun',text:ny.length?`Bir kez daha dokun.`:`<b>${ITEMS[Y].name}</b> lazım. <b>${PACKS.find(P=>'bag_'+P.k===bagK).n}</b> paketine dokun.`,target:b,place:'head'});return}
   if(st==='g_rb'){if(m!=='book')return setMode('book');RH2.allow=[];RH2.ok=[];
     if(RH2.sub!=='rb2')return rh2Show('rb1',{title:'Tarif defterimiz',text:'Bütün tariflerin burada. Bir tarifte <b>Hedefle</b>’ye dokunursan, istediği malzemeler birleştirme tahtasında hep gözünün önünde olur.',target:()=>$('rbTabs'),place:'bottom',
@@ -24542,7 +24542,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261124-0018';
+const OLC_DERLEME = '20261124-0030';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -25111,6 +25111,105 @@ ${G}.nonav #albBtn${NX},${G}.edmode #albBtn${NX}{visibility:hidden!important;poi
 #albPf{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:7px 12px;border:2.5px solid ${ALB_INK};border-radius:14px;background:linear-gradient(#ffeef3,#fbd3de);font-family:var(--font-display,inherit);color:${ALB_INK};cursor:pointer;text-align:left;box-shadow:0 3px 0 ${ALB_INK}}
 #albPf .albPfIc svg{width:34px;height:34px;display:block}#albPf>span:nth-child(2){flex:1;display:flex;flex-direction:column}#albPf b{font-size:14px;font-weight:900}#albPf small{font-size:12px;font-weight:800;opacity:.75}#albPf i{font-style:normal;font-size:22px;font-weight:900}
 @media (min-width:900px) and (min-height:700px){.albGrid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}.albP{width:78px;height:78px}.albK b{font-size:14px}.albK small{font-size:11.5px}}` ; document.head.appendChild(st) }
+
+// ================= V351: PAKETLER TAHTANIN İÇİNDE · TAHTA BÜYÜDÜ · OTOMATİK SONRA =================
+// Kullanıcı (24 Kasım 2026, 00:18): "paketler üstte gözükmesin komple merge tahtası gözüksün yani paketlerin yerinede merge tahtası büyüsün
+// oraya doğru. ihtiyacı olan paketler hikaye hikaye eklensin tahtanın içine" · "oyunun başında otomatik sistemi kaldır oyuncu ilk zamanlar
+// kendi oynasın kafeyi alışsın mekaniğe".
+//  • Üstteki paket rafı kalktı; tahta 8×5 → 8×6 oldu ve rafın yerine doğru büyüdü (hücreler de büyüdü). Eski kayıtlarda tahtanın üstüne
+//    boş bir satır eklenir, eşyalar yerinde kalır (V196'dan beri raf vardı; paketler artık yeniden tahtada, ama tek tek ve hikâyeyle).
+//  • Paket = tahtada bir kare: dokununca malzeme hemen yanındaki boş kareye düşer (enerji, 15 hak, dinlenme, hedef önceliği aynı).
+//    Paket sürüklenmez, üstüne bir şey bırakılmaz (V191 kuralı). Paketler üst satıra, ortadan dışa doğru yerleşir.
+//  • Mevcut oyuncular: bütün paketleri (6) yeni üst satıra yerleşir. Yeni oyuncular: paket ihtiyaç oldukça gelir — hedeflenen tarifin
+//    teslimatları hangi paketlerin malzemesini istiyorsa o paketler kısa bir notla tahtaya konur (ilk ders: Ballı Süt → Süt ürünleri + Çiftlik).
+//  • Otomatik: yeni oyuncularda rehberin "Otomatik" adımı atlanır, düğme 4. seviyeye kadar görünmez; 4. seviyede Tabby haber verir.
+//  • Kayıt: S.pk = {v, yeni (ihtiyaçla gelen), on{paket:1}}, S.otoKilit (1 kilitli · 2 açıldı).
+const PK = { from: null, yeniHucre: {} };
+const pkEN = () => { try { return !!(window.__DIL && __DIL.lang === 'en') } catch (e) { return false } };
+const pkT = (tr, en) => pkEN() ? en : tr;
+const PK_AD_EN = { firin: 'Farm', mandira: 'Dairy', kafe: 'Drinks', meyve: 'Fruit', manav: 'Veggies', kasap: 'Butcher', food: 'Food', drink: 'Drinks' };
+const pkAd = k => { const P = PACKS.find(x => x.k === k); return pkEN() ? (PK_AD_EN[k] || (P && P.n) || k) : ((P && P.n) || k) };
+// ---- tahta 8×6 ----
+CONFIG.board.h = 6;
+// S oyunun en başında (p10) eski boyutla kuruldu: kayıt yoksa (yeni oyuncu) o tahtaya da üst satır eklenir
+try { if (typeof S !== 'undefined' && S && Array.isArray(S.board) && S.board.length === CONFIG.board.w * (CONFIG.board.h - 1)) S.board = Array(CONFIG.board.w).fill(null).concat(S.board) } catch (e) { }
+const PK_W = () => CONFIG.board.w;
+{ const _as = applyState; applyState = function (d0) { try { const W = CONFIG.board.w, H = CONFIG.board.h;
+      if (d0 && Array.isArray(d0.board) && d0.board.length === W * (H - 1)) d0.board = Array(W).fill(null).concat(d0.board) } catch (e) { console.warn('tahta 8×6', e) }
+    return _as.apply(this, arguments) } }
+// ---- paket kayıtları ----
+function pkS() { const P = S.pk || (S.pk = {}); P.v = 1; P.on = P.on || {}; return P }
+function pkKur() { if (!S || S.pk) return; const P = pkS(); const eski = EVMODE || (!!S.created && S.tut === 'done');
+  P.yeni = eski ? 0 : 1; if (eski) for (const X of PACKS) P.on[X.k] = 1;
+  if (!EVMODE && S.otoKilit == null) S.otoKilit = eski ? 0 : 1;
+  try { markDirty() } catch (e) { } }
+// tahtada yalnız açılmış paketler durur (her biri bir kez)
+stripBags = function (b) { let ch = false; const P = S && S.pk, gor = new Set();
+  for (let i = 0; i < b.length; i++) { const v = b[i]; if (!v || !ITEMS[v] || ITEMS[v].fam !== 'bag') continue; const k = ITEMS[v].bag;
+    if (!P || !P.on[k] || gor.has(k) || !PACKS.some(X => X.k === k)) { b[i] = null; ch = true } else gor.add(k) }
+  return ch };
+const PK_SIRA = () => { const W = PK_W(), c = (W - 1) / 2; return [...Array(W).keys()].sort((a, b) => Math.abs(a - c) - Math.abs(b - c) || a - b) };   // üst satır, ortadan dışa
+function pkYer() { const b = S.board; for (const i of PK_SIRA()) if (!b[i]) return i;   // üst satırda boş yer
+  for (const i of PK_SIRA()) { const v = b[i]; if (v && ITEMS[v] && ITEMS[v].fam === 'bag') continue; const e = b.findIndex((x, j) => !x && j >= PK_W()); if (e < 0) return -1; b[e] = v; b[i] = null; return i }   // üst satırdaki eşya aşağıya kayar
+  return b.findIndex(x => !x) }
+function pkKoy(k, not) { try { if (!S || !Array.isArray(S.board)) return false; const P = pkS(), id = 'bag_' + k; if (!ITEMS[id] || !PACKS.some(X => X.k === k)) return false;
+    P.on[k] = 1; if (S.board.includes(id)) return true; const i = pkYer(); if (i < 0) { P.bekle = P.bekle || {}; P.bekle[k] = not ? 1 : 0; markDirty(); return false }
+    S.board[i] = id; if (P.bekle) delete P.bekle[k]; PK.yeniHucre[i] = Date.now(); markDirty(); if (UI.mode === 'merge') renderMerge();
+    if (not) { const ilk = (P.gelen = (P.gelen | 0) + 1) === 1; setTimeout(() => { try { toast(pkT(`<b>Yeni paket: ${pkAd(k)}!</b><br>${ilk ? 'Malzemeler için paketi tahtana koydum. Dokun, malzeme düşsün!' : 'Tarifin bunu istiyor; paketi tahtana koydum.'}`, `<b>New pack: ${pkAd(k)}!</b><br>${ilk ? 'I put it on your board. Tap it to get ingredients!' : 'Your recipe needs it, so I put it on your board.'}`), `<span class="ic">${itemArt(id)}</span>`, 3200); sfx('discover') } catch (e) { } }, 250);
+      try { if (typeof olc === 'function') olc('paket_geldi', { k }) } catch (e) { } }
+    return true } catch (e) { console.warn('paket koy', e); return false } }
+// hedef tarifin bütün teslimatlarının istediği paketler
+function pkGerek(id) { const s = new Set(); try { const c = tkCfg(id); if (!c || S.unlocked[id]) return s; for (const st of c.st || []) for (const [it] of st.d || []) { const P = packOf(String(it).replace(/\d+$/, '')); if (P) s.add(P.k) } } catch (e) { } return s }
+function pkIhtiyac() { if (EVMODE || !S || !S.pk || !S.pk.yeni) return; const P = S.pk; const k = new Set();
+  try { if (S.tkT) for (const x of pkGerek(S.tkT)) k.add(x) } catch (e) { }
+  try { if (S.tut === 'g_mg' && typeof G_REC !== 'undefined') for (const x of pkGerek(G_REC)) k.add(x) } catch (e) { }
+  try { const st = typeof nyNext === 'function' && nyOn() ? nyNext() : null; if (st && st.k === 'pack' && st.pk) k.add(st.pk) } catch (e) { }
+  for (const x of k) if (!P.on[x] || !S.board.includes('bag_' + x)) pkKoy(x, !P.on[x] || (P.bekle && P.bekle[x] === 1)) }
+// açılış: mevcut oyuncuda bütün paketler üst satıra
+function pkTamamla() { const P = pkS(); for (const k of Object.keys(P.on)) if (!S.board.includes('bag_' + k)) pkKoy(k, false) }
+setInterval(() => { try { if (typeof S === 'undefined' || !S || !S.created || !Array.isArray(S.board) || (typeof mgDrag !== 'undefined' && mgDrag)) return; if (!S.pk) pkKur();
+    if (stripBags(S.board)) { markDirty(); if (UI.mode === 'merge') renderMerge() } pkTamamla(); pkIhtiyac() } catch (e) { console.warn('paketler', e) } }, 700);
+// ---- pakete dokununca malzeme paketin yanına düşer ----
+{ const _ne = nearestEmpty; nearestEmpty = function (from) { if (PK.from != null) { const f = PK.from; PK.from = null; return _ne.call(this, f) } return _ne.apply(this, arguments) } }
+{ const _tb = tapBag; tapBag = function (i) { PK.from = i; try { return _tb.apply(this, arguments) } finally { PK.from = null; try { refreshCell(i) } catch (e) { } } } }
+const pkHucre = k => { try { const i = S.board.indexOf('bag_' + k); return i >= 0 ? board.querySelector(`[data-c="${i}"]`) : null } catch (e) { return null } };
+// seçili paketin bilgisi: ne ürettiği
+{ const _ri = renderInfo; renderInfo = function () { const i = UI.mgSel, id = i != null ? S.board[i] : null, it = id && ITEMS[id];
+    if (!it || it.fam !== 'bag' || !BAG_OUT[it.bag]) return _ri.apply(this, arguments);
+    const box = $('mgInfo'), b = bagState(it.bag), ad = pkAd(it.bag); const ne = [...new Set(BAG_OUT[it.bag].map(([x]) => ITEMS[x] && ITEMS[x].name).filter(Boolean))];
+    const neT = pkEN() && window.__DIL && __DIL.t ? ne.map(n => __DIL.t(n)) : ne;
+    box.innerHTML = `<span class="mi">${itemArt(id)}</span><div class="tx" data-dilyok="1"><b>${pkT(ad + ' paketi', ad + ' pack')}</b>${pkT(`${neT.join(', ')} verir. Her dokunuş ${CONFIG.energy.cost} enerji. ${b.cool ? `Dinleniyor: ${fmtT(b.cool)}.` : `${b.left} hak kaldı.`}`, `Gives ${neT.join(', ')}. Each tap costs ${CONFIG.energy.cost} energy. ${b.cool ? `Resting: ${fmtT(b.cool)}.` : `${b.left} taps left.`}`)}</div>${b.cool ? `<button class="btn light" type="button" id="mgRec" data-dilyok="1">${ic('clock')}${pkT('Hızlandır', 'Speed up')}</button>` : ''}`;
+    if ($('mgRec')) $('mgRec').onclick = () => openRecover('bag', it.bag) } }
+// dinlenen pakette reklam rozeti (raftaki gibi) + yeni gelen pakete parıltı
+{ const _ch = cellHTML; cellHTML = function (i) { let h = _ch.apply(this, arguments); try { const id = S.board[i], it = id && ITEMS[id]; if (it && it.fam === 'bag') {
+      const cool = !!bagState(it.bag).cool, canli = typeof AD_LIVE === 'function' && AD_LIVE() && AdService.left('PACK_REFILL') > 0;
+      if (cool && canli) h = h.replace(/<\/div>$/, '<span class="pkAd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4 L20 12 L7 20 Z" fill="#fff" stroke="#2f5a14" stroke-width="2.5" stroke-linejoin="round"/></svg></span></div>');
+      if (PK.yeniHucre[i] && Date.now() - PK.yeniHucre[i] < 6000) h = h.replace('class="it', 'class="it pkYeni') } } catch (e) { } return h } }
+// "sıradaki adım" ipucu paketi gösteriyorsa tahtadaki paket karesi parlasın
+try { const _nh = nyHintDraw; nyHintDraw = function () { const r = _nh.apply(this, arguments); try { if (UI.mode !== 'merge' || !nyOn()) return r; const st = nyNext(); const c = st && st.k === 'pack' && !st.block ? pkHucre(st.pk) : null; if (c && !c.classList.contains('nx')) c.classList.add('nx') } catch (e) { } return r } } catch (e) { }
+// ---- otomatik: yeni oyuncuda 4. seviyeye kadar yok ----
+const OTO_LVL = 4;
+const otoKilitli = () => { try { return !EVMODE && S && S.otoKilit === 1 && (S.lvl | 0) < OTO_LVL } catch (e) { return false } };
+{ const _tt = tutTick; tutTick = function () { try { if (otoKilitli() && S.tut === 'auto') { S.tut = 'stok'; S.auto = false; markDirty() } } catch (e) { } return _tt.apply(this, arguments) } }
+{ const _av = autoBtnVis; autoBtnVis = function () { const r = _av.apply(this, arguments); try { const b = $('autoBtn'); if (b && otoKilitli() && !b.hidden) b.hidden = true } catch (e) { } return r } }
+{ const _ta = toggleAuto; toggleAuto = function () { if (otoKilitli()) { try { sfx('nope'); toast(pkT(`<b>Otomatik ${OTO_LVL}. seviyede açılır</b><br>Önce kafeyi biraz tanıyalım!`, `<b>Auto unlocks at level ${OTO_LVL}</b><br>Let’s get to know the café first!`), ic('lock'), 2600) } catch (e) { } return } return _ta.apply(this, arguments) } }
+try { HK_SAH.a_oto = [['tabby', 'Şefim, ekibimiz işi kaptı! İstersen artık üstteki Otomatik’i açabilirsin; garsonumuz siparişleri kendisi alır, sen de kafeyi büyütmeye bakarsın.', 'Chef, our team has got the hang of it! You can now switch on Auto at the top; our waiter will take orders by themselves while you grow the café.']] } catch (e) { }
+{ const _sa = hkSahneAc; hkSahneAc = function () { const r = _sa.apply(this, arguments); try { if (HK.sahne === 'a_oto' && !HK.parla.includes('#autoBtn')) HK.parla.push('#autoBtn') } catch (e) { } return r } }
+setInterval(() => { try { if (typeof S === 'undefined' || !S || EVMODE || !S.created) return;
+    if (S.otoKilit === 1) { const b = $('autoBtn'); if ((S.lvl | 0) < OTO_LVL) { if (S.auto) { S.auto = false; markDirty(); try { drawAuto() } catch (e) { } } if (b && !b.hidden) b.hidden = true }
+      else { S.otoKilit = 2; markDirty(); try { autoBtnVis() } catch (e) { } try { const H = hkS(); if (!H.gor.a_oto) H.kuy.push('a_oto') } catch (e) { } } } } catch (e) { } }, 500);
+// ---- görünüm: raf yok, tahta 6 satır ve rafın yerine doğru büyür ----
+{ const M = 'html.land #game#game#game #merge#merge#merge.skin', INK = '#4a2a14', st = document.createElement('style'); st.textContent = `
+${M}{--pkh:0px;--mc:min(64px,calc((100*var(--vh) - 116px)/6),calc((100*var(--vw) - 76px - var(--mwi))/8))!important}
+${M} .skwin>.scroll{grid-template-rows:auto!important;grid-template-areas:"tahta info"!important}
+${M} .skwin>.scroll>#pkRaf,#merge #pkRaf{display:none!important}
+${M} .skwin>.scroll>.board-wrap{grid-row:1!important}
+${M} .skwin>.scroll>.info{grid-row:1!important;max-height:calc(100*var(--vh) - 64px)!important}
+${M} .board{grid-template-rows:repeat(6,var(--cell))!important}
+#board .it .pkAd{position:absolute;left:-3px;top:-3px;width:18px;height:18px;border-radius:50%;border:2px solid ${INK};background:linear-gradient(#9fdc6c,#5fae3a);display:grid;place-items:center;pointer-events:none;z-index:2}
+#board .it .pkAd svg{width:10px;height:10px}
+#board .it.pkYeni{animation:pkYeni 1.1s ease-in-out 4}
+@keyframes pkYeni{0%,100%{transform:scale(1);filter:none}50%{transform:scale(1.12);filter:drop-shadow(0 0 7px #ffd34d)}}` ; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
