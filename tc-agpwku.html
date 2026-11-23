@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795437617",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795439257",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -21372,7 +21372,7 @@ function sefBtn(){try{const y=$('y2');if(!y)return;let b=$('sefBtn');
     if(!b){b=document.createElement('button');b.type='button';b.id='sefBtn';b.className='k3b';b.setAttribute('aria-label','Mutfak');b.innerHTML=`<span class="k3c">${uiIc('i_chef')}</span><span class="k3t">Mutfak</span><span class="y2bd"></span>`;
       b.onclick=()=>{if(UI.mode!=='cafe'||UI.modal||(typeof ED!=='undefined'&&ED.busy))return;try{sfx('tap')}catch(e){}sefAc()};y.appendChild(b)}
     const show=sefAcik();if(b.hidden===show)b.hidden=!show;let n=0;for(const id of ['kesBtn','duzBtn','katBtn']){const e=$(id);if(e&&!e.hidden&&getComputedStyle(e).display!=='none')n++}b.style.setProperty('--sfi',n);
-    const G=$('game');G.classList.toggle('sefvar',show);G.style.setProperty('--sfn',show?n+1:n);b.classList.toggle('dot',show&&!(S.seen&&S.seen.sefGirdi));
+    let kv=false;try{if(typeof kosHud==='function')kv=kosHud(y,b,show,n)}catch(e){}const G=$('game');G.classList.toggle('sefvar',show);G.style.setProperty('--sfn',show?n+1+(kv?1:0):n);b.classList.toggle('dot',show&&!(S.seen&&S.seen.sefGirdi));
     // bir kerelik tanıtım: düğme ilk göründüğünde (kafe ekranında, başka rehber kartı yokken)
     if(show&&!(S.seen&&S.seen.sefTanit)&&UI.mode==='cafe'&&!UI.modal&&$('coach')&&$('coach').hidden&&!document.querySelector('#game .modal:not([hidden])')){
       coach({owner:'sef',title:'Şefin Mutfağı açıldı!',dim:true,center:true,text:'Tariflerini artık <b>kendin pişirebilirsin</b>. İyi pişirdiğin tarif yıldız kazanır, kafede daha çok kazandırır.',
@@ -21380,12 +21380,19 @@ function sefBtn(){try{const y=$('y2');if(!y)return;let b=$('sefBtn');
 setInterval(sefBtn,900);
 {const Y='html.land #game#game #y2',G='html.land #game#game',NX=':not(#_a#_b#_c)',I=SEF_INK,W='#sefScr';const st=document.createElement('style');st.id='sefCss';st.textContent=`
 ${Y} #sefBtn{position:absolute!important;left:calc(var(--el) + var(--sfi,2)*62px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important;transition:opacity .22s}
+${Y} #kosBtn{position:absolute!important;left:calc(var(--el) + (var(--sfi,2) + 1)*62px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important;transition:opacity .22s}
 ${Y} #sefBtn .k3c{left:4px;top:0;width:48px;height:48px;padding-top:8px}
+${Y} #kosBtn .k3c{left:4px;top:0;width:48px;height:48px;padding-top:8px}
 ${Y} #sefBtn .k3c .uic{width:30px;height:30px;object-fit:contain;display:block;margin:0 auto}
+${Y} #kosBtn .k3c .uic{width:30px;height:30px;object-fit:contain;display:block;margin:0 auto}
 ${Y} #sefBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
+${Y} #kosBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
 #game.hudoff #sefBtn,#game.tutA #sefBtn,#game.tutB #sefBtn,html.land #game:has(.modal:not([hidden])) #sefBtn,html.land #game:has(.screen:not([hidden])) #sefBtn{opacity:0!important;pointer-events:none!important}
+#game.hudoff #kosBtn,#game.tutA #kosBtn,#game.tutB #kosBtn,html.land #game:has(.modal:not([hidden])) #kosBtn,html.land #game:has(.screen:not([hidden])) #kosBtn{opacity:0!important;pointer-events:none!important}
 ${G}[data-nb="1"] #sefBtn,${G}[data-nb="2"] #sefBtn{display:none!important}
+${G}[data-nb="1"] #kosBtn,${G}[data-nb="2"] #kosBtn{display:none!important}
 ${G}.nonav #sefBtn${NX},${G}.edmode #sefBtn${NX}{visibility:hidden!important;pointer-events:none!important}
+${G}.nonav #kosBtn${NX},${G}.edmode #kosBtn${NX}{visibility:hidden!important;pointer-events:none!important}
 /* sol altta üç-dört düğme olunca alttaki durum yazısı sağa kayar ve daralır (düğmelerle çakışmasın) */
 ${G}.sefvar .bottom${NX}{left:calc(50% + (var(--el) + var(--sfn,3)*62px - 76px)/2)!important}
 ${G}.sefvar .bottom #hint${NX}{max-width:calc(100*var(--vw,calc(1*var(--vw))) - var(--el) - var(--sfn,3)*62px - 216px)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
@@ -23637,6 +23644,13 @@ function kosDugme() { const b = document.createElement('button'); b.type = 'butt
 setInterval(() => { try { if (!kosVar()) { document.querySelectorAll('.kosGir').forEach(x => x.remove()); return }
   document.querySelectorAll('[data-moto]').forEach(m => { const p = m.parentElement; if (p && !p.querySelector('.kosGir')) m.insertAdjacentElement('afterend', kosDugme()) });
   const mm = $('motoM'); if (mm && !mm.hidden && !mm.querySelector('.kosGir')) { const w = mm.firstElementChild; if (w) { const b = kosDugme(); b.classList.add('kosGirM'); if (getComputedStyle(w).position === 'static') w.style.position = 'relative'; w.appendChild(b) } } } catch (e) { } }, 700);
+// ---- ana ekran düğmesi: Mutfak'ın hemen yanında (V335) ----
+function kosHud(y, sb, show, n) { let b = $('kosBtn'); const ok = show && !!sb && !sb.hidden && kosVar();
+  if (!b && ok) { b = document.createElement('button'); b.type = 'button'; b.id = 'kosBtn'; b.className = 'k3b'; b.setAttribute('data-dilyok', '1');
+    b.setAttribute('aria-label', kt('Özel siparişler', 'Special orders')); b.innerHTML = `<span class="k3c">${uiIc('i_bolt')}</span><span class="k3t">${kt('Kurye', 'Courier')}</span><span class="y2bd"></span>`;
+    b.onclick = () => { if (UI.mode !== 'cafe' || UI.modal || (typeof ED !== 'undefined' && ED.busy)) return; try { sfx('tap') } catch (e) { } kosHarita() } }
+  if (b) { if (ok && b.previousElementSibling !== sb) sb.insertAdjacentElement('afterend', b); if (b.hidden === ok) b.hidden = !ok; b.style.setProperty('--sfi', n) }
+  return ok }
 // ---- bölüm haritası ----
 function kosHarita() {
   if (!kosVar()) return; try { $('motoM') && ($('motoM').hidden = true) } catch (e) { }
