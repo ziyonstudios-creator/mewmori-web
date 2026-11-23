@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795436369",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795437617",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -208,13 +208,12 @@ svg.i{display:block;width:100%;height:100%}
 #syPerde .syGun{position:absolute;right:10%;top:9%;width:70px;height:70px;border-radius:50%;background:#ffd86b;border:4px solid #5a2f12;box-shadow:0 0 0 12px rgba(255,216,107,.35),0 0 0 26px rgba(255,216,107,.18)}
 #syPerde .syBl{position:absolute;left:100%;height:auto;animation:syBl linear infinite;overflow:visible;will-change:transform}
 @keyframes syBl{from{transform:translateX(0)}to{transform:translateX(calc(-100vw - 260px))}}
-/* (V329) çimen: 1200 px'lik karolar yan yana (her biri ayrı, küçük katman; dev tek katman iOS'ta kesiliyordu); kalkışta kayar, varışta durur */#syPerde .syTepe{position:absolute;left:0;right:0;bottom:0;height:26%;overflow:hidden}#syPerde .syTp{position:absolute;top:0;bottom:0;width:1201px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 120' preserveAspectRatio='none'%3E%3Cpath d='M0 60 C130 20 270 20 400 50 C530 80 670 100 800 60 L800 120 L0 120 Z' fill='%239fcf7a'/%3E%3Cpath d='M0 92 C150 70 250 70 400 88 C550 106 650 114 800 92 L800 120 L0 120 Z' fill='%237cb85e'/%3E%3C/svg%3E") 0 0/1200px 100% no-repeat;will-change:transform}#syPerde.kalkis .syTp{animation:syTepe 5s linear infinite}@keyframes syTepe{from{transform:translate3d(0,0,0)}to{transform:translate3d(-1200px,0,0)}}
+/* (V329) çimen: 1200 px'lik karolar yan yana (her biri ayrı, küçük katman; dev tek katman iOS'ta kesiliyordu); kalkışta kayar, varışta durur */#syPerde .syTepe{position:absolute;left:0;right:0;bottom:0;height:26%;overflow:hidden}#syPerde .syTp{position:absolute;top:0;bottom:0;width:1201px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 120' preserveAspectRatio='none'%3E%3Cpath d='M0 60 C130 20 270 20 400 50 C530 80 670 100 800 60 L800 120 L0 120 Z' fill='%239fcf7a'/%3E%3Cpath d='M0 92 C150 70 250 70 400 88 C550 106 650 114 800 92 L800 120 L0 120 Z' fill='%237cb85e'/%3E%3C/svg%3E") 0 0/1200px 100% no-repeat;will-change:transform}#syPerde .syTp{animation:syTepe 5s linear infinite}@keyframes syTepe{from{transform:translate3d(0,0,0)}to{transform:translate3d(-1200px,0,0)}}
 #syPerde .syYol{position:absolute;inset:0;pointer-events:none;will-change:transform;transform:translate3d(-30%,40%,0)}
 #syPerde .syUcak{position:absolute;left:0;top:0;width:min(230px,34vw);height:auto;will-change:transform}
-#syPerde.kalkis .syYol{animation:syUc 1.4s cubic-bezier(.45,.05,.4,1) forwards}#syPerde.kalkis .syUcak{animation:syUcR 1.4s cubic-bezier(.45,.05,.4,1) forwards}
+/* (V334) Kullanıcı (23 Kasım 15:34): "uçak animasyonu sadece o olsun, başlangıcındaki kalkış animasyonunu kaldır, sadece böyle giderek gözüksün" → kalkışta da varıştaki gibi: uçak ortada süzülür, bulutlar ve tepeler geriye akar */
+#syPerde.kalkis .syYol{transform:translate3d(40%,40%,0)}#syPerde.kalkis .syUcak{animation:syBob 1.6s ease-in-out infinite}
 /* varış: oyun kodu yüklenirken ana iş parçacığı meşgul; uçak yerinde süzülür (donsa da takılma görünmez), kart ve yazı sabit */#syPerde.varis .syYol{transform:translate3d(40%,40%,0)}#syPerde.varis .syUcak{animation:syBob 1.6s ease-in-out infinite}@keyframes syBob{0%,100%{transform:translate3d(0,0,0) rotate(-2deg)}50%{transform:translate3d(0,-8px,0) rotate(2deg)}}#syPerde.varis .syKart{animation:none}
-@keyframes syUc{0%{transform:translate3d(-30%,58%,0)}35%{transform:translate3d(30%,42%,0)}70%{transform:translate3d(62%,38%,0)}100%{transform:translate3d(115%,20%,0)}}
-@keyframes syUcR{0%{transform:rotate(-8deg)}35%{transform:rotate(-4deg)}70%{transform:rotate(2deg)}100%{transform:rotate(-10deg)}}
 #syPerde .syPer{transform-origin:212px 64px;animation:syPer .12s linear infinite}@keyframes syPer{50%{transform:scaleY(.15)}}
 #syPerde .syKart{position:absolute;left:50%;top:7%;transform:translateX(-50%);min-width:min(420px,80vw);padding:6px 14px 10px;border:4px solid #5a2f12;border-radius:18px;background:#fff8ec;box-shadow:0 5px 0 #5a2f12;animation:syKart .5s cubic-bezier(.3,1.6,.5,1) both .2s}
 @keyframes syKart{from{transform:translate(-50%,-30px) scale(.8);opacity:0}}
@@ -23277,7 +23276,7 @@ evTravel=function(E,go,why){RESETTING=true;const d={go:!!go,city:syCity(E.city),
   syGoster(d,false);try{sfx('levelup')}catch(e){}
   // perde tam kapanınca (0,35 sn) 3B çizim durur: uçak akıcı kalsın; sayfa zaten yenilenecek
   setTimeout(()=>{try{renderer.render=function(){}}catch(e){}},380);
-  setTimeout(()=>gameReload(),1450)};   // uçak (1,4 sn) ekrandan çıkınca
+  setTimeout(()=>gameReload(),1200)};   // (V334) uçak uçup gitmiyor, ortada süzülüyor: kısa bekleyiş yeter
 // varış: perde sayfanın başında kuruldu; oyun hazır olunca söner
 (()=>{const o=window.__syVaris;if(!o)return;const t0=+o.dataset.t0||Date.now();
   const bitir=()=>{if(typeof started!=='undefined'&&started&&Date.now()-t0>900){o.classList.add('syKap');setTimeout(()=>{o.hidden=true;o.innerHTML=''},420);return}setTimeout(bitir,150)};setTimeout(bitir,300)})();
@@ -23722,20 +23721,20 @@ function kosPlan(bi) { const B = KOS_BOL[bi], R = kosRnd(bi + 7), E = [], P = []
   for (let i = 0; i < B.n; i++) { const pd = 70 + (B.m - 120) * (i + 0.5) / B.n; const ob = E.filter(e => Math.abs(e.d - pd) < 6); const dolu = new Set(ob.map(e => e.l)); let l = Math.floor(R() * 3); for (let k = 0; k < 3 && dolu.has(l); k++)l = (l + 1) % 3; I.push({ d: pd, l, y: 0.8 }) }
   return { E, P, I } }
 // ---- oyuna başla ----
-function kosBasla(bi) {
+function kosBasla(bi) { try { return kosBasla0(bi) } catch (e) { kosHata(e) } }
+function kosBasla0(bi) {
   kosHazirla(); const B = KOS_BOL[bi], sm = KOS_SEMT[B.semt], k = kosYemek(bi);
   let P = $('kosP'); if (!P) { P = document.createElement('div'); P.id = 'kosP'; P.setAttribute('data-dilyok', '0'); $('game').appendChild(P) }
   P.hidden = false; P.setAttribute('data-dilyok', '1'); UI.modal = true; document.documentElement.classList.add('kosOn');
-  P.innerHTML = `<canvas class="kosCv"></canvas>
+  P.innerHTML = `
    <div class="kosHud"><button class="kosX" type="button" aria-label="Çık">${ic('close')}</button>
      <div class="kosYol"><i class="kosYolD"></i><span class="kosMoto">🛵</span><span class="kosEv">🏠</span></div>
      <div class="kosSag"><span class="kosCan">${'<i>❤</i>'.repeat(3)}</span><span class="kosPar">${uiIc('i_coin')}<b>0</b></span><span class="kosSip"><img src="${productThumb(k)}" alt=""><b>0/${B.n}</b></span></div></div>
    <div class="kosIp">${kt(`${kosMus(B.mus)} için <b>${kosYad(k)}</b>`, `<b>${kosYad(k)}</b> for ${kosMus(B.mus)}`)}<small>${kt('Kaydır: ← → şerit · ↑ zıpla · ↓ eğil', 'Swipe: ← → lane · ↑ jump · ↓ duck')}</small></div>
    <div class="kosSay"></div>`;
   // ayrı WebGL çizici (oyunun ana sahnesine dokunmaz; çıkışta kapatılır)
-  const cv = P.querySelector('.kosCv');
-  const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' });
-  r.setPixelRatio(Math.min(devicePixelRatio || 1, (typeof PERF !== 'undefined' && GFX[PERF.q] || { pr: 2 }).pr || 2)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping;
+  // (V334) ayrı WebGL bağlamı iPad/iPhone'da açılamayabiliyordu (yalnız mavi ekran): koşu oyunun kendi çizicisiyle, ana tuvale çizilir.
+  const r = renderer;
   const sc = new THREE.Scene(); sc.background = new THREE.Color(sm.sky); sc.fog = new THREE.Fog(sm.fog, 30, 78);
   sc.add(new THREE.HemisphereLight(sm.gece ? 0x8aa0ff : 0xffffff, sm.sicak ? 0xc98a5a : 0xbfa58a, 1.05 * sm.isik));
   const gl = new THREE.DirectionalLight(sm.sicak ? 0xffd2a0 : 0xffffff, 1.5 * sm.isik); gl.position.set(6, 12, 4); sc.add(gl);
@@ -23743,8 +23742,8 @@ function kosBasla(bi) {
   // zemin, yol, kaldırımlar, deniz
   const zem = new THREE.Mesh(new THREE.PlaneGeometry(80, 160), kosM(sm.yer)); zem.rotation.x = -Math.PI / 2; zem.position.set(0, -0.02, -60); sc.add(zem);
   const yt = kosYolDoku(sm), yol = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 160), new THREE.MeshToonMaterial({ map: yt, gradientMap: grad })); yol.rotation.x = -Math.PI / 2; yol.position.set(0, 0, -60); sc.add(yol);
-  const kt = kosKaldirimDoku(sm); const KAL = [];
-  for (const s of [-1, 1]) { const k2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.16, 160), new THREE.MeshToonMaterial({ map: kt, gradientMap: grad })); k2.position.set(s * 3.8, 0.08, -60); sc.add(k2); KAL.push(k2) }
+  const kTex = kosKaldirimDoku(sm); const KAL = [];
+  for (const s of [-1, 1]) { const k2 = new THREE.Mesh(new THREE.BoxGeometry(3, 0.16, 160), new THREE.MeshToonMaterial({ map: kTex, gradientMap: grad })); k2.position.set(s * 3.8, 0.08, -60); sc.add(k2); KAL.push(k2) }
   if (sm.deniz) { const de = new THREE.Mesh(new THREE.PlaneGeometry(60, 160), new THREE.MeshToonMaterial({ color: 0x6ec6e6, gradientMap: grad })); de.rotation.x = -Math.PI / 2; de.position.set(38, 0.01, -60); sc.add(de) }
   // yan yapılar
   const YAN = []; const yanEkle = (z, sag) => { let g; const r2 = Math.random(); g = sm.deniz && sag ? (r2 < 0.7 ? kosAgac(sm) : kosLamba(sm)) : r2 < 0.62 ? kosEv(sm, sag) : r2 < 0.85 ? kosAgac(sm) : kosLamba(sm);
@@ -23759,7 +23758,7 @@ function kosBasla(bi) {
     rr.traverse(o => { if (o.isMesh) o.frustumCulled = false }); OK.add(rr); surucu = rr; mix = new THREE.AnimationMixer(rr); const clip = CLIPS.SIT_BASE || CLIPS.Chair_Sit_Idle_F; if (clip) mix.clipAction(clip).play() } catch (e) { console.warn('kurye kedi', e) }
   const golge = new THREE.Mesh(new THREE.CircleGeometry(0.5, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false })); golge.rotation.x = -Math.PI / 2; golge.position.y = 0.02; sc.add(golge);
   const plan = kosPlan(bi);
-  const G = { bi, B, sm, k, r, sc, cam, O, moto, surucu, mix, golge, yt, kt, YAN, yanEkle, plan, d: 0, v: B.v[0], serit: 1, x: 0, y: 0, vy: 0, egil: 0, can: 3, carp: 0, dok: 0, para: 0, sip: 0, bitti: false, bas: 2.6, t: 0,
+  const G = { bi, B, sm, k, r, sc, cam, O, moto, surucu, mix, golge, yt, kt: kTex, YAN, yanEkle, plan, d: 0, v: B.v[0], serit: 1, x: 0, y: 0, vy: 0, egil: 0, can: 3, carp: 0, dok: 0, para: 0, sip: 0, bitti: false, bas: 2.6, t: 0,
     E: [], P: [], I: [], ei: 0, pi: 0, ii: 0, ev: null, sallan: 0, son: performance.now() };
   KOS.G = G; KOS.on = true; kosBoyut();
   // dokunma / klavye
@@ -23772,7 +23771,7 @@ function kosBasla(bi) {
   try { if (typeof AU !== 'undefined' && AU.ctx && AU.ctx.state === 'suspended') AU.ctx.resume() } catch (e) { }
   KOS.raf = requestAnimationFrame(kosKare);
 }
-function kosBoyut() { const G = KOS.G; if (!G) return; const cv = G.r.domElement, w = cv.clientWidth || innerWidth, h = cv.clientHeight || innerHeight; G.r.setSize(w, h, false); G.cam.aspect = w / h; G.cam.fov = w / h < 1.2 ? 70 : 58; G.cam.updateProjectionMatrix() }
+function kosBoyut() { const G = KOS.G; if (!G) return; const cv = G.r.domElement, w = cv.clientWidth || innerWidth, h = cv.clientHeight || innerHeight; G.cam.aspect = w / h; G.cam.fov = w / h < 1.2 ? 70 : 58; G.cam.updateProjectionMatrix() }
 addEventListener('resize', () => { try { kosBoyut() } catch (e) { } });
 function kosHareket(m) { const G = KOS.G; if (!G || G.bitti || G.bas > 0) return;
   if (m === 'sol' && G.serit > 0) { G.serit--; try { sfx('swap') } catch (e) { } }
@@ -23828,7 +23827,7 @@ function kosKare(now) {
     hud.querySelector('.kosPar b').textContent = G.para; hud.querySelector('.kosSip b').textContent = `${G.sip}/${G.B.n}`;
     hud.querySelectorAll('.kosCan i').forEach((h, i) => h.classList.toggle('bos', i >= G.can)) }
   if (!G.bitti && G.d >= G.B.m) kosBitir(true);
-  try { G.r.render(G.sc, G.cam) } catch (e) { console.warn('koşu çizim', e) }
+  try { KOS.rr(G.sc, G.cam) } catch (e) { G.hata = (G.hata | 0) + 1; if (G.hata === 3) kosHata(e) }
 }
 function kosVaris(G) { // sokağın sonunda müşterinin kapısı ve el sallayan müşteri
   const V = new THREE.Group(); const ev = new THREE.Group(); kosB(ev, kosM(0xfff1d6), 6, 3.4, 2.4, 0, 1.7, -1.6);
@@ -23873,15 +23872,19 @@ function kosCik(sor) {
   const G = KOS.G; if (sor && G && !G.bitti && G.bas <= 0 && !(KOS.cikT && Date.now() - KOS.cikT < 2500)) { KOS.cikT = Date.now(); const ip = $('kosP').querySelector('.kosIp'); if (ip) { ip.classList.remove('git'); ip.innerHTML = kt('Çıkmak için <b>✕</b>’e bir daha dokun<small>Sipariş yarıda kalır, topladığın altınlar gelmez</small>', 'Tap <b>✕</b> again to quit<small>The order stays undelivered and you lose the coins you collected</small>'); setTimeout(() => ip.classList.add('git'), 2400) } return }
   KOS.cikT = 0;
   KOS.on = false; cancelAnimationFrame(KOS.raf); removeEventListener('keydown', KOS.tus);
-  try { if (G) { G.sc.traverse(o => { if (o.material && o.material.map && o.material.map.isCanvasTexture && o.material.map !== (KOSG.tex || {})[G.k]) { } }); G.r.dispose(); try { G.r.forceContextLoss() } catch (e) { } } } catch (e) { }
+  // (V334) ana çizici kapatılmaz; koşu sahnesi bırakılır
   KOS.G = null; const P = $('kosP'); if (P) { P.hidden = true; P.innerHTML = '' } document.documentElement.classList.remove('kosOn'); UI.modal = false; try { hudDots() } catch (e) { }
 }
 // ana sahne koşu sırasında çizilmez (ekran kartı tek işe odaklansın)
-{ const _rr = renderer.render.bind(renderer); renderer.render = function () { if (KOS.on) return; return _rr.apply(null, arguments) } }
+{ const _rr = renderer.render.bind(renderer); KOS.rr = _rr; renderer.render = function () { if (KOS.on) return; return _rr.apply(null, arguments) } }
+// hata olursa oyuncu takılı kalmasın: açıklama + çıkış
+function kosHata(e) { try { console.warn('kurye koşusu', e); const P = $('kosP'); if (!P || P.querySelector('.kosHata')) return; const d = document.createElement('div'); d.className = 'kosSon kosHata';
+  d.innerHTML = `<div class="kosKart"><h3>${kt('Koşu açılamadı', 'The run could not start')}</h3><p>${kt('Bu cihazda bir sorun çıktı. Ekran görüntüsünü bize gönderirsen hemen düzeltiriz.', 'Something went wrong on this device. Send us a screenshot and we will fix it.')}</p><p style="font-size:10px;opacity:.6">${String(e && (e.message || e)).slice(0, 160)}</p><div class="kosDug"><button class="btn" type="button">${kt('Kafeye dön', 'Back to café')}</button></div></div>`;
+  P.appendChild(d); d.querySelector('button').onclick = () => kosCik(false) } catch (er) { } }
 { const st = document.createElement('style'); st.textContent = `
-html.kosOn #game>*:not(#kosP){visibility:hidden!important}
-#kosP{position:absolute;inset:0;z-index:9000;background:#bfe6f5;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;font-family:var(--font-display,"Baloo 2",system-ui)}
-#kosP[hidden]{display:none}#kosP .kosCv{position:absolute;inset:0;width:100%;height:100%;display:block}
+html.kosOn #game>*:not(#kosP):not(canvas){visibility:hidden!important}
+#kosP{position:absolute;inset:0;z-index:9000;background:transparent;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;font-family:var(--font-display,"Baloo 2",system-ui)}
+#kosP[hidden]{display:none}#kosP .kosHud,#kosP .kosIp,#kosP .kosSay,#kosP .kosSon{z-index:2}
 #kosP.kirmizi::after{content:"";position:absolute;inset:0;background:rgba(217,71,58,.28);animation:kosKir .45s ease forwards;pointer-events:none}@keyframes kosKir{to{opacity:0}}
 #kosP .kosHud{position:absolute;left:10px;right:10px;top:8px;display:flex;align-items:center;gap:10px;pointer-events:none}
 #kosP .kosHud button{pointer-events:auto}
