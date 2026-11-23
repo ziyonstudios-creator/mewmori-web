@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795462206",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795462897",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24339,6 +24339,16 @@ setInterval(() => { try { const on = camModu(); if (on !== CAM_CAM.on) { CAM_CAM
     const r = _cp.apply(this, arguments); if (gz) setTimeout(() => { try { toast('<b>Süs yerleştirildi</b><br>Bu duvar şu açıdan gizli; ekranı çevirip kafeye öbür taraftan bakınca görünür.', ic('check'), 3600) } catch (e) { } }, 300); return r } }
 // yakın duvarlar (ön, sağ) açılışta bazen hiç kurulmuyordu (p82 nwBuild, SHELL hazır olmadan çağrılıyor) → yoksa kur; kamera tarafındaysa yine gizlenir
 setInterval(() => { try { if (typeof SHELL !== 'undefined' && SHELL.g && NW && NW.g && (!NW.g.front || !NW.g.right || !NW.g.front.parent || !NW.g.right.parent)) { nwBuild(); try { NW.hide.front = NW.hide.right = null; nwWalls() } catch (e) { } } } catch (e) { } }, 1000);
+// ---------- V346: pencere tarzı kartında "Pencere ekle" ----------
+// Kullanıcı (23 Kasım 22:38, ekran görüntüsüyle Meşe pencere): "sadece uygula seçeneği var mevcut pencereyi değiştiriyor" → pencere tarzları
+// (owin) bütün pencerelerin görünümünü değiştirir; her tarz kartına ikinci düğme eklendi: "Pencere ekle · 300" → yeni pencere (ow_extra) kurulur
+// ve taşıma kipinde açılır; yeni pencere kullanılan tarzda olur. Açıklamaya not eklendi.
+{ const _rd = renderDetail; renderDetail = function () { const r = _rd.apply(this, arguments); try { const c = CAT[UI.sel]; if (!c || c.kind !== 'owin' || UI.tab !== 'window' || EVMODE) return r;
+    const row = document.querySelector('#mkDetail .row'), p = document.querySelector('#mkDetail .tx p'); if (!row || row.querySelector('#dPenEkle')) return r;
+    if (p && !p.dataset.pn) { p.dataset.pn = 1; p.textContent = p.textContent + ' Tarz bütün pencerelerine uygulanır. “Pencere ekle” kafene yeni bir pencere ekler.' }
+    const st = opxState(CAT.ow_extra), b = document.createElement('button'); b.type = 'button'; b.className = 'btn light'; b.id = 'dPenEkle';
+    b.innerHTML = st.lock ? `${ic('lock')}${st.lock}` : `${ic('plus')}Pencere ekle · ${ic('coin')}${CAT.ow_extra.price}`; b.disabled = !!st.lock || !st.ok; row.appendChild(b);
+    b.onclick = () => { try { sfx('tap') } catch (e) { } opxBuy(CAT.ow_extra) } } catch (e) { console.warn('pencere ekle', e) } return r } }
 
 // ================= V342: GENİŞLETME TEK DOKUNUŞ, KOLAY DOĞRAMA, AKŞAM REZERVASYONU (madde 24, 30, 31) =================
 // Kullanıcı (23 Kasım 2026, 35 maddelik liste):
