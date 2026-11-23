@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795464400",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795466639",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24542,7 +24542,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261123-2306';
+const OLC_DERLEME = '20261123-2340';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -24608,6 +24608,283 @@ function olcSatir() { const W = $('skSet'); if (!W || W.hidden) return; const ku
     r.querySelector('#olcTg').onclick = () => { try { if (olcKapali()) localStorage.removeItem('tabbychef-olcum-kapali'); else { localStorage.setItem('tabbychef-olcum-kapali', '1'); OLC.kuyruk.length = 0 } } catch (e) { } try { sfx('tap') } catch (e) { } olcSatir() } } }
 { const st = document.createElement('style'); st.textContent = `#skSet .skscroll{overflow-y:auto!important;overscroll-behavior:contain}`; document.head.appendChild(st) }
 { const _os = openSettings; openSettings = function () { const r = _os.apply(this, arguments); try { olcSatir(); const W = $('skSet'); if (W && !W.__olcObs) { W.__olcObs = new MutationObserver(() => { try { olcSatir() } catch (e) { } }); W.__olcObs.observe(W, { childList: true, subtree: true }) } } catch (e) { } return r } }
+
+// ================= V348: HİKÂYE — "KAYIP USTANIN TARİF DEFTERİ" =================
+// Kullanıcı (23 Kasım 2026): "oyuna bir hikaye mi eklesek" → öneri kabul: "söylediklerinin hepsini yapmaya başla".
+// Hikâye ayrı bir sistem değil, var olan her şeyi bağlar:
+//  • Kafe, ortadan kaybolan efsane şef Bıyık Usta'nındı; Tabby (rehber) onun çırağı. Keşfedilen her tarif, ustanın dağılmış defterinin bir sayfası.
+//  • Dört bölüm = mevcut ana görev bölümleri (OBJ_CH): Kafe açılıyor · Mahallenin gözdesi · Büyüyen kafe · Şehrin yıldızı.
+//    Her ana görev bitince 1–2 satırlık kısa bir sahne; bölüm başında başlık kartı, bölüm sonunda kapanış (mektuplar, kartpostallar).
+//  • Karakterler oyunun kendi müşterileri (Portakal, Pamuk, Duman, Gece, Bal, Fıstık, Kömür; portreler rezervasyon defterindekiyle aynı 3B çizim),
+//    rakip Bay Parıltı (karşı köşedeki zincir kafe) ve Bıyık Usta (şef şapkalı yaşlı kedi; son bölümde döner).
+//  • Sahneler HİKÂYE SIRASIYLA gösterilir: sıradaki sahnenin görevi bitmeden sonrakiler araya girmez (görevler 3'lü pencereden
+//    karışık sırayla bitebilir). Aynı anda hazır olan sahneler tek seferde (en çok ~8 dokunuş), iki gösterim arasında en az 12 sn.
+//  • Dokunarak geçilir, "Atla" ile o seferki sahneler atlanır; hepsi Görevler › Hikâye sekmesinde okunur ve yeniden izlenir.
+//  • Yeni oyuncular (rehberi V348'den sonra bitirenler): rehber + arayüz turu bitince giriş sahnesi; rehber sırasında biten görevlerin
+//    sahneleri girişten hemen sonra gelir. Davet (Sv 2) ve Keşfet (Sv 5) düğmeleri seviyeyle, kısa bir sahneyle açılır
+//    (Mutfak Sv 3, Rezervasyon Sv 4 ve Etkinlikler Sv 8 zaten kendi tanıtımlarıyla seviyeyle açılıyordu).
+//  • Mevcut oyuncuların hiçbir düğmesi gizlenmez; bitirdikleri görevlerin sahneleri "okundu" sayılır (sekmede okunur),
+//    giriş + kısa bir özet sahnesi gösterilir, sürdükleri bölümün açılışı gelir.
+//  • V348'de yalnızca 1. bölüm açık (HK_SON_BOL); 2–4. bölümlerin metinleri hazır, V349'da açılır.
+//  • Kayıt: S.hk = {v, gor{sahne:1}, acil (yeni oyuncu), giris, ac{açılan düğme:1}, kuy[tanıtım sahneleri]}. Uzaktan kapatma: app_flags 'hikaye'=false.
+const HK = { kutu: null, grup: null, gi: 0, satir: 0, sahne: null, son: 0, basla: 0, bayrak: null, portre: {}, tekrar: false, onceki: false, parla: [] };
+const HK_SON_BOL = 0;   // açık olan son bölümün dizini (0 = yalnız 1. bölüm)
+const hkEN = () => { try { return !!(window.__DIL && __DIL.lang === 'en') } catch (e) { return false } };
+const hkT = (tr, en) => hkEN() ? en : tr;
+const HK_KIM = { tabby: ['Tabby', 'Tabby'], usta: ['Bıyık Usta', 'Master Whiskers'], mektup: ['Bıyık Usta’nın mektubu', 'A letter from Master Whiskers'],
+  portakal: ['Portakal', 'Orange'], pamuk: ['Pamuk', 'Pamuk'], duman: ['Duman', 'Duman'], gece: ['Gece', 'Night'], bal: ['Bal', 'Honey'], fistik: ['Fıstık', 'Fıstık'],
+  komur: ['Kömür', 'Coal'], parilti: ['Bay Parıltı', 'Mr. Sparkle'] };
+const HK_LOOK = { portakal: 'Portakal', pamuk: 'Pamuk', duman: 'Duman', gece: 'Gece', bal: 'Bal', fistik: 'Fıstık', komur: 'Kömür' };
+const HK_BOL = [{ a: 0, b: 9, ad: ['Kafe açılıyor', 'The café opens'] }, { a: 10, b: 18, ad: ['Mahallenin gözdesi', 'Neighbourhood favourite'] },
+  { a: 19, b: 30, ad: ['Büyüyen kafe', 'A growing café'] }, { a: 31, b: 40, ad: ['Şehrin yıldızı', 'Star of the city'] }];
+const HK_SAH = {
+ p: [['tabby', 'Şefim, tezgâhın altında tozlu bir zarf buldum. Üstünde “Kafenin yeni şefine” yazıyor!', 'Chef, I found a dusty envelope under the counter. It says “To the café’s new chef”!'],
+  ['mektup', 'Sevgili yeni şef, bu kafe yıllarca benim evimdi, artık senin. Tarif defterimi de bıraktım… ama sayfaları dağıldı.', 'Dear new chef, this café was my home for years; now it’s yours. I left you my recipe book too… but its pages are scattered.'],
+  ['mektup', 'Keşfettiğin her tarif, defterin kayıp bir sayfası. Hepsini bulursan beni de bulursun. Sevgiyle, Bıyık Usta.', 'Every recipe you discover is a lost page of the book. Find them all and you’ll find me too. With love, Master Whiskers.'],
+  ['tabby', 'Bıyık Usta benim ustamdı! Bir sabah kimseye söylemeden gitti. Hadi şefim, defteri birlikte tamamlayalım!', 'Master Whiskers was my teacher! One morning he left without a word. Come on, chef, let’s finish the book together!']],
+ ozet: [['tabby', 'Şefim, sen kafeyi büyütürken defterin {n} sayfasını çoktan bulmuşuz! Geçen bölümleri Görevler › Hikâye’de okuyabilirsin.', 'Chef, while you were growing the café we’d already found {n} pages of the book! You can read the earlier parts in Tasks › Story.']],
+ c0i: { t: ['Toz alınır, kapılar açılır, mahalle merak eder.', 'Dust is swept, doors swing open, and the neighbourhood gets curious.'], s: [] },
+ o0: [['tabby', 'İlk siparişimiz! Bıyık Usta da ilk gününde kasaya bir pati izi bırakmıştı. Bak, hâlâ duruyor.', 'Our first order! On his first day, Master Whiskers left a paw print on the till. Look, it’s still there.']],
+ o1: [['tabby', 'Ustam hep “İki iyi malzeme buluşunca sihir olur” derdi. Bu tahtaya çok yakıştın!', 'My master always said “When two good ingredients meet, magic happens.” You’re a natural at this board!']],
+ o2: [['portakal', 'Merhaba! Ben Portakal, karşı apartmandan. Bu kapının yeniden açıldığını görünce koşa koşa geldim!', 'Hi! I’m Orange from across the street. I came running when I saw this door open again!'],
+  ['portakal', 'Bıyık Usta’nın kahvesini çok özlemiştik. Bakalım sen de onun gibi köpürtebilecek misin?', 'We all missed Master Whiskers’ coffee. Let’s see if you can froth it like he did!']],
+ o3: [['tabby', 'Defterin ilk kayıp sayfası! Kenarına küçük bir not düşülmüş: “Sabır, en gizli malzemedir.”', 'The first lost page! There’s a tiny note in the margin: “Patience is the secret ingredient.”']],
+ o4: [['pamuk', 'Ay, ne tatlı olmuş! Ben Pamuk, köşedeki çiçekçi. Bıyık Usta her pazartesi benden çiçek alırdı.', 'Oh, how lovely! I’m Pamuk, the florist on the corner. Master Whiskers bought flowers from me every Monday.']],
+ o5: [['duman', 'Hımm. Ben Duman, otuz yıl balıkçılık yaptım. Usta da tezgâhına göz bebeği gibi bakardı.', 'Hmm. I’m Duman, thirty years a fisherman. The master looked after his counter like a treasure, too.']],
+ o6: [['gece', 'O tarifi senden ben istedim. Bıyık Usta’nın en sevdiğiydi. Gitmeden önceki gece de onu yapmıştı…', 'I was the one who asked for that recipe. It was Master Whiskers’ favourite. He made it the night before he left…'],
+  ['tabby', 'Gece her şeyi fark eder. Sanırım bize bir şey anlatmak istiyor, şefim.', 'Night notices everything. I think she wants to tell us something, chef.']],
+ o7: [['tabby', 'Boyanın altından eski bir yazı çıktı: “Her kedi bir masa, her masa bir hikâye.” Ustamın el yazısı!', 'Under the old paint there’s writing: “Every cat a table, every table a story.” That’s my master’s handwriting!']],
+ o8: [['gece', 'Gittiği gece onu limanda gördüm. Elinde bir valiz, bir harita… bir de kırmızı bir pul vardı.', 'The night he left, I saw him at the harbour. He had a suitcase, a map… and a little red stamp.']],
+ o9: [['tabby', 'Kafemiz doluyor! Bu arada karşı köşede bir inşaat başladı. Kim taşınıyor acaba?', 'Our café is filling up! By the way, building work just started on the opposite corner. Who’s moving in?']],
+ c0o: { s: [['tabby', 'Defterin ilk sayfaları bizde, mahalle de bizi sevdi. Ama karşı köşedeki o parıl parıl tabela… hiç içime sinmedi.', 'We have the first pages and the neighbourhood loves us. But that shiny new sign on the corner… I don’t like it one bit.']] },
+ c1i: { t: ['Karşı köşeye parıl parıl bir zincir kafe açıldı.', 'A glittering chain café has opened on the corner.'],
+  s: [['parilti', 'Bonjour, komşu! Ben Bay Parıltı, Parıltı Kafe zincirinin sahibi. Elli şubemiz var, şimdi de bu sokaktayız.', 'Bonjour, neighbour! I’m Mr. Sparkle, owner of the Sparkle Café chain. Fifty branches, and now one on your street.'],
+   ['parilti', 'Kafeni satmak istersen kapım açık. Bıyık Usta’ya da teklif etmiştim… Kabul etmedi tabii.', 'If you ever want to sell, my door is open. I offered Master Whiskers the same… he refused, of course.'],
+   ['tabby', 'Satmak mı? Asla! Bu kafe ustamın emaneti. Değil mi şefim?', 'Sell? Never! This café is my master’s legacy. Right, chef?']] },
+ o10: [['tabby', 'Yakaladık! Kaçağın cebinden Parıltı Kafe’nin indirim kuponu çıktı. Tesadüf mü dersin?', 'Got him! The runaway had a Sparkle Café coupon in his pocket. Coincidence?']],
+ o11: [['portakal', 'Artık her sabah buradayım! Parıltı’nın kahvesini denedim, makineden çıkmış gibi. Seninki ev gibi kokuyor.', 'I’m here every morning now! I tried Sparkle’s coffee; it tastes like a machine made it. Yours smells like home.']],
+ o12: [['tabby', 'Beşinci sayfa! Arkasına kırmızı bir pul yapıştırılmış, üstünde bir kule resmi var.', 'The fifth page! There’s a red stamp stuck on the back with a picture of a tower.']],
+ o13: [['pamuk', 'Yeni zemin harika! Bay Parıltı bugün bütün güllerimi almak istedi. Vermedim, sana sakladım!', 'The new floor is gorgeous! Mr. Sparkle tried to buy all my roses today. I said no; I saved them for you!']],
+ o14: [['duman', 'Sokakta herkes senin kafeni konuşuyor. Parıltı bugün camdan seni izliyordu, haberin olsun.', 'The whole street talks about your café. Sparkle was watching you through the window today, just so you know.']],
+ o15: [['tabby', 'Makinemiz pırıl pırıl! Ustamın sözü: “Alet ne kadar iyi olursa olsun, çayı sevgi demler.”', 'Our machine is gleaming! As my master says: “However good the kettle, it’s love that brews the tea.”']],
+ o16: [['parilti', 'Hmph. Müşterilerin ne isterse anında yapıyorsun. Bizde öyle bir menü yok… Belki ben de bir şey öğrenirim.', 'Hmph. You make whatever customers ask for, on the spot. We can’t do that… Maybe I could learn a thing or two.']],
+ o17: [['gece', 'Onuncu sayfada da aynı pul var. O kule… Roma’daki bir saat kulesi. Usta İtalya’ya gitmiş olmalı.', 'The tenth page has the same stamp. That tower… it’s a clock tower in Rome. The master must have gone to Italy.']],
+ o18: [['duman', 'Altmış müşteri! Ben gençken bu sokakta bu kalabalığı sadece balık pazarında görürdüm.', 'Sixty customers! When I was young, I only saw crowds like this at the fish market.']],
+ c1o: { s: [['tabby', 'Şefim, kurye bir kartpostal getirdi. Roma’dan!', 'Chef, the courier brought a postcard. From Rome!'],
+   ['mektup', 'Sevgili şef, Roma’da güzel bir sabah. Kafenin adı buraya kadar geldi, biliyor musun? Yakında bir sayfa daha yollayacağım.', 'Dear chef, it’s a lovely morning in Rome. Your café’s name has reached me even here, you know. I’ll send another page soon.'],
+   ['tabby', 'Ustam iyi ve bizi izliyor! Kafeyi büyütelim ki döndüğünde gözlerine inanamasın.', 'My master is well, and he’s watching us! Let’s grow the café so he can’t believe his eyes when he’s back.']] },
+ c2i: { t: ['Kafe büyüdükçe defterin izleri dünyaya uzanıyor.', 'As the café grows, the book’s trail stretches around the world.'],
+  s: [['tabby', 'Defterin arkasında bir not var: “Dünyayı gez, tarif topla.” Etkinlikler’deki Dünya Keşfi’nde ustamın izini sürebiliriz!', 'There’s a note at the back of the book: “Travel the world, gather recipes.” We can follow my master’s trail in World Discovery under Events!']] },
+ o19: [['bal', 'Yüzüncü müşterin benim! Ben Bal, arıcıyım. Bıyık Usta ballı sütü hep benim balımla yapardı. Sana da her hafta bir kavanoz getireceğim!', 'I’m your hundredth customer! I’m Honey, the beekeeper. Master Whiskers always made his honey milk with my honey. I’ll bring you a jar every week!']],
+ o20: [['tabby', 'On beş sayfa! Defterin ortasında katlanmış bir harita var: Roma, İstanbul, Kyoto ve Paris işaretli.', 'Fifteen pages! There’s a folded map in the middle of the book: Rome, Istanbul, Kyoto and Paris are circled.']],
+ o21: [['fistik', 'Ben Fıstık! Usta bana çırak olacağımı söz vermişti. Senden öğrensem olur mu? Birleştirmek çok eğlenceli!', 'I’m Fıstık! The master promised I could be his apprentice. Can I learn from you instead? Merging is so much fun!']],
+ o22: [['duman', 'Duvarlar genişledi! Usta hep “Bir gün bu kafe bu sokağa sığmayacak” derdi. Haklıymış.', 'The walls moved out! The master always said, “One day this café won’t fit on this street.” He was right.']],
+ o23: [['portakal', 'Müdavimler kulübü kurduk! Her cuma burada toplanıyoruz. Bay Parıltı da katılmak istiyor, ne dersin?', 'We started a regulars’ club! We meet here every Friday. Mr. Sparkle wants to join too, what do you think?']],
+ o24: [['parilti', 'Pekâlâ, itiraf ediyorum: senin kahven benimkinden iyi. Kimseye söyleme. Özellikle Tabby’ye.', 'Fine, I admit it: your coffee is better than mine. Don’t tell anyone. Especially Tabby.']],
+ o25: [['gece', 'İstanbul’dan bir kartpostal daha geldi: “Bir sonraki durak çay kokuyor.” Usta bilmece seviyor.', 'Another postcard, from Istanbul: “The next stop smells of tea.” The master loves riddles.']],
+ o26: [['tabby', 'Kuryemiz bütün mahalleye yetişiyor! Ustam da eskiden bisikletle teslimat yapardı, sepetinde hep bir çiçek olurdu.', 'Our courier reaches the whole neighbourhood! My master used to deliver by bicycle, always with a flower in the basket.']],
+ o27: [['pamuk', 'Kafen çiçek bahçesine döndü! Usta görse “İşte benim kafem, ama daha güzeli” derdi.', 'Your café is a flower garden now! The master would say, “That’s my café, only lovelier.”']],
+ o28: [['komur', '…Ben Kömür. Az konuşurum. Ustayı Kyoto’da gördüm. Size bunu yolladı: bir kapı çanı.', '…I’m Coal. I don’t talk much. I saw the master in Kyoto. He sent you this: a door bell.'],
+  ['tabby', 'Ustamın kapı çanı! Onu asarsak… geri döneceği gün çalacak!', 'My master’s door bell! If we hang it up… it’ll ring the day he comes back!']],
+ o29: [['tabby', 'Yirmi sayfa! Son sayfalardan biri neredeyse boş, köşesinde sadece “Paris” yazıyor.', 'Twenty pages! One of the last pages is almost blank; it only says “Paris” in the corner.']],
+ o30: [['parilti', 'Komşu, şubelerimi kapatıyorum. Tek bir kafe, tek bir mutfak… Bunu senden öğrendim. Teşekkürler.', 'Neighbour, I’m closing my branches. One café, one kitchen… I learned that from you. Thank you.']],
+ c2o: { s: [['mektup', 'Sevgili şef, Paris’teyim. Bir sürprizim var ama önce kafen şehrin yıldızı olmalı. Kapı çanımı astın mı?', 'Dear chef, I’m in Paris. I have a surprise for you, but first your café must become the star of the city. Did you hang my bell?'],
+   ['tabby', 'Astık ustam! Şefim, son bölüm bu: şehrin yıldızı olalım, ustamı eve getirelim!', 'We did, master! Chef, this is the final chapter: let’s become the star of the city and bring my master home!']] },
+ c3i: { t: ['Bütün şehir kafeni konuşuyor. Bir de şu gizemli eleştirmen…', 'The whole city is talking about your café. And then there’s that mysterious critic…'],
+  s: [['tabby', 'Şehrin en ünlü yemek eleştirmeni kafemize gelecekmiş! Kimse yüzünü görmemiş.', 'The city’s most famous food critic is coming to our café! Nobody has ever seen their face.']] },
+ o31: [['portakal', 'Eleştirmen kılık değiştirip geliyormuş! Belki de aramızdadır… Duman, sen olmayasın?', 'They say the critic comes in disguise! Maybe they’re one of us… Duman, is it you?'],
+  ['duman', 'Ben mi? Ben sadece köfte yerim.', 'Me? I just eat meatballs.']],
+ o32: [['tabby', 'Kafemiz saray gibi oldu! Ustamın eski fotoğrafı şu köşede asılıydı. Yerini hazırladım bile.', 'Our café looks like a palace! My master’s old photo used to hang in that corner. I’ve already cleared the spot.']],
+ o33: [['gece', 'Bir müşteri her gün farklı bir tarif istiyor ve hep aynı masaya oturuyor. Pencere kenarındaki… ustanın masası.', 'One customer orders a different recipe every day and always sits at the same table. The one by the window… the master’s table.']],
+ o34: [['parilti', 'Eski şubelerimden kalan en iyi makineleri sana getirdim. Hediye. Artık zincir değil, dostluk kuruyoruz.', 'I brought you the best machines from my old branches. A gift. We’re building friendships now, not chains.']],
+ o35: [['bal', 'Bütün mahalle burada! Bir kafe değil, bir aile olduk. Ustanın istediği tam da buydu.', 'The whole neighbourhood is here! We’re not a café, we’re a family. That’s exactly what the master wanted.']],
+ o36: [['tabby', 'Paris’ten bir paket geldi! İçinden bir önlük çıktı… üstünde ustamın adı işli.', 'A parcel came from Paris! There’s an apron inside… with my master’s name embroidered on it.']],
+ o37: [['komur', 'Son kaçağı da yakaladın. …Duydun mu? Kapı çanı çaldı.', 'You caught the last runaway. …Did you hear that? The door bell rang.']],
+ o38: [['tabby', 'Paris’ten son kartpostal geldi. Üstünde tek kelime var: “Yakında.” Ustam beni meraktan çatlatacak!', 'The last postcard from Paris arrived. Just one word: “Soon.” My master is going to drive me crazy!']],
+ o39: [['tabby', 'Otuz sayfa! Defterin tek boş sayfasında “Şefin dokunuşu” yazıyor. Kendi tarifimizi mi yazacağız?', 'Thirty pages! The book’s only blank page says “The chef’s touch.” Are we meant to write our own recipe?']],
+ o40: [['gece', 'Pencere kenarındaki müşteri bugün kalkarken kasaya bir pati izi bıraktı. İlk gün gördüğün izin aynısı…', 'The customer by the window left a paw print on the till as they left today. Exactly like the one you saw on the first day…']],
+ c3o: { s: [['usta', 'Gizli eleştirmen bendim, şef. Her gün o pencere kenarında oturup kafeni izledim.', 'I was the secret critic, chef. Every day I sat by that window and watched your café.'],
+   ['tabby', 'USTAM! Döndün!', 'MASTER! You’re back!'],
+   ['usta', 'Yolculuğum senin içindi. Bu kafenin yeniden bir ev olduğunu görmek istedim. Defterim artık senin.', 'My journey was for you. I wanted to see this café become a home again. My book is yours now.'],
+   ['usta', 'Ama bu sabah bir kartpostal geldi ve imza benim değil… Yeni bir hikâye başlıyor.', 'But this morning a postcard arrived, and the signature isn’t mine… A new story begins.'],
+   ['tabby', 'Teşekkürler şefim! Yeni bölümler çok yakında.', 'Thank you, chef! New chapters are coming soon.']] },
+ // yeni oyuncularda seviyeyle açılan düğmelerin tanıtımı
+ a_inv: [['portakal', 'Arkadaşlarımı da buraya çağırmak istiyorum! Soldaki Davet’ten sen de dostlarını kafene çağırabilirsin.', 'I want to bring my friends here too! You can invite yours to the café with Invite on the left.']],
+ a_kes: [['tabby', 'Ustamın eski haritasında başka kafeler de var! Sol alttaki Keşfet’ten diğer şeflerin kafelerini gezebilirsin.', 'My master’s old map shows other cafés too! Use Explore at the bottom left to visit other chefs’ cafés.']]
+};
+// seviyeyle açılan düğmeler (yalnız yeni oyuncularda gizli başlar)
+const HK_AC = [{ k: 'inv', lv: 2, sel: '#invBtn', sahne: 'a_inv' }, { k: 'kes', lv: 5, sel: '#kesBtn', sahne: 'a_kes' }];
+const HK_SIRA = (() => { const L = ['p', 'ozet']; HK_BOL.forEach((B, k) => { L.push('c' + k + 'i'); for (let i = B.a; i <= B.b; i++) L.push('o' + i); L.push('c' + k + 'o') }); return L })();
+const hkBolOf = i => HK_BOL.findIndex(B => i >= B.a && i <= B.b);
+const hkBitti = i => (S.objDone || []).includes(i);
+const hkBolBitti = k => { const B = HK_BOL[k]; for (let i = B.a; i <= B.b; i++) if (!hkBitti(i)) return false; return true };
+const hkSatirlar = id => { const x = HK_SAH[id]; return Array.isArray(x) ? x : (x && x.s) || [] };
+const hkBaslik = id => /^c\d[io]$/.test(id);
+const hkSahneBol = id => { if (hkBaslik(id)) return +id[1]; if (/^o\d+$/.test(id)) return hkBolOf(+id.slice(1)); return -1 };
+const hkAcik = () => { try { return !EVMODE && HK.bayrak !== false && !!S && !!S.created } catch (e) { return false } };
+function hkS() { const H = S.hk || (S.hk = {}); H.v = 1; H.gor = H.gor || {}; H.kuy = H.kuy || []; H.ac = H.ac || {}; return H }
+// keşfedilen tarif = bulunan sayfa (başlangıçtaki tarifler defterde zaten duruyor; kayıp sayfa sayılmaz)
+function hkSayfa() { let n = 0, tot = 0; try { for (const r of RECIPES) { if (r.br || !r.disc || r.hidden || r.def) continue; tot++; if (S.recipes && S.recipes[r.id]) n++ } } catch (e) { } return { n: Math.min(n, tot), tot } }
+// sahne hazır mı: hikâye sırası bunun üzerinden ilerler (hazır olmayan sahne sonrakileri bekletir)
+function hkHazir(id, H) {
+  if (id === 'p') return !H.acil || !!H.giris;
+  if (id === 'ozet') return !H.acil;
+  const k = hkSahneBol(id); if (k < 0 || k > HK_SON_BOL) return false;
+  if (hkBaslik(id)) return id[2] === 'i' ? (k === 0 || hkBolBitti(k - 1)) : hkBolBitti(k);
+  return hkBitti(+id.slice(1)) }
+function hkSiradaki() { const H = hkS(), g = []; let n = 0;
+  for (const id of HK_SIRA) { if (H.gor[id]) continue; if (!HK_SAH[id] || !hkHazir(id, H)) break;
+    const d = hkSatirlar(id).length + (hkBaslik(id) ? 1 : 0); if (g.length && n + d > 8) break; g.push(id); n += d }
+  return g }
+// ---- başlangıç: kayıt ilk kez görülünce ----
+function hkKur() { if (EVMODE || !S || S.hk) return; const H = hkS();
+  const eski = !!S.created && S.tut === 'done';
+  H.acil = eski ? 0 : 1;
+  if (eski) { for (const i of (S.objDone || [])) H.gor['o' + i] = 1;
+    HK_BOL.forEach((B, k) => { if (hkBolBitti(k)) { H.gor['c' + k + 'i'] = 1; H.gor['c' + k + 'o'] = 1 } });
+    for (const A of HK_AC) { H.ac[A.k] = 1; H.gor[A.sahne] = 1 } }
+  else H.gor.ozet = 1;
+  try { markDirty() } catch (e) { } }
+// ---- durum takibi: rehber sonu, seviye, düğmeler ----
+setInterval(() => { try { if (typeof S === 'undefined' || !S || EVMODE || !S.created) return; if (!S.hk) hkKur(); const H = hkS();
+    if (H.acil && !H.giris && S.tut === 'done' && S.tur == null) { H.giris = 1; markDirty() }
+    for (const A of HK_AC) if (!H.ac[A.k] && (S.lvl | 0) >= A.lv) { H.ac[A.k] = 1; if (H.acil) H.kuy.push(A.sahne); else H.gor[A.sahne] = 1; markDirty() }
+    hkGizle() } catch (e) { console.warn('hikâye', e) } }, 700);
+function hkGizle() { const g = $('game'); if (!g) return; const H = S.hk, on = hkAcik(); for (const A of HK_AC) { const gz = !!(on && H && H.acil && !H.ac[A.k]); if (g.classList.contains('hkG-' + A.k) !== gz) g.classList.toggle('hkG-' + A.k, gz) } }
+function hkParla(sel) { setTimeout(() => { try { const e = document.querySelector(sel); if (!e) return; e.classList.add('hkYeni'); setTimeout(() => e.classList.remove('hkYeni'), 7000) } catch (er) { } }, 350) }
+// ---- gösterim ----
+const hkUygun = () => { try { if (!hkAcik() || !started || S.tut !== 'done' || S.tur != null || UI.mode !== 'cafe' || UI.modal) return false;
+    if ($('coach') && !$('coach').hidden) return false; if ($('cine')) return false; { const sp = $('syPerde'); if (sp && !sp.hidden && getComputedStyle(sp).display !== 'none') return false } if (typeof lvQueue !== 'undefined' && lvQueue.length) return false;
+    if (document.documentElement.classList.contains('kosOn')) return false; if (typeof TD !== 'undefined' && TD.on) return false; if (typeof VISIT !== 'undefined' && VISIT.on) return false;
+    if (typeof PL !== 'undefined' && PL) return false; if (document.querySelector('#game .modal:not([hidden])')) return false; return true } catch (e) { return false } };
+setInterval(() => { try { if (HK.grup || typeof S === 'undefined' || !S || !S.hk) return; if (!started) { HK.basla = 0; return } if (!HK.basla) HK.basla = Date.now();
+    if (Date.now() - HK.basla < 6000 || Date.now() - HK.son < 12000 || !hkUygun()) return; const H = S.hk;
+    const g = hkSiradaki(); if (g.length) return hkGrupAc(g);
+    if (H.kuy.length && (!H.acil || H.giris)) { const id = H.kuy.shift(); markDirty(); if (HK_SAH[id] && !H.gor[id]) hkGrupAc([id]) } } catch (e) { console.warn('hikâye gösterimi', e) } }, 700);
+function hkGrupAc(g, tekrar) { if (!g || !g.length) return; HK.grup = g.slice(); HK.gi = 0; HK.tekrar = !!tekrar; HK.onceki = !!UI.modal; HK.parla = []; UI.modal = true; hkKutu(); HK.kutu.hidden = false; hkSahneAc() }
+function hkSahneAc() { const id = HK.grup[HK.gi]; if (!id) return hkKapat(); HK.sahne = id; HK.satir = hkBaslik(id) ? -1 : 0;
+  if (!HK.tekrar) { const H = hkS(); H.gor[id] = 1; markDirty(); try { if (typeof olc === 'function') olc('hikaye', { id }) } catch (e) { } }
+  const A = HK_AC.find(a => a.sahne === id); if (A && A.sel) HK.parla.push(A.sel);
+  hkCiz() }
+function hkIleri() { const s = hkSatirlar(HK.sahne); HK.satir++; if (HK.satir >= s.length) { HK.gi++; if (HK.gi >= HK.grup.length) return hkKapat(); return hkSahneAc() } hkCiz() }
+function hkAtla() { try { if (!HK.tekrar && typeof olc === 'function') olc('hikaye_atla', { id: HK.sahne }) } catch (e) { }
+  if (!HK.tekrar) { const H = hkS(); for (const id of HK.grup) { H.gor[id] = 1; const A = HK_AC.find(a => a.sahne === id); if (A && A.sel && !HK.parla.includes(A.sel)) HK.parla.push(A.sel) } markDirty() } hkKapat() }
+function hkKapat() { const tekrar = HK.tekrar; HK.grup = null; HK.sahne = null; HK.son = Date.now(); if (HK.kutu) HK.kutu.hidden = true; UI.modal = HK.onceki; HK.onceki = false; HK.tekrar = false;
+  for (const s of HK.parla) hkParla(s); HK.parla = [];
+  if (!tekrar) { try { saveNow() } catch (e) { } try { if (typeof lvQueue !== 'undefined' && lvQueue.length && !UI.modal) setTimeout(showLevelUp, 200) } catch (e) { } } }
+const HK_OZET0 = ['Şefim, sen kafeyi büyütürken biz de ustanın izini sürmeye başladık! Geçen bölümleri Görevler › Hikâye’de okuyabilirsin.', 'Chef, while you were growing the café, we started following my master’s trail! You can read the earlier parts in Tasks › Story.'];
+function hkMetin(t) { if (!t.includes('{n}')) return t; const n = hkSayfa().n; return n ? t.replace('{n}', String(n)) : hkT(HK_OZET0[0], HK_OZET0[1]) }
+function hkCiz() { const K = HK.kutu, id = HK.sahne, x = HK_SAH[id]; if (!K) return; const bas = K.querySelector('.hkBas'), kart = K.querySelector('.hkKart');
+  if (HK.satir < 0) { const k = +id[1], B = HK_BOL[k], son = id[2] === 'o';
+    bas.hidden = false; kart.hidden = true;
+    bas.innerHTML = `${uiIc('i_book', 'hkBasIc')}<small>${hkT(son ? 'Bölüm tamamlandı' : 'Yeni bölüm', son ? 'Chapter complete' : 'New chapter')}</small><b>${hkT('Bölüm', 'Chapter')} ${k + 1} · ${hkT(B.ad[0], B.ad[1])}</b>${x && x.t ? `<p>${hkT(x.t[0], x.t[1])}</p>` : ''}<em>${hkT('Devam için dokun', 'Tap to continue')}</em>`;
+    try { sfx(son ? 'discover' : 'chime') } catch (e) { } return }
+  const [kim, tr, en] = hkSatirlar(id)[HK.satir]; bas.hidden = true; kart.hidden = false; const ad = HK_KIM[kim] || [kim, kim];
+  kart.className = 'hkKart' + (kim === 'mektup' ? ' mektup' : ''); kart.style.animation = 'none'; void kart.offsetWidth; kart.style.animation = '';
+  kart.querySelector('.hkYuz').innerHTML = hkYuz(kim); kart.querySelector('.hkAd').textContent = hkT(ad[0], ad[1]);
+  kart.querySelector('.hkSoz').textContent = hkMetin(hkT(tr, en)); kart.querySelector('.hkDevam').textContent = hkT('Devam ›', 'Next ›'); try { sfx('pop') } catch (e) { } }
+function hkKutu() { if (HK.kutu) { HK.kutu.querySelector('.hkAtla').textContent = hkT('Atla ›', 'Skip ›'); return } const k = document.createElement('div'); k.id = 'hkKutu'; k.hidden = true; k.setAttribute('data-dilyok', '1');
+  k.innerHTML = `<div class="hkPerde"></div><div class="hkBas" hidden></div><div class="hkKart"><div class="hkYuz"></div><div class="hkIc"><span class="hkAd"></span><p class="hkSoz"></p><em class="hkDevam"></em></div></div><button type="button" class="hkAtla">${hkT('Atla ›', 'Skip ›')}</button>`;
+  $('game').appendChild(k); HK.kutu = k;
+  k.addEventListener('click', e => { e.stopPropagation(); if (!HK.grup) return; if (e.target.closest('.hkAtla')) { try { sfx('tap') } catch (er) { } return hkAtla() } hkIleri() });
+  for (const t of ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'wheel']) k.addEventListener(t, e => e.stopPropagation(), { passive: true }) }
+// ---- portreler ----
+const HK_ZARF = `<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="14" width="52" height="38" rx="5" fill="#fff6e0" stroke="#4a2a14" stroke-width="3.5"/><path d="M8 17 L32 36 L56 17" fill="none" stroke="#4a2a14" stroke-width="3.5" stroke-linejoin="round"/><circle cx="32" cy="38" r="7" fill="#d9473a" stroke="#4a2a14" stroke-width="2.5"/><path d="M29 38 h6 M32 35 v6" stroke="#fff3c4" stroke-width="2"/></svg>`;
+const HK_OZEL = {
+  usta: { name: 'BiyikUsta', W: [238, 234, 230], B: [150, 150, 158], A: [250, 248, 244], xs: 1.04, top: { c: [250, 248, 244], kind: 'shirt', collar: [214, 64, 54] }, bt: 'bt_black',
+    hat: h => { acc(h, new THREE.CylinderGeometry(0.082, 0.078, 0.12, 18), 0xfbf8f2, 0, 0.395, 0.005); for (const [x, z] of [[-0.05, 0], [0.05, 0], [0, 0.045], [0, -0.045], [0, 0]]) { const p = acc(h, new THREE.SphereGeometry(0.06, 14, 10), 0xffffff, x, 0.475, z + 0.005); p.scale.y = 0.75 } } },
+  parilti: { name: 'BayParilti', W: [250, 250, 250], B: [34, 34, 40], A: [52, 50, 70], xs: 1.0, top: { c: [250, 250, 252], kind: 'vest', v: [40, 38, 52], collar: [250, 250, 252] }, bt: 'bt_black',
+    hat: h => { acc(h, new THREE.CylinderGeometry(0.115, 0.115, 0.012, 22), 0x1c1c22, 0, 0.335, 0.005); acc(h, new THREE.CylinderGeometry(0.072, 0.075, 0.14, 20), 0x1c1c22, 0, 0.41, 0.005); acc(h, new THREE.CylinderGeometry(0.0765, 0.0765, 0.022, 20), 0xd9b25a, 0, 0.355, 0.005) } } };
+function hkPortre3B(L, key) { if (HK.portre[key] != null) return HK.portre[key]; const { r, sc, cam } = TH; let url = '', m = null;
+  try { if (!L.tex) L.tex = customerTex(L, 3); m = cloneLook(L.tex, L); m.scale.set(YS * (L.xs || 1), YS, YS); const mx = new THREE.AnimationMixer(m); mx.clipAction(CLIPS.Idle_12).play(); mx.update(0.6); try { poseFix(poseRig(m), 0) } catch (e) { }
+    attachAcc(m, (h, n) => L.hat(h, n)); r.setSize(256, 256, false); cam.aspect = 1; sc.add(m); m.updateMatrixWorld(true);
+    const c = m.getObjectByName('mixamorigHead').getWorldPosition(new THREE.Vector3()); c.y += 0.1; const ext = 0.7, dist = ext / 2 / Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+    cam.position.copy(c).add(new THREE.Vector3(0.3, 0.05, 1).normalize().multiplyScalar(dist)); cam.lookAt(c); cam.near = dist / 50; cam.far = dist * 4; cam.updateProjectionMatrix(); r.render(sc, cam); url = r.domElement.toDataURL('image/png') }
+  catch (e) { console.warn('hikâye portresi', e) } finally { try { if (m) sc.remove(m) } catch (e) { } r.setSize(192, 192, false); cam.aspect = 1; cam.updateProjectionMatrix() }
+  HK.portre[key] = url; return url }
+function hkYuz(kim) { try { if (kim === 'tabby') return `<span class="hkSvg">${RH_FACE}</span>`; if (kim === 'mektup') return `<span class="hkSvg zarf">${HK_ZARF}</span>`;
+    const u = HK_LOOK[kim] ? rezPortre(HK_LOOK[kim]) : HK_OZEL[kim] ? hkPortre3B(HK_OZEL[kim], kim) : ''; if (u) return `<img src="${u}" alt="">` } catch (e) { } return `<span class="hkSvg">${RH_FACE}</span>` }
+// ---- Görevler › Hikâye sekmesi ----
+function hkSekmeCiz(body, foot) { const H = hkS(), P = hkSayfa(); const metin = [];
+  const satirHTML = id => hkSatirlar(id).map(([kim, tr, en]) => { const ad = HK_KIM[kim] || [kim, kim]; metin.push(hkMetin(hkT(tr, en)));
+    return `<div class="hkS${kim === 'mektup' ? ' mektup' : ''}"><span class="hkSY">${hkYuz(kim)}</span><div><b>${hkT(ad[0], ad[1])}</b><p></p></div></div>` }).join('');
+  let h = `<div class="hkDef">${uiIc('i_book')}<div><b>${hkT('Ustanın tarif defteri', 'The master’s recipe book')}</b><span><i style="width:${P.tot ? P.n / P.tot * 100 : 0}%"></i></span></div><em>${P.n} / ${P.tot} ${hkT('sayfa', 'pages')}</em></div>`;
+  if (H.gor.p) h += `<section class="hkB"><h4><span>${hkT('Başlangıç', 'Prologue')}</span><button type="button" class="hkIzle" data-hz="p">▶ ${hkT('İzle', 'Watch')}</button></h4>${satirHTML('p')}</section>`;
+  else h += `<section class="hkB kilit"><h4><span>${hkT('Başlangıç', 'Prologue')}</span></h4><p class="hkKilit">${uiIc('i_hourglass')}${hkT('Rehber bitince açılır', 'Unlocks after the tutorial')}</p></section>`;
+  HK_BOL.forEach((B, k) => { const ids = ['c' + k + 'i']; for (let i = B.a; i <= B.b; i++) ids.push('o' + i); ids.push('c' + k + 'o');
+    const gor = ids.filter(id => H.gor[id] && HK_SAH[id]), sahne = ids.filter(id => id[0] === 'o'), okunan = sahne.filter(id => H.gor[id]).length;
+    const kapali = k > HK_SON_BOL, kilitli = kapali || !gor.length;
+    h += `<section class="hkB${kilitli ? ' kilit' : ''}"><h4><span>${hkT('Bölüm', 'Chapter')} ${k + 1} · ${hkT(B.ad[0], B.ad[1])}</span>${kapali ? '' : `<small>${okunan}/${sahne.length}</small>`}${!kilitli ? `<button type="button" class="hkIzle" data-hz="${k}">▶ ${hkT('İzle', 'Watch')}</button>` : ''}</h4>`;
+    if (kapali) h += `<p class="hkKilit">${uiIc('i_hourglass')}${hkT('Yakında', 'Coming soon')}</p>`;
+    else if (!gor.length) h += `<p class="hkKilit">${uiIc('i_hourglass')}${hkT('Ana görevlerle açılır', 'Unlocks with main tasks')}</p>`;
+    else { for (const id of gor) { const x = HK_SAH[id]; if (hkBaslik(id) && x.t) h += `<p class="hkAlt">${hkT(x.t[0], x.t[1])}</p>`; h += satirHTML(id) }
+      const sonraki = sahne.find(id => !H.gor[id]); if (sonraki) h += `<p class="hkKilit">${uiIc('i_target')}${hkT('Sıradaki sahne', 'Next scene')}: <span class="hkOt" data-ot="${+sonraki.slice(1)}"></span></p>` }
+    h += `</section>` });
+  body.innerHTML = `<div class="hkSek" data-dilyok="1">${h}</div>`;
+  body.querySelectorAll('.hkS p').forEach((p, i) => p.textContent = metin[i] || '');
+  body.querySelectorAll('[data-ot]').forEach(e => { const O = OBJECTIVES[+e.dataset.ot]; e.textContent = O ? (hkEN() && window.__DIL && __DIL.t ? __DIL.t(O.t) : O.t) : '' });
+  body.querySelectorAll('[data-hz]').forEach(b => b.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (er) { } const z = b.dataset.hz;
+    let g; if (z === 'p') g = ['p']; else { const k = +z, B = HK_BOL[k]; g = ['c' + k + 'i']; for (let i = B.a; i <= B.b; i++) g.push('o' + i); g.push('c' + k + 'o'); g = g.filter(id => H.gor[id] && HK_SAH[id]) }
+    try { if (typeof olc === 'function') olc('hikaye_tekrar', { z }) } catch (er) { } hkGrupAc(g, true) });
+  if (foot) foot.innerHTML = `<p data-dilyok="1">${hkT('Her ana görev hikâyeden yeni bir sahne açar. Keşfettiğin her tarif, ustanın defterinin bir sayfası.', 'Every main task unlocks a new scene. Every recipe you discover is a page of the master’s book.')}</p>` }
+{ const _od = openDaily; openDaily = function (tab) { let hk = false; try { hk = !EVMODE && (tab || UI.qTab) === 'hk' } catch (e) { }
+    const r = _od.apply(this, hk ? ['main'] : arguments);
+    try { if (EVMODE || !S || !S.hk || HK.bayrak === false) return r; const M = $('skDaily'), tabs = M && M.querySelector('.sktabs'); if (!tabs) return r;
+      const ekle = () => { if (tabs.querySelector('[data-qt="hk"]')) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'sktab'; b.setAttribute('role', 'tab'); b.dataset.qt = 'hk';
+        b.setAttribute('data-dilyok', '1'); b.innerHTML = `${uiIc('i_book')}${hkT('Hikâye', 'Story')}`; b.setAttribute('aria-selected', String(UI.qTab === 'hk')); tabs.appendChild(b);
+        b.onclick = e => { e.stopPropagation(); UI.qTab = 'hk'; try { sfx('tap') } catch (er) { } tabs.querySelectorAll('.sktab').forEach(x => x.setAttribute('aria-selected', String(x === b))); hkSekmeCiz(M.querySelector('.skscroll'), M.querySelector('.skfoot')) } };
+      ekle(); new MutationObserver(() => ekle()).observe(tabs, { childList: true });
+      if (hk) tabs.querySelector('[data-qt="hk"]').click() } catch (e) { console.warn('hikâye sekmesi', e) } return r } }
+setTimeout(async () => { try { const sb = await sbClient(); const { data, error } = await sb.rpc('flag_get', { p_key: 'hikaye' }); if (!error && typeof data === 'boolean') HK.bayrak = data } catch (e) { } }, 7000);
+// ---- görünüm ----
+{ const INK = '#4a2a14', st = document.createElement('style'); st.textContent = `
+html #game#game#game.hkG-inv #invBtn:not(#_h1#_h2#_h3#_h4#_h5#_h6#_h7#_h8),html #game#game#game.hkG-kes #kesBtn:not(#_h1#_h2#_h3#_h4#_h5#_h6#_h7#_h8){display:none!important}
+.hkYeni{animation:hkYeni 1.1s ease-in-out infinite!important}
+@keyframes hkYeni{0%,100%{filter:drop-shadow(0 0 0 #ffd34d)}50%{filter:drop-shadow(0 0 6px #ffc61a) drop-shadow(0 0 12px #ffd34d) brightness(1.08)}}
+#hkKutu{position:absolute;inset:0;z-index:45;font-family:var(--font-display,inherit);color:${INK};-webkit-user-select:none;user-select:none;cursor:pointer}
+#hkKutu[hidden]{display:none}
+#hkKutu .hkPerde{position:absolute;inset:0;background:linear-gradient(rgba(40,20,10,.08),rgba(40,20,10,.46))}
+#hkKutu .hkKart{position:absolute;left:50%;bottom:calc(12px + var(--sab,0px));transform:translateX(-50%);width:min(700px,calc(100% - 40px));min-height:100px;box-sizing:border-box;display:flex;align-items:center;
+  padding:12px 20px 12px 116px;border:3.5px solid ${INK};border-radius:22px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 5px 0 ${INK},0 12px 30px rgba(40,20,10,.35);animation:hkGel .26s ease}
+#hkKutu .hkKart[hidden]{display:none}
+@keyframes hkGel{from{transform:translate(-50%,14px);opacity:0}to{transform:translateX(-50%);opacity:1}}
+#hkKutu .hkKart.mektup{background-image:repeating-linear-gradient(transparent 0 25px,rgba(170,120,70,.16) 25px 26px),linear-gradient(#fffdf6,#fbefd2)}
+#hkKutu .hkKart.mektup .hkSoz{font-style:italic;font-family:Georgia,'Times New Roman',serif;font-weight:600;font-size:15.5px}
+#hkKutu .hkYuz{position:absolute;left:12px;bottom:12px;width:92px;height:92px;border-radius:50%;border:3.5px solid ${INK};background:radial-gradient(#fff3cf,#f4c98a);overflow:hidden;box-shadow:0 3px 0 ${INK}}
+#hkKutu .hkYuz img{width:100%;height:100%;object-fit:cover;display:block}
+.hkSvg{display:grid;place-items:center;width:100%;height:100%}.hkSvg svg{width:88%;height:88%;margin-top:8%}.hkSvg.zarf svg{width:72%;height:72%;margin:0}
+#hkKutu .hkIc{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+#hkKutu .hkAd{align-self:flex-start;padding:2px 11px;border:2.5px solid ${INK};border-radius:999px;background:#ffe7a8;font-size:12.5px;font-weight:900;line-height:1.3}
+#hkKutu .hkSoz{margin:0;font-size:15.5px;font-weight:800;line-height:1.38}
+#hkKutu .hkDevam{align-self:flex-end;font-style:normal;font-size:11.5px;font-weight:900;opacity:.55;animation:hkNab 1.2s ease-in-out infinite}
+@keyframes hkNab{50%{opacity:.95;transform:translateX(3px)}}
+#hkKutu .hkAtla{position:absolute;right:calc(16px + var(--sar,0px));top:calc(12px + var(--sat,0px));appearance:none;-webkit-appearance:none;padding:5px 14px;border:2.5px solid ${INK};border-radius:999px;background:#fffaf0;font:900 13px var(--font-display,inherit);color:${INK};cursor:pointer;box-shadow:0 3px 0 ${INK}}
+#hkKutu .hkAtla:active{transform:translateY(2px);box-shadow:0 1px 0 ${INK}}
+#hkKutu .hkBas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100% - 60px));box-sizing:border-box;text-align:center;padding:20px 26px 16px;border:4px solid ${INK};border-radius:26px;
+  background:linear-gradient(#fff6d6,#f9dfa0);box-shadow:0 6px 0 ${INK},0 16px 40px rgba(40,20,10,.4);animation:hkBas .35s cubic-bezier(.2,1.4,.4,1)}
+#hkKutu .hkBas[hidden]{display:none}
+@keyframes hkBas{from{transform:translate(-50%,-50%) scale(.85);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+#hkKutu .hkBas .hkBasIc{display:block;width:44px;height:44px;margin:0 auto 4px}
+#hkKutu .hkBas small{display:block;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+#hkKutu .hkBas b{display:block;margin:5px 0 8px;font-size:25px;font-weight:900;line-height:1.12}
+#hkKutu .hkBas p{margin:0 0 10px;font-size:14.5px;font-weight:800;line-height:1.35}
+#hkKutu .hkBas em{font-style:normal;font-size:11.5px;font-weight:900;opacity:.55}
+@media (min-width:900px) and (min-height:700px){#hkKutu .hkKart{width:min(840px,calc(100% - 60px));min-height:128px;padding:16px 26px 16px 156px;bottom:calc(20px + var(--sab,0px))}#hkKutu .hkYuz{width:126px;height:126px;left:14px;bottom:14px}
+  #hkKutu .hkSoz{font-size:19.5px}#hkKutu .hkKart.mektup .hkSoz{font-size:19px}#hkKutu .hkAd{font-size:15px}#hkKutu .hkDevam{font-size:13.5px}#hkKutu .hkAtla{font-size:15px;padding:6px 16px}
+  #hkKutu .hkBas{width:min(640px,calc(100% - 80px));padding:26px 32px 20px}#hkKutu .hkBas .hkBasIc{width:56px;height:56px}#hkKutu .hkBas small{font-size:14px}#hkKutu .hkBas b{font-size:32px}#hkKutu .hkBas p{font-size:18px}#hkKutu .hkBas em{font-size:13.5px}}
+.hkSek{display:flex;flex-direction:column;gap:10px;font-family:var(--font-display,inherit);color:${INK};padding-bottom:4px}
+.hkDef{display:flex;align-items:center;gap:10px;padding:8px 12px;border:2.5px solid ${INK};border-radius:14px;background:linear-gradient(#fff6d6,#f9dfa0)}
+.hkDef>.uic{width:30px;height:30px;flex:none}.hkDef>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.hkDef b{font-size:14px;font-weight:900}
+.hkDef span{height:10px;border:2px solid ${INK};border-radius:999px;background:#fff;overflow:hidden}.hkDef span i{display:block;height:100%;background:linear-gradient(#ffe08a,#f2b134)}
+.hkDef em{font-style:normal;font-size:13px;font-weight:900;white-space:nowrap}
+.hkB{padding:8px 12px 10px;border:2.5px solid #e2c49a;border-radius:14px;background:#fffaf0}.hkB.kilit{opacity:.72}
+.hkB h4{margin:0 0 6px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:900}.hkB h4>span{flex:1;min-width:0}.hkB h4 small{font-size:11px;opacity:.7}
+.hkB h4 .hkIzle{appearance:none;-webkit-appearance:none;padding:2px 10px;border:2px solid ${INK};border-radius:999px;background:#ffe7a8;font:900 11px var(--font-display,inherit);color:${INK};cursor:pointer;box-shadow:0 2px 0 ${INK};white-space:nowrap}
+.hkS{display:flex;gap:8px;align-items:flex-start;margin:5px 0}.hkS .hkSY{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid ${INK};background:radial-gradient(#fff3cf,#f4c98a);overflow:hidden}
+.hkS .hkSY img{width:100%;height:100%;object-fit:cover;display:block}.hkS .hkSvg svg{width:86%;height:86%;margin-top:10%}.hkS b{font-size:11.5px;font-weight:900}.hkS p{margin:1px 0 0;font-size:13px;font-weight:700;line-height:1.35}
+.hkS.mektup p{font-style:italic;font-family:Georgia,'Times New Roman',serif}
+.hkAlt{margin:0 0 4px;font-size:12px;font-weight:800;opacity:.7;font-style:italic}
+.hkKilit{margin:4px 0 0;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;opacity:.75}.hkKilit .uic{width:16px;height:16px}` ; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
