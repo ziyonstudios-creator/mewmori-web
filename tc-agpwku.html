@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795461533",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795462206",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24237,8 +24237,8 @@ try { if (CAT.ow_extra) CAT.ow_extra.lvl = 1; if (CAT.og_extra) CAT.og_extra.lvl
 const GH_HALKA = { ok: new THREE.MeshBasicMaterial({ color: 0x58cd68, transparent: true, opacity: 0.85, depthWrite: false }), bad: new THREE.MeshBasicMaterial({ color: 0xe8493c, transparent: true, opacity: 0.9, depthWrite: false }) };
 ghostify = function (G, ok) {
   G.traverse(m => { if (!m.isMesh || Array.isArray(m.material) || m.userData.ghHalka) return; const U = m.userData; if (!U.m0) U.m0 = m.material; m.castShadow = false;
-    if (ok) { if (!U.mOk) { const c = U.m0.clone(); try { if (c.emissive) { c.emissive = new THREE.Color(0x2f2a14); c.userData = { ...(c.userData || {}), ghNabiz: 1 } } } catch (e) { } U.mOk = c } m.material = U.mOk }
-    else { if (!U.mBad2) { const c = U.m0.clone(); try { if (c.color) c.color = c.color.clone().lerp(new THREE.Color(0xff4a3a), 0.32); if (c.emissive) c.emissive = new THREE.Color(0x3a0707) } catch (e) { } c.transparent = true; c.opacity = 0.92; U.mBad2 = c } m.material = U.mBad2 } });
+    if (ok) { if (!U.mOk) { const c = U.m0.clone(); try { if (PL && PL.rec && CAT[PL.rec.id] && CAT[PL.rec.id].kind === 'walldecor') c.side = THREE.DoubleSide } catch (e) { } try { if (c.emissive) { c.emissive = new THREE.Color(0x2f2a14); c.userData = { ...(c.userData || {}), ghNabiz: 1 } } } catch (e) { } U.mOk = c } m.material = U.mOk }
+    else { if (!U.mBad2) { const c = U.m0.clone(); try { if (PL && PL.rec && CAT[PL.rec.id] && CAT[PL.rec.id].kind === 'walldecor') c.side = THREE.DoubleSide } catch (e) { } try { if (c.color) c.color = c.color.clone().lerp(new THREE.Color(0xff4a3a), 0.32); if (c.emissive) c.emissive = new THREE.Color(0x3a0707) } catch (e) { } c.transparent = true; c.opacity = 0.92; U.mBad2 = c } m.material = U.mBad2 } });
   try { const c = PL && PL.rec && CAT[PL.rec.id]; if (c && c.kind !== 'walldecor') { let h = G.userData.ghH; if (!h) { const b = new THREE.Box3().setFromObject(G), s = new THREE.Vector3(); b.getSize(s);
         const r = Math.max(0.3, Math.max(s.x, s.z) / 2 + 0.08); h = new THREE.Mesh(new THREE.RingGeometry(r, r + 0.06, 48), GH_HALKA.ok); h.rotation.x = -Math.PI / 2; h.position.y = 0.03; h.renderOrder = 6; h.userData.ghHalka = 1; G.add(h); G.userData.ghH = h } h.material = ok ? GH_HALKA.ok : GH_HALKA.bad } } catch (e) { } };
 setInterval(() => { try { if (!PL || !PL.ghost) return; const k = 0.5 + 0.5 * Math.sin(performance.now() / 260); PL.ghost.traverse(m => { const c = m.material; if (c && c.userData && c.userData.ghNabiz && c.emissive) c.emissive.setRGB(0.10 + 0.16 * k, 0.09 + 0.14 * k, 0.04 + 0.05 * k) }) } catch (e) { } }, 60);
@@ -24275,16 +24275,15 @@ try { wallSlotsSync() } catch (e) { }
     else { const wall = sl.w, t = wsT(sl), [a, b] = wallSpan(wall); if (t < a + 0.35 || t > b - 0.35) return 'out'; r = false;
       try { const sw = shelfWall(kp); if (sw && sw.wall === wall) { const lo = (wall === 'back' || wall === 'front') ? sw.b.minX : sw.b.minZ, hi = (wall === 'back' || wall === 'front') ? sw.b.maxX : sw.b.maxZ; if (t > lo - 0.3 && t < hi + 0.3) r = 'shelf' } } catch (e) { }
       if (!r) { const D = OP_DIM(); for (const q in OP) if (OP[q].wall === wall && Math.abs(t - OP[q].t) < D[q].w / 2 + (q === 'door' ? 0.3 : 0.35)) { r = 'win'; break } }
-      if (!r && wallNear(wall)) { for (const g of GATES) if (g.wall === wall && Math.abs(t - g.t) < GT_W + 0.35) { r = 'win'; break } }
-      if (!r && PL && wallNear(wall) && NW.hide[wall] === true) r = 'out' }
+      if (!r && wallNear(wall)) { for (const g of GATES) if (g.wall === wall && Math.abs(t - g.t) < GT_W + 0.35) { r = 'win'; break } } }
     if (r || sl.k2) return r;
     // başka bir duvar süsüyle üst üste gelmesin (aynı yerdeki eşya ayrıca p9'da denetlenir)
     try { const w = wsDuvar(sl), t = wsT(sl), ex = PL && PL.rec ? PL.rec.uid : null;
       for (const f of S.furniture) { if (f.stored || f.uid === ex || f.slot === i || !CAT[f.id] || CAT[f.id].kind !== 'walldecor') continue; const s2 = WALL_SLOTS[f.slot]; if (!s2 || s2.k2 || wsDuvar(s2) !== w) continue; if (Math.abs(wsT(s2) - t) < 0.6) return 'busy' } } catch (e) { }
     return false } }
 // yakın duvar gizliyken üstündeki süsler de gizlenir
-setInterval(() => { try { for (const [u, R] of FURN) { if (CAT[R.rec.id].kind !== 'walldecor') continue; const s = WALL_SLOTS[R.rec.slot]; if (!s || !s.w || !wallNear(s.w)) continue; const v = NW.hide[s.w] !== true; if (R.group.visible !== v) R.group.visible = v }
-    if (PL && PL.ghost && CAT[PL.rec.id].kind === 'walldecor') { const s = WALL_SLOTS[PL.rec.slot]; PL.ghost.visible = !(s && s.w && wallNear(s.w) && NW.hide[s.w] === true) } } catch (e) { } }, 250);
+setInterval(() => { try { for (const [u, R] of FURN) { if (CAT[R.rec.id].kind !== 'walldecor') continue; const s = WALL_SLOTS[R.rec.slot]; if (!s || !s.w || !wallNear(s.w)) continue; const v = NW.hide[s.w] !== true || CAM_CAM.on; if (R.group.visible !== v) R.group.visible = v }
+    if (PL && PL.ghost && CAT[PL.rec.id].kind === 'walldecor') { const s = WALL_SLOTS[PL.rec.slot]; PL.ghost.visible = true } } catch (e) { } }, 250);
 // duvar boyunca sıralama: sol (önden arkaya) → arka (soldan sağa) → sağ (arkadan öne) → ön (sağdan sola)
 function wsCevre(sl) { const w = wsDuvar(sl), Lz = RM.z1 - RM.z0, Lx = RM.x1 - RM.x0, t = wsT(sl);
   return w === 'left' ? (RM.z1 - t) : w === 'back' ? Lz + (t - RM.x0) : w === 'right' ? Lz + Lx + (t - RM.z0) : 2 * Lz + Lx + (RM.x1 - t) }
@@ -24304,7 +24303,7 @@ function wsAdim(d) { if (!PL) return; const cur = WALL_SLOTS[PL.rec.slot]; if (!
   addEventListener('pointerup', bit, true); addEventListener('pointercancel', bit, true) }
 // duvar yerleri göstergesi: tek tek kare yerine her uygun duvar boyunca ince yeşil şerit + seçili yer
 wsShow = function () { wsHide(); if (!PL || CAT[PL.rec.id].kind !== 'walldecor') return; const G = new THREE.Group(); WS.g = G; scene.add(G); const up = k2Up();
-  if (!up) for (const w of WALLS4) { if (wallNear(w) && NW.hide[w] === true) continue; const [a, b] = wallSpan(w), L = b - a - 0.7; if (L <= 0) continue;
+  if (!up) for (const w of WALLS4) { const [a, b] = wallSpan(w), L = b - a - 0.7; if (L <= 0) continue;
     const m = new THREE.Mesh(new THREE.PlaneGeometry(L, 0.55), new THREE.MeshBasicMaterial({ color: 0x58cd68, transparent: true, opacity: 0.22, depthWrite: false })), mid = (a + b) / 2, off = wallNear(w) ? 0.07 : 0.012;
     if (w === 'back') m.position.set(mid, 1.85, RM.z0 + off); else if (w === 'front') m.position.set(mid, 1.85, RM.z1 - off); else if (w === 'left') m.position.set(RM.x0 + off, 1.85, mid); else m.position.set(RM.x1 - off, 1.85, mid);
     m.rotation.y = WALL_RY[w]; m.renderOrder = 4; G.add(m) }
@@ -24323,6 +24322,23 @@ function k2BahceAyna() { try { const up = k2Up(); if (!up || !(GDN.r || GDN.f)) 
     A.position.set(K2.dx, -(K2.H + 0.2), 0); scene.add(A); K2.bA = A; K2.bAsig = sig } catch (e) { console.warn('2. kat bahçe', e) } }
 { const _kv = k2View; k2View = function () { const r = _kv.apply(this, arguments); k2BahceAyna(); return r } }
 setInterval(k2BahceAyna, 1500);
+
+// ---------- V345: gizli (kameraya yakın) duvarlara da yerleştirme ----------
+// Kullanıcı (23 Kasım 22:23, ekran görüntüsüyle): "bu tarafta gizlenen duvarlara da eklemesini istiyorum" → duvar süsü yerleştirilirken ya da
+// pencere/kapı taşınırken gizlenen yakın duvarlar (ön, sağ) yarı saydam CAM gibi görünür; süs ve pencere oraya da konur. İş bitince duvar yine gizlenir;
+// o duvardaki süs ve pencereler kamera öbür taraftan bakınca görünür.
+const CAM_CAM = { on: false, mat: new Map() };
+const camModu = () => { try { if (PL && PL.rec && CAT[PL.rec.id] && CAT[PL.rec.id].kind === 'walldecor') return true; if (typeof MV !== 'undefined' && MV.b) return true; if (typeof LAY !== 'undefined' && LAY.on) return true } catch (e) { } return false };
+function camUygula(on) { for (const w of ['front', 'right']) { const G = NW.g && NW.g[w]; if (!G) continue;
+    if (on && NW.hide[w] === true) { G.visible = true; G.traverse(m => { if (!m.isMesh || !m.material || Array.isArray(m.material)) return; if (!CAM_CAM.mat.has(m)) CAM_CAM.mat.set(m, m.material); if (m.material !== CAM_CAM.mat.get(m)) return; const c = CAM_CAM.mat.get(m).clone(); c.transparent = true; c.opacity = 0.28; c.depthWrite = false; m.material = c; m.renderOrder = 3 });
+      try { for (const W of Object.values(SHELL.wins || {})) if (W && W.userData.nwall === w) W.visible = true } catch (e) { } } }
+  if (!on) { for (const [m, mt] of CAM_CAM.mat) { try { if (m.material !== mt) { m.material.dispose && m.material.dispose(); m.material = mt } m.renderOrder = 0 } catch (e) { } } CAM_CAM.mat.clear(); try { NW.hide.front = NW.hide.right = null; nwWalls() } catch (e) { } } }
+setInterval(() => { try { const on = camModu(); if (on !== CAM_CAM.on) { CAM_CAM.on = on; camUygula(on) } else if (on) camUygula(true) } catch (e) { } }, 200);
+// gizli duvara konunca kısa bilgi
+{ const _cp = confirmPlacement; confirmPlacement = function () { let gz = false; try { const s = PL && PL.rec && WALL_SLOTS[PL.rec.slot]; gz = !!(s && s.w && wallNear(s.w) && NW.hide[s.w] === true && CAT[PL.rec.id].kind === 'walldecor') } catch (e) { }
+    const r = _cp.apply(this, arguments); if (gz) setTimeout(() => { try { toast('<b>Süs yerleştirildi</b><br>Bu duvar şu açıdan gizli; ekranı çevirip kafeye öbür taraftan bakınca görünür.', ic('check'), 3600) } catch (e) { } }, 300); return r } }
+// yakın duvarlar (ön, sağ) açılışta bazen hiç kurulmuyordu (p82 nwBuild, SHELL hazır olmadan çağrılıyor) → yoksa kur; kamera tarafındaysa yine gizlenir
+setInterval(() => { try { if (typeof SHELL !== 'undefined' && SHELL.g && NW && NW.g && (!NW.g.front || !NW.g.right || !NW.g.front.parent || !NW.g.right.parent)) { nwBuild(); try { NW.hide.front = NW.hide.right = null; nwWalls() } catch (e) { } } } catch (e) { } }, 1000);
 
 // ================= V342: GENİŞLETME TEK DOKUNUŞ, KOLAY DOĞRAMA, AKŞAM REZERVASYONU (madde 24, 30, 31) =================
 // Kullanıcı (23 Kasım 2026, 35 maddelik liste):
