@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795439760",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795441335",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -21372,7 +21372,7 @@ function sefBtn(){try{const y=$('y2');if(!y)return;let b=$('sefBtn');
     if(!b){b=document.createElement('button');b.type='button';b.id='sefBtn';b.className='k3b';b.setAttribute('aria-label','Mutfak');b.innerHTML=`<span class="k3c">${uiIc('i_chef')}</span><span class="k3t">Mutfak</span><span class="y2bd"></span>`;
       b.onclick=()=>{if(UI.mode!=='cafe'||UI.modal||(typeof ED!=='undefined'&&ED.busy))return;try{sfx('tap')}catch(e){}sefAc()};y.appendChild(b)}
     const show=sefAcik();if(b.hidden===show)b.hidden=!show;let n=0;for(const id of ['kesBtn','duzBtn','katBtn']){const e=$(id);if(e&&!e.hidden&&getComputedStyle(e).display!=='none')n++}b.style.setProperty('--sfi',n);
-    let kv=false;try{if(typeof kosHud==='function')kv=kosHud(y,b,show,n)}catch(e){}const G=$('game');G.classList.toggle('sefvar',show);G.style.setProperty('--sfn',show?n+1+(kv?1:0):n);b.classList.toggle('dot',show&&!(S.seen&&S.seen.sefGirdi));
+    const G=$('game');G.classList.toggle('sefvar',show);G.style.setProperty('--sfn',show?n+1:n);b.classList.toggle('dot',show&&!(S.seen&&S.seen.sefGirdi));
     // bir kerelik tanıtım: düğme ilk göründüğünde (kafe ekranında, başka rehber kartı yokken)
     if(show&&!(S.seen&&S.seen.sefTanit)&&UI.mode==='cafe'&&!UI.modal&&$('coach')&&$('coach').hidden&&!document.querySelector('#game .modal:not([hidden])')){
       coach({owner:'sef',title:'Şefin Mutfağı açıldı!',dim:true,center:true,text:'Tariflerini artık <b>kendin pişirebilirsin</b>. İyi pişirdiğin tarif yıldız kazanır, kafede daha çok kazandırır.',
@@ -21380,19 +21380,12 @@ function sefBtn(){try{const y=$('y2');if(!y)return;let b=$('sefBtn');
 setInterval(sefBtn,900);
 {const Y='html.land #game#game #y2',G='html.land #game#game',NX=':not(#_a#_b#_c)',I=SEF_INK,W='#sefScr';const st=document.createElement('style');st.id='sefCss';st.textContent=`
 ${Y} #sefBtn{position:absolute!important;left:calc(var(--el) + var(--sfi,2)*62px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important;transition:opacity .22s}
-${Y} #kosBtn{position:absolute!important;left:calc(var(--el) + (var(--sfi,2) + 1)*62px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important;transition:opacity .22s}
 ${Y} #sefBtn .k3c{left:4px;top:0;width:48px;height:48px;padding-top:8px}
-${Y} #kosBtn .k3c{left:4px;top:0;width:48px;height:48px;padding-top:8px}
 ${Y} #sefBtn .k3c .uic{width:30px;height:30px;object-fit:contain;display:block;margin:0 auto}
-${Y} #kosBtn .k3c .uic{width:30px;height:30px;object-fit:contain;display:block;margin:0 auto}
 ${Y} #sefBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
-${Y} #kosBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
 #game.hudoff #sefBtn,#game.tutA #sefBtn,#game.tutB #sefBtn,html.land #game:has(.modal:not([hidden])) #sefBtn,html.land #game:has(.screen:not([hidden])) #sefBtn{opacity:0!important;pointer-events:none!important}
-#game.hudoff #kosBtn,#game.tutA #kosBtn,#game.tutB #kosBtn,html.land #game:has(.modal:not([hidden])) #kosBtn,html.land #game:has(.screen:not([hidden])) #kosBtn{opacity:0!important;pointer-events:none!important}
 ${G}[data-nb="1"] #sefBtn,${G}[data-nb="2"] #sefBtn{display:none!important}
-${G}[data-nb="1"] #kosBtn,${G}[data-nb="2"] #kosBtn{display:none!important}
 ${G}.nonav #sefBtn${NX},${G}.edmode #sefBtn${NX}{visibility:hidden!important;pointer-events:none!important}
-${G}.nonav #kosBtn${NX},${G}.edmode #kosBtn${NX}{visibility:hidden!important;pointer-events:none!important}
 /* sol altta üç-dört düğme olunca alttaki durum yazısı sağa kayar ve daralır (düğmelerle çakışmasın) */
 ${G}.sefvar .bottom${NX}{left:calc(50% + (var(--el) + var(--sfn,3)*62px - 76px)/2)!important}
 ${G}.sefvar .bottom #hint${NX}{max-width:calc(100*var(--vw,calc(1*var(--vw))) - var(--el) - var(--sfn,3)*62px - 216px)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
@@ -23353,7 +23346,7 @@ for(const [id,ad] of [['chair','Sandalye'],['light','Işıklar'],['frame','Tablo
 // ses önceden üretildi (/home/claude/ses/miyav.py, kaynak-süzgeç sentezi; hazır kayıt kullanılmadı) ve buraya gömülü (MP3, 11 KB).
 // Doğrudan efekt kanalına, yüksek kazançla, yankısız verilir; caz cıngılı bitince (0,45 sn sonra) duyulur.
 //  • birleştirmede yeni tarif bulununca (sfx 'discover')  • tarif açılıp menüye eklenince (unlockRecipe)
-const KEDI_MIYAV_B64='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VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tixPGDEIB7DiykbwnhlpMEkKYBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+const KEDI_MIYAV_B64='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';
 let _kmBuf=null,_kmYuk=false;
 function kediMiyavHazir(){if(_kmBuf||_kmYuk||!AU.ctx)return;_kmYuk=true;try{const s=atob(KEDI_MIYAV_B64),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);
   const p=AU.ctx.decodeAudioData(a.buffer,b=>{_kmBuf=b},()=>{_kmYuk=false});if(p&&p.then)p.then(b=>{_kmBuf=b}).catch(()=>{_kmYuk=false})}catch(e){_kmYuk=false}}
@@ -23362,6 +23355,8 @@ function kediMiyav(gec=0.45,kaz=1.5,hiz=1){try{if(!AU.ctx||!SET.sfx||AU.ctx.stat
   const t=AU.ctx.currentTime+gec,src=AU.ctx.createBufferSource(),g=AU.ctx.createGain();src.buffer=_kmBuf;src.playbackRate.value=hiz;g.gain.value=kaz;src.connect(g);g.connect(AU.sfx);src.start(t)}catch(e){}}
 // ses motoru açılınca bir kez çöz (ilk keşifte gecikme olmasın)
 {const iv=setInterval(()=>{if(AU.ctx&&AU.ctx.state==='running'){kediMiyavHazir();clearInterval(iv)}},1000)}
+// (V337) Kullanıcı (23 Kasım 16:25): "sevinme kedi sesini biraz ince bir ses tonu yap" → miyav yeniden üretildi (/home/claude/ses/miyav_ince.py):
+// perde ~%35, formantlar ~%12 yukarı; süre aynı kalsın diye hızlandırılmadı, yeniden sentezlendi.
 // keşif: eski sentez miyavın yerine
 {const _sfx=sfx;sfx=function(name){if(name==='discover'){const r=_sfx.apply(this,arguments);kediMiyav(0.45,1.5,1);return r}return _sfx.apply(this,arguments)}}
 // menüye eklenince (tarif açıldı)
@@ -23586,26 +23581,25 @@ function dkSiraCiz() {
 KS_SUB.splice(0, KS_SUB.length, ['lux', 'Lüks', 'lux'], ['likes', 'Beğeni', 'heart'], ['lvl', 'Seviye', 'up']);
 if (!KS_SUB.some(x => x[0] === KS.sub)) KS.sub = 'lux';
 
-// ================= KURYE KOŞUSU: ÖZEL SİPARİŞLER (V333) =================
-// Kullanıcı (23 Kasım 2026, 15:02): "kuryeye mini oyun ekletme oyuncu isterse kurye ekranından özel siparişleri getirebileceği bir mini oyun
-// subway surfs gibi ... bölüm bölüm özel siparişler olur". Seçimler: şimdi, tek ayarla açılıp kapanabilir; 3B, oyunun kendi tarzı.
-//  • Giriş: Ekip › Kurye kartı ve Motorlar penceresinde "Özel siparişler" (motor gerekir). Bölüm haritası: 12 bölüm, 4 semt (Mahalle, Sahil,
-//    Akşam Çarşısı, Gece Turu); her bölüm bir müşterinin özel siparişi. Bölüm, öncekini bitirince açılır.
-//  • Oyun: kurye kedi scooter'ıyla 3 şeritli sokakta ilerler. Sağa/sola kaydır: şerit · yukarı: zıpla · aşağı: eğil (klavye: oklar/WASD/boşluk).
-//    Dubalar, bariyerler, koli yığınları (zıpla), asma tabelalar (eğil), park etmiş arabalar (şerit değiştir). Altınları ve siparişin
-//    malzemelerini (tabağın resmi) topla; 3 can; kapıya varınca teslim.
-//  • Yıldız: teslim 1 · siparişin bütün parçaları +1 · en çok 1 çarpma +1. Ödül: ilk teslimde bölüm altını (sonra %25), toplanan altınlar,
-//    ilk kez 3 yıldızda elmas. Kayıt S.kos.
-//  • AYAR: KOS_ON=false yaparsan (ya da sunucuda app_flags 'kurye_kosu'=false) düğmeler hiç görünmez; oyunun geri kalanına dokunmaz.
+// ================= KURYE KOŞUSU: HAFTALIK ETKİNLİK (V333 → V337) =================
+// V333 Kullanıcı (23 Kasım 2026, 15:02): "kuryeye mini oyun ekletme ... subway surfs gibi". Seçimler: tek ayarla açılıp kapanabilir; 3B, oyunun kendi tarzı.
+// V337 Kullanıcı (23 Kasım 16:25): "bu kurye mini oyun sistemini oradan kaldırmanı istiyorum haftalık etkinlik olarak etkinliklerin arasına ekle ve
+// mekanizması oynadıkça puan kazanma üzerine olsun subway surfteki gibi haftalık sıralamasıda olsun onun."
+//  • Giriş: yalnız Etkinlikler penceresindeki "Kurye Koşusu" kartı. Ana ekran düğmesi, kurye kartı ve Motorlar girişleri kaldırıldı; motor gerekmez.
+//  • Oyun: sonsuz koşu, 3 şeritli sokak. Sağa/sola kaydır: şerit · yukarı: zıpla · aşağı: eğil (klavye: oklar/WASD/boşluk). 3 can.
+//    Hız ve engel sıklığı mesafeyle artar; 250 m'den sonra çift, 700 m'den sonra üçlü engeller.
+//  • Puan: mesafe (m) × çarpan + altın 10 × çarpan + paket 50 × çarpan. Çarpan her 500 m'de +1 (en çok ×10).
+//  • Haftanın semti: evWeek()%4 → Mahalle, Sahil, Akşam Çarşısı, Gece Turu. Paketin yemeği de haftaya göre değişir.
+//  • Sıralama: oyuncunun o haftaki en iyi koşusu (sunucu: kos_submit / kos_ranking, mewmori/sunucu/v337_kurye_haftalik.sql).
+//    Hafta bitince ana kafede kos_claim: 1.: 300 elmas · 2–3.: 150 · 4–10.: 80 · 11–50.: 30 · katılan herkes: 5.
+//  • Koşu başına: topladığın altınlar ana kafene + biraz XP. Etkinlik kafesindeyken oynanmaz (kart görünür, "Ana kafende oynanır").
+//  • AYAR: KOS_ON=false ya da sunucuda app_flags 'kurye_kosu'=false → kart görünmez; oyunun geri kalanına dokunmaz.
 const KOS_ON = true;
-const KOS = { on: false, flag: null, flagT: 0 };
+const KOS = { on: false, flag: null, flagT: 0, d: null, busy: false };
 // dil: metinler burada iki dilli (çevirmen dokunmaz, data-dilyok)
 const kosEN = () => { try { return window.__DIL && __DIL.lang === 'en' } catch (e) { return false } };
 const kt = (tr, en) => kosEN() ? en : tr;
-const kosYad = k => { const n = RECIPE[k] ? RECIPE[k].name : ''; try { return kosEN() && __DIL.t ? __DIL.t(n) : n } catch (e) { return n } };
 const KOS_SEMT_EN = { gun: 'Neighborhood', sahil: 'Seaside', aksam: 'Evening Bazaar', gece: 'Night Tour' };
-const KOS_MUS_EN = { 'Pamuk Nine': 'Granny Pamuk', 'Fındık Amca': 'Uncle Fındık', 'Tarçın Hanım': 'Mrs. Tarçın', 'Mırmır Teyze': 'Auntie Mırmır', 'Ay Işığı': 'Moonlight' };
-const kosMus = m => kosEN() ? (KOS_MUS_EN[m] || m) : m;
 const kosSemtAd = s => kosEN() ? KOS_SEMT_EN[s] : KOS_SEMT[s].ad;
 const KOS_SEMT = {
   gun: { ad: 'Mahalle', sky: 0xbfe6f5, fog: 0xd9f0f8, yer: 0xa8d88a, yol: '#7d8597', kal: '#e9dcc4', isik: 1.0, gece: false },
@@ -23613,58 +23607,71 @@ const KOS_SEMT = {
   aksam: { ad: 'Akşam Çarşısı', sky: 0xffc79a, fog: 0xffd9b8, yer: 0xb9cf86, yol: '#7a7389', kal: '#ead2b8', isik: 0.85, gece: false, sicak: true },
   gece: { ad: 'Gece Turu', sky: 0x2a3466, fog: 0x3a4478, yer: 0x5d7a5a, yol: '#4b4f63', kal: '#9ea3b8', isik: 0.55, gece: true },
 };
-// b: bölüm · semt · müşteri · yemek · uzunluk (m) · hız (başlangıç→son, m/s) · engel aralığı (m) · sipariş parçası · engel türleri
-const KOS_BOL = [
-  { semt: 'gun', mus: 'Pamuk Nine', y: ['kurabiye', 'cay'], m: 300, v: [8, 9.5], ar: 26, n: 3, tur: ['duba', 'koli'] },
-  { semt: 'gun', mus: 'Boncuk', y: ['latte', 'espresso'], m: 340, v: [8.5, 10], ar: 24, n: 3, tur: ['duba', 'koli', 'bariyer'] },
-  { semt: 'gun', mus: 'Fındık Amca', y: ['tost', 'sicak_sut'], m: 380, v: [9, 10.5], ar: 22, n: 4, tur: ['duba', 'koli', 'bariyer', 'araba'] },
-  { semt: 'sahil', mus: 'Limon', y: ['limonata', 'meyveli_cay'], m: 400, v: [9.5, 11], ar: 21, n: 4, tur: ['duba', 'bariyer', 'araba', 'tabela'] },
-  { semt: 'sahil', mus: 'Zeytin', y: ['gelato', 'cupcake'], m: 430, v: [10, 11.5], ar: 20, n: 4, tur: ['koli', 'bariyer', 'araba', 'tabela'], cift: true },
-  { semt: 'sahil', mus: 'Karamel', y: ['pasta', 'tart'], m: 460, v: [10, 12], ar: 19, n: 5, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true },
-  { semt: 'aksam', mus: 'Duman', y: ['moka', 'sicak_cik'], m: 480, v: [10.5, 12.5], ar: 18, n: 5, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true },
-  { semt: 'aksam', mus: 'Tarçın Hanım', y: ['kruvasan', 'tart'], m: 500, v: [11, 13], ar: 17.5, n: 5, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
-  { semt: 'aksam', mus: 'Biber', y: ['omlet', 'sandvic'], m: 530, v: [11, 13.5], ar: 17, n: 6, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
-  { semt: 'gece', mus: 'Mırmır Teyze', y: ['sicak_cik', 'kurabiye'], m: 560, v: [11.5, 14], ar: 16.5, n: 6, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
-  { semt: 'gece', mus: 'Kömür', y: ['kahvalti', 'latte'], m: 600, v: [12, 14.5], ar: 16, n: 6, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
-  { semt: 'gece', mus: 'Ay Işığı', y: ['pasta', 'moka'], m: 650, v: [12.5, 15.5], ar: 15, n: 7, tur: ['duba', 'koli', 'bariyer', 'araba', 'tabela'], cift: true, ucl: true },
-];
+const KOS_SIRA = ['gun', 'sahil', 'aksam', 'gece'];
+const kosSemtHafta = () => KOS_SIRA[((evWeek() % 4) + 4) % 4];
 const KOS_SERIT = [-1.45, 0, 1.45];
-const kosS = () => S.kos || (S.kos = { y: {}, gem: {}, ilk: {} });
-const kosYemek = b => { for (const k of KOS_BOL[b].y) if (typeof RECIPE !== 'undefined' && RECIPE[k]) return k; return (RECIPES[0] || {}).id };
-const kosAcik = b => b === 0 || (kosS().y[b - 1] | 0) > 0;
-const kosOdul = b => 40 + b * 15;
+const KOS_TIERS = [{ a: 1, b: 1, g: 300 }, { a: 2, b: 3, g: 150 }, { a: 4, b: 10, g: 80 }, { a: 11, b: 50, g: 30 }, { a: 51, b: 0, g: 5 }];
+const kosH = () => { const w = evWeek(); let h = S.kosH; if (!h || h.w !== w) h = S.kosH = { w, best: 0, sent: 0, n: 0 }; return h };
+const kosPaketY = () => { const L = ['kurabiye', 'latte', 'gelato', 'cupcake', 'kruvasan', 'pasta', 'moka', 'tart', 'limonata', 'tost']; for (let i = 0; i < L.length; i++) { const k = L[(((evWeek() + i) % L.length) + L.length) % L.length]; if (typeof RECIPE !== 'undefined' && RECIPE[k]) return k } return (RECIPES[0] || {}).id };
+const kosFmt = n => Math.round(n || 0).toLocaleString(kosEN() ? 'en-US' : 'tr-TR');
 // ---- uzaktan açma/kapama (sunucu: app_flags 'kurye_kosu'; okunamazsa açık sayılır) ----
 async function kosBayrak() { if (Date.now() - KOS.flagT < 300000 && KOS.flag !== null) return KOS.flag; KOS.flagT = Date.now();
   try { const sb = await sbClient(); const { data, error } = await sb.rpc('flag_get', { p_key: 'kurye_kosu' }); if (!error && typeof data === 'boolean') KOS.flag = data } catch (e) { }
   if (KOS.flag === null) KOS.flag = true; return KOS.flag }
-const kosVar = () => KOS_ON && !EVMODE && KOS.flag !== false && (typeof motoVar !== 'function' || motoVar());
+const kosVar = () => KOS_ON && KOS.flag !== false;
 setTimeout(() => { try { kosBayrak() } catch (e) { } }, 4000);
-// ---- giriş düğmeleri: kurye kartı ve motorlar penceresi ----
-function kosDugme() { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm kosGir'; b.dataset.kos = '1'; b.innerHTML = `${ic('star')}${kt('Özel siparişler', 'Special orders')}`; b.setAttribute('data-dilyok', '1'); b.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (er) { } kosHarita() }; return b }
-setInterval(() => { try { if (!kosVar()) { document.querySelectorAll('.kosGir').forEach(x => x.remove()); return }
-  document.querySelectorAll('[data-moto]').forEach(m => { const p = m.parentElement; if (p && !p.querySelector('.kosGir')) m.insertAdjacentElement('afterend', kosDugme()) });
-  const mm = $('motoM'); if (mm && !mm.hidden && !mm.querySelector('.kosGir')) { const w = mm.firstElementChild; if (w) { const b = kosDugme(); b.classList.add('kosGirM'); if (getComputedStyle(w).position === 'static') w.style.position = 'relative'; w.appendChild(b) } } } catch (e) { } }, 700);
-// ---- ana ekran düğmesi: Mutfak'ın hemen yanında (V335) ----
-function kosHud(y, sb, show, n) { let b = $('kosBtn'); const ok = show && !!sb && !sb.hidden && kosVar();
-  if (!b && ok) { b = document.createElement('button'); b.type = 'button'; b.id = 'kosBtn'; b.className = 'k3b'; b.setAttribute('data-dilyok', '1');
-    b.setAttribute('aria-label', kt('Özel siparişler', 'Special orders')); b.innerHTML = `<span class="k3c">${uiIc('i_bolt')}</span><span class="k3t">${kt('Kurye', 'Courier')}</span><span class="y2bd"></span>`;
-    b.onclick = () => { if (UI.mode !== 'cafe' || UI.modal || (typeof ED !== 'undefined' && ED.busy)) return; try { sfx('tap') } catch (e) { } kosHarita() } }
-  if (b) { if (ok && b.previousElementSibling !== sb) sb.insertAdjacentElement('afterend', b); if (b.hidden === ok) b.hidden = !ok; b.style.setProperty('--sfi', n) }
-  return ok }
-// ---- bölüm haritası ----
-function kosHarita() {
-  if (!kosVar()) return; try { $('motoM') && ($('motoM').hidden = true) } catch (e) { }
-  const W = skWin('kosM', kt('Özel siparişler', 'Special orders'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); KOS.W = W; const K = kosS();
-  const toplam = Object.values(K.y).reduce((a, v) => a + (v | 0), 0);
-  W.body.innerHTML = `<p class="kosUst">${kt("Kurye kedi scooter'ına atlıyor! Sokaktaki engellerden kaç, siparişin parçalarını topla, kapıya zamanında yetiştir.", 'The courier cat hops on the scooter! Dodge the obstacles, grab every part of the order and get it to the door in time.')} <b>${ic('star')} ${toplam}/${KOS_BOL.length * 3}</b></p>
-   <div class="kosIzgara">${KOS_BOL.map((B, i) => { const ac = kosAcik(i), y = K.y[i] | 0, k = kosYemek(i), sm = KOS_SEMT[B.semt];
-     return `<button type="button" class="kosBol s_${B.semt}${ac ? '' : ' kilit'}" data-b="${i}" ${ac ? '' : 'disabled'}>
-       <span class="kosNo">${i + 1}</span><span class="kosSemt">${kosSemtAd(B.semt)}</span>
-       <img src="${ac ? productThumb(k) : ''}" alt="" ${ac ? '' : 'hidden'}>${ac ? '' : `<span class="kosKilit">${ic('lock')}</span>`}
-       <b>${ac ? kosMus(B.mus) : kt('Kilitli', 'Locked')}</b><small>${ac ? kosYad(k) : kt(`${i}. bölümü bitir`, `Finish level ${i}`)}</small>
-       <span class="kosY">${[0, 1, 2].map(j => `<i class="${j < y ? 'on' : ''}">★</i>`).join('')}</span></button>` }).join('')}</div>`;
-  W.body.querySelectorAll('.kosBol:not(.kilit)').forEach(b => b.onclick = () => { try { sfx('tap') } catch (e) { } W.close(); kosBasla(+b.dataset.b) });
-}
+// ---- sunucu: en iyi puan, sıralama, hafta sonu ödülü ----
+async function kosGonder() { try { const h = kosH(); if (h.best <= (h.sent | 0)) return; if (!await evrUser()) return; const sb = await sbClient();
+  const { error } = await sb.rpc('kos_submit', { p_score: h.best }); if (!error) { h.sent = h.best; markDirty() } } catch (e) { } }
+async function kosYukle() { if (KOS.busy) return; KOS.busy = true; KOS.err = ''; kosCiz();
+  try { if (!await evrUser()) throw new Error('auth'); await kosGonder(); const sb = await sbClient(); const r = await sb.rpc('kos_ranking'); if (r.error) throw r.error; KOS.d = r.data }
+  catch (e) { KOS.err = e && e.message === 'auth' ? kt('Sıralama için hesabına giriş yap.', 'Sign in to see the ranking.') : kt('Bağlantı kurulamadı, biraz sonra tekrar dene.', 'Could not connect. Try again in a moment.') }
+  KOS.busy = false; kosCiz() }
+async function kosOdulAl() { if (EVMODE || KOS.claiming) return; KOS.claiming = true; try { if (!await evrUser()) return; const sb = await sbClient();
+  for (let k = 0; k < 6; k++) { const { data, error } = await sb.rpc('kos_claim'); if (error || !data || !data.ok) break;
+    const g = Math.min(500, data.gems | 0); S.gems += g; try { hudGems() } catch (e) { } (S.kosLog = S.kosLog || []).push({ w: data.week, r: data.rank, g });
+    markDirty(); try { saveNow() } catch (e) { } try { cloudSync() } catch (e) { } try { sfx('levelup') } catch (e) { }
+    toast(kt(`<b>Kurye Koşusu haftalık sıralaması: ${data.rank}. oldun!</b><br>+${g} elmas`, `<b>Courier Dash weekly ranking: you placed #${data.rank}!</b><br>+${g} gems`), ic('event'), 4200);
+    await new Promise(r => setTimeout(r, 1500)) } } catch (e) { } finally { KOS.claiming = false } }
+if (!EVMODE) setTimeout(() => { try { kosOdulAl() } catch (e) { } }, 9000);
+// ---- Etkinlikler penceresinde kart ----
+const KOS_SCENE = `<svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="120" fill="#bfe6f5"/><circle cx="270" cy="28" r="15" fill="#fff3c4"/>
+ <g fill="#fffaf0"><ellipse cx="60" cy="24" rx="24" ry="8"/><ellipse cx="200" cy="18" rx="20" ry="7"/></g>
+ <g stroke="#4a2e1c" stroke-width="2.2" stroke-linejoin="round"><path d="M0 70 H320 V120 H0Z" fill="#a8d88a"/><path d="M118 70 H202 L280 120 H40Z" fill="#7d8597"/>
+ <path d="M14 70 V44 H52 V70Z M60 70 V36 H96 V70Z M228 70 V40 H266 V70Z M272 70 V48 H306 V70Z" fill="#f6c9a8"/><path d="M10 44 L33 30 L56 44Z M56 36 L78 22 L100 36Z M224 40 L247 26 L270 40Z M268 48 L289 34 L310 48Z" fill="#d9473a"/></g>
+ <g stroke="#fff8ec" stroke-width="3" stroke-dasharray="7 8"><path d="M160 72 V120"/></g>
+ <g stroke="#4a2e1c" stroke-width="2.4" stroke-linejoin="round"><path d="M132 92 h18 l4 -18 h-8" fill="none"/><circle cx="134" cy="104" r="8" fill="#4a4a5a"/><circle cx="182" cy="104" r="8" fill="#4a4a5a"/>
+ <path d="M126 98 Q130 84 150 86 H176 Q190 88 190 100 Z" fill="#d9534f"/><rect x="156" y="70" width="22" height="18" rx="3" fill="#f2b134"/><path d="M167 70 v18 M156 79 h22" fill="none"/>
+ <circle cx="148" cy="70" r="9" fill="#f0a24a"/><path d="M141 64 L143 55 L148 62 Z M150 62 L155 55 L156 64 Z" fill="#f0a24a"/></g>
+ <g fill="#ffd34d" stroke="#4a2e1c" stroke-width="2"><circle cx="160" cy="58" r="5"/><circle cx="162" cy="44" r="4"/><circle cx="164" cy="33" r="3"/></g></svg>`;
+{ const _re = renderEvents; renderEvents = function () { const r = _re.apply(this, arguments); try { const p = $('evP');
+    if (!p || p.hidden || UI.evView === 'dk' || !kosVar()) return r; const m = p.querySelector('.scroll.evmenu'); if (!m || m.querySelector('.kosCard')) return r;
+    const h = kosH(), b = document.createElement('button'); b.type = 'button'; b.className = 'evcard kosCard'; b.setAttribute('aria-label', kt('Kurye Koşusu', 'Courier Dash'));
+    b.innerHTML = `<div class="evsky">${KOS_SCENE}</div><div class="evcb"><b data-dilyok="1">${kt('Kurye Koşusu', 'Courier Dash')}</b>
+      <small data-dilyok="1">${kt('Scooter’la sokakta koş, engellerden kaç, altın ve paket topla. Haftanın en iyi puanın sıralamaya girer.', 'Ride the scooter down the street, dodge obstacles, grab coins and parcels. Your best score of the week goes on the ranking.')}</small>
+      <span class="evstop" data-dilyok="1"><span>${kt('Bu haftanın semti', 'This week’s area')}: <b>${kosSemtAd(kosSemtHafta())}</b></span></span>
+      <span class="evrow"><span class="evtime">${ic('clock')}${evLeft()}</span>${h.best ? `<span class="evtime evlv" data-dilyok="1">${kt('En iyi', 'Best')} ${kosFmt(h.best)}</span>` : ''}<span class="evopen" data-dilyok="1">${kt('Aç', 'Open')} ${ic('right')}</span></span></div>`;
+    const dk = m.querySelector('[data-ev=dk]'); if (dk) dk.insertAdjacentElement('afterend', b); else m.prepend(b);
+    b.onclick = () => { try { sfx('tap') } catch (e) { } kosAc() } } catch (e) { console.warn('kurye kartı', e) } return r } }
+// ---- etkinlik penceresi: en iyi puan + Koş! + haftalık sıralama + ödüller ----
+function kosAc() { if (!kosVar()) return; const geri = (() => { const p = $('evP'); return !!(p && !p.hidden) })(); if (geri) closeEvents();
+  const W = skWin('kosM', kt('Kurye Koşusu', 'Courier Dash'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); KOS.W = W;
+  if (geri) { const x = W.m.querySelector('.skclose'); if (x) x.onclick = () => { W.close(); try { openEvents() } catch (e) { } } }
+  kosCiz(); kosYukle() }
+const kosTier = rk => KOS_TIERS.find(t => rk >= t.a && (!t.b || rk <= t.b));
+function kosCiz() { const W = KOS.W; if (!W || W.m.hidden) return; const D = KOS.d, me = D && D.me, h = kosH(), T = me ? kosTier(me.rank) : null;
+  const tiers = KOS_TIERS.map(t => `<li class="${T === t ? 'on' : ''}"><span>${t.b === 0 ? kt('Katılan herkes', 'Everyone who plays') : t.a === t.b ? `${t.a}.` : `${t.a}–${t.b}.`}</span><b>${uiIc('i_gem')} ${t.g}</b></li>`).join('');
+  const list = !D ? `<p class="evrMsg">${KOS.err || kt('Yükleniyor…', 'Loading…')}</p>` : D.top.length ? `<ol class="evrList">${D.top.map(x => `<li class="${x.me ? 'me' : ''}${x.rank <= 3 ? ' t' + x.rank : ''}"><span class="evrN">${x.rank}</span><span class="evrC"></span><b class="evrS">${kosFmt(x.score)}</b></li>`).join('')}</ol>`
+    : `<p class="evrMsg">${kt('Bu hafta henüz kimse koşmadı. İlk sıraya sen yerleş!', 'Nobody has run yet this week. Grab first place!')}</p>`;
+  W.body.innerHTML = `<div class="kosGrid"><section class="kosSol"><div class="kosHero">${KOS_SCENE}</div>
+      <p class="evrT">${ic('clock')} ${kt('Bitmesine', 'Ends in')} ${evLeft()} · <b>${kosSemtAd(kosSemtHafta())}</b></p>
+      <div class="kosBen"><span><small>${kt('Haftanın en iyisi', 'Best this week')}</small><b>${kosFmt(h.best)}</b></span><span><small>${kt('Sıran', 'Rank')}</small><b>${me ? me.rank + '.' : '–'}</b></span></div>
+      ${EVMODE ? `<button class="btn" type="button" disabled>${ic('cafe')}${kt('Ana kafende oynanır', 'Play from your main café')}</button>` : `<button class="btn green kosOyna" type="button">${ic('bolt')}${kt('Koş!', 'Run!')}</button>`}
+      <p class="evrNote">${kt('Puan: gittiğin her metre, her altın (10) ve her paket (50). Her 500 m’de çarpan büyür. 3 canın var.', 'Score: every metre, every coin (10) and every parcel (50). The multiplier grows every 500 m. You have 3 hearts.')}</p></section>
+    <section class="evrMain"><h4>${kt('Haftalık sıralama', 'Weekly ranking')}${D && D.count ? ` · ${D.count} ${kt('oyuncu', 'players')}` : ''}</h4>${list}</section>
+    <section class="kosOd2"><h4>${kt('Hafta sonu ödülleri', 'End-of-week rewards')}</h4><ul class="evrTiers">${tiers}</ul><p class="evrNote">${kt('Ödüller hafta bitince ana kafene gelir. Koşuda topladığın altınlar hemen kafene eklenir.', 'Rewards arrive at your main café when the week ends. Coins you collect on a run are added right away.')}</p></section></div>`;
+  const o = W.body.querySelector('.kosOyna'); if (o) o.onclick = () => { try { sfx('tap') } catch (e) { } W.close(); kosBasla() };
+  if (D && D.top) W.body.querySelectorAll('.evrList .evrC').forEach((e, i) => { const n = D.top[i].name; e.textContent = typeof adGoster === 'function' ? adGoster(n) : n }) }
 // ---- 3B ----
 const kosM = c => new THREE.MeshToonMaterial({ color: c, gradientMap: grad });
 const KOSG = {}; // paylaşılan geometri/malzeme
@@ -23722,29 +23729,30 @@ function kosKaldirimDoku(sm) { const c = document.createElement('canvas'); c.wid
   x.strokeStyle = 'rgba(90,47,18,.18)'; x.lineWidth = 3; for (let i = 0; i <= 128; i += 32) { x.beginPath(); x.moveTo(0, i); x.lineTo(128, i); x.stroke(); x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 128); x.stroke() }
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 28); t.colorSpace = THREE.SRGBColorSpace; return t }
 // basit tohumlu rastgele (bölüm her oynanışta aynı dizilir)
-function kosRnd(s) { let a = s * 9301 + 49297; return () => { a = (a * 9301 + 49297) % 233280; return a / 233280 } }
-function kosPlan(bi) { const B = KOS_BOL[bi], R = kosRnd(bi + 7), E = [], P = [], I = []; let d = 45;
-  const tek = () => B.tur[Math.floor(R() * B.tur.length)], atla = t => t === 'duba' || t === 'koli' || t === 'bariyer';
-  while (d < B.m - 40) { const r = R(); let bos;
-    if (B.ucl && r < 0.18) { const t = ['bariyer', 'koli', 'tabela'][Math.floor(R() * 3)]; for (let l = 0; l < 3; l++) E.push({ d, l, t: l === 1 ? t : (R() < 0.5 ? 'araba' : t === 'tabela' ? 'tabela' : 'koli') }); bos = 1 }
-    else if (B.cift && r < 0.5) { bos = Math.floor(R() * 3); for (let l = 0; l < 3; l++) if (l !== bos) E.push({ d, l, t: tek() }) }
-    else { const l = Math.floor(R() * 3); E.push({ d, l, t: tek() }); bos = (l + 1 + Math.floor(R() * 2)) % 3 }
-    const n = 4 + Math.floor(R() * 4); for (let i = 0; i < n; i++) P.push({ d: d - 10 + i * 2.2, l: bos, y: 0.55 });
-    const last = E[E.length - 1]; if (atla(last.t) && R() < 0.5) for (let i = -2; i <= 2; i++) P.push({ d: last.d + i * 1.3, l: last.l, y: 0.55 + (1.0 - Math.abs(i) * 0.33) });
-    d += B.ar * (0.8 + R() * 0.45) }
-  for (let i = 0; i < B.n; i++) { const pd = 70 + (B.m - 120) * (i + 0.5) / B.n; const ob = E.filter(e => Math.abs(e.d - pd) < 6); const dolu = new Set(ob.map(e => e.l)); let l = Math.floor(R() * 3); for (let k = 0; k < 3 && dolu.has(l); k++)l = (l + 1) % 3; I.push({ d: pd, l, y: 0.8 }) }
-  return { E, P, I } }
+function kosUret(G) { // sonsuz yol: önümüzdeki 140 m'yi doldurur; zorluk mesafeyle artar
+  const pl = G.plan, R = Math.random;
+  while (pl.son < G.d + 140) { const d = pl.son, zor = Math.min(1, d / 2500);
+    const tur = d < 150 ? ['duba', 'koli'] : d < 400 ? ['duba', 'koli', 'bariyer', 'araba'] : ['duba', 'koli', 'bariyer', 'araba', 'tabela'];
+    const tek = () => tur[Math.floor(R() * tur.length)], atla = t => t === 'duba' || t === 'koli' || t === 'bariyer'; const r = R(); let bos;
+    if (d > 700 && r < 0.1 + zor * 0.1) { const t = ['bariyer', 'koli', 'tabela'][Math.floor(R() * 3)]; for (let l = 0; l < 3; l++) pl.E.push({ d, l, t: l === 1 ? t : (R() < 0.5 ? 'araba' : t === 'tabela' ? 'tabela' : 'koli') }); bos = 1 }
+    else if (d > 250 && r < 0.22 + zor * 0.33) { bos = Math.floor(R() * 3); for (let l = 0; l < 3; l++) if (l !== bos) pl.E.push({ d, l, t: tek() }) }
+    else { const l = Math.floor(R() * 3); pl.E.push({ d, l, t: tek() }); bos = (l + 1 + Math.floor(R() * 2)) % 3 }
+    const n = 4 + Math.floor(R() * 4); for (let i = 0; i < n; i++) pl.P.push({ d: d - 10 + i * 2.2, l: bos, y: 0.55 });
+    const last = pl.E[pl.E.length - 1]; if (atla(last.t) && R() < 0.5) for (let i = -2; i <= 2; i++) pl.P.push({ d: last.d + i * 1.3, l: last.l, y: 0.55 + (1.0 - Math.abs(i) * 0.33) });
+    const ar = (24 - 9 * zor) * (0.85 + R() * 0.4);
+    if (d - pl.pk > 110) { pl.pk = d; const pd = d + ar / 2, ob = new Set(pl.E.filter(e => Math.abs(e.d - pd) < 6).map(e => e.l)); let l = Math.floor(R() * 3); for (let k = 0; k < 3 && ob.has(l); k++) l = (l + 1) % 3; pl.I.push({ d: pd, l, y: 0.8 }) }
+    pl.son = d + ar } }
 // ---- oyuna başla ----
-function kosBasla(bi) { try { return kosBasla0(bi) } catch (e) { kosHata(e) } }
-function kosBasla0(bi) {
-  kosHazirla(); const B = KOS_BOL[bi], sm = KOS_SEMT[B.semt], k = kosYemek(bi);
+function kosBasla() { try { return kosBasla0() } catch (e) { kosHata(e) } }
+function kosBasla0() {
+  if (EVMODE || !kosVar()) return; kosHazirla(); const sm = KOS_SEMT[kosSemtHafta()], k = kosPaketY();
   let P = $('kosP'); if (!P) { P = document.createElement('div'); P.id = 'kosP'; P.setAttribute('data-dilyok', '0'); $('game').appendChild(P) }
   P.hidden = false; P.setAttribute('data-dilyok', '1'); UI.modal = true; document.documentElement.classList.add('kosOn');
   P.innerHTML = `
    <div class="kosHud"><button class="kosX" type="button" aria-label="Çık">${ic('close')}</button>
-     <div class="kosYol"><i class="kosYolD"></i><span class="kosMoto">🛵</span><span class="kosEv">🏠</span></div>
-     <div class="kosSag"><span class="kosCan">${'<i>❤</i>'.repeat(3)}</span><span class="kosPar">${uiIc('i_coin')}<b>0</b></span><span class="kosSip"><img src="${productThumb(k)}" alt=""><b>0/${B.n}</b></span></div></div>
-   <div class="kosIp">${kt(`${kosMus(B.mus)} için <b>${kosYad(k)}</b>`, `<b>${kosYad(k)}</b> for ${kosMus(B.mus)}`)}<small>${kt('Kaydır: ← → şerit · ↑ zıpla · ↓ eğil', 'Swipe: ← → lane · ↑ jump · ↓ duck')}</small></div>
+     <div class="kosPuan"><b>0</b><span class="kosCarpan">×1</span><small>0 m</small></div>
+     <div class="kosSag"><span class="kosCan">${'<i>❤</i>'.repeat(3)}</span><span class="kosPar">${uiIc('i_coin')}<b>0</b></span><span class="kosSip"><img src="${productThumb(k)}" alt=""><b>0</b></span></div></div>
+   <div class="kosIp">${kt('Ne kadar uzağa gidebilirsin?', 'How far can you go?')}<small>${kt('Kaydır: ← → şerit · ↑ zıpla · ↓ eğil', 'Swipe: ← → lane · ↑ jump · ↓ duck')}</small></div>
    <div class="kosSay"></div>`;
   // ayrı WebGL çizici (oyunun ana sahnesine dokunmaz; çıkışta kapatılır)
   // (V334) ayrı WebGL bağlamı iPad/iPhone'da açılamayabiliyordu (yalnız mavi ekran): koşu oyunun kendi çizicisiyle, ana tuvale çizilir.
@@ -23771,8 +23779,8 @@ function kosBasla0(bi) {
   try { const cfg = S.chars.courier || COURIER_CFG; const rr = SkeletonUtils.clone(TEMPLATE); applyLook(rr, cfg, 1024); rr.scale.set(YS, YS, YS); rr.position.set(0.14, 0.27, 0.02); rr.rotation.y = Math.PI;
     rr.traverse(o => { if (o.isMesh) o.frustumCulled = false }); OK.add(rr); surucu = rr; mix = new THREE.AnimationMixer(rr); const clip = CLIPS.SIT_BASE || CLIPS.Chair_Sit_Idle_F; if (clip) mix.clipAction(clip).play() } catch (e) { console.warn('kurye kedi', e) }
   const golge = new THREE.Mesh(new THREE.CircleGeometry(0.5, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false })); golge.rotation.x = -Math.PI / 2; golge.position.y = 0.02; sc.add(golge);
-  const plan = kosPlan(bi);
-  const G = { bi, B, sm, k, r, sc, cam, O, moto, surucu, mix, golge, yt, kt: kTex, YAN, yanEkle, plan, d: 0, v: B.v[0], serit: 1, x: 0, y: 0, vy: 0, egil: 0, can: 3, carp: 0, dok: 0, para: 0, sip: 0, bitti: false, bas: 2.6, t: 0,
+  const plan = { E: [], P: [], I: [], son: 45, pk: 20 };
+  const G = { sm, k, puan: 0, carp: 1, can0: 3, r, sc, cam, O, moto, surucu, mix, golge, yt, kt: kTex, YAN, yanEkle, plan, d: 0, v: 9, serit: 1, x: 0, y: 0, vy: 0, egil: 0, can: 3, vurus: 0, dok: 0, para: 0, sip: 0, bitti: false, bas: 2.6, t: 0,
     E: [], P: [], I: [], ei: 0, pi: 0, ii: 0, ev: null, sallan: 0, son: performance.now() };
   KOS.G = G; KOS.on = true; kosBoyut();
   // dokunma / klavye
@@ -23799,8 +23807,9 @@ function kosKare(now) {
   if (G.bas > 0) { const o = Math.ceil(G.bas - 0.6); G.bas -= dt; const el = P.querySelector('.kosSay'); const n = G.bas > 0.6 ? String(o) : kt('Hadi!', 'Go!');
     if (el.textContent !== n) { el.textContent = n; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); try { sfx(G.bas > 0.6 ? 'tap' : 'chime') } catch (e) { } } if (G.bas <= 0) { el.textContent = ''; setTimeout(() => { const ip = P.querySelector('.kosIp'); if (ip) ip.classList.add('git') }, 2500) } }
   const yuruyor = G.bas <= 0 && !G.bitti;
-  if (yuruyor) { const u = Math.min(1, G.d / G.B.m); G.v = G.B.v[0] + (G.B.v[1] - G.B.v[0]) * u; if (G.yavas > 0) { G.yavas -= dt } G.d += G.v * (G.yavas > 0 ? 0.6 : 1) * dt }
-  const adim = yuruyor ? G.v * (G.yavas > 0 ? 0.6 : 1) * dt : 0;
+  if (yuruyor) { G.v = Math.min(19, 9 + G.d * 0.0045); if (G.yavas > 0) { G.yavas -= dt } }
+  const adim = yuruyor ? G.v * (G.yavas > 0 ? 0.6 : 1) * dt : 0; G.d += adim; G.carp = Math.min(10, 1 + Math.floor(G.d / 500)); G.puan += adim * G.carp;
+  if (yuruyor && G.carp > (G.carpS | 0)) { if (G.carpS) { try { sfx('chime') } catch (e) { } const c = P.querySelector('.kosCarpan'); if (c) { c.classList.remove('vur'); void c.offsetWidth; c.classList.add('vur') } } G.carpS = G.carp }
   // kayan dokular
   G.yt.offset.y += adim / (160 / 14); G.kt.offset.y += adim / (160 / 28);
   // yan yapılar
@@ -23815,12 +23824,10 @@ function kosKare(now) {
   G.golge.position.x = G.x; G.golge.scale.setScalar(1 - Math.min(0.5, G.y * 0.35));
   if (G.mix) G.mix.update(dt);
   // nesneleri ekle (önümüzdeki 75 m)
-  const ileri = G.d + 75, pl = G.plan;
+  kosUret(G); const ileri = G.d + 75, pl = G.plan;
   while (G.ei < pl.E.length && pl.E[G.ei].d < ileri) { const e = pl.E[G.ei++]; const m = kosEngel(e.t); m.position.set(KOS_SERIT[e.l], 0, -(e.d - G.d)); G.sc.add(m); G.E.push({ e, m }) }
   while (G.pi < pl.P.length && pl.P[G.pi].d < ileri) { const p = pl.P[G.pi++]; const m = kosPara(); m.position.set(KOS_SERIT[p.l], p.y, -(p.d - G.d)); G.sc.add(m); G.P.push({ p, m }) }
   while (G.ii < pl.I.length && pl.I[G.ii].d < ileri) { const it = pl.I[G.ii++]; const m = kosParca(G.k); m.position.set(KOS_SERIT[it.l], it.y, -(it.d - G.d)); G.sc.add(m); G.I.push({ it, m }) }
-  if (!G.ev && G.B.m - G.d < 75) { G.ev = kosVaris(G); G.sc.add(G.ev) }
-  if (G.ev) G.ev.position.z = -(G.B.m - G.d) - 1.5;
   const ust = G.egil > 0 ? 0.8 : 1.35;
   for (let i = G.E.length - 1; i >= 0; i--) { const o = G.E[i]; o.m.position.z = -(o.e.d - G.d); const z = o.m.position.z, ud = o.m.userData;
     if (z > 8) { G.sc.remove(o.m); G.E.splice(i, 1); continue }
@@ -23829,61 +23836,41 @@ function kosKare(now) {
       if (carpti) { o.vuruldu = true; kosCarp(G) } } }
   for (let i = G.P.length - 1; i >= 0; i--) { const o = G.P[i]; o.m.position.z = -(o.p.d - G.d); o.m.rotation.z += dt * 4; const z = o.m.position.z;
     if (z > 8) { G.sc.remove(o.m); G.P.splice(i, 1); continue }
-    if (Math.abs(z) < 0.6 && Math.abs(o.m.position.x - G.x) < 0.7 && Math.abs(o.m.position.y - (G.y + 0.55)) < 0.75) { G.sc.remove(o.m); G.P.splice(i, 1); G.para++; try { sfx('coin') } catch (e) { } } }
+    if (Math.abs(z) < 0.6 && Math.abs(o.m.position.x - G.x) < 0.7 && Math.abs(o.m.position.y - (G.y + 0.55)) < 0.75) { G.sc.remove(o.m); G.P.splice(i, 1); G.para++; G.puan += 10 * G.carp; try { sfx('coin') } catch (e) { } } }
   for (let i = G.I.length - 1; i >= 0; i--) { const o = G.I[i]; o.m.position.z = -(o.it.d - G.d); o.m.position.y = o.it.y + Math.sin(G.t * 4 + i) * 0.1; const z = o.m.position.z;
     if (z > 8) { G.sc.remove(o.m); G.I.splice(i, 1); continue }
-    if (Math.abs(z) < 0.7 && Math.abs(o.m.position.x - G.x) < 0.8 && Math.abs(o.m.position.y - (G.y + 0.6)) < 0.9) { G.sc.remove(o.m); G.I.splice(i, 1); G.sip++; try { sfx('discover') } catch (e) { } kosUcan(P) } }
+    if (Math.abs(z) < 0.7 && Math.abs(o.m.position.x - G.x) < 0.8 && Math.abs(o.m.position.y - (G.y + 0.6)) < 0.9) { G.sc.remove(o.m); G.I.splice(i, 1); G.sip++; G.puan += 50 * G.carp; try { sfx('discover') } catch (e) { } kosUcan(P) } }
   // kamera: arkadan, hafif yukarıdan; çarpınca sarsılır
   if (G.sallan > 0) G.sallan -= dt; const sh = G.sallan > 0 ? (Math.random() - 0.5) * 0.18 : 0;
   G.cam.position.set(G.x * 0.6 + sh, 3.45 + G.y * 0.3, 5.6); G.cam.lookAt(G.x * 0.75, 0.7 + G.y * 0.25, -8);
   // gösterge
-  const hud = P.querySelector('.kosHud'); if (hud) { const u = Math.min(1, G.d / G.B.m); hud.querySelector('.kosYolD').style.width = (u * 100).toFixed(1) + '%'; hud.querySelector('.kosMoto').style.left = `calc(${(u * 100).toFixed(1)}% - 12px)`;
-    hud.querySelector('.kosPar b').textContent = G.para; hud.querySelector('.kosSip b').textContent = `${G.sip}/${G.B.n}`;
+  const hud = P.querySelector('.kosHud'); if (hud) { hud.querySelector('.kosPuan b').textContent = kosFmt(G.puan); hud.querySelector('.kosPuan small').textContent = Math.floor(G.d) + ' m'; hud.querySelector('.kosCarpan').textContent = '×' + G.carp;
+    hud.querySelector('.kosPar b').textContent = G.para; hud.querySelector('.kosSip b').textContent = G.sip;
     hud.querySelectorAll('.kosCan i').forEach((h, i) => h.classList.toggle('bos', i >= G.can)) }
-  if (!G.bitti && G.d >= G.B.m) kosBitir(true);
   try { KOS.rr(G.sc, G.cam) } catch (e) { G.hata = (G.hata | 0) + 1; if (G.hata === 3) kosHata(e) }
 }
-function kosVaris(G) { // sokağın sonunda müşterinin kapısı ve el sallayan müşteri
-  const V = new THREE.Group(); const ev = new THREE.Group(); kosB(ev, kosM(0xfff1d6), 6, 3.4, 2.4, 0, 1.7, -1.6);
-  const cat = new THREE.Mesh(new THREE.ConeGeometry(4.6, 1.5, 4), KOSG.m.kir); cat.rotation.y = Math.PI / 4; cat.scale.z = 0.45; cat.position.set(0, 4.1, -1.6); ev.add(cat);
-  kosB(ev, 'ahs', 1.1, 2.0, 0.1, 0, 1.0, -0.38); kosB(ev, 'sar', 0.08, 0.08, 0.06, 0.38, 1.0, -0.3);
-  for (let i = 0; i < 7; i++) { const t = kosB(ev, i % 2 ? 'bey' : 'tur', 0.86, 0.08, 0.6, -2.6 + i * 0.86, 2.55, -0.2); t.rotation.x = 0.35 }
-  V.add(ev);
-  // kutlama kemeri
-  for (const x of [-2.3, 2.3]) kosB(V, 'bey', 0.15, 2.6, 0.15, x, 1.3, 0.6);
-  for (let i = 0; i < 9; i++) kosB(V, i % 2 ? 'kir' : 'sar', 0.52, 0.32, 0.1, -2.1 + i * 0.52, 2.55, 0.6);
-  try { const rr = SkeletonUtils.clone(TEMPLATE); applyLook(rr, (typeof randomLook === 'function' ? randomLook() : null) || COURIER_CFG, 512); rr.scale.set(YS, YS, YS); rr.position.set(-1.1, 0, 0.2); rr.traverse(o => { if (o.isMesh) o.frustumCulled = false }); V.add(rr);
-    const mx = new THREE.AnimationMixer(rr); const c = CLIPS.Wave_One_Hand || CLIPS.Idle_12; if (c) mx.clipAction(c).play(); V.userData.mx = mx; KOS.G.mx2 = mx } catch (e) { }
-  return V }
 function kosUcan(P) { const s = P.querySelector('.kosSip'); if (!s) return; s.classList.remove('vur'); void s.offsetWidth; s.classList.add('vur') }
-function kosCarp(G) { G.can--; G.carp++; G.dok = 1.3; G.yavas = 0.9; G.sallan = 0.35; try { sfx('nope') } catch (e) { }
+function kosCarp(G) { G.can--; G.vurus++; G.dok = 1.3; G.yavas = 0.9; G.sallan = 0.35; try { sfx('nope') } catch (e) { }
   try { navigator.vibrate && navigator.vibrate(60) } catch (e) { } const P = $('kosP'); P.classList.remove('kirmizi'); void P.offsetWidth; P.classList.add('kirmizi');
-  if (G.can <= 0) kosBitir(false) }
-function kosBitir(ok) {
-  const G = KOS.G; if (!G || G.bitti) return; G.bitti = true; const K = kosS(), bi = G.bi;
-  let yil = 0, odul = 0, gem = 0;
-  if (ok) { yil = 1 + (G.sip >= G.B.n ? 1 : 0) + (G.carp <= 1 ? 1 : 0); const ilk = !K.ilk[bi]; odul = Math.round(kosOdul(bi) * (ilk ? 1 : 0.25)) + G.para;
-    if (yil === 3 && !K.gem[bi]) { gem = 3 + Math.floor(bi / 3); K.gem[bi] = true } K.ilk[bi] = true; K.y[bi] = Math.max(K.y[bi] | 0, yil);
-    try { addCoins(odul, 'bonus') } catch (e) { S.coins += odul } if (gem) { S.gems += gem; try { hudGems() } catch (e) { } } try { addXP(20 + bi * 6) } catch (e) { }
-    try { sfx('levelup') } catch (e) { } }
-  else { odul = Math.round(G.para / 2); if (odul) try { addCoins(odul, 'bonus') } catch (e) { } try { sfx('nope') } catch (e) { } }
-  try { markDirty(); saveNow() } catch (e) { }
-  const P = $('kosP'), k = G.k, sonraki = bi + 1 < KOS_BOL.length && kosAcik(bi + 1);
+  if (G.can <= 0) kosBitir() }
+function kosBitir() {
+  const G = KOS.G; if (!G || G.bitti) return; G.bitti = true; const h = kosH(), puan = Math.round(G.puan), rekor = puan > (h.best | 0); h.n = (h.n | 0) + 1; if (rekor) h.best = puan;
+  const odul = G.para; if (odul) try { addCoins(odul, 'bonus') } catch (e) { S.coins += odul } try { addXP(Math.min(60, 5 + Math.floor(G.d / 100) * 2)) } catch (e) { }
+  try { markDirty(); saveNow() } catch (e) { } kosGonder(); try { sfx(rekor && puan > 0 ? 'levelup' : 'nope') } catch (e) { }
+  const P = $('kosP'), k = G.k;
   setTimeout(() => { if (!P || P.hidden) return; const s = document.createElement('div'); s.className = 'kosSon';
-    s.innerHTML = `<div class="kosKart"><img src="${productThumb(k)}" alt=""><h3>${ok ? kt('Sipariş teslim edildi!', 'Order delivered!') : kt('Sipariş yolda kaldı', 'The order didn’t make it')}</h3>
-      <p>${ok ? kt(`${kosMus(G.B.mus)} çok mutlu, teşekkür ediyor!`, `${kosMus(G.B.mus)} is so happy. Thank you!`) : kt('Canların bitti. Bir daha dene, bu sefer kapıya yetişirsin!', 'Out of hearts. Try again, you’ll make it this time!')}</p>
-      ${ok ? `<div class="kosYY">${[0, 1, 2].map(j => `<i class="${j < yil ? 'on' : ''}">★</i>`).join('')}</div>
-      <ul class="kosOz"><li class="${G.sip >= G.B.n ? 'on' : ''}">${kt('Siparişin bütün parçaları', 'Every part of the order')} · ${G.sip}/${G.B.n}</li><li class="${G.carp <= 1 ? 'on' : ''}">${kt('En çok 1 çarpma', 'At most 1 bump')} · ${G.carp}</li></ul>` : ''}
-      <div class="kosOd"><span>${uiIc('i_coin')}+${odul}</span>${gem ? `<span>${uiIc('i_gem')}+${gem}</span>` : ''}</div>
-      <div class="kosDug"><button class="btn light" type="button" data-k="harita">${kt('Bölümler', 'Levels')}</button><button class="btn" type="button" data-k="tekrar">${kt('Tekrar', 'Retry')}</button>${ok && sonraki ? `<button class="btn green" type="button" data-k="sonraki">${kt('Sonraki bölüm', 'Next level')}</button>` : ''}</div></div>`;
+    s.innerHTML = `<div class="kosKart"><img src="${productThumb(k)}" alt=""><h3>${rekor && puan > 0 ? kt('Haftanın yeni rekoru!', 'New best this week!') : kt('Koşu bitti', 'Run over')}</h3>
+      <div class="kosSkor">${kosFmt(puan)}<small>${kt('puan', 'points')}</small></div>
+      <ul class="kosOz"><li>${kt('Mesafe', 'Distance')} · <b>${Math.floor(G.d)} m</b></li><li>${kt('Paket', 'Parcels')} · <b>${G.sip}</b></li><li>${kt('Haftanın en iyisi', 'Best this week')} · <b>${kosFmt(h.best)}</b></li></ul>
+      <div class="kosOd"><span>${uiIc('i_coin')}+${odul}</span></div>
+      <div class="kosDug"><button class="btn light" type="button" data-k="sira">${kt('Sıralama', 'Ranking')}</button><button class="btn green" type="button" data-k="tekrar">${kt('Tekrar koş', 'Run again')}</button></div></div>`;
     P.appendChild(s);
-    s.querySelector('[data-k=harita]').onclick = () => { kosCik(false); kosHarita() };
-    s.querySelector('[data-k=tekrar]').onclick = () => { kosCik(false); kosBasla(bi) };
-    const n = s.querySelector('[data-k=sonraki]'); if (n) n.onclick = () => { kosCik(false); kosBasla(bi + 1) } }, ok ? 1400 : 700);
-  if (ok) { const f = () => { if (!KOS.on || KOS.G !== G) return; if (G.mx2) G.mx2.update(1 / 60); requestAnimationFrame(f) }; f() }
+    s.querySelector('[data-k=sira]').onclick = () => { kosCik(false); kosAc() };
+    s.querySelector('[data-k=tekrar]').onclick = () => { kosCik(false); kosBasla() } }, 800);
 }
 function kosCik(sor) {
-  const G = KOS.G; if (sor && G && !G.bitti && G.bas <= 0 && !(KOS.cikT && Date.now() - KOS.cikT < 2500)) { KOS.cikT = Date.now(); const ip = $('kosP').querySelector('.kosIp'); if (ip) { ip.classList.remove('git'); ip.innerHTML = kt('Çıkmak için <b>✕</b>’e bir daha dokun<small>Sipariş yarıda kalır, topladığın altınlar gelmez</small>', 'Tap <b>✕</b> again to quit<small>The order stays undelivered and you lose the coins you collected</small>'); setTimeout(() => ip.classList.add('git'), 2400) } return }
+  const G = KOS.G; if (sor && G && !G.bitti && G.bas <= 0) { if (!(KOS.cikT && Date.now() - KOS.cikT < 2500)) { KOS.cikT = Date.now(); const ip = $('kosP').querySelector('.kosIp'); if (ip) { ip.classList.remove('git'); ip.innerHTML = kt('Koşuyu bitirmek için <b>✕</b>’e bir daha dokun<small>Puanın ve topladığın altınlar kaydedilir</small>', 'Tap <b>✕</b> again to end the run<small>Your score and coins are kept</small>'); setTimeout(() => ip.classList.add('git'), 2400) } return }
+    KOS.cikT = 0; kosBitir(); return }
   KOS.cikT = 0;
   KOS.on = false; cancelAnimationFrame(KOS.raf); removeEventListener('keydown', KOS.tus);
   // (V334) ana çizici kapatılmaz; koşu sahnesi bırakılır
@@ -23896,7 +23883,8 @@ function kosHata(e) { try { console.warn('kurye koşusu', e); const P = $('kosP'
   d.innerHTML = `<div class="kosKart"><h3>${kt('Koşu açılamadı', 'The run could not start')}</h3><p>${kt('Bu cihazda bir sorun çıktı. Ekran görüntüsünü bize gönderirsen hemen düzeltiriz.', 'Something went wrong on this device. Send us a screenshot and we will fix it.')}</p><p style="font-size:10px;opacity:.6">${String(e && (e.message || e)).slice(0, 160)}</p><div class="kosDug"><button class="btn" type="button">${kt('Kafeye dön', 'Back to café')}</button></div></div>`;
   P.appendChild(d); d.querySelector('button').onclick = () => kosCik(false) } catch (er) { } }
 { const st = document.createElement('style'); st.textContent = `
-html.kosOn #game>*:not(#kosP):not(canvas){visibility:hidden!important}
+html.kosOn.kosOn #game#game#game#game#game>*:not(#kosP):not(canvas){visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+html.kosOn body>*:not(#game):not(script):not(style):not(#syPerde){opacity:0!important;pointer-events:none!important}
 #kosP{position:absolute;inset:0;z-index:9000;background:transparent;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;font-family:var(--font-display,"Baloo 2",system-ui)}
 #kosP[hidden]{display:none}#kosP .kosHud,#kosP .kosIp,#kosP .kosSay,#kosP .kosSon{z-index:2}
 #kosP.kirmizi::after{content:"";position:absolute;inset:0;background:rgba(217,71,58,.28);animation:kosKir .45s ease forwards;pointer-events:none}@keyframes kosKir{to{opacity:0}}
@@ -23920,23 +23908,40 @@ html.kosOn #game>*:not(#kosP):not(canvas){visibility:hidden!important}
 @keyframes kosPop2{from{transform:scale(.7);opacity:0}}
 #kosP .kosKart>img{width:64px;height:64px;object-fit:contain;margin-top:-4px}#kosP .kosKart h3{margin:2px 0;font-size:22px}#kosP .kosKart p{margin:2px 0 6px;font:800 13px var(--font-body,system-ui)}
 #kosP .kosYY{display:flex;justify-content:center;gap:6px;font-size:34px;line-height:1}#kosP .kosYY i{font-style:normal;color:#e6d8c2;-webkit-text-stroke:2px #5a2f12}#kosP .kosYY i.on{color:#f6c94a}
-#kosP .kosOz{list-style:none;margin:6px 0;padding:0;font:800 12px var(--font-body,system-ui);display:flex;flex-direction:column;gap:2px}#kosP .kosOz li::before{content:"○ "}#kosP .kosOz li.on::before{content:"✔ ";color:#2f8f7f}
+#kosP .kosOz{list-style:none;margin:6px 0;padding:0;font:800 12px var(--font-body,system-ui);display:flex;flex-direction:column;gap:2px}
 #kosP .kosOd{display:flex;justify-content:center;gap:10px;margin:6px 0 10px;font-size:20px;font-weight:900}#kosP .kosOd span{display:flex;align-items:center;gap:3px}#kosP .kosOd img{width:24px;height:24px}
 #kosP .kosDug{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}
-/* bölüm haritası */
+/* (V337) puan göstergesi */
+#kosP .kosPuan{flex:1;display:flex;align-items:baseline;justify-content:center;gap:6px;color:#fff8ec;text-shadow:0 0 0 #5a2f12,2px 2px 0 #5a2f12,-2px 2px 0 #5a2f12,2px -2px 0 #5a2f12,-2px -2px 0 #5a2f12,0 4px 0 #5a2f12}
+#kosP .kosPuan b{font-size:30px;font-weight:900;line-height:1}#kosP .kosPuan small{font-size:14px;font-weight:900}
+#kosP .kosCarpan{align-self:center;padding:1px 9px;border:3px solid #5a2f12;border-radius:999px;background:linear-gradient(#ffe590,#f0b52e);box-shadow:0 3px 0 #5a2f12;color:#4a2a14;text-shadow:none;font-size:15px;font-weight:900}
+#kosP .kosCarpan.vur{animation:kosVur .5s ease}
+#kosP .kosSkor{font-size:44px;font-weight:900;line-height:1;color:#2f8f7f;margin:2px 0 4px}#kosP .kosSkor small{display:block;font-size:13px;color:#4a2a14;opacity:.7}
+/* (V337) etkinlik penceresi */
 #kosM .skscroll{display:block!important;columns:auto!important}
-#kosM .kosUst{margin:0 0 8px;font:800 12.5px var(--font-body,system-ui);color:#4a2a14;display:flex;align-items:center;gap:8px;justify-content:space-between}#kosM .kosUst b{display:flex;align-items:center;gap:3px;white-space:nowrap;font-family:var(--font-display)}#kosM .kosUst .ic{width:16px;height:16px}
-#kosM .kosIzgara{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
-#kosM .kosBol{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:16px 4px 6px;border:3px solid #5a2f12;border-radius:16px;background:#fff8ec;box-shadow:0 3px 0 #5a2f12;cursor:pointer;color:#4a2a14;font-family:var(--font-display);min-width:0}
-#kosM .kosBol.s_gun{background:linear-gradient(#e2f4fb,#fff8ec 55%)}#kosM .kosBol.s_sahil{background:linear-gradient(#d7f1f8,#fbefd2 60%)}#kosM .kosBol.s_aksam{background:linear-gradient(#ffd9b8,#fff3e3 60%)}#kosM .kosBol.s_gece{background:linear-gradient(#bcc4ea,#eef0fb 60%)}
-#kosM .kosBol.kilit{opacity:.6;cursor:default}
-#kosM .kosNo{position:absolute;left:-6px;top:-8px;width:26px;height:26px;display:grid;place-items:center;border:2.5px solid #5a2f12;border-radius:50%;background:#f6c94a;font-weight:900;font-size:13px}
-#kosM .kosSemt{position:absolute;right:6px;top:3px;font:800 9px var(--font-body,system-ui);opacity:.7}
-#kosM .kosBol img{width:44px;height:44px;object-fit:contain}#kosM .kosKilit{width:44px;height:44px;display:grid;place-items:center}#kosM .kosKilit .ic{width:26px;height:26px}
-#kosM .kosBol b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}#kosM .kosBol small{font:800 10px var(--font-body,system-ui);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-#kosM .kosY{display:flex;gap:1px;font-size:15px;line-height:1}#kosM .kosY i{font-style:normal;color:#e6d8c2;-webkit-text-stroke:1.2px #5a2f12}#kosM .kosY i.on{color:#f6c94a}
-.kosGir{display:inline-flex;align-items:center;gap:4px}
-.kosGirM{position:absolute!important;right:64px;top:8px;z-index:2;padding:6px 14px!important;border:3px solid #5a2f12!important;border-radius:999px!important;background:linear-gradient(#ffe590,#f0b52e)!important;box-shadow:0 3px 0 #5a2f12!important;font:900 14px var(--font-display)!important;color:#4a2a14!important}.kosGirM .ic{width:18px;height:18px}
+html.land #game#game #kosM#kosM#kosM.skmodal .skscroll{overflow:hidden!important;display:block!important}
+#kosM .kosGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,.9fr);gap:10px;height:100%;font-family:var(--font-display);color:#4a2a14}
+#kosM section{display:flex;flex-direction:column;gap:6px;padding:8px 12px;border:3px solid #5a2f12;border-radius:16px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 3px 0 #5a2f12;min-height:0}
+#kosM h4{margin:2px 0 0;font-size:13px;font-weight:900}
+#kosM .kosHero{height:84px;flex:none;border:2.5px solid #5a2f12;border-radius:12px;overflow:hidden}#kosM .kosHero svg{width:100%;height:100%;display:block}
+#kosM .evrT{margin:0;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800}#kosM .evrT .ic{width:14px;height:14px}
+#kosM .kosBen{display:grid;grid-template-columns:1.4fr 1fr;gap:6px}#kosM .kosBen span{display:flex;flex-direction:column;padding:3px 10px;border:2px solid #5a2f12;border-radius:12px;background:#fff}
+#kosM .kosBen small{font-size:11px;font-weight:800;opacity:.75}#kosM .kosBen b{font-size:20px;font-weight:900;color:#2f8f7f;line-height:1.1}
+#kosM .kosOyna,#kosM section>.btn{width:100%;justify-content:center;font-size:17px}
+#kosM .evrNote{margin:0;font-size:10.5px;font-weight:800;opacity:.75;line-height:1.25}
+#kosM .evrTiers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+#kosM .evrTiers li{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:10px;background:#fff;font-size:12px;font-weight:800}
+#kosM .evrTiers li b{margin-left:auto;font-size:13px;display:flex;align-items:center;gap:3px}#kosM .evrTiers li b img{width:15px;height:15px}#kosM .evrTiers li.on{background:#d9f3ea;box-shadow:inset 0 0 0 2px #2f8f7f}
+#kosM .evrList{list-style:none;margin:0;padding:0;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:5px}
+#kosM .evrList li{flex:none;display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:6px;padding:3px 8px;border-radius:10px;background:#fff;font-size:12.5px;font-weight:800}
+#kosM .evrList li.me{background:#fff3c4;box-shadow:inset 0 0 0 2px #e0a21a}
+#kosM .evrN{font-weight:900;text-align:center}#kosM .t1 .evrN{color:#c79100}#kosM .t2 .evrN{color:#8a97a3}#kosM .t3 .evrN{color:#b0703a}
+#kosM .evrC{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#kosM .evrS{font-weight:900;color:#2f8f7f}
+#kosM .evrMsg{margin:auto;max-width:300px;text-align:center;font-size:12.5px;font-weight:800;opacity:.8}
+html:not(.land) #kosM .kosGrid{grid-template-columns:1fr;height:auto}
+@media (max-height:460px){#kosM .kosHero{display:none}#kosM section{padding:6px 10px;gap:5px}}
+#kosM .evrT{flex-wrap:wrap}
+.kosCard{display:flex;flex-direction:column;text-align:left;cursor:pointer}
 `; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
