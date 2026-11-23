@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795401020",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795403494",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -193,6 +193,66 @@ svg.i{display:block;width:100%;height:100%}
 #bar i{display:block;height:100%;width:0;background:var(--gold)}
 #load small{font-family:var(--font-body);font-weight:700;font-size:13px;opacity:.8;max-width:34ch;line-height:1.4}
 </style>
+
+<div id="syKok" hidden></div>
+<style>
+/* ================= SEYAHAT PERDESİ (V329, sayfanın başında) =================
+   Kullanıcı (23 Kasım 2026, 06:00): "geçişteki animasyonda uçan uçakta halen takılmalar oluyor ... çimen full kaplasın, kesilmeler olmasın".
+   Takılmanın asıl sebebi: kalkışta uçak uçarken sayfa yeniden yükleniyor; yeni sayfada perde ancak oyunun 3 MB'lık kodu çalışınca (birkaç sn)
+   yeniden kuruluyordu, uçak o arada donup sonra baştan başlıyordu. Şimdi perde sayfanın en başında, oyun kodundan önce kurulur;
+   kalkışta uçak ekrandan çıkınca yüklenir (ara boyunca aynı gökyüzü kalır), varışta uçak yerinde süzülür, oyun hazır olunca perde söner. */
+
+#syPerde{position:fixed;inset:0;z-index:100000;overflow:hidden;font-family:var(--font-display,"Baloo 2",system-ui,sans-serif);animation:syAc .35s ease both}#syPerde.varis{animation:none}
+#syPerde[hidden]{display:none}#syPerde.syKap{animation:syKap .4s ease forwards}@keyframes syAc{from{opacity:0}}@keyframes syKap{to{opacity:0;transform:scale(1.04)}}
+#syPerde .sySky{position:absolute;inset:0;background:linear-gradient(#8fc9e6 0%,#bfe0ef 45%,#ffe7b3 100%)}
+#syPerde .syGun{position:absolute;right:10%;top:9%;width:70px;height:70px;border-radius:50%;background:#ffd86b;border:4px solid #5a2f12;box-shadow:0 0 0 12px rgba(255,216,107,.35),0 0 0 26px rgba(255,216,107,.18)}
+#syPerde .syBl{position:absolute;left:100%;height:auto;animation:syBl linear infinite;overflow:visible;will-change:transform}
+@keyframes syBl{from{transform:translateX(0)}to{transform:translateX(calc(-100vw - 260px))}}
+/* (V329) çimen: 1200 px'lik karolar yan yana (her biri ayrı, küçük katman; dev tek katman iOS'ta kesiliyordu); kalkışta kayar, varışta durur */#syPerde .syTepe{position:absolute;left:0;right:0;bottom:0;height:26%;overflow:hidden}#syPerde .syTp{position:absolute;top:0;bottom:0;width:1201px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 120' preserveAspectRatio='none'%3E%3Cpath d='M0 60 C130 20 270 20 400 50 C530 80 670 100 800 60 L800 120 L0 120 Z' fill='%239fcf7a'/%3E%3Cpath d='M0 92 C150 70 250 70 400 88 C550 106 650 114 800 92 L800 120 L0 120 Z' fill='%237cb85e'/%3E%3C/svg%3E") 0 0/1200px 100% no-repeat;will-change:transform}#syPerde.kalkis .syTp{animation:syTepe 5s linear infinite}@keyframes syTepe{from{transform:translate3d(0,0,0)}to{transform:translate3d(-1200px,0,0)}}
+#syPerde .syYol{position:absolute;inset:0;pointer-events:none;will-change:transform;transform:translate3d(-30%,40%,0)}
+#syPerde .syUcak{position:absolute;left:0;top:0;width:min(230px,34vw);height:auto;will-change:transform}
+#syPerde.kalkis .syYol{animation:syUc 1.4s cubic-bezier(.45,.05,.4,1) forwards}#syPerde.kalkis .syUcak{animation:syUcR 1.4s cubic-bezier(.45,.05,.4,1) forwards}
+/* varış: oyun kodu yüklenirken ana iş parçacığı meşgul; uçak yerinde süzülür (donsa da takılma görünmez), kart ve yazı sabit */#syPerde.varis .syYol{transform:translate3d(40%,40%,0)}#syPerde.varis .syUcak{animation:syBob 1.6s ease-in-out infinite}@keyframes syBob{0%,100%{transform:translate3d(0,0,0) rotate(-2deg)}50%{transform:translate3d(0,-8px,0) rotate(2deg)}}#syPerde.varis .syKart{animation:none}
+@keyframes syUc{0%{transform:translate3d(-30%,58%,0)}35%{transform:translate3d(30%,42%,0)}70%{transform:translate3d(62%,38%,0)}100%{transform:translate3d(115%,20%,0)}}
+@keyframes syUcR{0%{transform:rotate(-8deg)}35%{transform:rotate(-4deg)}70%{transform:rotate(2deg)}100%{transform:rotate(-10deg)}}
+#syPerde .syPer{transform-origin:212px 64px;animation:syPer .12s linear infinite}@keyframes syPer{50%{transform:scaleY(.15)}}
+#syPerde .syKart{position:absolute;left:50%;top:7%;transform:translateX(-50%);min-width:min(420px,80vw);padding:6px 14px 10px;border:4px solid #5a2f12;border-radius:18px;background:#fff8ec;box-shadow:0 5px 0 #5a2f12;animation:syKart .5s cubic-bezier(.3,1.6,.5,1) both .2s}
+@keyframes syKart{from{transform:translate(-50%,-30px) scale(.8);opacity:0}}
+#syPerde .syKb{margin:-20px auto 4px;width:max-content;padding:3px 16px;border:3px solid #5a2f12;border-radius:999px;background:linear-gradient(#ffe590,#f0b52e);font-weight:900;font-size:13px;letter-spacing:1px;color:#5a2f12}
+#syPerde .syKs{display:flex;align-items:center;justify-content:center;gap:14px;color:#5a2f12}
+#syPerde .syKs>span:not(.mflag){display:flex;flex-direction:column;align-items:center;line-height:1.05}#syPerde .syKs small{font:800 11px var(--font-body,system-ui);opacity:.7}#syPerde .syKs b{font-weight:900;font-size:22px}
+#syPerde .syKs em{font-style:normal;font-size:24px;color:#d9473a}#syPerde .syKs .mflag{display:inline-flex;flex-direction:row;width:44px;height:30px;margin-left:6px;border:3px solid #5a2f12;border-radius:7px;overflow:hidden;flex:none}#syPerde .syKs .mflag i{flex:1;display:block}#syPerde .syKs .mflag svg{width:100%;height:100%;display:block}
+#syPerde .syYazi{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);padding:6px 20px;border:3px solid #5a2f12;border-radius:999px;background:#fff8ec;font-weight:900;font-size:18px;color:#5a2f12;white-space:nowrap;box-shadow:0 3px 0 #5a2f12}
+
+</style>
+<script>
+(function(){
+  var SY_KEY='tcSeyahat';
+  var TX={tr:{bin:'BİNİŞ KARTI',hos:'HOŞ GELDİN!',nden:'Nereden',nye:'Nereye',ev:'Ana kafen',gid:'{c} yolculuğu başlıyor…',don:'Ana kafene dönülüyor…',indi:'{c} durağına indik!',dondu:'Ana kafene döndün!'},
+          en:{bin:'BOARDING PASS',hos:'WELCOME!',nden:'From',nye:'To',ev:'Your café',gid:'Off to {c}…',don:'Heading back to your café…',indi:"We've landed in {c}!",dondu:'Back at your café!'}};
+  var es=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  var UCAK=`<svg class="syUcak" viewBox="0 0 220 120" aria-hidden="true"><g stroke="#5a2f12" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M70 38 L44 6 L62 6 L104 38 Z" fill="#f6c453"/><path d="M28 60 L8 34 L24 34 L46 56 Z" fill="#f6c453"/>
+    <path d="M24 66 C24 44 60 36 120 38 L168 40 C196 42 214 54 212 66 C210 80 190 88 160 88 L60 88 C38 88 24 80 24 66 Z" fill="#fff8ec"/>
+    <path d="M40 72 L196 72" stroke="#d9473a" stroke-width="7"/><path d="M40 72 L196 72" stroke="#fff8ec" stroke-width="2" stroke-dasharray="10 10"/>
+    <path d="M96 66 L70 112 L92 112 L132 66 Z" fill="#f6c453"/>
+    <circle cx="150" cy="56" r="15" fill="#bfe0ef"/>
+    <path d="M141 52 L143 41 L149 49 Z M153 49 L159 41 L161 52 Z" fill="#f0a24a" stroke-width="3"/><circle cx="151" cy="56" r="9" fill="#f0a24a" stroke-width="3"/>
+    <circle cx="148" cy="55" r="1.6" fill="#5a2f12" stroke="none"/><circle cx="154" cy="55" r="1.6" fill="#5a2f12" stroke="none"/>
+    <circle cx="208" cy="64" r="6" fill="#d9473a"/><path class="syPer" d="M212 44 L212 84" stroke-width="4"/></g></svg>`;
+  var bulut=function(i){return `<svg class="syBl" viewBox="0 0 120 60" style="top:${6+((i*37)%52)}%;width:${100+(i*29)%90}px;animation-duration:${6+(i%4)*1.7}s;animation-delay:-${(i*1.3)%6}s" aria-hidden="true"><path d="M18 52 C4 52 4 34 18 34 C16 18 38 12 46 24 C52 6 82 6 86 26 C100 20 114 32 106 44 C116 48 112 56 102 52 Z" fill="#fff" stroke="#5a2f12" stroke-width="4" stroke-linejoin="round"/></svg>`};
+  window.__syHTML=function(d,varis){var L=TX[d.lang==='en'?'en':'tr'],c=es(d.city),ev=L.ev,nere=d.go?c:ev,nerden=d.go?ev:c,tp='';
+    for(var i=0;i<4;i++)tp+='<i class="syTp" style="left:'+(i*1200)+'px"></i>';
+    var yazi=varis?(d.go?L.indi.replace('{c}',c):L.dondu):(d.go?L.gid.replace('{c}',c):L.don);
+    return '<div class="sySky"><i class="syGun"></i>'+[0,1,2,3,4,5,6].map(bulut).join('')+'</div><div class="syTepe" aria-hidden="true">'+tp+'</div><div class="syYol">'+UCAK+'</div>'+
+      '<div class="syKart" data-dilyok="1"><div class="syKb" data-dilyok="1">'+(varis?L.hos:L.bin)+'</div><div class="syKs"><span><small data-dilyok="1">'+L.nden+'</small><b data-dilyok="1">'+nerden+'</b></span><em>✈</em><span><small data-dilyok="1">'+L.nye+'</small><b data-dilyok="1">'+nere+'</b></span>'+(d.flag||'')+'</div></div>'+
+      '<div class="syYazi" data-dilyok="1">'+yazi+'</div>'};
+  window.__syGoster=function(d,varis){var o=document.getElementById('syPerde');if(!o){o=document.createElement('div');o.id='syPerde';o.setAttribute('data-dilyok','1');document.body.appendChild(o)}
+    o.className=varis?'varis':'kalkis';o.innerHTML=window.__syHTML(d,varis);o.hidden=false;return o};
+  // varış: yeni sayfa açılır açılmaz (oyun kodu daha yüklenmeden)
+  try{var d=JSON.parse(sessionStorage.getItem(SY_KEY)||'null');if(d){sessionStorage.removeItem(SY_KEY);var o=window.__syGoster(d,true);o.dataset.t0=Date.now();window.__syVaris=o}}catch(e){}
+})();
+</script>
 
 <div id="game">
   <div class="hud">
@@ -21531,7 +21591,8 @@ function sefZemin(z,c,cx,cy,fw,fh,rid){const I=SEF_INK,S=b=>`<svg class="zm" vie
   if(z==='kek')return S(`<circle cx="${cx}" cy="${cy}" r="104" fill="#fff" stroke="${I}" stroke-width="4"/><circle cx="${cx}" cy="${cy}" r="90" fill="#e9b96a" stroke="${I}" stroke-width="3.6"/><circle cx="${cx}" cy="${cy}" r="80" fill="#f3cf8a"/>`);
   return S(`<circle cx="${cx}" cy="${cy}" r="106" fill="#fff" stroke="${I}" stroke-width="4"/><circle cx="${cx}" cy="${cy}" r="92" fill="#fdf6e6"/><image href="${productThumb(rid)}" x="${cx-78}" y="${cy-78}" width="156" height="156"/>`)}
 const sefTri=z=>Math.abs((((z*2)%2)+2)%2-1)*2-1;
-const sefCzXY=e=>{const g=document.querySelector('#sfField .sfczs');try{const m=g&&g.getScreenCTM&&g.getScreenCTM();if(m){const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse());if(isFinite(p.x)&&isFinite(p.y))return [p.x,p.y]}}catch(er){}return sefXY(e,sefAlan())};
+const sefCzXY=e=>{if(window.__ROT&&__ROT.on)return sefXY(e,sefAlan());   // (V329) dik tutulan telefonda sayfa döndürülür: dokunuş/kutu sanal ekrana çevrili, SVG matrisi değil
+ const g=document.querySelector('#sfField .sfczs');try{const m=g&&g.getScreenCTM&&g.getScreenCTM();if(m){const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse());if(isFinite(p.x)&&isFinite(p.y))return [p.x,p.y]}}catch(er){}return sefXY(e,sefAlan())};
 const SEF_SEKIL={kalp:d=>u=>{const t=u*2*Math.PI+Math.PI;return [16*Math.pow(Math.sin(t),3)/17,(-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))-2.5)/17]},
  sarmal:d=>u=>{const r=0.12+0.88*u,a=u*(1.75+0.25*(d-1))*2*Math.PI-Math.PI/2;return [r*Math.cos(a),r*Math.sin(a)]},
  zikzak:d=>u=>[-1+2*u,0.5*sefTri(u*(2.5+0.5*Math.max(0,d-2)))],
@@ -23198,72 +23259,26 @@ if(EVMODE){const _ls=loadState;loadState=function(){const r=_ls.apply(this,argum
       // tezgâh ve kapı/pencere temaları açılışta bundan önce kuruldu: oyun başlayınca yerinde yeniden kurulur (p952)
       const kur=()=>{if(typeof started==='undefined'||!started)return setTimeout(kur,400);try{buildKitchen();cnBlok();cnAcikliklar()}catch(e){console.warn('etkinlik dekoru kurulum',e)}};setTimeout(kur,300)}}catch(e){console.warn('etkinlik dekoru',e)}return r}}
 
-// ================= SEYAHAT GEÇİŞİ (V323) =================
-// Kullanıcı (22 Kasım 2026, 19:19): "italya gibi etkinlik kafesine geçişte seyahat edildiği algısı oluşturmak adına oyun konseptimize uygun
-// geçiş animasyonu hazırla". Eskiden düz bir perde ("Roma'ya gidiliyor…") 0,65 sn görünüp oyun yeniden yükleniyordu.
-// Şimdi: gökyüzü, süzülen bulutlar, alttan geçen tepeler; pilot kedili küçük uçak soldan gelip uçar, arkasında kesik çizgili iz; üstte
-// "Pati Tabela" dilinde biniş kartı (nereden → nereye, bayrak). 2,6 sn sonra yükleme; yeni sayfa açılırken aynı sahne "varış" olarak sürer
-// (uçak alçalır, kart "Hoş geldin!" der) ve oyun hazır olunca yumuşakça kaybolur. Dönüşte aynı yolculuk ters yönde ("Ana kafene dönülüyor").
-// (V328) Kullanıcı (23 Kasım 2026, 05:11): "uçan uçakta takılmalar oluyor". Uçak left/top ile (her karede yerleşim hesabı, ana iş parçacığında)
-// kayıyordu; oyun arka planda çizerken ve yeni sayfa yüklenirken takılıyordu. Şimdi yalnız transform (translate3d + rotate) ile, ekran kartında
-// (compositor) akar; çimen de background-position yerine transform ile kayar.
-// (V326) Kullanıcı (23 Kasım 2026): "animasyonun çimeni bölünüyor ... uçak uçmaya devam ederken zemin full çimen kalsın" → kesintisiz yinelenen tepe karosu.
+// ================= SEYAHAT GEÇİŞİ (V323 → V329) =================
+// Kullanıcı (22 Kasım 2026, 19:19): "italya gibi etkinlik kafesine geçişte seyahat edildiği algısı oluşturmak adına oyun konseptimize uygun geçiş animasyonu hazırla".
+// (V325) daha kısa · (V326) kesintisiz çimen · (V328) uçak yalnız transform ile.
+// (V329) Kullanıcı (23 Kasım 2026, 06:00): "uçan uçakta halen takılmalar oluyor ... çimen full kaplasın". Perdenin görünümü ve varış kurulumu artık
+// sayfanın başında (p001_seyahat.html): varışta oyun kodu yüklenmeden gökyüzü ekranda olur, uçak yerinde süzülür. Kalkışta perde kapanınca 3B çizim
+// durdurulur (ana iş parçacığı boşalır) ve sayfa uçak ekrandan çıktıktan sonra yenilenir.
 const SY_KEY='tcSeyahat';
-function syHTML(d,varis){const nere=d.go?d.city:'Ana kafen',nerden=d.go?'Ana kafen':d.city;
-  const ucak=`<svg class="syUcak" viewBox="0 0 220 120" aria-hidden="true"><g stroke="#5a2f12" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M70 38 L44 6 L62 6 L104 38 Z" fill="#f6c453"/><path d="M28 60 L8 34 L24 34 L46 56 Z" fill="#f6c453"/>
-    <path d="M24 66 C24 44 60 36 120 38 L168 40 C196 42 214 54 212 66 C210 80 190 88 160 88 L60 88 C38 88 24 80 24 66 Z" fill="#fff8ec"/>
-    <path d="M40 72 L196 72" stroke="#d9473a" stroke-width="7"/><path d="M40 72 L196 72" stroke="#fff8ec" stroke-width="2" stroke-dasharray="10 10"/>
-    <path d="M96 66 L70 112 L92 112 L132 66 Z" fill="#f6c453"/>
-    <circle cx="150" cy="56" r="15" fill="#bfe0ef"/>
-    <path d="M141 52 L143 41 L149 49 Z M153 49 L159 41 L161 52 Z" fill="#f0a24a" stroke-width="3"/><circle cx="151" cy="56" r="9" fill="#f0a24a" stroke-width="3"/>
-    <circle cx="148" cy="55" r="1.6" fill="#5a2f12" stroke="none"/><circle cx="154" cy="55" r="1.6" fill="#5a2f12" stroke="none"/>
-    <circle cx="208" cy="64" r="6" fill="#d9473a"/><path class="syPer" d="M212 44 L212 84" stroke-width="4"/></g></svg>`;
-  const bulut=i=>`<svg class="syBl" viewBox="0 0 120 60" style="top:${6+((i*37)%52)}%;width:${100+(i*29)%90}px;animation-duration:${6+(i%4)*1.7}s;animation-delay:-${(i*1.3)%6}s" aria-hidden="true"><path d="M18 52 C4 52 4 34 18 34 C16 18 38 12 46 24 C52 6 82 6 86 26 C100 20 114 32 106 44 C116 48 112 56 102 52 Z" fill="#fff" stroke="#5a2f12" stroke-width="4" stroke-linejoin="round"/></svg>`;
-  return `<div class="sySky"><i class="syGun"></i>${[0,1,2,3,4,5,6].map(bulut).join('')}</div>
-    <div class="syTepe" aria-hidden="true"></div>
-    <div class="syYol">${ucak}</div>
-    <div class="syKart"><div class="syKb">${varis?'HOŞ GELDİN!':'BİNİŞ KARTI'}</div><div class="syKs"><span><small>Nereden</small><b data-dilyok="1"></b></span><em>✈</em><span><small>Nereye</small><b data-dilyok="1"></b></span>${d.flag||''}</div></div>
-    <div class="syYazi">${varis?(d.go?`<span data-dilyok="1"></span> durağına indik!`:'Ana kafene döndün!'):(d.go?`<span data-dilyok="1"></span> yolculuğu başlıyor…`:'Ana kafene dönülüyor…')}</div>`}
-function syGoster(d,varis){let o=$('syPerde');if(!o){o=document.createElement('div');o.id='syPerde';document.body.appendChild(o)}
-  o.className=varis?'varis':'kalkis';o.innerHTML=syHTML(d,varis);const ev=(()=>{try{return window.__DIL&&__DIL.lang==='en'?'Your café':'Ana kafen'}catch(e){return 'Ana kafen'}})();const B=o.querySelectorAll('.syKs b');if(B[0])B[0].textContent=d.go?ev:d.city;if(B[1])B[1].textContent=d.go?d.city:ev;
-  const s=o.querySelector('.syYazi span');if(s)s.textContent=d.city;o.hidden=false;
-  // (V328) alttaki yazıdaki şehir de kartla aynı dilde (EN: "Off to Rome…"; önceden "Roma" kalıyordu)
-  if(s&&B[1])requestAnimationFrame(()=>{try{const k=B[1].textContent;if(k&&d.go)s.textContent=k}catch(e){}});return o}
+function syGoster(d,varis){return window.__syGoster(d,varis)}
+const syDil=()=>{try{return window.__DIL&&__DIL.lang==='en'?'en':'tr'}catch(e){return 'tr'}};
+const syCity=c=>{try{return syDil()==='en'&&window.__DIL&&__DIL.t?__DIL.t(c):c}catch(e){return c}};
 // kalkış: evTravel yerine
-evTravel=function(E,go,why){RESETTING=true;const d={go:!!go,city:E.city,flag:(()=>{try{return evFlagHTML(E)}catch(e){return ''}})()};
+evTravel=function(E,go,why){RESETTING=true;const d={go:!!go,city:syCity(E.city),lang:syDil(),flag:(()=>{try{return evFlagHTML(E)}catch(e){return ''}})()};
   try{sessionStorage.setItem(SY_KEY,JSON.stringify(d))}catch(e){}
   syGoster(d,false);try{sfx('levelup')}catch(e){}
-  setTimeout(()=>gameReload(),1300)};   // (V325) kullanıcı: daha kısa
-// varış: yeni sayfa açılırken
-(()=>{let d=null;try{d=JSON.parse(sessionStorage.getItem(SY_KEY)||'null');sessionStorage.removeItem(SY_KEY)}catch(e){}if(!d)return;
-  const o=syGoster(d,true);const t0=Date.now();
-  const bitir=()=>{if(typeof started!=='undefined'&&started&&Date.now()-t0>900){o.classList.add('syKap');setTimeout(()=>{o.hidden=true;o.innerHTML=''},400);return}setTimeout(bitir,200)};setTimeout(bitir,400)})();
-{const st=document.createElement('style');st.textContent=`
-#syPerde{position:fixed;inset:0;z-index:100000;overflow:hidden;font-family:var(--font-display,"Baloo 2",system-ui,sans-serif);animation:syAc .35s ease both}
-#syPerde[hidden]{display:none}#syPerde.syKap{animation:syKap .4s ease forwards}@keyframes syAc{from{opacity:0}}@keyframes syKap{to{opacity:0;transform:scale(1.04)}}
-#syPerde .sySky{position:absolute;inset:0;background:linear-gradient(#8fc9e6 0%,#bfe0ef 45%,#ffe7b3 100%)}
-#syPerde .syGun{position:absolute;right:10%;top:9%;width:70px;height:70px;border-radius:50%;background:#ffd86b;border:4px solid #5a2f12;box-shadow:0 0 0 12px rgba(255,216,107,.35),0 0 0 26px rgba(255,216,107,.18)}
-#syPerde .syBl{position:absolute;left:100%;height:auto;animation:syBl linear infinite;overflow:visible;will-change:transform}
-@keyframes syBl{from{transform:translateX(0)}to{transform:translateX(calc(-100vw - 260px))}}
-/* (V326) kesintisiz çimen: uçları birbirine oturan tepe karosu yatayda yinelenir, ekranın her yerini kaplar */#syPerde .syTepe{position:absolute;left:0;width:calc(100% + 1200px);bottom:0;height:26%;will-change:transform;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 120' preserveAspectRatio='none'%3E%3Cpath d='M0 60 C130 20 270 20 400 50 C530 80 670 100 800 60 L800 120 L0 120 Z' fill='%239fcf7a'/%3E%3Cpath d='M0 92 C150 70 250 70 400 88 C550 106 650 114 800 92 L800 120 L0 120 Z' fill='%237cb85e'/%3E%3C/svg%3E") repeat-x 0 0/1200px 100%;animation:syTepe 5s linear infinite}@keyframes syTepe{from{transform:translate3d(0,0,0)}to{transform:translate3d(-1200px,0,0)}}
-#syPerde .syYol{position:absolute;inset:0;pointer-events:none;will-change:transform;transform:translate3d(-30%,40%,0)}
-#syPerde .syUcak{position:absolute;left:0;top:0;width:min(230px,calc(34*var(--vw)));height:auto;will-change:transform;filter:drop-shadow(0 6px 0 rgba(90,47,18,.25))}
-#syPerde.kalkis .syYol{animation:syUc 1.4s cubic-bezier(.45,.05,.4,1) forwards}#syPerde.kalkis .syUcak{animation:syUcR 1.4s cubic-bezier(.45,.05,.4,1) forwards}
-#syPerde.varis .syYol{animation:syIn 1.1s cubic-bezier(.2,.7,.3,1) forwards}#syPerde.varis .syUcak{animation:syInR 1.1s cubic-bezier(.2,.7,.3,1) forwards}
-@keyframes syUc{0%{transform:translate3d(-30%,58%,0)}35%{transform:translate3d(30%,42%,0)}70%{transform:translate3d(62%,38%,0)}100%{transform:translate3d(115%,20%,0)}}
-@keyframes syUcR{0%{transform:rotate(-8deg)}35%{transform:rotate(-4deg)}70%{transform:rotate(2deg)}100%{transform:rotate(-10deg)}}
-@keyframes syIn{0%{transform:translate3d(-30%,20%,0)}60%{transform:translate3d(38%,46%,0)}100%{transform:translate3d(40%,42%,0)}}
-@keyframes syInR{0%{transform:rotate(8deg)}60%{transform:rotate(3deg)}100%{transform:rotate(0)}}
-#syPerde .syPer{transform-origin:212px 64px;animation:syPer .12s linear infinite}@keyframes syPer{50%{transform:scaleY(.15)}}
-#syPerde .syKart{position:absolute;left:50%;top:7%;transform:translateX(-50%);min-width:min(420px,calc(80*var(--vw)));padding:6px 14px 10px;border:4px solid #5a2f12;border-radius:18px;background:#fff8ec;box-shadow:0 5px 0 #5a2f12;animation:syKart .5s cubic-bezier(.3,1.6,.5,1) both .2s}
-@keyframes syKart{from{transform:translate(-50%,-30px) scale(.8);opacity:0}}
-#syPerde .syKb{margin:-20px auto 4px;width:max-content;padding:3px 16px;border:3px solid #5a2f12;border-radius:999px;background:linear-gradient(#ffe590,#f0b52e);font-weight:900;font-size:13px;letter-spacing:1px;color:#5a2f12}
-#syPerde .syKs{display:flex;align-items:center;justify-content:center;gap:14px;color:#5a2f12}
-#syPerde .syKs>span:not(.mflag){display:flex;flex-direction:column;align-items:center;line-height:1.05}#syPerde .syKs small{font:800 11px var(--font-body,system-ui);opacity:.7}#syPerde .syKs b{font-weight:900;font-size:22px}
-#syPerde .syKs em{font-style:normal;font-size:24px;color:#d9473a}#syPerde .syKs .mflag{display:inline-flex;flex-direction:row;width:44px;height:30px;margin-left:6px;border:3px solid #5a2f12;border-radius:7px;overflow:hidden;flex:none}#syPerde .syKs .mflag i{flex:1;display:block}#syPerde .syKs .mflag svg{width:100%;height:100%;display:block}
-#syPerde .syYazi{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);padding:6px 20px;border:3px solid #5a2f12;border-radius:999px;background:#fff8ec;font-weight:900;font-size:18px;color:#5a2f12;white-space:nowrap;box-shadow:0 3px 0 #5a2f12}
-`;document.head.appendChild(st)}
+  // perde tam kapanınca (0,35 sn) 3B çizim durur: uçak akıcı kalsın; sayfa zaten yenilenecek
+  setTimeout(()=>{try{renderer.render=function(){}}catch(e){}},380);
+  setTimeout(()=>gameReload(),1450)};   // uçak (1,4 sn) ekrandan çıkınca
+// varış: perde sayfanın başında kuruldu; oyun hazır olunca söner
+(()=>{const o=window.__syVaris;if(!o)return;const t0=+o.dataset.t0||Date.now();
+  const bitir=()=>{if(typeof started!=='undefined'&&started&&Date.now()-t0>900){o.classList.add('syKap');setTimeout(()=>{o.hidden=true;o.innerHTML=''},420);return}setTimeout(bitir,150)};setTimeout(bitir,300)})();
 
 // ================= MERDİVEN TASARIMLARI (V323) =================
 // Kullanıcı (22 Kasım 2026, 19:19): "farklı merdiven tasarımları yapıp markete satın alıma ekle."
@@ -23348,6 +23363,7 @@ if(typeof tkUnlock==='function'){const _tu=tkUnlock;tkUnlock=function(id){const 
 
 // ================= BAHÇE ŞEMSİYELERİ (V328) =================
 // Kullanıcı (23 Kasım 2026, 05:11): "Bahçe kısmına yerleştirmek üzere birkaç tane şemsiye tasarla ve markette satın alıma ekle."
+// (V329) kimlikler d_sms_* — eskiden u_* idi; market seçimi 'u' ile başlayanı yerleştirilmiş eşya (u<uid>) sanıp ayrıntıyı gizliyordu, satın alınamıyordu.
 // Altı şemsiye; hepsi dekor (Market › Mobilya & Dekor › Şemsiyeler). Ayak küçük (0,26 m) ki masanın hemen yanına konup tentesi masanın
 // üstüne uzansın. Bahçe 7. seviyede açıldığı için şemsiyeler de 7. seviyeden itibaren; etkinlik kafesinde ve Lüks Market'te görünmez.
 const SMS_H = 2.18;                       // tente kökünün yüksekliği
@@ -23385,11 +23401,11 @@ function smsTente(G, { r = 1.05, h = 0.42, n = 8, renk = [0xd9473a, 0xfff8ec], f
   return y0;
 }
 const SEMSIYE = {
-  u_klasik: { name: 'Klasik kafe şemsiyesi', price: 650, desc: 'Kırmızı-krem çizgili, fırfırlı Paris kafesi şemsiyesi.',
+  d_sms_klasik: { name: 'Klasik kafe şemsiyesi', price: 650, desc: 'Kırmızı-krem çizgili, fırfırlı Paris kafesi şemsiyesi.',
     yap: G => { smsAyak(G); smsTente(G, { renk: [0xd9473a, 0xfff8ec], n: 10 }) } },
-  u_pastel: { name: 'Pastel bonbon şemsiye', price: 750, desc: 'Nane yeşili ve pembe dilimler, krem fırfır.',
+  d_sms_pastel: { name: 'Pastel bonbon şemsiye', price: 750, desc: 'Nane yeşili ve pembe dilimler, krem fırfır.',
     yap: G => { smsAyak(G, 0x9ed8c4, 0xfffaf0); smsTente(G, { renk: [0xa8e0cf, 0xf8c9d8], n: 10, topuz: 0xfffaf0 }) } },
-  u_kedi: { name: 'Kedi kulaklı şemsiye', price: 1200, desc: 'Turuncu tekir tentesi, tepesinde iki sevimli kedi kulağı ve pati.',
+  d_sms_kedi: { name: 'Kedi kulaklı şemsiye', price: 1200, desc: 'Turuncu tekir tentesi, tepesinde iki sevimli kedi kulağı ve pati.',
     yap: G => {
       smsAyak(G, 0xc96a2a, 0xfff3e0);
       const y0 = smsTente(G, { renk: [0xf0a24a, 0xf6c27a], n: 8, topuz: 0x7a4a26, r: 1.0, h: 0.46 });
@@ -23405,7 +23421,7 @@ const SEMSIYE = {
         const t = bm(CY(0.085, 0.085, 0.016, 14), 0xfff3e0, 0, 0, 0.02, P); t.scale.z = 0.85;
         for (const [x, z] of [[-0.08, -0.08], [0, -0.115], [0.08, -0.08]]) bm(CY(0.035, 0.035, 0.016, 10), 0xfff3e0, x, 0, z, P) }
     } },
-  u_hasir: { name: 'Hasır plaj şemsiyesi', price: 900, desc: 'Üç kat saman tente, bambu direk: tatil havası.',
+  d_sms_hasir: { name: 'Hasır plaj şemsiyesi', price: 900, desc: 'Üç kat saman tente, bambu direk: tatil havası.',
     yap: G => {
       smsAyak(G, 0x8a6a3a, 0xd9c27a, 0xa88a4a);
       const kat = [[1.08, 0.36, 0xd9b45a], [0.86, 0.32, 0xe6c46e], [0.58, 0.3, 0xcfa64e]];
@@ -23413,7 +23429,7 @@ const SEMSIYE = {
         for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, s = bm(BX(0.035, 0.12 + (i % 3) * 0.03, 0.01), c - 0x101008, Math.sin(a) * r * 0.99, SMS_H + j * 0.13 - 0.05, Math.cos(a) * r * 0.99, G); s.rotation.y = a } });
       bm(new THREE.ConeGeometry(0.1, 0.18, 8), 0xb8923e, 0, SMS_H + 0.62, 0, G);
     } },
-  u_kare: { name: 'Lacivert pazar şemsiyesi', price: 1000, desc: 'Kare krem tente, ahşap kaburgalar, lacivert bordür.',
+  d_sms_kare: { name: 'Lacivert pazar şemsiyesi', price: 1000, desc: 'Kare krem tente, ahşap kaburgalar, lacivert bordür.',
     yap: G => {
       smsAyak(G, 0x6b4a2e, 0x8a5a34);
       const r = 1.2, h = 0.4, y0 = SMS_H + h / 2 - 0.02;
@@ -23427,7 +23443,7 @@ const SEMSIYE = {
       }
       bm(BX(0.1, 0.1, 0.1), 0x8a5a34, 0, y0 + h / 2 + 0.03, 0, G);
     } },
-  u_limon: { name: 'Limon dilimi şemsiye', price: 1100, desc: 'Sarı limon dilimleri, beyaz kabuk bandı, yaprak topuz.',
+  d_sms_limon: { name: 'Limon dilimi şemsiye', price: 1100, desc: 'Sarı limon dilimleri, beyaz kabuk bandı, yaprak topuz.',
     yap: G => {
       smsAyak(G, 0x7cb85e, 0xfffaf0);
       const y0 = smsTente(G, { renk: [0xffd84a, 0xfff1a0], n: 12, firfir: false, topuz: 0xffffff, bant: 0xfffaf0, r: 1.0, h: 0.36 });
