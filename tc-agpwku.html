@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795554262",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795554788",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261124-2337';
+const OLC_DERLEME = '20261125-0008';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -25600,69 +25600,6 @@ function spIsaret() { try { if (UI.mode !== 'merge') return; const on = spAcik()
 .spnot{margin:0;text-align:center;font-size:10.5px;font-weight:800;opacity:.65}
 #board .cell.spx::after{content:'';position:absolute;inset:2px;border-radius:12px;box-shadow:inset 0 0 0 3px #57b33a,0 0 8px rgba(87,179,58,.6);pointer-events:none}`; document.head.appendChild(st) }
 
-// ================= V359: ZORLUK 3. AŞAMA (2) — TOZLU KASALAR =================
-// Kullanıcı (24 Kasım 2026): planın 3. aşaması. Yeni "tozlu kafe" açılışına (V352) uygun: kafe açılırken depodan çıkan tozlu kasalar tahtanın
-// alt sıralarında yer kaplar (Merge Mansion'daki örümcek ağları, Love & Pies'ın kapalı kareleri gibi). Her kasada bir malzemenin silueti görünür;
-// aynı malzeme kasanın üstüne bırakılınca kasa açılır ve malzeme bir üst seviyeye çıkar (Süt + kasadaki Süt → Krema). Başka şey bırakılamaz,
-// kasa sürüklenmez, satılamaz. Böylece ilk saatlerde tahta yer yer açılır ve oyuncu yakında lazım olacak malzemeleri önceden görür.
-//  • Yalnız yeni oyuncular: öğretici bittiğinde (S.tut 'done'), yeni paket düzeniyle başlamış (S.pk.yeni) ve en çok 3. seviyede, keşif yoluyla en çok 3 tarif
-//    açmış oyuncunun tahtasına, 4–6. sıralardaki boş karelere en çok 10 kasa konur (en az 8 kare boş kalır). Eski oyuncularda kasa yok.
-//  • Kayıt: tahtada 'kasa' kimliği; içindeki malzeme S.kasa.c[kare]. S.kasa.kur: 1 kuruldu · -1 kurulmayacak.
-const KS_ON = !EVMODE;
-const KASA_ICI = ['st1', 'st1', 'bal1', 'bug1', 'ymr1', 'khv1', 'cy1', 'dmt1', 'clk1', 'bug2'];
-ITEMS.kasa = { id: 'kasa', name: 'Tozlu kasa', fam: 'kasa', lv: 0, max: 0, chain: null, next: null, sv: 0 };
-const KASA_ARKA = `<svg class="ksSv" viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="9" width="52" height="46" rx="6" fill="#e9c79a" stroke="#4a2a14" stroke-width="3"/><path d="M8 24h48M8 32h48M8 40h48" stroke="#d6ac78" stroke-width="1.4"/><rect x="5" y="7" width="54" height="9" rx="4" fill="#d29457" stroke="#4a2a14" stroke-width="3"/><rect x="5" y="48" width="54" height="9" rx="4" fill="#c4874d" stroke="#4a2a14" stroke-width="3"/><circle cx="10" cy="11.5" r="1.6" fill="#4a2a14"/><circle cx="54" cy="11.5" r="1.6" fill="#4a2a14"/><circle cx="10" cy="52.5" r="1.6" fill="#4a2a14"/><circle cx="54" cy="52.5" r="1.6" fill="#4a2a14"/></svg>`;
-const KASA_ON = `<svg class="ksSv on" viewBox="0 0 64 64" aria-hidden="true"><path d="M12 47 L52 18" stroke="#4a2a14" stroke-width="6" stroke-linecap="round" opacity=".55"/><path d="M12 47 L52 18" stroke="#e0a86a" stroke-width="3" stroke-linecap="round" opacity=".7"/><path d="M7 17 Q14 19 15 26 M7 22 Q11 22 12 26 M7 17 L16 26" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/><g fill="#efe7da" opacity=".9"><circle cx="45" cy="25" r="1.5"/><circle cx="20" cy="41" r="1.3"/><circle cx="37" cy="38" r="1"/><circle cx="49" cy="42" r="1.6"/><circle cx="27" cy="21" r="1.1"/><circle cx="31" cy="44" r="1.2"/></g></svg>`;
-const KASA_SVG = KASA_ARKA + KASA_ON;
-ITEM_ART.kasa = `<span class="kasaArt">${KASA_SVG}</span>`;
-function ksS() { const K = S.kasa && typeof S.kasa === 'object' ? S.kasa : (S.kasa = {}); K.c = K.c || {}; return K }
-const ksVar = () => Array.isArray(S && S.board) && S.board.includes('kasa');
-function ksKur() { if (!KS_ON || !S || !S.created || !Array.isArray(S.board)) return; const K = ksS(); if (K.kur) return;
-  if (zrOgretici()) return;   // öğretici bitince karar verilir
-  const yeni = !!(S.pk && S.pk.yeni) && (S.lvl | 0) <= 3 && zrAcik() <= 3;
-  if (!yeni) { K.kur = -1; markDirty(); return }
-  const W = CONFIG.board.w, bos = S.board.map((v, i) => !v && i >= W * 3 ? i : -1).filter(i => i >= 0), topBos = S.board.filter(v => !v).length;
-  const n = Math.max(0, Math.min(KASA_ICI.length, bos.length, topBos - 8)); if (n <= 0) { K.kur = -1; markDirty(); return }
-  for (let i = bos.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bos[i], bos[j]] = [bos[j], bos[i]] }
-  const ici = KASA_ICI.slice(); for (let i = ici.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ici[i], ici[j]] = [ici[j], ici[i]] }
-  for (let k = 0; k < n; k++) { const i = bos[k]; S.board[i] = 'kasa'; K.c[i] = ici[k] }
-  K.kur = 1; markDirty(); try { saveNow() } catch (e) { } try { if (UI.mode === 'merge') renderMerge() } catch (e) { }
-  setTimeout(() => { try { toast('<b>Tozlu kasalar!</b><br>Kafe açılırken depodan çıktılar. Kasadaki malzemenin aynısını üstüne bırak: kasa açılır, malzeme bir üst seviyeye çıkar.', `<span class="ic">${ITEM_ART.kasa}</span>`, 6000); sfx('discover') } catch (e) { } }, 900) }
-// tutarlılık: tahtadaki her kasanın içi bilinir, tahtada olmayan kasa kaydı silinir
-function ksDuzelt() { if (!Array.isArray(S && S.board)) return; const K = ksS(); let ch = false;
-  S.board.forEach((v, i) => { if (v === 'kasa' && !K.c[i]) { K.c[i] = KASA_ICI[i % KASA_ICI.length]; ch = true } });
-  for (const i in K.c) if (S.board[+i] !== 'kasa') { delete K.c[i]; ch = true } if (ch) markDirty() }
-setInterval(() => { try { if (typeof started !== 'undefined' && started && !(typeof mgDrag !== 'undefined' && mgDrag)) { ksKur(); ksDuzelt() } } catch (e) { console.warn('kasa', e) } }, 1500);
-// ---- çizim: kasanın içindeki malzeme silik görünür ----
-{ const _ch = cellHTML; cellHTML = function (i) { if (S.board[i] === 'kasa') { const id = ksS().c[i] || 'st1'; return `<div class="it kasaIt" data-i="${i}">${KASA_ARKA}<span class="ksIc">${itemArt(id)}</span>${KASA_ON}</div>` } return _ch.apply(this, arguments) } }
-// ---- bırakma: aynı malzeme kasayı açar; başka her şey reddedilir, kasa yer değiştirmez ----
-const KS_IP = { t: 0 };
-function ksIpucu(i) { if (KS_IP.t > Date.now()) return; KS_IP.t = Date.now() + 6000; const id = ksS().c[i]; if (!id || !ITEMS[id]) return;
-  let ad = ITEMS[id].name; try { if (pkEN() && window.__DIL && __DIL.t) ad = __DIL.t(ad) } catch (e) { }
-  toast(`<b>Bu kasada ${ad} var</b><br>Üstüne bir ${ad} bırak, kasa açılsın.`, `<span class="ic">${itemArt(id)}</span>`, 2800) }
-{ const _dm = doMerge; doMerge = function (src, dst) { const a = S.board[src], b = S.board[dst];
-    if ((a === 'kasa' || b === 'kasa') && src !== dst) { const K = ksS();
-      if (a !== 'kasa' && b === 'kasa' && K.c[dst] && K.c[dst] === a) { const it = ITEMS[a], r = it && it.next ? it.next : a;
-        S.board[dst] = r; S.board[src] = null; delete K.c[dst]; K.acilan = (K.acilan | 0) + 1; if (UI.mgSel === src) UI.mgSel = null;
-        try { discoverItem(r) } catch (e) { } markDirty(); refreshCell(src); refreshCell(dst, 'pop'); try { sfx('discover') } catch (e) { }
-        if (!ksVar()) setTimeout(() => { try { toast('<b>Bütün kasalar açıldı!</b><br>Tahtanın tamamı artık senin.', ic('star'), 3200); sfx('levelup') } catch (e) { } }, 400);
-        try { if (typeof olc === 'function') olc('kasa', { n: K.acilan }) } catch (e) { } try { renderInfo() } catch (e) { } return }
-      try { sfx('nope') } catch (e) { } refreshCell(src); refreshCell(dst); if (b === 'kasa') ksIpucu(dst); return }
-    return _dm.apply(this, arguments) } }
-// kasa sürüklenmez; uygun malzeme sürüklenirken kasası yeşil yanar
-document.addEventListener('pointermove', e => { const d = mgDrag; if (!d || d.id !== e.pointerId || UI.mode !== 'merge') return; if (S.board[d.i] === 'kasa') e.stopPropagation() }, true);
-document.addEventListener('pointermove', e => { const d = mgDrag; if (!d || d.id !== e.pointerId || !d.moved || UI.mode !== 'merge') return; const a = S.board[d.i]; if (!a || a === 'kasa') return; const K = ksS();
-  for (const i in K.c) if (K.c[i] === a && S.board[+i] === 'kasa') { const c = board.querySelector(`[data-c="${i}"]`); if (c && !c.classList.contains('hl')) c.classList.add('hl') } });
-// seçilen kasa satılamaz; dokununca ne istediğini söyler
-{ const _ri = renderInfo; renderInfo = function () { const r = _ri.apply(this, arguments); try { const i = UI.mgSel; if (i != null && S.board[i] === 'kasa') { document.querySelectorAll('#mgDel,.mgSellF').forEach(x => x.remove()); ksIpucu(i) } } catch (e) { } return r } }
-{ const st = document.createElement('style'); st.textContent = `
-#board .it.kasaIt{cursor:default}
-#board .it.kasaIt .ksIc{position:absolute;inset:19% 17% 17%;display:grid;place-items:center;filter:saturate(.75) brightness(.97);opacity:.95;pointer-events:none}
-#board .it.kasaIt .ksIc>img,#board .it.kasaIt .ksIc>svg,#board .it.kasaIt .ksIc>span{width:100%;height:100%}
-#board .it.kasaIt .ksSv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-#board .it.kasaIt .ksSv.on{z-index:1}
-.kasaArt{position:relative;display:grid;width:100%;height:100%}.kasaArt>svg{position:absolute;inset:0;width:100%;height:100%}`; document.head.appendChild(st) }
-
 // ================= V360: ZORLUK — REHBER, TARİF DEFTERİNDE PAKET SEVİYESİ, DENGE BOTU =================
 // Kullanıcı (24 Kasım 2026): "devam et" (üç aşamalı zorluk sisteminden sonra).
 //  • "?" Rehber (p103 guideTopics): Birleştirme konusu güncel (Sıradaki adım tabelası V267'den beri görünmüyor; paket hakları artık seviyeye
@@ -25678,8 +25615,7 @@ if (ZRH_ON && typeof guideTopics === 'function') { const _gt = guideTopics; guid
     if (bi >= 0 && !T.some(x => x && x.t === 'Siparişler')) { const B = T[bi], o = B.b || [];
       B.b = [o[0], li('star', 'Parlayan <b>pakete</b> dokun, parlayan <b>iki malzemeyi</b> üst üste bırak.'), o[2], o[3],
         li('bolt', 'Her dokunuş enerji harcar. Paketlerin seviyesi var: <b>aynı iki paketi</b> üst üste bırakınca paket büyür, daha çok hak ve yeni malzemeler verir. Yeni paketler seviye ve görev ödülü olarak gelir.'),
-        li('box', '<b>Kiler</b> maya, peynir mayası, sarımsak, tarçın ve nane verir. Hakları yavaş dolar ama hedefin istediğini verir.'),
-        li('lock', '<b>Tozlu kasaya</b> içindeki malzemenin aynısını bırak: kasa açılır, malzeme bir üst seviyeye çıkar.')].filter(Boolean);
+        li('box', '<b>Kiler</b> maya, peynir mayası, sarımsak, tarçın ve nane verir. Hakları yavaş dolar ama hedefin istediğini verir.')].filter(Boolean);   // (V368) tozlu kasa satırı kaldırıldı
       T.splice(bi + 1, 0, { t: 'Siparişler', i: 'bell', art: `${gi('st2')}<b class="ar">+</b>${gi('hmr2')}<b class="ar">→</b>${ic('coin')}`, b: [
         li('bell', 'Birleştir’de sağ paneldeki <b>Sipariş</b> sekmesinde komşuların istekleri durur.'),
         li('check', 'İstenen ürünleri tahtada hazırla, ✓ ile teslim et: altın kazanırsın. <b>Zor</b> siparişler ayrıca paket verir.'),
@@ -26776,6 +26712,20 @@ setTimeout(snTabela, 500); setInterval(snTabela, 4000);
 #shopBtn.snOnay{filter:drop-shadow(0 0 6px #ff8a5c)}
 .lvcard:not(.reccard):not(.kaKut) .star>span{animation:snDik 6s linear infinite}@keyframes snDik{to{transform:rotate(-360deg)}}
 `; document.head.appendChild(st) }
+
+// ================= V368 · BİRLEŞTİR: TOZLU KASALAR KALDIRILDI =================
+// Kullanıcı (25 Kasım 2026, 00:05): "şuan sadece birleştirme tahtasındaki tozlu kasa muhabbetini kaldır".
+//  • V359'un tozlu kasaları (p979_kasa.js) derlemeden çıkarıldı: yeni oyuncunun tahtasına kasa konmaz, kasa açma kuralı ve ipuçları yok.
+//  • Kayıtta kalan kasalar açılışta tahtadan silinir (kareler boşalır), S.kasa kaydı silinir. Oyun açıkken başka yoldan (eski sürümün açık
+//    kalmış sekmesi, bulut) tahtaya kasa gelirse de süpürülür; bilinmeyen kimlik tahtayı çizdirmesin diye.
+//  • Rehber (p980): "Tozlu kasaya …" satırı kaldırıldı.
+const KK_ON = true;
+// gölge kayıt: süpürülene dek (en çok 2 sn) kimliği okuyan kod düşmesin; hiçbir yerde üretilmez
+ITEMS.kasa = { id: 'kasa', name: 'Tozlu kasa', fam: 'kasa', lv: 0, max: 0, chain: null, next: null, sv: 0, gone: true }; ITEM_ART.kasa = '';
+{ const _rs = readSave; readSave = function () { const d = _rs.apply(this, arguments); try { if (d && typeof d === 'object') { if (Array.isArray(d.board)) d.board = d.board.map(v => v === 'kasa' ? null : v); delete d.kasa } } catch (e) { console.warn('kasa temizliği', e) } return d } }
+function kkSupur() { try { if (!KK_ON || typeof S === 'undefined' || !S || !Array.isArray(S.board) || !S.board.includes('kasa')) return; S.board = S.board.map(v => v === 'kasa' ? null : v); delete S.kasa;
+    if (UI.mgSel != null && !S.board[UI.mgSel]) UI.mgSel = null; markDirty(); if (UI.mode === 'merge') renderMerge() } catch (e) { console.warn('kasa temizliği', e) } }
+kkSupur(); setInterval(kkSupur, 2000);
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
