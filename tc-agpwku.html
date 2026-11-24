@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795543684",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795547147",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -19886,7 +19886,7 @@ function clnJob(t){enqueue('clean',async w=>{const ch=w.ch;const d=t.dirty;if(!d
 // ---- V355: elle oynarken masa temizliği düğmeyle (kullanıcı, 24 Kasım 2026: "masa temizlemek içinde bir buton olsun") ----
 // Otomatik modda (ve düzenlemeye girerken kafe boşaltılırken) garson kirli masayı eskisi gibi kendisi temizler; elle oynarken kirli masanın
 // üstünde "Temizle" düğmesi çıkar, dokununca garson gidip temizler. Temizlenmeyen masaya müşteri oturmaz (yeni gelenler ayakta bekler, p975).
-const clnOto=()=>{try{return !!S.auto||(typeof ED!=='undefined'&&(ED.busy||ED.on))}catch(e){return true}};
+function clnOto(){try{return !!S.auto||(typeof ED!=='undefined'&&(ED.busy||ED.on))}catch(e){return true}}   // V363: işlev (p983 temizlikçi için sarar)
 function clnTap(t){const d=t&&t.dirty;if(!d||d.queued||t.occupant)return;d.queued=true;try{sfx('tap')}catch(e){}clnJob(t)}
 const clnBekleyen=()=>TABLES.filter(t=>t.dirty&&!t.dirty.queued&&!t.occupant);
 UI_IC.sunger=SV(`<rect x="12" y="26" width="40" height="22" rx="7" fill="#ffd35c"/><path d="M12 35 h40" stroke="#7cbf4a" stroke-width="6"/><circle cx="22" cy="16" r="5" fill="#d6f1ff"/><circle cx="34" cy="10" r="4" fill="#d6f1ff"/><circle cx="45" cy="17" r="3.5" fill="#d6f1ff"/>`);
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261124-2059';
+const OLC_DERLEME = '20261124-2140';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -25937,6 +25937,202 @@ html #game#game#game #y2 .y2prof .xpbar.kaHazir i{background:linear-gradient(#ff
 .kaAlt{display:flex;gap:8px;justify-content:center;align-items:center}.kaAlt .kaAl{flex:0 0 auto;padding:0 16px}.kaAlt .kaGem{flex:0 0 auto;padding:0 14px;border:2.5px solid #4a2e1c;border-radius:999px;background:linear-gradient(#ffd7e3,#f4a3bd);box-shadow:0 2px 0 #4a2e1c;font-weight:900}.kaAlt .kaGem:disabled{opacity:.5}.kaAlt .kaAl:disabled{filter:grayscale(.7);opacity:.6}.kaAlt .skbtn{display:inline-flex;align-items:center;gap:5px}.kaAlt .ic{width:18px;height:18px}
 .kaEks{margin:6px 0 0;text-align:center;font-size:11.5px;font-weight:800;opacity:.8}
 .lvcard.kaKut .star{animation:none!important;transform:translateX(-50%)!important}
+`; document.head.appendChild(st) }
+
+// ================= V363 · AŞAMA 2: ÇALIŞANLAR VE İŞ YÜKÜ · OTOMATİK MOD KALKTI =================
+// Kullanıcı (24 Kasım 2026, 18:32): "otomatik olayı olmayacak oyunumuzda oyuncu hazırlatarak temizleyerek hesap alarak sipariş alarak bunlara
+// basarak oynayacak oyununu" · güncelleme belgesi (19:12) madde 3 ve 8: "Oyuncu oyunun başlangıcında kafede tamamen yalnız olsun … Ekip
+// bölümündeki bütün çalışanlar başlangıçta kilitli olsun. Kafe yükseltildikçe yeni çalışanların kilidi açılsın. Oyuncu ayrıca altın ödeyerek bu
+// çalışanları işe alabilsin. Çalışanlar yalnızca kendi görevlerini otomatik olarak gerçekleştirsin. Örneğin oyuncu barista satın aldığında
+// içecek hazırlama görevinden kurtulsun ancak diğer görevleri kendisi yapmaya devam etsin." · "İleri aşamalarda ödeme yapmadan kaçmaya çalışan
+// müşteriler gibi yeni işletme sorunları ortaya çıksın. Güvenlik görevlisi bu sorunları önleyebilsin." · "Oyuncuyu ekonomik olarak
+// toparlanamayacağı bir çıkmaza sokma." · 19:28: çalışan sırası önerildiği gibi; "verimi sen ayarla kapalıyken"; "ayrıca oyun başladığında
+// tek çalışan olayını koruyarak".
+//  • Otomatik düğmesi ve otomatik mod ana kafede yok (S.auto hep kapalı; düzenlemeye girerken kafeyi boşaltmak için p75 geçici açar).
+//  • Oyuncunun kedisi (waiter) her işi dokunuşla yapar. İşe alınan her çalışan YALNIZ kendi işini kendiliğinden yapar:
+//      Barista (Aşama 2): içecekler (kahve/çay istasyonları, mutfağın sol bölgesi) — sipariş alınınca fiş doğrudan ona düşer, "Hazırla" gerekmez.
+//      Kasiyer (3): hesap. · Aşçı (4): yemek ve tatlılar (sağ bölge). · Temizlikçi (5): kirli masalar.
+//      Garson (7): sipariş alma ve servis. · Güvenlik (8): ödemeden kaçanı kendisi yakalar (kaçaklar Aşama 6'da başlar).
+//    Rolü olmayan iş oyuncuya kalır: içeceği/yemeği "Hazırla" ile kendi kedisi pişirir (p974 tbMutfak), "Hesabı al", "Temizle", "Sipariş al",
+//    "Teslim al". Tezgâh ve satıcı (6) Aşama 5 sürümünde.
+//  • İşe alım Ekip penceresinin üstündeki Kadro kartlarından: kilitli (Aşama N'de açılır) → altınla "İşe al" → karakter editörü (adı ve
+//    görünüşü) → kapıdan girer, hoş geldin kartı. Eski kadro yeri (seviyeyle büyüyen yerler, V298) ana kafede kalktı.
+//  • Tek başına başlangıç (p974) korunur: kasada ödemeden giden / siparişine yetişilemeyen müşteri anı artık bedava işe alım değil, yol gösterir
+//    ("Ekip'ten bir kasiyer alabilirim" ya da "Kafeyi Aşama 3'e yükseltince kasiyer alabilirim").
+//  • Eski oyuncular: ekipleri korunur (şef → hem içecek hem yemek, kasiyer → kasiyer, 2. ve sonraki garsonlar → garson).
+//  • Oyun kapalıyken verim ekibe göre: tek başınayken %30, beş temel rol (barista, kasiyer, aşçı, temizlikçi, garson) tamamsa %70.
+const EK_ROL = [
+  { id: 'barista', a: 2, c: 200, eng: 'barista', ad: ['Barista', 'Barista'], is: ['İçecekleri hazırlar: kahve ve çay siparişleri doğrudan ona gider.', 'Makes the drinks: coffee and tea orders go straight to them.'], ic: 'cup' },
+  { id: 'kasiyer', a: 3, c: 400, eng: 'cashier', ad: ['Kasiyer', 'Cashier'], is: ['Kasada hesapları alır.', 'Takes the payments at the till.'], ic: 'coin' },
+  { id: 'asci', a: 4, c: 700, eng: 'barista', ad: ['Aşçı', 'Cook'], is: ['Yemekleri ve tatlıları hazırlar.', 'Cooks the food and desserts.'], ic: 'chef' },
+  { id: 'temiz', a: 5, c: 1000, eng: 'waiter', ad: ['Temizlikçi', 'Cleaner'], is: ['Kirli masaları kendiliğinden temizler.', 'Cleans the dirty tables by themselves.'], ic: 'sunger' },
+  { id: 'garson', a: 7, c: 2000, eng: 'waiter', ad: ['Garson', 'Waiter'], is: ['Siparişleri alır ve masalara servis yapar.', 'Takes the orders and serves the tables.'], ic: 'tray' },
+  { id: 'guvenlik', a: 8, c: 3000, eng: 'waiter', ad: ['Güvenlik', 'Security'], is: ['Ödemeden kaçmaya çalışanı yakalar.', 'Catches guests who try to run off without paying.'], ic: 'alert' }];
+var CALISAN_ACIK = true;   // Kafe Yükseltme önizlemesinde "Yeni çalışan" satırı (p982)
+const EK = { bek: null, t: {}, son: null };
+const ekR = id => EK_ROL.find(r => r.id === id);
+const ekAd = R => kaEN() ? R.ad[1] : R.ad[0];
+function ekipAcik() { try { return kaAcik() && !!S && !!S.created } catch (e) { return false } }
+function ekVar(id) { if (!ekipAcik()) return true; return !!(S.ekip && S.ekip[id]) }
+function mutfakVar(item) { return zoneOf(item) === 'L' ? ekVar('barista') : ekVar('asci') }
+function gorevOf(key) { if (key === 'waiter') return 'sahip'; const c = S.chars && S.chars[key]; if (c && c.gorev) return c.gorev; const r = roleOfKey(key), E = S.ekip || {};
+  if (r === 'barista') { if (E.barista === key && E.asci !== key) return 'barista'; if (E.asci === key && E.barista !== key) return 'asci'; return 'sef' }
+  if (r === 'cashier') return 'kasiyer'; if (r === 'waiter') return 'garson'; return null }
+const ekGorevAd = g => { const R = ekR(g); if (R) return ekAd(R); return g === 'sef' ? kaT('Şef', 'Chef') : g === 'sahip' ? kaT('Sen', 'You') : '' };
+function ekVerim() { const n = ['barista', 'kasiyer', 'asci', 'temiz', 'garson'].filter(ekVar).length; return 0.3 + 0.08 * n }
+
+// ---- kayıt: ekip haritası (eski oyuncunun ekibi korunur) ----
+{ const _rs = readSave; readSave = function () { const d = _rs.apply(this, arguments); try { if (d && typeof d === 'object' && kaAcik() && d.created && !d.ekip) {
+      const E = {}, C = d.chars || {}, st = d.staff || {}, T = d.solo;
+      if (T && T.f && T.f !== 'bitti') { if (T.k) E.kasiyer = 'cashier'; if (T.b) { E.barista = 'barista'; E.asci = 'barista' } }
+      else { if ((st.barista | 0) >= 1 && C.barista) { E.barista = 'barista'; E.asci = 'barista' } if ((st.cashier | 0) >= 1 && C.cashier) E.kasiyer = 'cashier'; if ((st.waiter | 0) >= 2 && C.waiter2) E.garson = 'waiter2' }
+      d.ekip = E; d.ekGecis = 1; if (T) { T.f = 'bitti'; T.ise = null } } } catch (e) { console.warn('ekip geçişi', e) }
+    return d } }
+function ekKur() { if (!ekipAcik()) return; if (!S.ekip) { S.ekip = {}; markDirty() } if (S.solo && S.solo.f !== 'bitti' && !S.solo.ise) { S.solo.f = 'bitti'; markDirty() }
+  if (S.auto && !(typeof ED !== 'undefined' && (ED.busy || ED.on))) { S.auto = false; try { drawAuto() } catch (e) { } }
+  if (S.otoKilit !== 2) S.otoKilit = 2; S.seen = S.seen || {}; for (const k of ['waiter2', 'waiter3', 'waiter4', 'barista2', 'cashier2']) S.seen['yer_' + k] = 1 }
+// eski kadro yerleri (seviyeyle büyüyen garson/şef/kasiyer yerleri) ana kafede yok
+if (kaAcik()) { try { for (const k in HIRE) HIRE[k].length = 0 } catch (e) { } }
+try { if (kaAcik()) CONFIG.dash.lvl = 6 } catch (e) { }   // ödemeden kaçan müşteriler Aşama 6'da başlar
+
+// ---- tek başına mekanikleri (p974) role göre ----
+soloOn = function () { try { return ekipAcik() && (!ekVar('kasiyer') || !ekVar('barista') || !ekVar('asci')) } catch (e) { return false } };
+tbKasaYok = function () { try { return ekipAcik() && !ekVar('kasiyer') } catch (e) { return false } };
+tbSefYok = function () { try { return ekipAcik() && !(ekVar('barista') && ekVar('asci')) } catch (e) { return false } };
+tbGizliRol = function (role) { try { if (EVMODE || !S) return false; if (!S.created) return role !== 'waiter'; if (!ekipAcik()) return false; const E = S.ekip || {};
+    return role === 'barista' ? !(E.barista || E.asci) : role === 'cashier' ? !E.kasiyer : false } catch (e) { return false } };
+// mutfak: rolü olan ürünün fişi doğrudan çalışana; olmayanı oyuncu "Hazırla" ile kendi pişirir
+function ekMutfagaGonder(A) { let n = 0; for (const o of A) { if (!o || o.submitQueued || o.state !== 'TAKEN') continue; o.submitQueued = true;
+    if (o.cancel) { o.state = 'CANCELLED'; o.cleared = true; continue } o.state = 'WAITING_FOR_PREPARATION'; baristaQ.push(o); n++ } if (n) try { sfx('chime') } catch (e) { } }
+{ const _sm = submitOrders; submitOrders = function (L) { if (!ekipAcik()) return _sm.apply(this, arguments); const A = [], B = [];
+    for (const o of (L || [])) { if (!o) continue; (mutfakVar(o.item) ? A : B).push(o) } if (A.length) ekMutfagaGonder(A); if (B.length) return tbHazirla(B) } }
+{ const _so = submitOrder; submitOrder = function (o) { if (!ekipAcik()) return _so.apply(this, arguments); return submitOrders([o]) } }
+{ const _tk = takeable; takeable = function (b) { if (!ekipAcik()) return _tk.apply(this, arguments); const g = gorevOf(b.key); if (g !== 'barista' && g !== 'asci') return _tk.apply(this, arguments);
+    const Z = g === 'barista' ? 'L' : 'R'; return baristaQ.findIndex(o => zoneOf(o.item) === Z && !(ZLOCK[Z] && ZLOCK[Z] !== b)) } }
+// kendiliğinden yapılan işler: rolü olan mutfak fişi · garson (sipariş + servis)
+function ekOtoTick(dt) { if (!ekipAcik() || S.tut !== 'done') return;
+  const due = (key, ok, s = 0.9) => { if (!ok) { delete EK.t[key]; return false } const t = (EK.t[key] || 0) + dt; EK.t[key] = t; if (t >= s) { delete EK.t[key]; return true } return false };
+  for (const o of orders) if (due('m' + o.id, o.state === 'TAKEN' && !o.submitQueued && !o.cancel && mutfakVar(o.item), 0.6)) ekMutfagaGonder([o]);
+  if (ekVar('garson')) { for (const c of customers) if (due('t' + c.id, c.state === 'WAITING_TO_ORDER' && !c.orderQueued)) takeOrder(c);
+    for (const o of orders) if (due('p' + o.id, o.state === 'READY' && !o.pickupQueued && !o.cancel && batchWaitOk(o))) pickupOrder(o) } }
+{ const _st = serviceTick; serviceTick = function (dt) { const r = _st.apply(this, arguments); try { ekOtoTick(dt) } catch (e) { console.warn('ekip işleri', e) } return r } }
+{ const _au = autoTick; autoTick = function (dt) { if (ekipAcik() && S.auto && !(typeof ED !== 'undefined' && (ED.busy || ED.on))) S.auto = false; return _au.apply(this, arguments) } }
+{ const _co = clnOto; clnOto = function () { if (!ekipAcik()) return _co.apply(this, arguments); return ekVar('temiz') || (typeof ED !== 'undefined' && (ED.busy || ED.on)) } }
+
+// ---- garson, temizlikçi, güvenlik: yalnız kendi işleri ----
+const EK_IZIN = { garson: ['take', 'serve', 'koli'], temiz: ['clean'], guvenlik: [] };
+const ekIzin = (g, n) => (EK_IZIN[g] || []).includes(n);
+function ekSpot(w, g) { if (g !== 'guvenlik') return wSpot(w); const N = DOOR_OUTN, ix = -N.x, iz = -N.z, lx = -iz, lz = ix;
+  for (const s of [1.35, -1.35, 1.8]) { const p = { x: DOOR_IN.x + ix * 0.55 + lx * s, z: DOOR_IN.z + iz * 0.55 + lz * s }; try { if (!blocked(...cellOf(p.x, p.z))) return p } catch (e) { return p } }
+  return { x: DOOR_IN.x + ix * 0.9, z: DOOR_IN.z + iz * 0.9 } }
+async function ekLoop(w, g) { const ch = w.ch;
+  while (true) {
+    if (w.edIn) { w.edAck = 1; w.spot = null; await sleep(0.2); continue }
+    if (w.kovala) { await sleep(0.2); continue }
+    if (stTired(w)) { const P = ekSpot(w, g); await staffRest(w, P, wYaw(P)); continue }
+    const i = jobs.findIndex(j => ekIzin(g, j.name));
+    if (i >= 0) { const j = jobs.splice(i, 1)[0]; await ch.standUp();
+      try { await j.run(w); stDrain(w) } catch (err) { console.error('ekip işi', err); if (ch.tray) ch.tray.visible = false; ch.carry = null }
+      try { freeSpot('prep', w); freeSpot('pick', w) } catch (e) { } w.spot = null; w.spotFree = false; continue }
+    const P = ekSpot(w, g);
+    if (!atSpot(ch, P, 0.08)) { const ok = await ch.walkTo(P.x, P.z, { interrupt: () => w.kovala || jobs.some(j => ekIzin(g, j.name)) }); if (ok && !w.kovala) await ch.face(g === 'guvenlik' ? Math.atan2(-DOOR_OUTN.x, -DOOR_OUTN.z) + Math.PI : wYaw(P)); else await sleep(0.2) }
+    else await sleep(0.15) } }
+{ const _wl = waiterLoop; waiterLoop = function (w) { try { if (ekipAcik() && w && w.key !== 'waiter') { const g = gorevOf(w.key); if (g === 'temiz' || g === 'garson' || g === 'guvenlik') return ekLoop(w, g) } } catch (e) { } return _wl.apply(this, arguments) } }
+// güvenlik: kaçan müşteriyi hemen kovalar
+async function ekKovala(c, g) { if (!g || c.chaser || c.state !== 'RUNNING') return; c.chaser = g; g.kovala = true; const ch = g.ch, sp = ch.speed;
+  try { await ch.standUp(); staffBubble(ch, 'alert', 1.4); ch.canRun = true; ch.speed = 1.8; let t = 0;
+    while (c.state === 'RUNNING' && t < 25) { const p = c.char.pos; if (Math.hypot(ch.pos.x - p.x, ch.pos.z - p.z) < 0.62) { await catchRunner(c, g); break } ch.walkTo(p.x, p.z, { direct: p.x < DOOR_IN.x - 0.2 }); await sleep(0.2); t += 0.2 } }
+  finally { ch.canRun = false; ch.speed = sp; g.kovala = false } }
+{ const _ra = runAway; runAway = function (c) { const p = _ra.apply(this, arguments); try { if (ekipAcik() && ekVar('guvenlik')) { const g = WSTAFF.find(x => gorevOf(x.key) === 'guvenlik'); if (g) setTimeout(() => ekKovala(c, g), 250) } } catch (e) { } return p } }
+
+// ---- işe alım ----
+function ekIseAl(id) { const R = ekR(id); if (!R || !ekipAcik() || ekVar(id)) return false;
+  if (kaAsama() < R.a) { try { sfx('nope') } catch (e) { } toast(kaT(`<b>${ekAd(R)}</b> Aşama ${R.a}${kaEk(kaTablo().L[R.a])} açılır`, `<b>${ekAd(R)}</b> unlocks at stage ${R.a}`), ic('lock'), 2200); return false }
+  if (S.coins < R.c) { try { sfx('nope') } catch (e) { } toast(kaT(`${kaFmt(R.c)} altın gerekli`, `${kaFmt(R.c)} gold needed`), ic('coin'), 1800); return false }
+  const kul = new Set(Object.values(S.ekip || {}).filter(Boolean)); EK.son = null;
+  const hazir = R.eng === 'cashier' ? (!kul.has('cashier') && S.chars.cashier ? 'cashier' : null) : R.eng === 'barista' ? (!kul.has('barista') && S.chars.barista ? 'barista' : null) : null;
+  if (hazir) { EK.bek = { id, key: hazir, c: R.c, hazir: 1 }; S.solo = S.solo || { v: 2, f: 'bitti', n: 0 }; S.solo.ise = hazir; S.solo.ekId = id; markDirty(); try { saveNow() } catch (e) { }
+    UI.backTo = UI.mode === 'team' ? 'team' : 'cafe'; try { if (UI.mode === 'team') setMode('cafe') } catch (e) { } openEditor(hazir, 'create'); return true }
+  const key = staffKey(R.eng, (S.staff[R.eng] | 0) + 1); EK.bek = { id, key, c: R.c }; UI.backTo = UI.mode === 'team' ? 'team' : 'cafe'; openEditor(key, 'hire'); return true }
+// editörün "yeni eleman" kipi bu işe alımın bedeli ve anahtarıyla çalışır
+{ const _hi = hireInfo; hireInfo = function (role) { try { if (EK.bek && !EK.bek.hazir && roleOfKey(EK.bek.key) === role) return { ok: true, key: EK.bek.key, cost: EK.bek.c, role } } catch (e) { } return _hi.apply(this, arguments) } }
+{ const _ss = spawnStaff; spawnStaff = function (key) { try { if (EK.bek && key === EK.bek.key && S.chars[key]) { S.chars[key].gorev = EK.bek.id; S.ekip[EK.bek.id] = key; EK.son = { id: EK.bek.id, key }; markDirty() } } catch (e) { } return _ss.apply(this, arguments) } }
+{ const _ce = commitEditor; commitEditor = function () { const yeni = CE.mode === 'hire' && EK.bek && !EK.bek.hazir; const r = _ce.apply(this, arguments);
+    try { if (yeni && r && EK.son) { const s = EK.son; EK.bek = null; try { bump('ekip', 1) } catch (e) { } setTimeout(() => ekHosgeldin(s.id, s.key), 900) } } catch (e) { } return r } }
+{ const _cl = closeEditor; closeEditor = function () { const r = _cl.apply(this, arguments); try { if (EK.bek && !EK.bek.hazir && !(S.ekip && S.ekip[EK.bek.id])) EK.bek = null } catch (e) { } return r } }
+// hazır karakter (gizli bekleyen kasiyer/şef) p974'ün editör akışıyla: bedel kayıtta, roller burada işlenir
+{ const _rd = tutRoleDone; tutRoleDone = function (role, next) { let id = null; try { if (S.solo && S.solo.ise === role && S.solo.ekId && CE.mode === 'create') id = S.solo.ekId } catch (e) { } if (!id) return _rd.apply(this, arguments);
+    const R = ekR(id), key = role, n = S.chars[key].name; S.ekip[id] = key; S.chars[key].gorev = id; S.solo.ise = null; S.solo.ekId = null; EK.bek = null;
+    addCoins(-Math.min(S.coins, R.c), 'hire'); markDirty(); try { saveNow() } catch (e) { } try { bump('ekip', 1) } catch (e) { } EK.son = { id, key };
+    coachOff(); closeEditor(true); tbGeldi(role); return true } }
+tbEkipTamam = function () { const s = EK.son; if (s) ekHosgeldin(s.id, s.key) };
+tbKasiyerGeldi = function () { const s = EK.son; if (s) ekHosgeldin(s.id, s.key) };
+function ekHosgeldin(id, key) { const R = ekR(id), c = S.chars[key]; if (!R || !c) return; const nm = c.name; try { sfx('chime') } catch (e) { }
+  const sonra = { barista: kaT('İçecek siparişleri artık doğrudan ona gidiyor; yemekleri yine sen hazırlıyorsun.', 'Drink orders now go straight to them; you still cook the food.'),
+    kasiyer: kaT('Hesapları artık o alıyor; kasada kimse beklemeyecek.', 'They take the payments now, so nobody waits at the till.'),
+    asci: kaT('Yemek ve tatlı siparişleri artık doğrudan ona gidiyor.', 'Food and dessert orders now go straight to them.'),
+    temiz: kaT('Kirli masaları artık o temizliyor.', 'They clean the dirty tables now.'),
+    garson: kaT('Siparişleri artık o alıyor ve masalara o taşıyor.', 'They take the orders and serve the tables now.'),
+    guvenlik: kaT('Kapının yanında bekliyor; ödemeden kaçmaya çalışanı yakalayacak.', 'They wait by the door and will catch anyone running off without paying.') }[id];
+  coach({ owner: 'ek', title: kaT(`Aramıza hoş geldin, ${nm}!`, `Welcome aboard, ${nm}!`), dim: true, center: true, text: `<b>${ekAd(R)}</b> · ${sonra}`,
+    buttons: [{ label: kaT('Harika!', 'Great!'), green: true, icon: 'paw', onClick: () => coachOff() }] }); try { tbKonusan(key) } catch (e) { } }
+// editör: rolün adı ve işi (yeni eleman kipinde "Garson" yerine Temizlikçi/Güvenlik)
+{ const _r = renderCE; renderCE = function () { const x = _r.apply(this, arguments); try { const id = EK.bek && EK.bek.id; if (id && (CE.key === EK.bek.key)) { const R = ekR(id);
+      $('ceTitle').textContent = kaT('Yeni iş arkadaşı', 'New teammate'); const d = $('ceRole') && $('ceRole').querySelector('div'); if (d) d.innerHTML = `<b>${ekAd(R)}</b><br>${kaEN() ? R.is[1] : R.is[0]}` } } catch (e) { } return x } }
+{ const _h = tutCreateHint; tutCreateHint = function (role) { try { const id = EK.bek && EK.bek.hazir && EK.bek.id; if (id && CE.mode === 'create') { const R = ekR(id);
+      coach({ title: kaT(`Yeni iş arkadaşı: ${ekAd(R)}`, `New teammate: ${ekAd(R)}`), text: (kaEN() ? R.is[1] : R.is[0]) + ' ' + kaT('Adını ve görünüşünü sen seç!', 'Choose their name and look!'), center: true, dim: true,
+        buttons: [{ label: kaT('Tamam', 'OK'), green: true, icon: 'paw', onClick: () => coachOff() }] }); return } } catch (e) { } return _h.apply(this, arguments) } }
+
+// ---- tek başına anlar: bedava işe alım yerine yol gösterir ----
+tbOlay = function (tur, c) { try { if (!ekipAcik() || S.tut !== 'done' || TB.olay) return; const id = tur === 'kasa' ? 'kasiyer' : (tur === 'siparis' || tur === 'yemek' || tur === 'masa') ? (ekVar('barista') ? 'asci' : 'barista') : null;
+    if (!id || ekVar(id)) return; S.seen = S.seen || {}; const k = 'ekYol_' + id; if (S.seen[k]) return; S.seen[k] = 1; markDirty();
+    TB.olay = { rol: id, neden: tur, ad: (c && c.look && c.look.name) || '' }; TB.olayT = Date.now() } catch (e) { } };
+tbOlayGoster = function () { const O = TB.olay; if (!O) return; TB.olay = null; const R = ekR(O.rol); if (!R) return; const nm = tbAd(), acik = kaAsama() >= R.a;
+  try { const W = WSTAFF[0]; if (W) staffBubble(W.ch, 'sleepy', 6) } catch (e) { } try { sfx('meow') } catch (e) { }
+  const bas = O.neden === 'kasa' ? kaT('Eyvah, ödemeden gitti!', 'Oh no, they left without paying!') : kaT('Siparişlere yetişemiyorum!', 'I can’t keep up with the orders!');
+  const ne = O.neden === 'kasa' ? kaT(`${O.ad} kasada çok bekledi, kızıp ödemeden gitti…`, `${O.ad} waited too long at the till and left without paying…`)
+    : kaT(`${O.ad} beklemekten sıkılıp kızgın gitti…`, `${O.ad} got tired of waiting and left angry…`);
+  const yol = acik ? kaT(`Ekip’ten bir <b>${ekAd(R).toLowerCase()}</b> alabilirim (${kaFmt(R.c)} altın).`, `I can hire a <b>${ekAd(R).toLowerCase()}</b> from the Team (${kaFmt(R.c)} gold).`)
+    : kaT(`Kafeyi <b>Aşama ${R.a}</b>${kaEk(kaTablo().L[R.a])} yükseltince bir ${ekAd(R).toLowerCase()} alabilirim.`, `Once I upgrade the café to <b>stage ${R.a}</b>, I can hire a ${ekAd(R).toLowerCase()}.`);
+  coach({ owner: 'tb', title: bas, text: `<b>${nm}</b>: ${ne} ${yol}`, dim: true, center: true,
+    buttons: [{ label: acik ? kaT('Ekibe git', 'Go to Team') : kaT('Kafeyi yükselt', 'Upgrade café'), green: true, icon: acik ? 'paw' : 'cafe', onClick: () => { coachOff(); if (acik) { try { setMode('team') } catch (e) { } } else kaPencere() } },
+      { label: kaT('Sonra', 'Later'), onClick: () => coachOff() }] }); try { tbKonusan('waiter') } catch (e) { } };
+tbIseAl = function (rol) { };   // eski bedava işe alım yok
+
+// ---- Ekip penceresi: Kadro kartları ----
+tbEkipEkrani = function () { };
+{ const _rt = renderTeam; renderTeam = function () { const r = _rt.apply(this, arguments); try { if (ekipAcik()) ekKadroCiz() } catch (e) { console.warn('kadro', e) } return r } }
+function ekKadroCiz() { const l = $('teamList'); if (!l) return; l.querySelectorAll('.ekyer,.tbEk').forEach(c => c.remove());
+  l.querySelectorAll('[data-key]').forEach(c => { const k = c.dataset.key; if (!k || k === 'courier' || c.dataset.ekg) return; const g = gorevOf(k), t = ekGorevAd(g); if (!t) return; c.dataset.ekg = g;
+    const er = c.querySelector('.ekrole') || c.querySelector('.tmmeta .skbadge'); if (er) { const im = er.querySelector('img'); er.innerHTML = (im ? im.outerHTML : '') + t; er.setAttribute('data-dilyok', '1'); if (g === 'sahip') er.classList.add('ekSen') } });
+  try { const kb = document.querySelector('#tmTabs .ekkadro'); if (kb) kb.innerHTML = `${uiIc('i_team')}<b>${EK_ROL.filter(R => ekVar(R.id)).length}/${EK_ROL.length}</b><small>${kaT('kadro', 'roles')}</small>` } catch (e) { }
+  if ((UI.teamTab || 'all') !== 'all') return; let box = l.querySelector('.ekRoller'); if (!box) { box = document.createElement('div'); box.className = 'ekRoller'; box.setAttribute('data-dilyok', '1'); l.prepend(box) }
+  const a = kaAsama();
+  box.innerHTML = `<div class="ekRB"><b>${kaT('Kadro', 'Roles')}</b><small>${kaT('Her çalışan yalnız kendi işini yapar; gerisi senin dokunuşunla.', 'Each teammate does only their own job; the rest is up to your taps.')}</small></div>` + EK_ROL.map(R => {
+    const key = S.ekip && S.ekip[R.id], var_ = !!key, acik = a >= R.a, para = S.coins >= R.c;
+    return `<div class="ekRol${var_ ? ' var' : acik ? ' acik' : ' kilit'}" data-rol="${R.id}"><span class="ekRi">${ic(R.ic)}</span><div class="ekRt"><b>${ekAd(R)}</b><small>${kaEN() ? R.is[1] : R.is[0]}</small></div>
+      ${var_ ? `<span class="ekRd">${ic('check')}${(S.chars[key] && S.chars[key].name) || ''}</span>` : acik ? `<button class="skbtn green ekAl" type="button" data-al="${R.id}" ${para ? '' : 'disabled'}>${ic('coin')}${kaFmt(R.c)}</button>` : `<span class="ekRk">${ic('lock')}${kaT('Aşama', 'Stage')} ${R.a}</span>`}</div>` }).join('');
+  box.querySelectorAll('[data-al]').forEach(b => b.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (x) { } ekIseAl(b.dataset.al) }) }
+
+// ---- oyun kapalıyken verim ekibe göre ----
+{ const _oc = offlineCheck; offlineCheck = function () { try { if (ekipAcik()) CONFIG.afk.eff = ekVerim() } catch (e) { } return _oc.apply(this, arguments) } }
+
+// ---- otomatik düğmesi yok ----
+{ const _av = autoBtnVis; autoBtnVis = function () { const r = _av.apply(this, arguments); try { const b = $('autoBtn'); if (b && ekipAcik() && !b.hidden) b.hidden = true } catch (e) { } return r } }
+setInterval(() => { try { if (typeof started === 'undefined' || !started) return; ekKur(); const b = $('autoBtn'); if (b && ekipAcik() && !b.hidden) b.hidden = true;
+    if (TB.olay && Date.now() - TB.olayT > 2500 && tbSakin()) tbOlayGoster() } catch (e) { } }, 800);
+
+// ---- görünüm ----
+{ const st = document.createElement('style'); st.textContent = `
+.ekRoller{grid-column:1/-1;flex:0 0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:min-content;align-content:start;gap:6px;margin:2px 4px 8px 0;width:min(560px,calc(74*var(--vw)));max-height:100%;overflow-y:auto;box-sizing:border-box;padding:2px 4px 4px 2px;scrollbar-width:none}
+.ekRB{grid-column:1/-1;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.ekRB b{font:800 15px/1 var(--font-display)}.ekRB small{font-size:11px;font-weight:800;opacity:.7}
+.ekRol{display:flex;align-items:center;gap:8px;background:#fff8ec;border:2.5px solid #4a2e1c;border-radius:14px;padding:6px 8px;box-shadow:0 2px 0 #4a2e1c;min-width:0}
+.ekRol.kilit{background:#efe3d0;opacity:.85}.ekRol.var{background:#eef7df}
+.ekRi{width:34px;height:34px;flex:none;border-radius:10px;background:#f6e6cc;display:grid;place-items:center;padding:4px;box-sizing:border-box}.ekRi .ic{width:24px;height:24px}
+.ekRt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.ekRt b{font:800 13.5px/1.1 var(--font-display)}.ekRt small{font-size:10px;font-weight:700;line-height:1.15;opacity:.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ekRol .ekAl{flex:none;height:30px;padding:0 10px;display:inline-flex;align-items:center;gap:3px;font-weight:900}.ekRol .ekAl .ic{width:16px;height:16px}.ekRol .ekAl:disabled{filter:grayscale(.7);opacity:.6}
+.ekRd,.ekRk{flex:none;display:inline-flex;align-items:center;gap:3px;font-weight:900;font-size:12px;white-space:nowrap}.ekRd .ic,.ekRk .ic{width:15px;height:15px}.ekRk{opacity:.75}
+.ekrole.ekSen,.skbadge.ekSen{background:#cfe9ff!important}
 `; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
