@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795514632",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795518126",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -9018,11 +9018,12 @@ window.__playCine=playCine;
  const CLOSE=`background:${X} center/58% no-repeat,linear-gradient(#ff9484,#e2574c)!important;border:3px solid ${INK}!important;border-radius:50%!important;box-shadow:inset 0 0 0 2px #ffc2b8,0 3px 0 ${INK}!important;box-sizing:border-box!important`;
  const st=document.createElement('style');st.textContent=`
 /* ---- pencere gövdesi ---- */
+/* V356: isim tabelası tentenin dalgalı eteğinin ÜSTÜNDE çizilir (önceden etek tabelanın alt kenarını kesiyordu; kullanıcı: "şablon kesik gözüküyor") */
 ${W} .skwin{border-image:none!important;border:3px solid ${INK}!important;border-radius:22px!important;background:radial-gradient(circle at 12px 12px,rgba(233,160,90,.10) 2px,transparent 2.5px) 0 0/24px 24px,linear-gradient(#fffaf0,#fdf0d8)!important;box-shadow:inset 0 0 0 3px #f3a45a,0 5px 0 ${INK},0 12px 24px rgba(40,20,5,.4)!important;padding:60px 14px 10px!important;box-sizing:border-box!important}
 ${W} .skwin>.napkin,${W} .skcat{display:none!important}
 ${W} .skhead{top:0!important;left:0!important;right:0!important;height:40px!important;border-radius:18px 18px 0 0;background:${AWN};border-bottom:3px solid ${INK};box-sizing:border-box;pointer-events:none}
-${W} .skhead::after{content:'';position:absolute;left:0;right:0;top:100%;height:12px;background:${SCAL};filter:drop-shadow(0 2px 0 ${INK})}
-${W} .skplaque{background:linear-gradient(#ffe08a,#f6b93a)!important;border:3px solid ${INK};border-radius:999px;box-shadow:inset 0 0 0 2.5px #fff3b8,0 3px 0 ${INK};aspect-ratio:auto!important;width:auto!important;min-width:150px;max-width:60%;height:40px!important;top:6px!important;padding:0 24px!important;display:grid!important;place-items:center;box-sizing:border-box}
+${W} .skhead::after{content:'';position:absolute;left:0;right:0;top:100%;height:12px;background:${SCAL};filter:drop-shadow(0 2px 0 ${INK});z-index:1}
+${W} .skplaque{z-index:3!important;background:linear-gradient(#ffe08a,#f6b93a)!important;border:3px solid ${INK};border-radius:999px;box-shadow:inset 0 0 0 2.5px #fff3b8,0 3px 0 ${INK};aspect-ratio:auto!important;width:auto!important;min-width:150px;max-width:60%;height:40px!important;top:6px!important;padding:0 24px!important;display:grid!important;place-items:center;box-sizing:border-box}
 ${W} .skplaque::before,${W} .skplaque::after{content:'';position:absolute;top:-15px;width:20px;height:15px;background:#ffe08a;border:3px solid ${INK};border-bottom:0;border-radius:3px 14px 0 0;box-sizing:border-box}
 ${W} .skplaque::before{left:18px;transform:skewX(-12deg)}${W} .skplaque::after{right:18px;transform:scaleX(-1) skewX(-12deg)}
 ${W} .skplaque h2{font-size:19px!important;line-height:1!important;color:${INK}!important;white-space:nowrap;position:static!important;margin:2px 0 0!important}
@@ -9048,8 +9049,8 @@ ${W} .skport .cat{transform:none!important;height:88%!important;bottom:4px!impor
 ${W} #teamList .skrole{overflow:hidden}${W} #teamList .skrole .skstars.big{transform:scale(.78);transform-origin:0 50%;flex:none}
 /* ---- tam pencere ekranlar (Tarif Defteri, Menü, Etkinlik): aynı tente ---- */
 ${W} .screen .panel-head{background:${AWN}!important;border-bottom:3px solid ${INK}!important;position:relative;overflow:visible!important;z-index:2;min-height:44px;box-sizing:border-box}
-${W} .screen .panel-head::after{content:'';position:absolute;left:0;right:0;top:100%;height:12px;background:${SCAL};filter:drop-shadow(0 2px 0 ${INK});pointer-events:none}
-${W} .screen .panel-head h2{flex:none!important;margin:0 auto!important;background:linear-gradient(#ffe08a,#f6b93a);border:3px solid ${INK};border-radius:999px;box-shadow:inset 0 0 0 2.5px #fff3b8,0 3px 0 ${INK};padding:5px 22px 3px!important;color:${INK}!important;text-shadow:none!important;font-size:18px!important;line-height:1.1!important}
+${W} .screen .panel-head::after{content:'';position:absolute;left:0;right:0;top:100%;height:12px;background:${SCAL};filter:drop-shadow(0 2px 0 ${INK});pointer-events:none;z-index:1}
+${W} .screen .panel-head h2{position:relative;z-index:3;flex:none!important;margin:0 auto!important;background:linear-gradient(#ffe08a,#f6b93a);border:3px solid ${INK};border-radius:999px;box-shadow:inset 0 0 0 2.5px #fff3b8,0 3px 0 ${INK};padding:5px 22px 3px!important;color:${INK}!important;text-shadow:none!important;font-size:18px!important;line-height:1.1!important}
 ${W} .screen .panel-head>.iconbtn:first-child{visibility:hidden}
 ${W} #recipes .tabs,${W} #menuScr .scroll,${W} #evP .scroll{padding-top:14px!important}
 ${W} .screen{background:radial-gradient(circle at 12px 12px,rgba(233,160,90,.10) 2px,transparent 2.5px) 0 0/24px 24px,linear-gradient(#fffaf0,#fdf0d8)!important}
@@ -24565,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261124-1303';
+const OLC_DERLEME = '20261124-1345';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
