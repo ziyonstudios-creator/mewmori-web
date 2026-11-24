@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795547147",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795547602",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261124-2140';
+const OLC_DERLEME = '20261124-2212';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -26133,6 +26133,82 @@ setInterval(() => { try { if (typeof started === 'undefined' || !started) return
 .ekRol .ekAl{flex:none;height:30px;padding:0 10px;display:inline-flex;align-items:center;gap:3px;font-weight:900}.ekRol .ekAl .ic{width:16px;height:16px}.ekRol .ekAl:disabled{filter:grayscale(.7);opacity:.6}
 .ekRd,.ekRk{flex:none;display:inline-flex;align-items:center;gap:3px;font-weight:900;font-size:12px;white-space:nowrap}.ekRd .ic,.ekRk .ic{width:15px;height:15px}.ekRk{opacity:.75}
 .ekrole.ekSen,.skbadge.ekSen{background:#cfe9ff!important}
+`; document.head.appendChild(st) }
+
+// ================= V364 · AŞAMA 3: PAKETLER KAFE AŞAMASIYLA AÇILIR · TARİF İPUÇLARI · AMPUL =================
+// Güncelleme belgesi (24 Kasım 2026, 19:12) madde 4–5: "Mevcut sekiz üretim paketinin tamamı başlangıçta açık olmasın … Paketlerden sadece mevcut kafe
+// aşamasında kullanılabilecek malzemeler çıksın … İleri aşamalara ait malzemeler erken aşamalarda paketlerden çıkmasın … Oyuncunun merge tahtasının
+// sürekli kullanamayacağı ürünlerle dolmasını engelle." · "Mevcut sürekli mavi ışıkla yönlendirme sistemini değiştir … Keşfedilmemiş ancak mevcut kafe
+// aşamasında erişilebilir tariflerin silüetlerini göster. Tariflerde kullanılan malzemelere ilişkin anlaşılır görsel ipuçları sun … Mevcut mavi ışık
+// sistemi isteğe bağlı bir ampul veya yardım butonuyla etkinleştirilebilsin … İlk oyun eğitiminde gerekli yönlendirmeleri kullan. Eğitim tamamlandıktan
+// sonra oyuncuya özgürlük tanı."
+//  • Paket havuzu (p977 PK_HAVUZ × paket seviyesi) artık ayrıca KAFE AŞAMASIYLA süzülür: yalnız bu aşamada keşfedilebilir tariflerin (r.lvl ≤ içerik
+//    seviyesi) ham maddeleri çıkar (kaGerekenHam: tarif aşamalarındaki malzemelerin howRaw ile ham maddeleri). Havuzu boş kalan paket kilitli:
+//    tahtada gri, kilit ve "Aşama N" rozeti; dokununca "N. aşamada açılır". Böylece başta 2–3 paket açık, kafe büyüdükçe yenileri ve eski paketlerin
+//    yeni malzemeleri gelir.
+//  • Ampul (Birleştir'de "?" düğmesinin yanında): açıkken eski mavi ışık (sıradaki adım, parlayan kareler) ve tarif penceresinde malzemelerin tam adı.
+//    Kapalıyken mavi ışık yok; tarif penceresinde oyuncunun henüz hiç üretmediği malzeme "?" ile, ailesinin simgesiyle görünür ("Kahve ailesi ·
+//    Kademe ?"); o malzemeyi bir kez üretince ya da teslim edince kendiliğinden açılır. Yanlış deneme yoktur: malzeme yalnız doğruysa teslim edilir.
+//    Öğretici sürerken ve keşifle ilk 3 tarif açılana dek ampul açık başlar; sonra kapanır (bir kerelik bildirim), oyuncu istediğinde açar.
+//  • Tarif Defteri: henüz başlanmamış (keşif %0) kilitli tarifin görseli silüet; ilk teslimattan sonra renklenir.
+const KA3 = { byL: {}, bildi: false };
+function kaGerekenHam(L) { if (L == null) L = S.lvl | 0; if (KA3.byL[L]) return KA3.byL[L]; const s = new Set();
+  try { for (const r of RECIPES) { if (r.hidden || r.br || (r.lvl | 0) > L || (r.lvl | 0) >= 99) continue; const c = typeof TK_CFG !== 'undefined' && TK_CFG[r.id]; if (!c || !c.st) continue;
+      for (const st of c.st) for (const [it, n] of st.d) { const raw = howRaw(it, n); for (const x in raw) s.add(x) } } } catch (e) { console.warn('aşama ham maddeleri', e) }
+  KA3.byL[L] = s; return s }
+const kaPkAcik = () => { try { return kaAcik() && typeof PS_ON !== 'undefined' && PS_ON } catch (e) { return false } };
+{ const _ph = pkHavuz; pkHavuz = function (k, sv) { const h = _ph.apply(this, arguments); if (!h || !kaPkAcik()) return h; const N = kaGerekenHam(); return h.filter(([id]) => N.has(id)) } }
+{ const _pg = pkHavuzGuncelle; pkHavuzGuncelle = function () { const r = _pg.apply(this, arguments); try { if (kaPkAcik()) for (const k in PK_HAVUZ) { const h = pkHavuz(k); if (h && h.length) BAG_OUT[k] = h } } catch (e) { } return r } }
+// paket hangi aşamada açılır (bugünkü paket seviyesiyle)
+function kaPaketAsama(k) { if (!kaPkAcik() || !PK_HAVUZ[k]) return 0; const T = kaTablo(), a = kaAsama(), H = PK_HAVUZ[k], sv = k === 'kiler' ? 9 : pkSv(k);
+  const pool = H.filter(x => x[2] <= sv).map(x => x[0]); if (pool.some(id => kaGerekenHam().has(id))) return 0;
+  for (let s = a + 1; s <= T.max; s++) { const N = kaGerekenHam(T.L[s]); if (pool.some(id => N.has(id))) return s } return T.max }
+{ const _pt = packTap; packTap = function (k) { try { if (kaPkAcik()) { const n = kaPaketAsama(k); if (n) { try { sfx('nope') } catch (e) { }
+        const P = PACKS.find(x => x.k === k), ad = P ? (kaEN() ? kaTr(P.n) : P.n) : k; toast(kaT(`<b>${ad} paketi Aşama ${n}${kaEk(kaTablo().L[n])} açılır</b><br>Kafeni yükselttikçe yeni paketler ve malzemeler gelir`, `<b>The ${ad} pack unlocks at stage ${n}</b><br>Upgrade your café to unlock new packs and ingredients`), ic('lock'), 2600); return } } } catch (e) { } return _pt.apply(this, arguments) } }
+{ const _ch = cellHTML; cellHTML = function (i) { let h = _ch.apply(this, arguments); try { if (kaPkAcik()) { const v = S.board[i], it = v && ITEMS[v]; if (it && it.fam === 'bag') { const n = kaPaketAsama(it.bag);
+        if (n) h = h.replace('class="it', 'class="it kaPkKilit').replace(/<\/div>$/, `<span class="kaPkK">${ic('lock')}${n}</span></div>`) } } } catch (e) { } return h } }
+
+// ---- ampul: mavi ışık isteğe bağlı ----
+function kaAmpul() { try { if (!kaAcik()) return true; if (S.ampul === true) return true; if (S.ampul === false) return false; return zrOgretici() || zrAcik() < 3 } catch (e) { return true } }
+{ const _nh = nyHintDraw; nyHintDraw = function () { if (kaAmpul()) return _nh.apply(this, arguments);
+    try { if (UI.mode !== 'merge') return; const plq = document.querySelector('#merge .k3plq'); if (plq && plq.dataset.nx) { plq.dataset.nx = ''; plq.classList.remove('nx'); const b = plq.querySelector('b'); if (b) b.textContent = kaT('Birleştir', 'Merge'); plq.onclick = null }
+      document.querySelectorAll('#merge .cell.nx,#pkRaf .pk.nx,#merge .thdv.nx').forEach(e => e.classList.remove('nx')); document.querySelectorAll('#merge .thd .thr.cur').forEach(e => e.classList.remove('cur')) } catch (e) { } } }
+function kaAmpulDugme() { if (!kaAcik()) return; const mg = $('merge'); if (!mg || UI.mode !== 'merge') return; let b = mg.querySelector('.kaAmpul');
+  if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'kaAmpul'; b.setAttribute('data-dilyok', '1'); mg.appendChild(b);
+    b.onclick = e => { e.stopPropagation(); S.ampul = !kaAmpul(); markDirty(); try { sfx(S.ampul ? 'chime' : 'tap') } catch (x) { } kaAmpulDugme(); try { renderMerge() } catch (x) { } try { if (UI.tkW) renderTk() } catch (x) { }
+      toast(S.ampul ? kaT('<b>Ampul açık</b><br>Sıradaki adım parlıyor, tariflerin malzemeleri tam görünüyor', '<b>Hints on</b><br>The next step glows and recipe ingredients are shown in full') : kaT('<b>Ampul kapalı</b><br>Malzemeleri kendin keşfet; takılırsan yeniden yak', '<b>Hints off</b><br>Discover the ingredients yourself; switch it back on if you get stuck'), ic('bulb'), 2200) } }
+  try { const t = mg.querySelector('.thd') || mg.querySelector('.info'), R = mg.getBoundingClientRect(); if (t) { const q = t.getBoundingClientRect(); b.style.left = Math.round(q.left - R.left + 8) + 'px'; b.style.top = Math.round(q.top - R.top + 8) + 'px' } } catch (e) { }
+  const on = kaAmpul(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', kaT('İpucu ampulü', 'Hint bulb')); if (!b.firstChild) b.innerHTML = ic('bulb') }
+{ const _rm = renderMerge; renderMerge = function () { const r = _rm.apply(this, arguments); try { kaAmpulDugme() } catch (e) { } return r } }
+// öğretici ve ilk 3 tarif bitince ampul kendiliğinden kapanır: bir kerelik bildirim
+setInterval(() => { try { if (!started || !kaAcik() || !S.created || KA3.bildi) return; S.seen = S.seen || {}; if (S.seen.ampul) { KA3.bildi = true; return }
+    if (S.ampul == null && !kaAmpul() && UI.mode === 'merge' && !UI.modal) { S.seen.ampul = 1; KA3.bildi = true; markDirty();
+      toast(kaT('<b>Artık malzemeleri sen keşfet!</b><br>Mavi ışık kapandı. Takılırsan sol üstteki ampule dokun', '<b>Now discover the ingredients yourself!</b><br>The blue glow is off. Tap the bulb at the top left if you get stuck'), ic('bulb'), 4800); kaAmpulDugme() } } catch (e) { } }, 1500);
+
+// ---- tarif penceresi: bilinmeyen malzeme "?" + ailesinin simgesi ----
+function kaBilinir(it, I) { try { return kaAmpul() || !!(S.items && S.items[it]) || ((I && I.dl && I.dl[it]) | 0) > 0 } catch (e) { return true } }
+function kaAile(it) { const m = ITEMS[it]; if (!m) return null; if (m.chain && ITEMS[m.chain + '1']) return m.chain + '1'; return null }
+{ const _rt = renderTk; renderTk = function () { const r = _rt.apply(this, arguments); try { if (!kaAcik()) return r; const W = UI.tkW; if (!W || W.w.m.hidden) return r; const I = tkInfo(W.id); if (!I || I.done) return r;
+      W.w.body.querySelectorAll('.tkrow').forEach(row => { const b = row.querySelector('[data-dv]'); if (!b) return; const it = b.dataset.dv; if (kaBilinir(it, I)) return; const a = kaAile(it), m = ITEMS[it];
+        const art = row.querySelector('.tkart'), nm = row.querySelector('.tkname'); row.classList.add('kaGizli');
+        if (art) art.innerHTML = `${a ? itemArt(a) : itemArt(it)}<i class="kaSoru">?</i>`;
+        if (nm) nm.innerHTML = `<b>${a ? kaT(`${kaTr(ITEMS[a].name)} ailesi`, `${kaTr(ITEMS[a].name)} family`) : kaT('Bir karışım', 'A mix')}</b><small>${m && m.lv ? kaT('Kademe ? · henüz üretmedin', 'Tier ? · not made yet') : kaT('Henüz yapmadın', 'Not made yet')}</small>` });
+      const not = W.w.body.querySelector('.tknote'); if (not && !kaAmpul() && W.w.body.querySelector('.kaGizli')) not.innerHTML = kaT('Soru işaretli malzemeyi o aileden üreterek keşfet: doğru kademeyi bir kez üretince adı görünür. Takılırsan Birleştir’deki <b>ampule</b> dokun.', 'Discover the “?” ingredient by making items from that family: once you make the right tier, its name appears. Stuck? Tap the <b>bulb</b> on the Merge screen.') } catch (e) { console.warn('tarif ipucu', e) } return r } }
+// ---- Tarif Defteri: başlanmamış kilitli tarif silüet ----
+{ const _rb = renderBook; renderBook = function () { const r = _rb.apply(this, arguments); try { if (!kaAcik()) return r;
+      document.querySelectorAll('#rbList [data-rc].tkLocked').forEach(card => { const I = tkInfo(card.dataset.rc); card.classList.toggle('kaSil', !!(I && !I.done && !(I.pct > 0) && !kaAmpul())) }) } catch (e) { } return r } }
+
+// ---- görünüm ----
+{ const st = document.createElement('style'); st.textContent = `
+#board .it.kaPkKilit img,#board .it.kaPkKilit svg{filter:grayscale(1) brightness(.85) opacity(.55)}
+#board .it .kaPkK{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:1px;padding:1px 5px 1px 3px;border:2px solid #4a2a14;border-radius:999px;background:#fff3d6;font:900 10px/1.1 var(--font-body);color:#4a2a14;pointer-events:none;z-index:3;white-space:nowrap}
+#board .it .kaPkK .ic{width:11px;height:11px}
+#merge .kaAmpul{position:absolute;left:calc(var(--el,12px) + 52px);top:calc(var(--et,10px) + 2px);width:40px;height:40px;box-sizing:border-box;margin:0;padding:7px;border:3px solid #4a2a14;border-radius:50%;background:linear-gradient(#fffaf0,#efe0c4);box-shadow:0 3px 0 #4a2a14;z-index:6;cursor:pointer;opacity:.85}
+#merge .kaAmpul .ic{width:100%;height:100%;display:block;filter:grayscale(.8)}
+#merge .kaAmpul.on{background:linear-gradient(#fff3b8,#ffd75e);opacity:1;box-shadow:0 3px 0 #4a2a14,0 0 0 4px rgba(255,215,94,.45)}#merge .kaAmpul.on .ic{filter:none}
+.tkrow.kaGizli .tkart{position:relative}.tkrow.kaGizli .tkart img,.tkrow.kaGizli .tkart svg{filter:brightness(0) opacity(.35)}
+.tkrow.kaGizli .kaSoru{position:absolute;inset:0;display:grid;place-items:center;font:900 22px/1 var(--font-display);color:#4a2a14;font-style:normal;text-shadow:0 0 4px #fff,0 0 2px #fff}
+#rbList .kaSil .th img,#rbList .kaSil .rcImg img,#rbList .kaSil img.rcp{filter:brightness(0) opacity(.3)}
 `; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
