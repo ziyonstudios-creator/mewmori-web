@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795549254",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795552480",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261124-2239';
+const OLC_DERLEME = '20261124-2330';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -26427,6 +26427,300 @@ if (INS_ON) { const _xt = xmTip; xmTip = function () { const r = _xt.apply(this,
 .xmTip .insNot{display:flex;align-items:center;justify-content:center;gap:4px;margin:5px 0 0!important;font-size:10.5px!important;line-height:1.25;color:#7a4e2c}.xmTip .insNot.ok{color:#3d7a2a}.xmTip .insNot .ic{width:14px;height:14px}
 .xmTip .insTes{width:100%;height:32px!important;margin-top:6px;font-size:13px!important}
 .kaSat .insKaIc{display:inline-grid;width:22px;height:22px;flex:none}.kaSat .insKaIc svg{width:100%;height:100%}
+`; document.head.appendChild(st) }
+
+// ================= V366 · AŞAMA 5: SEYYAR SATIŞ TEZGÂHI · SATICI · TAHTADAN DOĞRUDAN SATIŞ KALKTI =================
+// Güncelleme belgesi madde 7 + kullanıcı (24 Kasım 19:28): "oyuncunun belirlediği kafenin ismi ne olursa tezgahın ismide o olsun"; çalışan sırası
+// 6: Tezgâh + satıcı. Madde 8–9: tezgâhla ilgilenirken kafe (gün saati dahil) durur, kayıp olmaz.
+//  • Tezgâh kafenin önündeki kaldırımda (ön kaldırım, lamba ile bank arasında), tabelasında kafenin adı (ad değişince tabela da değişir).
+//    Aşama 6'da kurulur: 1.500 altın + 2 Kalas demeti, 2 Boya seti, 2 Çivi kutusu (inşaat projesi gibi teslim edilir; İnşaat paketi bunları da verir).
+//  • Rafta 4 yer: Birleştir'de ürünü seçip "Tezgâha", ya da tezgâhta "Tahtadan ekle". Fiyat üretim zorluğuna göre: ham madde (enerji) sayısı × 3, en az 2.
+//  • Tezgâh müşterileri kafeninkilerden bağımsız: yoldan karşıya geçip tezgâhın önündeki 3 yere gelir. Çoğu raftaki bir ürünü ister; bazıları
+//    özel istek getirir (rafta olmayan ama yapılabilen bir ürün, ×1,5): tahtanda varsa doğrudan verirsin. Akış: Karşıla → Ver → Hesabı al.
+//    Sabırları yalnız tezgâh açıkken azalır; biterse ürün almadan giderler (ceza yok).
+//  • Tezgâh kipi (sol çipten): kafe ve gün saati durur, kamera tezgâha döner, kafe düğmeleri gizlenir. Çıkınca satıcı yoksa müşteriler dağılır.
+//  • Satıcı (Ekip, Aşama 6, 1.500 altın; tezgâhtan bağımsız işe alınır): kaldırımdan tezgâhın arkasına geçer; karşılar, raftakini satar, ödemeyi
+//    alır. Birleştirme yapmaz: rafı sen doldurursun, özel istekleri sen karşılarsın. Kafe çalışırken (pencere açık değilken) satar; oyun kapalıyken
+//    rafı %70 hızla satar (dakikada ~2 × 0,7; en çok raftaki kadar).
+//  • Tahtadan doğrudan satış kalktı: seçili üründe "Sat" yerine "Tezgâha" (tezgâh varsa), depo (6 yer, geçici saklama; tahtanın sol altındaki
+//    Depo düğmesi) ve çöp (ödülsüz kaldırma; değerli üründe iki dokunuş).
+//  Kayıt: S.tz = {kur, raf:[×4], depo:[×6], n (satış), kz (kazanç), ts (son görülme)}.
+const TZ_ON = !EVMODE;
+const TZ = { a: 6, c: 1500, raf: 4, depo: 6, kat: 3, req: [['insahs3', 2], ['insboy3', 2], ['insciv2', 2]],
+  on: false, g: null, tx: null, ad: '', cust: [], sp: 1.5, cam: null, sec: null, seq: 0, vt: 0, cd: 0, pick: false, key: '' };
+function tzS() { const T = S.tz && typeof S.tz === 'object' ? S.tz : (S.tz = {}); if (!Array.isArray(T.raf)) T.raf = []; while (T.raf.length < TZ.raf) T.raf.push(null);
+  if (!Array.isArray(T.depo)) T.depo = []; while (T.depo.length < TZ.depo) T.depo.push(null); T.n = T.n | 0; T.kz = T.kz | 0; return T }
+const tzKurulu = () => { try { return TZ_ON && !!(S && S.tz && S.tz.kur) } catch (e) { return false } };
+const tzAsama = () => { try { return TZ_ON && !!S && !!S.created && S.tut === 'done' && kaAsama() >= TZ.a } catch (e) { return false } };
+const tzSaticiW = () => { try { const k = S.ekip && S.ekip.satici; return k ? WSTAFF.find(w => w.key === k) || null : null } catch (e) { return null } };
+const tzAdi = () => { try { return (S && S.cafeName) || insT('Kafe', 'Café') } catch (e) { return 'Kafe' } };
+function tzFiyat(id, ozel) { let c = 1; try { c = howCost(id) } catch (e) { } return Math.max(2, Math.round(c * TZ.kat * (ozel ? 1.5 : 1))) }
+const tzSatilir = id => { const it = id && ITEMS[id]; return !!(it && it.chain && !it.gone && it.fam !== 'bag' && it.fam !== 'ins' && HOW[id]) };
+// yerler: tezgâh ön kaldırımda (arsanın dışında: genişleme ve bahçeyle çakışmaz), x=0 lambası ile x=3,6 bankı arasında
+const TZP = () => { const z = LOT.z1; return { x: 1.6, z: z + 1.2, sat: { x: 1.6, z: z + 0.55 }, yer: [{ x: 0.82, z: z + 2.12 }, { x: 1.6, z: z + 2.24 }, { x: 2.38, z: z + 2.12 }] } };
+
+// ---- kurulum projesi (inşaat sistemiyle aynı teslim) ----
+{ const _ip = insProjeler; insProjeler = function () { const out = _ip.apply(this, arguments); try { if (TZ_ON && S && S.created && !tzKurulu()) out.push({ key: 'tz', tur: 'tz', lv: insL(TZ.a), c: TZ.c, req: TZ.req, ad: insT('Seyyar tezgâh', 'Market stall') }) } catch (e) { } return out } }
+function tzKurDurum() { if (!tzAsama()) return { ok: false, why: insT(`Aşama ${TZ.a}${kaEk(insL(TZ.a))} açılır`, `Unlocks at stage ${TZ.a}`) };
+  const p = insProjeler().find(x => x.key === 'tz'); if (p && !insTamam(p)) return { ok: false, mat: 1, why: insT('İnşaat malzemesi eksik', 'Building materials missing') };
+  if (S.coins < TZ.c) return { ok: false, why: insT('Altın yetmiyor', 'Not enough gold') }; return { ok: true } }
+function tzMatHTML(p) { const d = insDl(p); return `<div class="tzMat">${p.req.map(([id, k]) => { const n = Math.min(k, d[id] | 0); return `<span class="insM${n >= k ? ' ok' : ''}"><i>${itemArt(id)}${n >= k ? `<u>${ic('check')}</u>` : ''}</i><b>${n}/${k}</b><small>${insAd(id)}</small></span>` }).join('')}</div>` }
+function tzKurPencere() { if (!tzAsama()) { try { sfx('nope') } catch (e) { } toast(insT(`<b>Seyyar tezgâh Aşama ${TZ.a}${kaEk(insL(TZ.a))} açılır</b>`, `<b>The market stall unlocks at stage ${TZ.a}</b>`), ic('lock'), 2400); return }
+  const W = skWin('skTz', insT('Seyyar tezgâh', 'Market stall'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); const p = insProjeler().find(x => x.key === 'tz'), s = tzKurDurum(), v = p ? insVerilir(p) : 0, tam = !p || insTamam(p);
+  W.body.innerHTML = `<div class="tzKurW"><div class="tzKurU"><span class="tzKurI">${ic('market')}</span><div><b>${tzAdi()}</b><p>${insT('Kafenin önündeki kaldırıma, tabelasında kafenin adıyla bir satış tezgâhı. Birleştir’de ürettiklerini rafa koyarsın; yoldan geçenler satın alır. Özel istekleri tahtadan karşılarsın.', 'A market stall on the pavement in front of your café, with your café’s name on the sign. Put what you make on the Merge board on its shelf; passers-by buy it. Fulfil special requests straight from your board.')}</p></div></div>
+    <div class="tzKurM"><h4>${insT('İnşaat malzemeleri', 'Building materials')}</h4>${p ? tzMatHTML(p) : ''}
+    ${tam ? `<p class="insNot ok">${ic('check')}${insT('Malzemeler teslim edildi', 'Materials delivered')}</p>` : v ? `<button class="btn green tzTes" type="button">${ic('check')}${insT(`Tahtadan teslim et · ${v}`, `Deliver from board · ${v}`)}</button>` : `<p class="insNot">${insT('Birleştir’de İnşaat paketinden üret, birleştir ve teslim et', 'Make them from the Builder pack on the Merge board, merge and deliver')}</p>`}</div>
+    <div class="tzKurA"><button class="btn${s.ok ? ' green' : ''} tzKurB" type="button" ${s.ok ? '' : 'disabled'}>${ic('coin')}${kaFmt(TZ.c)} · ${insT('Tezgâhı kur', 'Build the stall')}</button>${s.ok ? '' : `<p class="why">${ic('lock')}${s.why}</p>`}</div></div>`;
+  const t = W.body.querySelector('.tzTes'); if (t) t.onclick = () => { const al = insVer(p); if (al.length) { try { sfx('coin') } catch (e) { } } W.close(); setTimeout(tzKurPencere, 60) };
+  const b = W.body.querySelector('.tzKurB'); if (b) b.onclick = () => { if (tzKur()) W.close() } }
+function tzKur() { const s = tzKurDurum(); if (!s.ok) { try { sfx('nope') } catch (e) { } return false }
+  addCoins(-TZ.c, 'decor'); const T = tzS(); T.kur = 1; T.ts = Date.now(); try { delete S.insT.tz } catch (e) { } markDirty(); try { saveNow() } catch (e) { } tzKur3B(); try { sfx('levelup') } catch (e) { }
+  toast(insT(`<b>${tzAdi()} tezgâhı kuruldu!</b><br>Rafı doldur, müşterilere sen bak ya da Ekip’ten bir satıcı al.`, `<b>The ${tzAdi()} stall is open!</b><br>Fill the shelf and serve the guests, or hire a vendor from the Team.`), ic('market'), 4200);
+  try { bump('tezgah', 1) } catch (e) { } setTimeout(() => { try { tzAc() } catch (e) { } }, 700); return true }
+
+// ---- 3B tezgâh: çizgili tenteli ahşap araba, tabelada kafenin adı ----
+function tzTabelaCiz(cv) { const x = cv.getContext('2d'), W = cv.width, H = cv.height; x.fillStyle = '#fff3d6'; x.fillRect(0, 0, W, H); x.strokeStyle = '#4a2a14'; x.lineWidth = 12; x.strokeRect(6, 6, W - 12, H - 12);
+  const t = tzAdi(), F = s => `800 ${s}px "Baloo 2","Nunito",system-ui,sans-serif`; let fs = 70; x.font = F(fs); while (x.measureText(t).width > W - 60 && fs > 22) { fs -= 4; x.font = F(fs) }
+  x.fillStyle = '#4a2a14'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, W / 2, H / 2 + 5) }
+function tzKur3B() { if (TZ.g) { try { scene.remove(TZ.g); disposeTree(TZ.g) } catch (e) { } TZ.g = null } if (!tzKurulu()) return; const P = TZP(), G = new THREE.Group(); G.position.set(P.x, 0, P.z); scene.add(G); TZ.g = G;
+  const kutu = (w, h, d, c, x, y, z, ust) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), toon(c)); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; (ust || G).add(m); return m };
+  const sil = (r, h, c, x, y, z, rz) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 18), toon(c)); m.position.set(x, y, z); if (rz) m.rotation.z = rz; m.castShadow = true; G.add(m); return m };
+  kutu(1.9, 0.6, 0.72, 0xc98a4e, 0, 0.48, 0); kutu(1.96, 0.08, 0.06, 0x8a5a2b, 0, 0.2, 0.37); for (const x of [-0.63, 0, 0.63]) kutu(0.035, 0.48, 0.02, 0xa86a35, x, 0.48, 0.365);
+  kutu(2.06, 0.07, 0.86, 0xf2d6a0, 0, 0.81, 0.02);
+  for (const s of [-1, 1]) { sil(0.3, 0.07, 0x4a3426, s * 0.99, 0.3, 0, Math.PI / 2); sil(0.09, 0.09, 0xf2b134, s * 1.03, 0.3, 0, Math.PI / 2) }
+  for (const x of [-0.92, 0.92]) for (const z of [-0.3, 0.3]) kutu(0.06, 1.3, 0.06, 0x8a5a2b, x, 1.46, z);
+  const T = new THREE.Group(); T.position.set(0, 2.12, 0.06); T.rotation.x = 0.3; G.add(T);
+  for (let i = 0; i < 8; i++) { const c = i % 2 ? 0xfff3e0 : 0xe8564f; kutu(2.3 / 8, 0.05, 1.18, c, -1.15 + 2.3 / 16 + i * 2.3 / 8, 0, 0, T); kutu(2.3 / 8 - 0.02, 0.15, 0.03, c, -1.15 + 2.3 / 16 + i * 2.3 / 8, -0.09, 0.59, T) }
+  kutu(1.62, 0.42, 0.06, 0x8a5a2b, 0, 2.9, -0.34); for (const x of [-0.6, 0.6]) kutu(0.05, 0.5, 0.05, 0x8a5a2b, x, 2.5, -0.36);
+  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128; tzTabelaCiz(cv); const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace;
+  const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.52, 0.36), new THREE.MeshBasicMaterial({ map: tx })); pl.position.set(0, 2.9, -0.305); G.add(pl); TZ.tx = { cv, tx }; TZ.ad = tzAdi();
+  sil(0.11, 0.12, 0xd9a066, -0.62, 0.91, 0.12); sil(0.08, 0.17, 0xf28aa0, -0.32, 0.93, -0.12); kutu(0.24, 0.13, 0.18, 0xe0a86c, 0.42, 0.91, 0.06); sil(0.07, 0.15, 0x8fd08a, 0.72, 0.92, -0.14) }
+try { document.fonts && document.fonts.ready.then(() => { try { if (TZ.tx) { tzTabelaCiz(TZ.tx.cv); TZ.tx.tx.needsUpdate = true } } catch (e) { } }) } catch (e) { }
+
+// ---- müşteriler ----
+function tzIstekSec(oyuncu) { const T = tzS(), kul = new Set(TZ.cust.filter(c => c.st !== 'git').map(c => c.want)), raf = T.raf.filter(Boolean), bos = raf.filter(x => !kul.has(x));
+  if (bos.length && (!oyuncu || Math.random() < 0.75)) return { want: bos[Math.floor(Math.random() * bos.length)], ozel: false };
+  if (!oyuncu) return null; let A = []; try { A = spAdaylar().filter(a => a.c >= 1 && a.c <= 8 && tzSatilir(a.id) && !kul.has(a.id) && !raf.includes(a.id)) } catch (e) { }
+  if (A.length) { const tahta = A.filter(a => S.board.includes(a.id)), H = tahta.length && Math.random() < 0.5 ? tahta : A; return { want: H[Math.floor(Math.random() * H.length)].id, ozel: true } }
+  return bos.length ? { want: bos[0], ozel: false } : null }
+function tzMusteri(spot, ist) { const lk = LOOKS[Math.floor(Math.random() * LOOKS.length)], ch = new Char(cloneLook(lk.tex, lk), { xs: lk.xs, speed: 0.9 }); try { attachAcc(ch.o, (h, n) => lk.hat(h, n)) } catch (e) { }
+  const P = TZP(), Y = P.yer[spot], sx = Y.x + (Y.x - P.x) * 1.4, sz = LOT.z1 + 5; ch.pos.set(sx, 0, sz); ch.o.rotation.y = Math.PI;
+  const c = { id: ++TZ.seq, ch, spot, st: 'gel', want: ist.want, ozel: ist.ozel, pat: ist.ozel ? 75 : 45, t: 0, sx, sz }; c.pat0 = c.pat; TZ.cust.push(c);
+  ch.walkTo(Y.x, Y.z, { direct: true }).then(() => { if (c.st !== 'gel') return; c.st = 'bekle'; c.t = 0; try { ch.face(Math.PI) } catch (e) { } }); return c }
+function tzSil(c) { try { scene.remove(c.ch.o) } catch (e) { } try { if (c.el) c.el.remove() } catch (e) { } const i = TZ.cust.indexOf(c); if (i >= 0) TZ.cust.splice(i, 1) }
+function tzGit(c) { if (c.st === 'git') return; c.st = 'git'; try { if (c.el) c.el.remove() } catch (e) { } c.el = null; c.ch.walkTo(c.sx + (Math.random() - 0.5) * 0.6, c.sz, { direct: true }).then(() => tzSil(c)) }
+function tzKarsila(c) { if (c.st !== 'bekle') return false; c.st = 'istek'; c.t = 0; try { sfx('tap') } catch (e) { } return true }
+function tzVer(c, oto) { if (c.st !== 'istek') return false; const T = tzS(), k = T.raf.indexOf(c.want);
+  if (k >= 0) T.raf[k] = null; else { if (oto) return false; const b = S.board.indexOf(c.want); if (b < 0) return false; S.board[b] = null; if (UI.mgSel === b) UI.mgSel = null }
+  c.st = 'ode'; c.t = 0; c.fiyat = tzFiyat(c.want, c.ozel); markDirty(); try { sfx('pop') } catch (e) { } return true }
+function tzOde(c) { if (c.st !== 'ode') return false; const n = c.fiyat | 0, T = tzS(); addCoins(n, 'sell'); T.n++; T.kz += n; markDirty(); try { sfx('coin') } catch (e) { }
+  if (UI.mode === 'tezgah') tzPara(c, n); else { const w = tzSaticiW(); if (w) try { staffBubble(w.ch, 'coin', 1.2) } catch (e) { } }
+  tzGit(c); return true }
+function tzDagit() { for (const c of TZ.cust.slice()) tzSil(c) }
+// 0: kapalı · 1: satıcı (kafe çalışırken) · 2: oyuncu tezgâhta
+function tzAktif() { try { if (!tzKurulu() || !started) return 0; if (UI.mode === 'tezgah') return (UI.modal || document.hidden) ? 0 : 2; return tzSaticiW() && !paused() ? 1 : 0 } catch (e) { return 0 } }
+const tzSaticiYerde = w => { const P = TZP().sat; return !!w && Math.hypot(w.ch.pos.x - P.x, w.ch.pos.z - P.z) < 0.6 };
+function tzTick(dt) { const a = tzAktif(); if (!a) return; dt = Math.min(dt || 0, 0.1); if (!TZ.g || TZ.g.parent !== scene) tzKur3B();
+  const raf = tzS().raf;
+  for (const c of TZ.cust.slice()) { try { if (!c.ch.o.visible) c.ch.o.visible = true; c.ch.update(dt) } catch (e) { } if (c.st === 'bekle' || c.st === 'istek') { c.pat -= dt; if (c.pat <= 0) tzGit(c) }
+    if (c.st === 'istek' && !c.ozel && !raf.includes(c.want)) { const kul = new Set(TZ.cust.filter(x => x !== c && x.st !== 'git').map(x => x.want)), y = raf.filter(x => x && !kul.has(x)); if (y.length) { c.want = y[0]; c.k = '' } else c.pat -= dt } }
+  const w = tzSaticiW(); if (a === 2 && w) try { w.ch.update(dt) } catch (e) { }
+  TZ.sp -= dt; if (TZ.sp <= 0) { const dolu = tzS().raf.some(Boolean); TZ.sp = (dolu ? 5 : 12) + Math.random() * 4;
+    const bos = [0, 1, 2].filter(s => !TZ.cust.some(c => c.spot === s)); if (bos.length) { const ist = tzIstekSec(a === 2); if (ist) tzMusteri(bos[Math.floor(Math.random() * bos.length)], ist) } }
+  // satıcı: sırayla karşılar, raftakini verir, ödemeyi alır (özel isteğe dokunmaz)
+  if (w && tzSaticiYerde(w)) { TZ.vt -= dt; if (TZ.vt <= 0) { const c = TZ.cust.find(c => c.st === 'ode') || TZ.cust.find(c => c.st === 'istek' && tzS().raf.includes(c.want)) || TZ.cust.find(c => c.st === 'bekle');
+      if (c) { if (c.st === 'ode') tzOde(c); else if (c.st === 'istek') tzVer(c, true); else tzKarsila(c); TZ.vt = 1.1 } } }
+  if (a === 2) tzOvCiz() }
+{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { if (TZ_ON) tzTick(dt) } catch (e) { console.warn('tezgâh', e) } return r } }
+
+// ---- satıcı (Ekip) ----
+if (TZ_ON) try { if (!EK_ROL.some(R => R.id === 'satici')) EK_ROL.splice(Math.max(0, EK_ROL.findIndex(R => R.a > TZ.a)), 0, { id: 'satici', a: TZ.a, c: 1500, eng: 'waiter', ad: ['Satıcı', 'Vendor'], is: ['Tezgâhta müşterileri karşılar, satar ve ödemeyi alır. Birleştirme yapmaz: rafı sen doldurursun.', 'Greets stall guests, sells and takes payment. Doesn’t merge: you stock the shelf.'], ic: 'market' });
+  EK_IZIN.satici = [] } catch (e) { console.warn('satıcı rolü', e) }
+// kaldırımdan tezgâha yol: arsanın 0,45 m dışında, köşelerden dönerek
+function tzYol(a, b) { const r = 0.45, X = LOT.x1 + r, Z = LOT.z1 + r, sol = a.x < LOT.x0, sag = a.x > LOT.x1, arka = a.z < LOT.z0, on = a.z > LOT.z1, out = [];
+  const P0 = { x: sol ? -X : sag ? X : a.x, z: arka ? -Z : on ? Z : a.z }; out.push(P0);
+  if (sol) out.push({ x: -X, z: Z }); else if (sag) out.push({ x: X, z: Z }); else if (arka) { const s = a.x < 0 ? -X : X; out.push({ x: s, z: -Z }, { x: s, z: Z }) }
+  out.push({ x: b.x, z: Z }, { x: b.x, z: b.z }); return out }
+async function tzSaticiLoop(w) { const ch = w.ch;
+  while (true) {
+    if (w.edIn) { w.edAck = 1; w.spot = null; w.tzDis = 0; await sleep(0.2); continue }
+    if (!tzKurulu()) { const P = ekSpot(w, 'guvenlik'); if (!atSpot(ch, P, 0.1)) { await ch.walkTo(P.x, P.z); await ch.face(Math.atan2(-DOOR_OUTN.x, -DOOR_OUTN.z) + Math.PI) } else await sleep(0.5); continue }
+    if (!w.tzDis) { try { await ch.standUp() } catch (e) { } await ch.walkTo(DOOR_IN.x, DOOR_IN.z); await ch.walkTo(OUTSIDE.x, OUTSIDE.z, { direct: true });
+      for (const p of tzYol(OUTSIDE, TZP().sat)) await ch.walkTo(p.x, p.z, { direct: true }); w.tzDis = 1; await ch.face(0); continue }
+    if (!tzSaticiYerde(w)) { const P = TZP().sat; await ch.walkTo(P.x, P.z, { direct: true }); await ch.face(0); continue }
+    await sleep(0.5) } }
+{ const _wl = waiterLoop; waiterLoop = function (w) { try { if (TZ_ON && ekipAcik() && w && w.key !== 'waiter' && gorevOf(w.key) === 'satici') return tzSaticiLoop(w) } catch (e) { } return _wl.apply(this, arguments) } }
+{ const _hg = ekHosgeldin; ekHosgeldin = function (id, key) { if (id !== 'satici') return _hg.apply(this, arguments); const c = S.chars[key]; if (!c) return; try { sfx('chime') } catch (e) { }
+    coach({ owner: 'ek', title: kaT(`Aramıza hoş geldin, ${c.name}!`, `Welcome aboard, ${c.name}!`), dim: true, center: true, text: `<b>${kaT('Satıcı', 'Vendor')}</b> · ${tzKurulu() ? kaT('Tezgâha geçiyor: müşterileri karşılayacak, raftakini satacak, ödemeyi alacak. Rafı sen doldur!', 'Heading to the stall: they’ll greet guests, sell what’s on the shelf and take payment. You keep the shelf stocked!') : kaT('Tezgâh kurulunca orada çalışacak; şimdilik kapının yanında bekliyor.', 'They’ll work at the stall once you build it; for now they wait by the door.')}`,
+      buttons: [{ label: kaT('Harika!', 'Great!'), green: true, icon: 'paw', onClick: () => coachOff() }] }) } }
+// oyun kapalıyken: satıcı rafı %70 hızla satar
+function tzCevrimdisi() { const T = tzS(), now = Date.now(), ts = +T.ts || 0; T.ts = now; if (!ts || !tzKurulu() || !(S.ekip && S.ekip.satici)) return;
+  const dk = Math.min(480, (now - ts) / 60000); if (dk < 1) return; let n = Math.floor(dk * 2 * 0.7 + Math.random()), kaz = 0, adet = 0;
+  for (let i = 0; i < T.raf.length && n > 0; i++) { const id = T.raf[i]; if (!id) continue; kaz += tzFiyat(id); T.raf[i] = null; adet++; n-- }
+  if (!adet) return; addCoins(kaz, 'sell'); T.n += adet; T.kz += kaz; markDirty(); const nm = (S.chars[S.ekip.satici] && S.chars[S.ekip.satici].name) || kaT('Satıcı', 'Vendor');
+  setTimeout(() => { try { toast(insT(`<b>Sen yokken ${nm} tezgâhta ${adet} ürün sattı</b><br>+${kaFmt(kaz)} altın · rafı yeniden doldurmayı unutma`, `<b>While you were away, ${nm} sold ${adet} item${adet > 1 ? 's' : ''} at the stall</b><br>+${kaFmt(kaz)} gold · remember to restock the shelf`), ic('coin'), 5200) } catch (e) { } }, 3000) }
+setInterval(() => { try { if (!TZ_ON || typeof started === 'undefined' || !started || !S || !S.created) return; if (!TZ.cd) { TZ.cd = 1; tzCevrimdisi() } if (S.tz) S.tz.ts = Date.now();
+    if (tzKurulu() && (!TZ.g || TZ.g.parent !== scene)) tzKur3B(); if (TZ.g && TZ.ad !== tzAdi() && TZ.tx) { TZ.ad = tzAdi(); tzTabelaCiz(TZ.tx.cv); TZ.tx.tx.needsUpdate = true }
+    tzCip() } catch (e) { console.warn('tezgâh', e) } }, 2000);
+
+// ---- tezgâh kipi ----
+function tzAc() { if (!TZ_ON) return; if (!tzKurulu()) return tzKurPencere(); if (UI.mode === 'tezgah') return; try { if (typeof XM !== 'undefined' && XM.on) closeExpandMode() } catch (e) { }
+  if (UI.modal) { try { document.querySelectorAll('.modal:not([hidden])').forEach(m => { const x = m.querySelector('.skclose'); if (x) x.click() }) } catch (e) { } }
+  setMode('tezgah'); TZ.on = true; document.documentElement.classList.add('tzmode'); TZ.sec = null; TZ.pick = false; TZ.key = '';
+  TZ.cam = { p: camera.position.clone(), t: controls.target.clone(), en: controls.enabled }; const P = TZP(), T = new THREE.Vector3(P.x, 1.05, P.z + 0.45), d = 7.6, po = 0.86, az = 0.24;
+  controls.target.copy(T); camera.position.set(T.x + d * Math.sin(po) * Math.sin(az), T.y + d * Math.cos(po), T.z + d * Math.sin(po) * Math.cos(az)); controls.update(); controls.enabled = false;
+  for (const c of TZ.cust) try { c.ch.o.visible = true } catch (e) { } TZ.sp = Math.min(TZ.sp, 1.2); tzOvKur(); tzPanelCiz(); try { sfx('tap') } catch (e) { }
+  S.seen = S.seen || {}; if (!S.seen.tzTanit) { S.seen.tzTanit = 1; markDirty();
+    setTimeout(() => { try { coach({ owner: 'tz', title: insT(`${tzAdi()} tezgâhı`, `The ${tzAdi()} stall`), dim: false, center: true, text: insT('Aşağıdaki rafa Birleştir’de ürettiklerini koy. Müşteri gelince <b>Karşıla</b>, istediğini <b>Ver</b>, sonra <b>Hesabı al</b>. Sen buradayken kafe bekler; hiçbir şey kaybetmezsin.', 'Put what you make on the Merge board on the shelf below. When a guest arrives, <b>Greet</b>, <b>Give</b> what they want, then <b>Take payment</b>. While you’re here the café waits; you lose nothing.'), buttons: [{ label: insT('Tamam', 'OK'), green: true, icon: 'paw', onClick: () => coachOff() }] }) } catch (e) { } }, 500) } }
+function tzKapatIc() { TZ.on = false; document.documentElement.classList.remove('tzmode'); const ov = $('tzOv'); if (ov) ov.hidden = true;
+  if (TZ.cam) { camera.position.copy(TZ.cam.p); controls.target.copy(TZ.cam.t); controls.enabled = TZ.cam.en !== false; controls.update(); TZ.cam = null }
+  if (!tzSaticiW()) for (const c of TZ.cust) try { c.ch.o.visible = false } catch (e) { } }
+function tzKapat() { if (UI.mode !== 'tezgah') return; setMode('cafe'); try { sfx('tap') } catch (e) { } }   // setMode sarmalayıcısı tzKapatIc'i çağırır
+{ const _sm = setMode; setMode = function (m) { if (UI.mode === 'tezgah' && m !== 'tezgah') tzKapatIc(); return _sm.apply(this, arguments) } }
+const _tzV = new THREE.Vector3();
+function tzOvKur() { let ov = $('tzOv'); if (!ov) { ov = document.createElement('div'); ov.id = 'tzOv'; ov.setAttribute('data-dilyok', '1'); $('game').appendChild(ov);
+    ov.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; e.stopPropagation(); tzTikla(b.dataset.a, b.dataset.v) }) }
+  ov.innerHTML = `<div class="tzHead">${ic('market')}<b class="tzBas"></b></div><div class="tzPara">${ic('coin')}<b></b></div><button class="tzX" type="button" data-a="x" aria-label="${insT('Kapat', 'Close')}"></button><div class="tzBub"></div><div class="tzPick" hidden></div><div class="tzPanel"></div>`;
+  ov.hidden = false; ov.querySelector('.tzHead .tzBas').textContent = insT(`${tzAdi()} tezgâhı`, `${tzAdi()} stall`) }
+function tzPanelCiz() { const ov = $('tzOv'); if (!ov || ov.hidden) return; const T = tzS(), w = tzSaticiW(), nm = w && S.chars[w.key] ? S.chars[w.key].name : '';
+  const sl = T.raf.map((id, i) => `<button type="button" class="tzSl${id ? '' : ' bos'}${TZ.sec === i ? ' sec' : ''}" data-a="s" data-v="${i}">${id ? `${itemArt(id)}<em>${ic('coin')}${tzFiyat(id)}</em>${TZ.sec === i ? `<span class="tzGeri" data-a="g" data-v="${i}">${insT('Tahtaya al', 'To board')}</span>` : ''}` : '<b>+</b>'}</button>`).join('');
+  ov.querySelector('.tzPanel').innerHTML = `<div class="tzRaf">${sl}</div><div class="tzYan"><button type="button" class="btn tzEkle" data-a="p">${ic('merge')}${insT('Tahtadan ekle', 'Add from board')}</button><small>${w ? insT(`Satıcı: <b>${nm}</b> · kendisi satar`, `Vendor: <b>${nm}</b> · sells by themselves`) : insT('Satıcı yok: müşterilere sen bak', 'No vendor: you serve the guests')} · ${insT(`${T.n} satış`, `${T.n} sales`)}</small></div>`;
+  tzPickCiz() }
+function tzTahtaUrunleri() { const m = new Map(); S.board.forEach((v, i) => { if (tzSatilir(v)) m.set(v, (m.get(v) || 0) + 1) }); return [...m.entries()].sort((a, b) => tzFiyat(b[0]) - tzFiyat(a[0])) }
+function tzPickCiz() { const ov = $('tzOv'), P = ov && ov.querySelector('.tzPick'); if (!P) return; P.hidden = !TZ.pick; if (!TZ.pick) return; const L = tzTahtaUrunleri(), bos = tzS().raf.filter(x => !x).length;
+  P.innerHTML = `<div class="tzPh"><b>${insT('Tahtadaki ürünler', 'Items on your board')}</b><small>${insT(`Rafta ${bos} boş yer`, `${bos} free on the shelf`)}</small><button type="button" class="tzPx" data-a="pk" aria-label="x">${ic('close')}</button></div>
+    <div class="tzPl">${L.length ? L.map(([id, n]) => `<button type="button" class="tzPi" data-a="e" data-v="${id}">${itemArt(id)}${n > 1 ? `<i>×${n}</i>` : ''}<em>${ic('coin')}${tzFiyat(id)}</em></button>`).join('') : `<p>${insT('Tahtanda satılacak ürün yok. Birleştir’de üret, sonra buraya koy.', 'Nothing to sell on your board. Make something on the Merge board, then put it here.')}</p>`}</div>` }
+function tzRafaKoyId(id) { const T = tzS(), k = T.raf.indexOf(null); if (k < 0) { try { sfx('nope') } catch (e) { } toast(insT('<b>Raf dolu</b><br>Önce satılsın ya da birini tahtaya geri al', '<b>The shelf is full</b><br>Sell something first or take one back to the board'), ic('market'), 2200); return false }
+  const i = S.board.indexOf(id); if (i < 0) return false; T.raf[k] = id; S.board[i] = null; if (UI.mgSel === i) UI.mgSel = null; markDirty(); try { sfx('pop') } catch (e) { } return true }
+function tzGeriAl(k) { const T = tzS(), id = T.raf[k]; if (!id) return; let t = -1; try { t = nearestEmpty(MG_MID()) } catch (e) { t = S.board.indexOf(null) } if (t < 0) { toast(insT('Tahta dolu', 'Your board is full'), ic('lock'), 1800); return }
+  S.board[t] = id; T.raf[k] = null; TZ.sec = null; markDirty(); try { sfx('tap') } catch (e) { } }
+function tzTikla(a, v) { const c = v != null ? TZ.cust.find(x => x.id === +v) : null;
+  if (a === 'x') return tzKapat(); if (a === 'p') { TZ.pick = !TZ.pick; try { sfx('tap') } catch (e) { } return tzPickCiz() } if (a === 'pk') { TZ.pick = false; return tzPickCiz() }
+  if (a === 'e') { if (tzRafaKoyId(v)) tzPanelCiz(); return }
+  if (a === 's') { const k = +v; if (!tzS().raf[k]) { TZ.pick = true; tzPanelCiz(); return } TZ.sec = TZ.sec === k ? null : k; tzPanelCiz(); return }
+  if (a === 'g') { tzGeriAl(+v); return tzPanelCiz() }
+  if (a === 'm') { try { sfx('tap') } catch (e) { } setMode('merge'); toast(insT('<b>Özel istek bekliyor</b><br>Ürünü yap, sonra sol üstteki Tezgâh çipinden dön; müşteri sen yokken bekler.', '<b>A special request is waiting</b><br>Make the item, then come back via the Stall chip; the guest waits while you’re away.'), ic('market'), 3600); return }
+  if (!c) return; if (a === 'k') tzKarsila(c); else if (a === 'v') { if (!tzVer(c)) { try { sfx('nope') } catch (e) { } } else tzPanelCiz() } else if (a === 'o') tzOde(c); TZ.key = '' }
+function tzPara(c, n) { const ov = $('tzOv'); if (!ov) return; const r = renderer.domElement.getBoundingClientRect(), g = $('game').getBoundingClientRect(); _tzV.set(c.ch.pos.x, 1.7, c.ch.pos.z).project(camera);
+  const e = document.createElement('div'); e.className = 'tzFx'; e.innerHTML = `+${n} ${ic('coin')}`; e.style.left = ((_tzV.x + 1) / 2 * r.width + r.left - g.left) + 'px'; e.style.top = ((1 - _tzV.y) / 2 * r.height + r.top - g.top) + 'px'; ov.appendChild(e); setTimeout(() => e.remove(), 1100) }
+// her kare: müşteri baloncukları (durum değişince yeniden kurulur), para, başlık
+function tzOvCiz() { const ov = $('tzOv'); if (!ov || ov.hidden) return; const B = ov.querySelector('.tzBub'), r = renderer.domElement.getBoundingClientRect(), g = $('game').getBoundingClientRect(), T = tzS();
+  const pb = ov.querySelector('.tzPara b'), pt = kaFmt(S.coins); if (pb.textContent !== pt) pb.textContent = pt;
+  for (const c of TZ.cust) { if (c.st === 'gel' || c.st === 'git') { if (c.el) { c.el.remove(); c.el = null } continue }
+    const rafta = T.raf.includes(c.want), tahtada = S.board.includes(c.want), k = c.st + '|' + rafta + '|' + tahtada;
+    if (!c.el) { c.el = document.createElement('div'); c.el.className = 'tzB'; B.appendChild(c.el) }
+    if (c.k !== k) { c.k = k; let h = '';
+      if (c.st === 'bekle') h = `<button type="button" class="tzBtn" data-a="k" data-v="${c.id}">${ic('heart')}${insT('Karşıla', 'Greet')}</button>`;
+      else if (c.st === 'istek') h = `<div class="tzW${c.ozel ? ' oz' : ''}">${itemArt(c.want)}${c.ozel ? `<em>${insT('Özel istek ×1,5', 'Special ×1.5')}</em>` : ''}</div>` + (rafta ? `<button type="button" class="tzBtn g" data-a="v" data-v="${c.id}">${ic('check')}${insT('Ver', 'Give')}</button>` : tahtada ? `<button type="button" class="tzBtn y" data-a="v" data-v="${c.id}">${ic('merge')}${insT('Tahtadan ver', 'Give from board')}</button>` : c.ozel ? `<button type="button" class="tzBtn" data-a="m">${ic('merge')}${insT('Yap', 'Make')}</button>` : `<small>${insT('Rafta yok', 'Not on the shelf')}</small>`);
+      else if (c.st === 'ode') h = `<button type="button" class="tzBtn g" data-a="o" data-v="${c.id}">${ic('coin')}${insT('Hesabı al', 'Take payment')} · ${c.fiyat}</button>`;
+      c.el.innerHTML = h + '<i class="tzPat"><b></b></i>' }
+    const pf = c.el.querySelector('.tzPat b'); if (pf) { const q = Math.max(0, c.pat / c.pat0); pf.style.width = (q * 100).toFixed(0) + '%'; pf.style.background = q > 0.5 ? '#7fc24a' : q > 0.25 ? '#f2b134' : '#e8564f'; c.el.querySelector('.tzPat').style.visibility = c.st === 'ode' ? 'hidden' : '' }
+    _tzV.set(c.ch.pos.x, c.spot === 1 ? 2.05 : 1.62, c.ch.pos.z).project(camera); c.el.style.transform = `translate(${((_tzV.x + 1) / 2 * r.width + r.left - g.left).toFixed(1)}px,${((1 - _tzV.y) / 2 * r.height + r.top - g.top).toFixed(1)}px) translate(-50%,-100%)` }
+  for (const el of [...B.children]) if (!TZ.cust.some(c => c.el === el)) el.remove();
+  const ks = T.raf.join(',') + '|' + S.board.filter(tzSatilir).length; if (ks !== TZ.key) { TZ.key = ks; tzPanelCiz() } }
+
+// ---- Birleştir: doğrudan satış yerine Tezgâha / Depo / Kaldır ----
+function tzTahtaDugme() { const n = $('mgName'), kap = n && !n.hidden ? n : $('mgInfo'); if (!kap) return; kap.querySelectorAll('.tzKoyB,.tzDepB,.tzSilB').forEach(b => b.remove()); const d = $('mgDel'); if (d) d.remove();
+  const i = UI.mgSel; if (i == null) return; const v = S.board[i], it = v && ITEMS[v]; if (!it || !it.chain || it.fam === 'bag') return;
+  const ek = (cls, h, fn, t) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + cls; b.setAttribute('data-dilyok', '1'); b.innerHTML = h; if (t) { b.title = t; b.setAttribute('aria-label', t) } b.onclick = e => { e.stopPropagation(); fn(b) }; kap.appendChild(b); return b };
+  if (tzKurulu() && tzSatilir(v)) ek('green tzKoyB', `${ic('market')}${insT('Tezgâha', 'Stall')}<em>${tzFiyat(v)}</em>`, () => { if (tzRafaKoyId(v)) { try { refreshCell(i) } catch (e) { } renderInfo(); toast(insT(`<b>${kaTr(it.name)} tezgâhta</b><br>${tzFiyat(v)} altına satılacak`, `<b>${kaTr(it.name)} is on the stall</b><br>It’ll sell for ${tzFiyat(v)} gold`), `<span class="ic">${itemArt(v)}</span>`, 1800) } }, insT('Tezgâha koy', 'Put on the stall'));
+  ek('light tzDepB', ic('box'), () => tzDepoyaKoy(i), insT('Depoya koy', 'Store'));
+  ek('light tzSilB', ic('trash'), b => { const deger = (it.lv | 0) >= 3 || tzFiyat(v) >= 9; if (deger && !b.dataset.ok) { b.dataset.ok = '1'; b.classList.remove('light'); b.classList.add('red'); b.innerHTML = `${ic('trash')}${insT('Emin misin?', 'Sure?')}`; try { sfx('tap') } catch (e) { } return }
+    S.board[i] = null; UI.mgSel = null; markDirty(); try { sfx('tap') } catch (e) { } try { refreshCell(i) } catch (e) { } renderInfo() }, insT('Kaldır (ödülsüz)', 'Remove (no reward)')) }
+try { const _mn = mgNameDraw; mgNameDraw = function () { const r = _mn.apply(this, arguments); try { if (TZ_ON) { tzTahtaDugme(); tzDepoCiz() } } catch (e) { console.warn('tezgâh düğmeleri', e) } return r } } catch (e) { }
+{ const _ri = renderInfo; renderInfo = function () { const r = _ri.apply(this, arguments); try { if (TZ_ON) { const n = $('mgName'); if (!n || n.hidden) tzTahtaDugme(); tzDepoCiz() } } catch (e) { } return r } }
+// depo: 6 yer, geçici saklama (tahtanın sol altında)
+function tzDepoyaKoy(i) { const T = tzS(), v = S.board[i]; if (!v) return; const k = T.depo.indexOf(null);
+  if (k < 0) { try { sfx('nope') } catch (e) { } toast(insT(`<b>Depo dolu</b><br>${TZ.depo} yer var; önce birini tahtaya geri al`, `<b>Storage is full</b><br>${TZ.depo} slots; take one back to the board first`), ic('box'), 2200); return }
+  T.depo[k] = v; S.board[i] = null; if (UI.mgSel === i) UI.mgSel = null; markDirty(); try { sfx('pop') } catch (e) { } try { refreshCell(i) } catch (e) { } renderInfo() }
+function tzDepodanAl(k) { const T = tzS(), v = T.depo[k]; if (!v) return; let t = -1; try { t = nearestEmpty(MG_MID()) } catch (e) { t = S.board.indexOf(null) }
+  if (t < 0) { try { sfx('nope') } catch (e) { } toast(insT('Tahta dolu', 'Your board is full'), ic('lock'), 1800); return }
+  S.board[t] = v; T.depo[k] = null; markDirty(); try { sfx('pop') } catch (e) { } try { refreshCell(t, 'pop') } catch (e) { } tzDepoCiz() }
+function tzDepoCiz() { if (!TZ_ON || UI.mode !== 'merge') return; const bw = $('merge'); if (!bw) return; const T = tzS(), n = T.depo.filter(Boolean).length; let b = $('tzDepo');
+  if (!b) { b = document.createElement('div'); b.id = 'tzDepo'; b.setAttribute('data-dilyok', '1'); b.innerHTML = `<button type="button" class="tzDb">${ic('box')}<b class="tzDn"></b></button><div class="tzDp" hidden></div>`;
+    b.querySelector('.tzDb').onclick = e => { e.stopPropagation(); const p = b.querySelector('.tzDp'); p.hidden = !p.hidden; try { sfx('tap') } catch (x) { } tzDepoCiz() };
+    b.querySelector('.tzDp').onclick = e => { e.stopPropagation(); const x = e.target.closest('[data-d]'); if (x) tzDepodanAl(+x.dataset.d) } }
+  if (b.parentElement !== bw) bw.appendChild(b); const nm = $('mgName'); b.hidden = !!(nm && !nm.hidden); if (b.hidden) { b.querySelector('.tzDp').hidden = true; return } const s = b.querySelector('.tzDb .tzDn'), tx = `${insT('Depo', 'Storage')} ${n}/${TZ.depo}`; if (s.textContent !== tx) s.textContent = tx;
+  const p = b.querySelector('.tzDp'); if (!p.hidden) { const h = `<small>${insT('Dokun: tahtaya geri gelir', 'Tap to bring back to the board')}</small><div>${T.depo.map((v, k) => `<button type="button" class="tzDs${v ? '' : ' bos'}" ${v ? `data-d="${k}"` : 'disabled'}>${v ? itemArt(v) : ''}</button>`).join('')}</div>`; if (p._h !== h) { p._h = h; p.innerHTML = h } } }
+{ const _rm = renderMerge; renderMerge = function () { const r = _rm.apply(this, arguments); try { tzDepoCiz() } catch (e) { } return r } }
+try { const _nn = nyNext; nyNext = function () { const st = _nn.apply(this, arguments); try { if (TZ_ON && st && st.block && st.block.t === 'Birleştir ya da sat') st.block = { ...st.block, t: insT('Birleştir, depola ya da kaldır', 'Merge, store or remove') } } catch (e) { } return st } } catch (e) { }
+{ const _t = toast; toast = function (msg) { try { if (TZ_ON && msg === 'Tahta dolu: birleştir ya da sat') arguments[0] = insT('Tahta dolu: birleştir, depoya koy ya da kaldır', 'Board full: merge, store or remove items') } catch (e) { } return _t.apply(this, arguments) } }
+
+// ---- kafe: tezgâh çipi · yükseltme penceresi ----
+function tzCip() { const host = document.querySelector('#y2 .k3chips'); let e = $('tzChip');
+  if (!e) { if (!host) return; e = document.createElement('div'); e.id = 'tzChip'; e.className = 'goal tzChip'; e.setAttribute('role', 'button'); e.tabIndex = 0; e.setAttribute('data-dilyok', '1');
+    e.onclick = () => { try { sfx('tap') } catch (x) { } tzKurulu() ? tzAc() : tzKurPencere() }; host.appendChild(e) }
+  else if (host && e.parentElement !== host) host.appendChild(e);
+  e.hidden = !tzAsama(); if (e.hidden) return; const T = tzS(), dolu = T.raf.filter(Boolean).length, m = TZ.cust.filter(c => c.st === 'bekle' || c.st === 'istek' || c.st === 'ode').length;
+  const h = tzKurulu() ? `${ic('market')}<span>${insT('Tezgâh', 'Stall')}</span><em>${insT('raf', 'shelf')} ${dolu}/${TZ.raf}${m ? ` · ${m} ${insT('müşteri', 'guests')}` : ''}</em>` : `${ic('market')}<span>${insT('Seyyar tezgâh kur', 'Build a market stall')}</span>`;
+  if (e._h !== h) { e._h = h; e.innerHTML = h } e.classList.toggle('hazir', (!tzKurulu() && tzKurDurum().ok) || (tzKurulu() && !dolu)) }
+{ const _ka = kaAcilanlar; kaAcilanlar = function (a) { const out = _ka.apply(this, arguments); try { if (TZ_ON && a === TZ.a && !tzKurulu()) out.push({ ic: ic('market'), t: insT(`Seyyar tezgâh: tabelasında “${tzAdi()}”`, `Market stall with a “${tzAdi()}” sign`) }) } catch (e) { } return out } }
+
+// ---- görünüm ----
+{ const INK = '#4a2a14', st = document.createElement('style'); st.textContent = `
+html.tzmode #game #y2,html.tzmode #game .bottom,html.tzmode #game .nav,html.tzmode #autoBtn,html.tzmode #game #ui{visibility:hidden!important}
+#tzOv{position:absolute;inset:0;z-index:40;pointer-events:none;font-family:var(--font-display);color:${INK}}#tzOv[hidden]{display:none}
+#tzOv .tzHead{position:absolute;left:50%;top:calc(max(10px,var(--sat,0px)) + 2px);transform:translateX(-50%);display:flex;align-items:center;gap:6px;height:38px;padding:0 18px;white-space:nowrap;border:3px solid #5a2f12;border-radius:999px;background:linear-gradient(#fff8ea,#f5dcb4);box-shadow:inset 0 0 0 2.5px #e9964a,0 3px 0 #5a2f12;font-weight:900;font-size:16px;max-width:calc(100% - 260px);overflow:hidden}
+#tzOv .tzHead .ic{width:20px;height:20px;flex:none}#tzOv .tzHead .tzBas{font-weight:900;overflow:hidden;text-overflow:ellipsis;max-width:min(380px,calc(calc(100*var(--vw)) - 300px))}
+#tzOv .tzPara{position:absolute;left:calc(var(--el,16px));top:calc(max(10px,var(--sat,0px)) + 2px);display:flex;align-items:center;gap:6px;height:36px;padding:0 14px 0 8px;border:3px solid ${INK};border-radius:999px;background:#fffaf0;box-shadow:0 3px 0 ${INK};font-weight:900;font-size:16px}
+#tzOv .tzPara .ic{width:22px;height:22px}
+#tzOv .tzX{position:absolute;right:calc(var(--er,16px));top:calc(max(10px,var(--sat,0px)));width:42px;height:42px;border:0;padding:0;background:url(${UIIMG('btn_close')}) center/contain no-repeat;pointer-events:auto;cursor:pointer}
+#tzOv .tzBub{position:absolute;inset:0}
+#tzOv .tzB{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:auto}
+#tzOv .tzBtn{appearance:none;display:inline-flex;align-items:center;gap:3px;padding:4px 9px;border:2.5px solid ${INK};border-radius:999px;background:#fffaf0;box-shadow:0 2.5px 0 ${INK};font:900 12px/1 var(--font-display);color:${INK};cursor:pointer;white-space:nowrap;animation:tzNab 1.2s ease-in-out infinite}
+#tzOv .tzBtn .ic{width:15px;height:15px}#tzOv .tzBtn.g{background:linear-gradient(#cdeb8b,#93cf52)}#tzOv .tzBtn.y{background:linear-gradient(#fff3b8,#ffd75e)}
+@keyframes tzNab{50%{transform:translateY(-2px)}}
+#tzOv .tzW{position:relative;width:46px;height:46px;padding:4px;box-sizing:border-box;border:2.5px solid ${INK};border-radius:14px;background:#fffaf0;box-shadow:0 2.5px 0 ${INK}}
+#tzOv .tzW>img,#tzOv .tzW>svg,#tzOv .tzW>span{width:100%;height:100%;display:block;object-fit:contain}
+#tzOv .tzW.oz{border-color:#b46be0;box-shadow:0 2.5px 0 #6b3a8a,0 0 0 3px rgba(180,107,224,.3)}
+#tzOv .tzW em{position:absolute;left:50%;top:-14px;transform:translateX(-50%);white-space:nowrap;font:900 9.5px/1 var(--font-display);font-style:normal;color:#fff;background:#b46be0;border:2px solid #6b3a8a;border-radius:999px;padding:2px 6px}
+#tzOv .tzB small{font:800 10.5px/1.1 var(--font-display);background:#fffaf0;border:2px solid ${INK};border-radius:999px;padding:2px 7px}
+#tzOv .tzPat{display:block;width:44px;height:6px;border:2px solid ${INK};border-radius:999px;background:#fff;overflow:hidden}#tzOv .tzPat b{display:block;height:100%;width:100%;border-radius:999px}
+#tzOv .tzFx{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:3px;font:900 18px var(--font-display);color:#b8860b;text-shadow:0 2px 0 #fff8ec;pointer-events:none;animation:sellup 1.1s ease-out forwards}#tzOv .tzFx .ic{width:18px;height:18px}
+#tzOv .tzPanel{position:absolute;left:50%;bottom:calc(8px + var(--sab,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:8px 10px;border:3px solid #5a2f12;border-radius:18px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 4px 0 #5a2f12,0 8px 16px rgba(40,20,5,.25);pointer-events:auto;max-width:calc(100% - 24px);box-sizing:border-box}
+#tzOv .tzRaf{display:flex;gap:6px}
+#tzOv .tzSl{position:relative;appearance:none;width:62px;height:62px;padding:5px;box-sizing:border-box;border:2.5px solid ${INK};border-radius:14px;background:#fff;box-shadow:inset 0 -3px 0 rgba(180,110,40,.18);cursor:pointer;display:grid;place-items:center}
+#tzOv .tzSl>img,#tzOv .tzSl>svg,#tzOv .tzSl>span:not(.tzGeri){width:100%;height:100%;display:block;object-fit:contain}
+#tzOv .tzSl.bos{border-style:dashed;background:#f6ead2}#tzOv .tzSl.bos b{font:900 26px/1 var(--font-display);color:#c9a27a}
+#tzOv .tzSl.sec{box-shadow:0 0 0 3px #ffd24a}
+#tzOv .tzSl em{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);display:flex;align-items:center;gap:1px;font:900 10.5px/1 var(--font-display);font-style:normal;background:#fff3d6;border:2px solid ${INK};border-radius:999px;padding:1px 5px;white-space:nowrap}#tzOv .tzSl em .ic{width:11px;height:11px}
+#tzOv .tzGeri{position:absolute;left:50%;top:-16px;transform:translateX(-50%);white-space:nowrap;font:900 10px/1 var(--font-display);background:#ffd75e;border:2px solid ${INK};border-radius:999px;padding:3px 7px}
+#tzOv .tzYan{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+#tzOv .tzEkle{height:34px;font-size:13px!important;padding:0 12px!important;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}#tzOv .tzEkle .ic{width:16px;height:16px}
+#tzOv .tzYan small{font:800 10.5px/1.25 var(--font-display);color:#7a4e2c;max-width:220px}
+#tzOv .tzPick{position:absolute;left:50%;bottom:calc(100px + var(--sab,0px));transform:translateX(-50%);width:min(480px,calc(100% - 24px));max-height:calc(100% - 170px);display:flex;flex-direction:column;padding:8px 10px 10px;box-sizing:border-box;border:3px solid #5a2f12;border-radius:16px;background:#fffaf0;box-shadow:0 4px 0 #5a2f12;pointer-events:auto}
+#tzOv .tzPick[hidden]{display:none}
+#tzOv .tzPh{display:flex;align-items:center;gap:8px;margin-bottom:6px}#tzOv .tzPh b{font-size:14px}#tzOv .tzPh small{font:800 11px var(--font-display);color:#7a4e2c;flex:1}
+#tzOv .tzPx{appearance:none;width:28px;height:28px;border:2.5px solid ${INK};border-radius:50%;background:#fff;display:grid;place-items:center;cursor:pointer;padding:3px}#tzOv .tzPx .ic{width:14px;height:14px}
+#tzOv .tzPl{display:flex;flex-wrap:wrap;gap:6px;overflow:auto;padding:2px 2px 10px}
+#tzOv .tzPi{position:relative;appearance:none;width:56px;height:56px;padding:4px;box-sizing:border-box;border:2.5px solid ${INK};border-radius:12px;background:#fff;cursor:pointer}
+#tzOv .tzPi>img,#tzOv .tzPi>svg,#tzOv .tzPi>span{width:100%;height:100%;display:block;object-fit:contain}
+#tzOv .tzPi i{position:absolute;right:-4px;top:-5px;font:900 10px/1 var(--font-display);font-style:normal;background:#4a2a14;color:#fff;border-radius:999px;padding:2px 5px}
+#tzOv .tzPi em{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);display:flex;align-items:center;gap:1px;font:900 10px/1 var(--font-display);font-style:normal;background:#fff3d6;border:2px solid ${INK};border-radius:999px;padding:1px 4px;white-space:nowrap}#tzOv .tzPi em .ic{width:10px;height:10px}
+#tzOv .tzPl p{margin:4px 2px;font:800 12px/1.35 var(--font-display);color:#7a4e2c}
+#mgName .tzKoyB,#mgName .tzDepB,#mgName .tzSilB{flex:none;padding:4px 9px!important;font-size:13px!important;min-height:0!important;height:auto!important;border-radius:999px!important;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+#mgName .tzDepB,#mgName .tzSilB{padding:4px 6px!important}
+#mgName .tzKoyB .ic,#mgName .tzDepB .ic,#mgName .tzSilB .ic{width:15px;height:15px}#mgName .tzKoyB em{font-style:normal;opacity:.85;font-size:11.5px}
+#tzDepo{position:absolute;left:50%;top:max(10px,var(--sat,0px));transform:translateX(-50%);z-index:9}#tzDepo[hidden]{display:none}
+#tzDepo .tzDb{appearance:none;display:inline-flex;align-items:center;gap:6px;height:42px;padding:0 16px 0 10px;box-sizing:border-box;border:3px solid ${INK};border-radius:999px;background:#fffaf0;box-shadow:0 3px 0 ${INK};font:800 15px/1 var(--font-display);color:${INK};cursor:pointer}#tzDepo .tzDb .ic{width:22px;height:22px}
+#tzDepo .tzDp{position:absolute;left:50%;transform:translateX(-50%);top:50px;padding:7px 8px 8px;border:3px solid ${INK};border-radius:14px;background:#fffaf0;box-shadow:0 3px 0 ${INK};width:max-content}#tzDepo .tzDp[hidden]{display:none}
+#tzDepo .tzDp small{display:block;margin-bottom:5px;font:800 10.5px var(--font-display);color:#7a4e2c}#tzDepo .tzDp>div{display:grid;grid-template-columns:repeat(6,44px);gap:5px}
+#tzDepo .tzDs{appearance:none;width:44px;height:44px;padding:3px;box-sizing:border-box;border:2px solid ${INK};border-radius:10px;background:#fff;cursor:pointer}#tzDepo .tzDs.bos{border-style:dashed;background:#f6ead2;cursor:default}
+#tzDepo .tzDs>img,#tzDepo .tzDs>svg,#tzDepo .tzDs>span{width:100%;height:100%;display:block;object-fit:contain}
+.goal.tzChip>.ic{width:18px;height:18px;flex:none}.goal.tzChip em{display:inline-flex;align-items:center;gap:2px;font-style:normal;opacity:.85}
+.goal.tzChip.hazir{background:linear-gradient(#fff3b8,#ffd75e)!important}
+#skTz .tzKurW{display:flex;flex-direction:column;gap:10px;grid-column:1/-1;font-family:var(--font-display);color:${INK}}
+#skTz .tzKurU{display:flex;gap:10px;align-items:flex-start}#skTz .tzKurI{flex:none;width:52px;height:52px;border:3px solid ${INK};border-radius:14px;background:linear-gradient(#ffe7a0,#f2b134);display:grid;place-items:center}#skTz .tzKurI .ic{width:30px;height:30px}
+#skTz .tzKurU b{font-size:18px}#skTz .tzKurU p{margin:3px 0 0;font:700 12.5px/1.35 var(--font-body)}
+#skTz .tzKurM{padding:8px 10px;border:2.5px solid #e2c493;border-radius:12px;background:#fffaf0;text-align:center}#skTz .tzKurM h4{margin:0 0 6px;font-size:13px}
+#skTz .tzMat{display:flex;justify-content:center;gap:8px}
+#skTz .insM{flex:0 1 96px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;border-radius:10px;background:#f6ead2}#skTz .insM.ok{background:#e3f3d3}
+#skTz .insM i{position:relative;width:40px;height:40px;display:grid;place-items:center}#skTz .insM i svg{width:100%;height:100%}
+#skTz .insM i u{position:absolute;right:-4px;top:-3px;width:16px;height:16px;border-radius:50%;background:#7fc24a;border:2px solid #2f6b22;display:grid;place-items:center}#skTz .insM i u .ic{width:10px;height:10px}
+#skTz .insM b{font-size:13px}#skTz .insM small{font-size:10px;font-weight:800;color:#7a4e2c;line-height:1.1}
+#skTz .insNot{margin:6px 0 0;font:800 11.5px/1.3 var(--font-display);color:#7a4e2c;display:flex;align-items:center;justify-content:center;gap:4px}#skTz .insNot.ok{color:#3d7a2a}#skTz .insNot .ic{width:15px;height:15px}
+#skTz .tzTes{margin-top:8px;width:100%}
+#skTz .tzKurA{display:flex;flex-direction:column;align-items:center;gap:4px}#skTz .tzKurB{min-width:220px}#skTz .tzKurA .why{margin:0;display:flex;align-items:center;gap:4px;font:800 12px var(--font-display);color:#b23b33}#skTz .tzKurA .why .ic{width:15px;height:15px}
 `; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
