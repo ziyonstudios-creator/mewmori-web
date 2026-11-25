@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795597366",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795600881",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-1202';
+const OLC_DERLEME = '20261125-1254';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -26740,6 +26740,8 @@ kkSupur(); setInterval(kkSupur, 2000);
 //    olarak duruyor. "Dükkânı kapatırsan düzenlerken…" ipucu ve "Önce dükkânı aç" yazısı kalktı.
 //  • Bildirimler ekranın alt ortasında, alttaki bilgi yazısının (kafede "Pamuk müşteri bekliyor…" şeridi; tezgâhta raf şeridi) hemen üstünde çıkar.
 //    Güneş/ay gibi çizim simgeli bildirimler (gün başladı, gece oldu) kocaman çıkıyordu: simge 30 px.
+//    (V370, kullanıcı 12:08: "ortada bildirim yazısı mümkünse en fazla 2 satır olsun ekranı çok kapatmayacak şekilde") Kutu geniş (en çok 560 px)
+//    ve alçak; yazı en fazla 2 satır (başlık + bir satır), uzunsa sonu … ile kısalır; simge 26 px.
 //  • Rehber › Gün ve dükkân: tabela satırı yerine "Düzenle'ye girince kafe kendiliğinden boşalır" (Düzenle zaten kafeyi boşaltıp zamanı durduruyor).
 //    Gece raporundan sonra sabah dükkân her zaman açılır; Düzenle'de taşıma sırasında içeride müşteri kalırsa "önce dükkânı kapat" yerine "biraz bekle" denir.
 const AY_ON = true;
@@ -26788,30 +26790,48 @@ ${Y} .ayGun[hidden]{display:none}
 ${Y} .ayGun em{font:800 8px/1 var(--font-body);letter-spacing:.08em;color:#7a5236;font-style:normal}
 ${Y} .ayGun b{font:800 22px/1 var(--font-display);color:${INK}}
 html.xmode #game #y2 .ayGun,html.tzmode #game #y2 .ayGun,#game.hudoff #y2 .ayGun{opacity:0;pointer-events:none}
-#game .toast>svg,#game .toast>svg.i{width:30px!important;height:30px!important;flex:none!important}
-${G} .toasts{top:auto!important;bottom:var(--ayTsB,calc(var(--ebR) + 60px))!important;transform:translateX(-50%) scale(var(--u))!important;transform-origin:50% 100%!important;flex-direction:column-reverse!important}
+#game .toast>svg,#game .toast>svg.i,#game .toast>.ic,#game .toast>img{width:26px!important;height:26px!important;flex:none!important}
+${G} .toasts{top:auto!important;bottom:var(--ayTsB,calc(var(--ebR) + 60px))!important;width:min(560px,calc(100*var(--vwu) - 290px))!important;transform:translateX(-50%) scale(var(--u))!important;transform-origin:50% 100%!important;flex-direction:column-reverse!important}
+/* (V370) en fazla 2 satır: geniş ve alçak kutu */
+${G} .toast{max-width:100%;box-sizing:border-box;padding:4px 14px 4px 6px!important;font-size:12.5px!important;line-height:1.24!important;gap:7px!important}
+${G} .toast>div{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 `; document.head.appendChild(st) }
 
-// ================= V369 · AŞAMA MENÜSÜ: ELİPS KARTLAR, GERÇEK OYUN GÖRÜNTÜLERİNDEN KOLAJ, YANA KAYDIRMA =================
+// ================= V369 · AŞAMA MENÜSÜ: ELİPS KARTLAR, YANA KAYDIRMA · V370: KAHRAMAN GÖRÜNTÜ + İLERLEME HALKASI =================
 // Kullanıcı (25 Kasım 2026, 11:07, çizimle): "aşama menüsü oluşturdum 1.aşama böyle elip şeklinde olsun arkaplanda bu aşamada kullanabildiği alanları
 // kolaj şeklinde yerleştir. bir sonraki aşama yani 2.aşama yine gözüksün kolaj şeklinde ancak üzerinde kilit simgesi olsun. sonraki aşamalar ise kilitli
 // gözüksün oyuncu yana doğru sürükleyerek aşamaları görebilsin."
-//  • Kafe Yükseltme penceresi (kaPencere: aşama yuvarlağı ve "Kafeyi yükselt" çipi açar) yeni düzende: 8 aşama yan yana elips kart, parmakla (farede
-//    sürükleyerek, ‹ › oklarıyla da) kaydırılır, kartlar ortaya oturur. Açılışta şu anki aşama ortada, sonraki sağında görünür.
-//  • Kartın arkasında o aşamada kullanılan alanlardan kolaj: oyundan alınmış gerçek görüntüler (img/asama/*.webp: küçük kafe, mutfak, Birleştir
-//    tahtası, inşaat malzemeleri, ekip ve kasa, tezgâh ve satıcı, bahçeler, büyük salon, garson, kapı) + o aşamada açılan bir tarifin resmi.
-//  • Durumlar: geçilmiş aşama renkli + ✓ · şu anki aşama altın çerçeveli "Şu an buradasın" · sonraki aşama kolajı görünür, üstünde büyük kilit ·
-//    sonrakiler kararmış, kilitli. Ortadaki kartın altında o aşamada açılanlar listelenir; alt şeritte yükseltme düğmeleri (altın / elmas) aynı.
-const AS_KOLAJ = { 1: ['kafe1', 'mutfak', 'tahta'], 2: ['salon1', 'insaat', 'ekip'], 3: ['kasa', 'salon1', 'tahta'], 4: ['mutfak', 'insaat', 'kasa'],
-  5: ['salonB', 'ekip', 'garson'], 6: ['satici', 'tezgah', 'bahce2'], 7: ['genis', 'garson', 'bahce'], 8: ['kapi', 'genis', 'tezgah'] };
-const AS_IMG = ad => `img/asama/${ad}.webp`;
-function asTarifResmi(s) { try { const T = kaTablo(), L0 = T.L[s - 1] || 0, L1 = T.L[s]; const r = RECIPES.find(r => !r.br && !r.hidden && (r.lvl | 0) > L0 && (r.lvl | 0) <= L1 && URUN_IMG.includes(r.id)); return r ? `img/urun/${r.id}.webp` : '' } catch (e) { return '' } }
-function asKart(s, a) { const T = kaTablo(), d = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit', K = AS_KOLAJ[s] || AS_KOLAJ[1], tr = asTarifResmi(s);
-  const rozet = d === 'su' ? `<span class="asRoz su">${kaT('Şu an buradasın', 'You are here')}</span>` : d === 'gecti' ? `<span class="asRoz ok">${ic('check')}</span>` : '';
-  return `<button type="button" class="asKart ${d}" data-s="${s}" aria-label="${kaT(`${s}. aşama`, `Stage ${s}`)}"><span class="asElips"><span class="asKol">
-      <img class="k0" src="${AS_IMG(K[0])}" alt="" draggable="false"><img class="k1" src="${AS_IMG(K[1])}" alt="" draggable="false"><img class="k2" src="${AS_IMG(K[2])}" alt="" draggable="false">${tr ? `<img class="kd" src="${tr}" alt="" draggable="false">` : ''}</span>
-      <span class="asPerde"></span><span class="asAd">${kaEN() ? `<i>STAGE</i><b>${s}</b>` : `<b>${s}.</b><i>AŞAMA</i>`}</span>${d === 'sonraki' || d === 'kilit' ? `<span class="asKilit">${ic('lock')}</span>` : ''}${rozet}</span>
-    <span class="asAlt">${kaAd(s)}</span></button>` }
+// Kullanıcı (12:08): "aşamalar kolaj tasarımını beğenmedim daha güzel bir şekilde belirt dostum hoşuma hiç gitmedi bu şablonların içindeki kolaj.
+// ayrıca elipsin etrafına ilerleme çubuğu gibi göster"
+//  • Kafe Aşamaları penceresi (kaPencere: üstteki AŞAMA yuvarlağı ve "Kafeyi yükselt" çipi açar): 8 aşama yan yana elips kart, parmakla (farede
+//    sürükleyerek, ‹ › oklarıyla, noktalarla da) kaydırılır, kartlar ortaya oturur. Açılışta şu anki aşama ortada.
+//  • (V370) Kolaj kalktı: her aşamanın kartında oyunun kendi 3D sahnesinden özel çekilmiş tek görüntü (img/asama/a1–a8.webp, yaz, arayüzsüz,
+//    alçak açı): o aşamada kafeye gelen yenilik iş başında — 1 küçük kafede tek başına sen · 2 barista · 3 kasiyer · 4 aşçı · 5 temizlikçi ·
+//    6 dışarıdaki tezgâh ve satıcı · 7 garson · 8 kapıda güvenlik ve dolu kafe.
+//  • (V370) Elipsin çevresi ilerleme halkası: şu anki aşamada sonraki aşamaya biriken altın kadar dolar (ucunda altın düğüm), geçilmiş aşamalarda
+//    tam dolu, sonraki/kilitli aşamalarda boş. Tepede üst arayüzdeki gibi aşama madalyonu (geçilmiş: yeşil + ✓ · şu an: altın · kilitli: gri),
+//    altta aşamanın adını taşıyan şerit, kartın altında durum yazısı (Şu an buradasın · 640/700 · Tamamlandı · Kilitli).
+//  • Ortadaki kartın altında o aşamada açılanlar listelenir; alt şeritte yükseltme düğmeleri (altın / elmas) aynı.
+const AS_RES = s => `img/asama/a${s}.webp`;
+// halka: çerçeve 320×190 (görüntü 300×170 + 10 px pay); merkez çizgi görüntü kenarının 3,5 px dışında; tepeden saat yönünde
+const AS_VB = { w: 320, h: 190 }, AS_YOL = (() => { const cx = 160, cy = 95, rx = 153.5, ry = 88.5; return `M${cx} ${cy - ry}A${rx} ${ry} 0 1 1 ${cx} ${cy + ry}A${rx} ${ry} 0 1 1 ${cx} ${cy - ry}` })();
+function asIlerleme(s, a) { const T = kaTablo(); if (s < a) return 1; if (s > a) return 0; if (a >= T.max) return 1; const c = T.altin[a + 1] || 1; return Math.max(0, Math.min(1, (S.coins || 0) / c)) }
+function asKart(s, a) { const T = kaTablo(), d = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit', p = asIlerleme(s, a);
+  const dolu = p > 0 ? `<path class="hd" pathLength="100" stroke-dasharray="${p >= 1 ? '100 0' : (p * 100).toFixed(2) + ' 100'}" d="${AS_YOL}"/>` : '';
+  const nx = a < T.max ? a + 1 : 0, c = nx ? T.altin[nx] : 0;
+  const alt = d === 'gecti' ? `${ic('check')}<span>${kaT('Tamamlandı', 'Completed')}</span>`
+    : d === 'su' ? (nx ? (S.coins >= c ? `<span>${kaT('Yükseltmeye hazır!', 'Ready to upgrade!')} · </span>${ic('coin')}<b>${kaFmt(c)}</b>` : `<span>${kaT('Şu an buradasın', 'You are here')} · </span>${ic('coin')}<b>${kaFmt(Math.min(S.coins || 0, c))} / ${kaFmt(c)}</b>`) : `<span>${kaT('Şu an buradasın · en üst aşama', 'You are here · top stage')}</span>`)
+    : d === 'sonraki' ? `${ic('lock')}<span>${kaT('Sıradaki', 'Next')} · </span>${ic('coin')}<b>${kaFmt(T.altin[s])}</b>` : `${ic('lock')}<span>${kaT('Kilitli', 'Locked')}</span>`;
+  const hazir = d === 'su' && nx && p >= 1;   // yükseltmeye yetiyor: halka altın, hafif parlar
+  return `<button type="button" class="asKart ${d}${hazir ? ' hazir' : ''}" data-s="${s}" data-p="${p.toFixed(4)}" aria-label="${kaT(`${s}. aşama: ${kaAd(s)}`, `Stage ${s}: ${kaAd(s)}`)}"><span class="asCer">
+      <span class="asElips"><img class="asRes" src="${AS_RES(s)}" alt="" draggable="false"><span class="asPerde"></span>${d === 'sonraki' || d === 'kilit' ? `<span class="asKilit">${ic('lock')}</span>` : ''}</span>
+      <svg class="asHalka" viewBox="0 0 ${AS_VB.w} ${AS_VB.h}" preserveAspectRatio="none" aria-hidden="true"><path class="hz" d="${AS_YOL}"/><path class="hy" d="${AS_YOL}"/>${dolu}</svg>
+      ${d === 'su' && p > 0 && p < 1 ? '<span class="asDugum"></span>' : ''}
+      <span class="asMad"><em>${kaT('AŞAMA', 'STAGE')}</em><b>${s}</b>${d === 'gecti' ? `<i class="asTik">${ic('check')}</i>` : ''}</span>
+      <span class="asSerit">${kaAd(s)}</span></span>
+    <span class="asAlt">${alt}</span></button>` }
+function asDugumler(k) { k.querySelectorAll('.asKart.su').forEach(c => { const n = c.querySelector('.asDugum'), y = c.querySelector('.asHalka .hd'), p = +c.dataset.p; if (!n || !y) return;
+    try { const L = y.getTotalLength(), P = y.getPointAtLength(L * p); n.style.left = (P.x / AS_VB.w * 100).toFixed(2) + '%'; n.style.top = (P.y / AS_VB.h * 100).toFixed(2) + '%' } catch (e) { n.remove() } }) }
 function asBilgi(W, s) { const T = kaTablo(), a = kaAsama(), b = W.body.querySelector('.asBil'); if (!b) return; const L = kaAcilanlar(s);
   const rol = T.rol[s] && typeof CALISAN_ACIK !== 'undefined' && CALISAN_ACIK ? `<div class="kaSat">${ic('paw')}<span>${kaT('Yeni çalışan: ', 'New staff: ')}<b>${T.rol[s][kaEN() ? 1 : 0]}</b></span></div>` : '';
   const bas = s < a ? kaT(`${s}. aşama · açıldı`, `Stage ${s} · unlocked`) : s === a ? kaT(`Şu anki aşaman · ${s}. aşama`, `Your stage · stage ${s}`) : s === a + 1 ? kaT(`Sıradaki: ${s}. aşamada açılacaklar`, `Next: unlocks at stage ${s}`) : kaT(`${s}. aşamada açılacaklar`, `Unlocks at stage ${s}`);
@@ -26840,7 +26860,7 @@ kaPencere = function () { if (!kaAcik()) return; const T = kaTablo(), a = kaAsam
   W.body.querySelector('.asOk.sol').onclick = () => { const c = asOrtadaki(k); asOrtala(k, c && c.previousElementSibling, true) };
   W.body.querySelector('.asOk.sag').onclick = () => { const c = asOrtadaki(k); asOrtala(k, c && c.nextElementSibling, true) };
   W.body.querySelectorAll('.asNok .asDt i').forEach((n, i) => n.onclick = () => asOrtala(k, k.querySelectorAll('.asKart')[i], true));
-  asBilgi(W, a); oklar(a); requestAnimationFrame(() => { asOrtala(k, k.querySelector(`.asKart[data-s="${a}"]`), false); k.querySelectorAll('.asKart').forEach(x => x.classList.toggle('orta', +x.dataset.s === a)) });
+  asDugumler(k); asBilgi(W, a); oklar(a); requestAnimationFrame(() => { asOrtala(k, k.querySelector(`.asKart[data-s="${a}"]`), false); k.querySelectorAll('.asKart').forEach(x => x.classList.toggle('orta', +x.dataset.s === a)) });
   if (nx) { const c = T.altin[nx], g = T.elmas[nx], ok = S.coins >= c, okG = S.gems >= g;
     W.foot.classList.add('asFoot'); W.foot.innerHTML = `<div class="kaAlt"><button class="skbtn green kaAl" type="button" ${ok ? '' : 'disabled'}>${ic('coin')}${kaT(`${nx}. aşamaya yükselt`, `Upgrade to stage ${nx}`)} · ${kaFmt(c)}</button>
       <button class="skbtn kaGem" type="button" ${okG ? '' : 'disabled'}>${ic('gem')}${g}</button></div>
@@ -26854,40 +26874,53 @@ kaPencere = function () { if (!kaAcik()) return; const T = kaTablo(), a = kaAsam
 #skKafe .skscroll{overflow:hidden!important;display:flex!important;flex-direction:column!important}
 /* büyük ekranda (iPad) pencere biraz daha uzun: liste sığsın */
 html.land #game#game#game #skKafe#skKafe.skmodal .skwin{top:max(6px,calc((100*var(--vh) - 500px)/2))!important;bottom:max(6px,calc((100*var(--vh) - 500px)/2))!important}
-#skKafe .asWin{--asW:300px;--asH:170px;--asP:8px;flex:1;min-height:0;grid-column:1/-1;display:flex;flex-direction:column;gap:5px;min-width:0;font-family:var(--font-display);color:${INK}}
-#skKafe .asWin.dar{--asW:240px;--asH:136px;--asP:5px;gap:3px}
-#skKafe .asWin.dar .asNok{font-size:12px}#skKafe .asWin.dar .asBil h4{padding:4px 10px 2px;font-size:12.5px}
+#skKafe .asWin{--asW:300px;--asH:170px;--asP:4px;--asMt:18px;--asMd:46px;--asMb:20px;--asSf:13px;--asKl:56px;flex:1;min-height:0;grid-column:1/-1;display:flex;flex-direction:column;gap:5px;min-width:0;font-family:var(--font-display);color:${INK}}
+#skKafe .asWin.dar{--asW:228px;--asH:129px;--asP:2px;--asMt:13px;--asMd:38px;--asMb:16px;--asSf:11.5px;--asKl:44px;gap:3px}
+#skKafe .asWin.dar .asNok{display:none}#skKafe .asWin.dar .asAlt{margin-top:7px;font-size:11px}
+#skKafe .asWin.dar .asNok{font-size:12px}#skKafe .asWin.dar .asBil h4{padding:3px 10px 1px;font-size:12px}
 #skKafe .asSar{position:relative;flex:none}
 #skKafe .asKay{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;cursor:grab;touch-action:pan-x;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 38px,#000 calc(100% - 38px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 38px,#000 calc(100% - 38px),transparent 100%)}
 #skKafe .asKay::-webkit-scrollbar{display:none}#skKafe .asKay.tut{cursor:grabbing;scroll-snap-type:none}
-#skKafe .asIz{display:flex;gap:14px;padding:var(--asP) calc(50% - var(--asW) / 2) 4px;width:max-content}
-#skKafe .asKart{appearance:none;border:0;background:none;padding:0;margin:0;flex:none;width:var(--asW);scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font:inherit;color:inherit;transition:transform .25s,opacity .25s;transform:scale(.9);opacity:.85;-webkit-tap-highlight-color:transparent}
+#skKafe .asIz{display:flex;gap:12px;padding:var(--asP) calc(50% - var(--asW) / 2 - 10px) 4px;width:max-content}
+#skKafe .asKart{appearance:none;border:0;background:none;padding:0;margin:0;flex:none;width:calc(var(--asW) + 20px);scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;gap:0;cursor:pointer;font:inherit;color:inherit;transition:transform .25s,opacity .25s;transform:scale(.88);opacity:.8;-webkit-tap-highlight-color:transparent}
 #skKafe .asKart.orta{transform:scale(1);opacity:1}
-#skKafe .asElips{position:relative;display:block;width:var(--asW);height:var(--asH);border-radius:50%;overflow:hidden;box-sizing:border-box;border:4px solid ${INK};box-shadow:0 4px 0 ${INK},0 8px 14px rgba(60,30,10,.2);background:#f6e6c8;isolation:isolate}
-#skKafe .asKart.su .asElips{border-color:#b7791f;box-shadow:0 0 0 4px #ffd75e,0 4px 0 ${INK},0 8px 16px rgba(60,30,10,.26)}
-#skKafe .asKol{position:absolute;inset:0}
-#skKafe .asKol img{position:absolute;display:block;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;pointer-events:none}
-#skKafe .asKol .k0{inset:0;width:100%;height:100%;object-fit:cover}
-#skKafe .asKol .k1,#skKafe .asKol .k2{width:42%;aspect-ratio:4/3;object-fit:cover;border:4px solid #fffaf0;border-radius:6px;box-shadow:0 3px 8px rgba(40,20,5,.35)}
-#skKafe .asKol .k1{right:9%;top:13%;transform:rotate(6deg)}
-#skKafe .asKol .k2{left:8%;bottom:11%;transform:rotate(-5deg)}
-#skKafe .asKol .kd{right:12%;bottom:7%;width:22%;aspect-ratio:1;object-fit:contain;padding:4px;box-sizing:border-box;border:3px solid ${INK};border-radius:50%;background:#fffaf0;box-shadow:0 2px 0 ${INK}}
-#skKafe .asPerde{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,248,234,0) 30%,rgba(60,30,10,.28) 100%);pointer-events:none}
-#skKafe .asAd{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);display:flex;align-items:baseline;gap:6px;white-space:nowrap;font-weight:900;color:#fff;text-shadow:0 0 2px ${INK},0 2px 0 ${INK},2px 0 0 ${INK},-2px 0 0 ${INK},0 -2px 0 ${INK},2px 2px 0 ${INK},-2px 2px 0 ${INK},2px -2px 0 ${INK},-2px -2px 0 ${INK};z-index:2;pointer-events:none}
-#skKafe .asAd b{font-size:34px;line-height:1}#skKafe .asAd i{font-style:normal;font-size:26px;letter-spacing:.04em;line-height:1}
-#skKafe .asWin.dar .asAd b{font-size:28px}#skKafe .asWin.dar .asAd i{font-size:21px}#skKafe .asWin.dar .asRoz.su{font-size:10px;padding:3px 8px;top:6px}
-#skKafe .asKart.sonraki .asKol{filter:saturate(.75) brightness(.92)}
-#skKafe .asKart.kilit .asKol{filter:grayscale(.85) brightness(.55) blur(1.2px)}
-#skKafe .asKart.kilit .asAd{opacity:.9}
-#skKafe .asKilit{position:absolute;left:50%;top:63%;transform:translate(-50%,-50%);width:62px;height:62px;border-radius:50%;background:rgba(255,250,240,.92);border:4px solid ${INK};box-shadow:0 3px 0 ${INK};display:grid;place-items:center;z-index:1;pointer-events:none}
-#skKafe .asWin.dar .asKilit{width:52px;height:52px;border-width:3.5px}
-#skKafe .asKilit .ic{width:32px;height:32px}#skKafe .asWin.dar .asKilit .ic{width:27px;height:27px}
-#skKafe .asKart.sonraki .asAd,#skKafe .asKart.kilit .asAd{top:24%}
-#skKafe .asRoz{position:absolute;z-index:3;pointer-events:none}
-#skKafe .asRoz.su{left:50%;top:8px;transform:translateX(-50%);white-space:nowrap;font:900 11px/1 var(--font-display);color:${INK};background:linear-gradient(#fff3b8,#ffd75e);border:2.5px solid ${INK};border-radius:999px;padding:4px 10px;box-shadow:0 2px 0 ${INK}}
-#skKafe .asRoz.ok{right:22%;top:9px;width:28px;height:28px;border-radius:50%;background:#7fc24a;border:3px solid #2f6b22;display:grid;place-items:center}#skKafe .asRoz.ok .ic{width:16px;height:16px}
-#skKafe .asAlt{font:800 12px/1.1 var(--font-body);color:#7a5236;max-width:calc(var(--asW) - 20px);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#skKafe .asOk{position:absolute;top:calc(var(--asP) + var(--asH) / 2 - 18px);z-index:4;width:36px;height:36px;border:3px solid ${INK};border-radius:50%;background:#fffaf0;box-shadow:0 3px 0 ${INK};font:900 22px/1 var(--font-display);color:${INK};display:grid;place-items:center;padding:0 0 3px;cursor:pointer}
+/* çerçeve: görüntü + ilerleme halkası + madalyon + şerit */
+#skKafe .asCer{position:relative;display:block;width:calc(var(--asW) + 20px);height:calc(var(--asH) + 20px);margin-top:var(--asMt);flex:none}
+#skKafe .asElips{position:absolute;left:10px;top:10px;width:var(--asW);height:var(--asH);border-radius:50%;overflow:hidden;background:#f6e6c8;isolation:isolate;z-index:1}
+#skKafe .asRes{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;pointer-events:none;transition:filter .25s}
+#skKafe .asPerde{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,rgba(255,248,234,0) 52%,rgba(50,24,8,.32) 100%);pointer-events:none}
+#skKafe .asKart.sonraki .asRes{filter:saturate(.82) brightness(.96)}
+#skKafe .asKart.kilit .asRes{filter:grayscale(.9) brightness(.62) blur(1.4px)}
+#skKafe .asHalka{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:2;pointer-events:none}
+#skKafe .asHalka path{fill:none;vector-effect:non-scaling-stroke}
+#skKafe .asHalka .hz{stroke:${INK};stroke-width:13px}
+#skKafe .asHalka .hy{stroke:#f5e4c3;stroke-width:7px}
+#skKafe .asHalka .hd{stroke:#86c440;stroke-width:7px;stroke-linecap:round}
+#skKafe .asKart.gecti .asHalka .hd{stroke:#7fbf3f}
+#skKafe .asKart.su .asCer{filter:drop-shadow(0 0 7px rgba(255,205,80,.75))}
+#skKafe .asKart.hazir .asHalka .hd{stroke:#f6b93a}#skKafe .asKart.hazir .asCer{animation:asParla 1.6s ease-in-out infinite}
+@keyframes asParla{50%{filter:drop-shadow(0 0 13px rgba(255,200,60,.95))}}
+@media (prefers-reduced-motion:reduce){#skKafe .asKart.hazir .asCer{animation:none}}
+#skKafe .asKart.kilit .asHalka .hy{stroke:#e2d6c2}
+#skKafe .asDugum{position:absolute;z-index:3;width:17px;height:17px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle at 35% 35%,#fff4c2,#f6b93a 60%,#d98f1c);border:2.5px solid ${INK};box-sizing:border-box;pointer-events:none}
+#skKafe .asMad{position:absolute;left:50%;top:6.5px;transform:translate(-50%,-50%);z-index:4;width:var(--asMd);height:var(--asMd);box-sizing:border-box;border:3px solid ${INK};border-radius:50%;box-shadow:0 3px 0 ${INK};background:linear-gradient(#fff3dc,#efdcb6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;pointer-events:none}
+#skKafe .asMad::after{content:'';position:absolute;inset:3px;border:1.5px dashed rgba(255,250,235,.95);border-radius:50%}
+#skKafe .asMad em{position:relative;z-index:1;font:800 6.5px/1 var(--font-body);letter-spacing:.02em;color:#7a5236;font-style:normal;margin-top:2px}
+#skKafe .asWin.dar .asMad em{font-size:5.8px;letter-spacing:0}
+#skKafe .asMad b{position:relative;z-index:1;font:900 var(--asMb)/1 var(--font-display);color:${INK}}
+#skKafe .asKart.su .asMad{background:linear-gradient(#ffe08a,#f6b93a)}
+#skKafe .asKart.gecti .asMad{background:linear-gradient(#d4f08e,#8cc63f)}#skKafe .asKart.gecti .asMad em{color:#3f6b1e}
+#skKafe .asKart.kilit .asMad{background:linear-gradient(#ece4d8,#cdc2b2)}#skKafe .asKart.kilit .asMad b,#skKafe .asKart.kilit .asMad em{color:#7d6f5f}
+#skKafe .asTik{position:absolute;right:-5px;bottom:-4px;width:18px;height:18px;border-radius:50%;background:#7fc24a;border:2px solid #2f6b22;display:grid;place-items:center}#skKafe .asTik .ic{width:11px;height:11px}
+#skKafe .asSerit{position:absolute;left:50%;bottom:6.5px;transform:translate(-50%,50%);z-index:4;max-width:calc(var(--asW) - 40px);box-sizing:border-box;padding:4px 14px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:900 var(--asSf)/1 var(--font-display);color:${INK};background:linear-gradient(#fffaf0,#f3e2c0);border:2.5px solid ${INK};border-radius:9px;box-shadow:0 2px 0 ${INK};pointer-events:none}
+#skKafe .asKart.su .asSerit{background:linear-gradient(#fff3b8,#ffd75e)}
+#skKafe .asKart.kilit .asSerit{background:linear-gradient(#f4efe6,#dcd2c2);color:#6d604f}
+#skKafe .asKilit{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--asKl);height:var(--asKl);border-radius:50%;background:rgba(255,250,240,.93);border:3.5px solid ${INK};box-shadow:0 3px 0 ${INK};display:grid;place-items:center;z-index:1;pointer-events:none}
+#skKafe .asKilit .ic{width:52%;height:52%}
+#skKafe .asAlt{display:flex;align-items:center;justify-content:center;gap:3px;margin-top:9px;font:800 11.5px/1.1 var(--font-body);color:#7a5236;max-width:var(--asW);white-space:nowrap;overflow:hidden}
+#skKafe .asAlt .ic{width:14px;height:14px;flex:none}#skKafe .asAlt b{font-weight:900;color:${INK}}
+#skKafe .asKart.su .asAlt{color:#8a5a12}
+#skKafe .asOk{position:absolute;top:calc(var(--asP) + var(--asMt) + var(--asH) / 2 + 10px - 18px);z-index:5;width:36px;height:36px;border:3px solid ${INK};border-radius:50%;background:#fffaf0;box-shadow:0 3px 0 ${INK};font:900 22px/1 var(--font-display);color:${INK};display:grid;place-items:center;padding:0 0 3px;cursor:pointer}
 #skKafe .asOk.sol{left:0}#skKafe .asOk.sag{right:0}#skKafe .asOk:disabled{opacity:0;pointer-events:none}#skKafe .asOk{transition:opacity .2s}
 #skKafe .asNok{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;padding:0 4px}
 #skKafe .asNm{justify-self:start;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -26901,6 +26934,9 @@ html.land #game#game#game #skKafe#skKafe.skmodal .skwin{top:max(6px,calc((100*va
 #skKafe .asLis .kaSat{margin:0;padding:3px 0;font-size:11.5px;gap:7px}
 #skKafe .asLis .kaSat>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #skKafe .asLis .kaSat img,#skKafe .asLis .kaSat .ic{width:24px;height:24px;border-radius:7px}
+/* telefonda satırlar tek satır: başlık + bir tam satır görünür, gerisi kayar */
+#skKafe .asWin.dar .asLis .kaSat{padding:2px 0;font-size:11px}#skKafe .asWin.dar .asLis .kaSat>span{-webkit-line-clamp:1}
+#skKafe .asWin.dar .asLis .kaSat img,#skKafe .asWin.dar .asLis .kaSat .ic{width:20px;height:20px;border-radius:6px}
 #skKafe .skfoot.asFoot{flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:12px!important;flex-wrap:nowrap}
 #skKafe .skfoot.asFoot .kaAlt{flex:none}
 #skKafe .skfoot.asFoot .kaEks{margin:0;text-align:left;max-width:300px;line-height:1.25}
