@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795636136",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795636602",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2248';
+const OLC_DERLEME = '20261125-2255';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27925,16 +27925,18 @@ button:active:not(:disabled){scale:.94}
 // Kullanıcı (25 Kasım 2026, 22:03): "benim şuanda sadece bana özel kamera hareketini sınırsız hale getirir misin" — ekran kaydıyla yeni bir
 // görünüm tarzı gösterecek. Oyuncuların göreceği bir ayar DEĞİL: Ayarlar'da "Grafik" yazısına 4 saniye içinde art arda 7 kez dokununca bu
 // cihazda açılır (localStorage, kayda girmez, sunucuya gitmez); açıkken Ayarlar'da "Serbest kamera" satırı görünür ve oradan kapatılır.
-// Açıkken: yakınlaştırma 1,5–90 m, eğim neredeyse tepeden yere paralele kadar (0,02–1,55 rad), yatayda 360° dönüş (V388: oyunun normal
+// Açıkken: yakınlaştırma 0,4–90 m, eğim tepeden zemin hizasına kadar (0,02–π/2 rad; V389: kamera zemine iner, bakış noktası 12 cm'nin altına inmez,
+// kamera 10 cm'nin altına girmez, yakın kırpma 5 cm), yatayda 360° dönüş (V388: oyunun normal
 // 0,12–1,6 rad yatay sınırı kalkar), iki parmakla kaydırma (pan) açık; otomatik kamera
 // yerleşmesi (p995) çalışmaz. Duraklarda da geçerli. Kapatınca oyunun normal sınırları ve kafeye ortalanmış bakış geri gelir.
 const SK_KEY = 'tabbychef-serbest-kamera';
 var SKM = { on: false, dok: [] };
 try { SKM.on = localStorage.getItem(SK_KEY) === '1' } catch (e) { }
 function gkSerbest() { return !!SKM.on }
-function skUygula() { try { if (!SKM.on) return; controls.minDistance = 1.5; controls.maxDistance = 90; controls.minPolarAngle = 0.02; controls.maxPolarAngle = 1.55; controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; controls.enableRotate = true; controls.enablePan = true; controls.screenSpacePanning = true } catch (e) { } }
+function skUygula() { try { if (!SKM.on) return; controls.minDistance = 0.4; controls.maxDistance = 90; controls.minPolarAngle = 0.02; controls.maxPolarAngle = Math.PI / 2 - 0.004;
+    { const T = controls.target; if (T.y < 0.12) T.y = 0.12; if (T.y > 12) T.y = 12 } if (camera.position.y < 0.1) camera.position.y = 0.1; if (camera.near > 0.05) { camera.near = 0.05; camera.updateProjectionMatrix() } controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; controls.enableRotate = true; controls.enablePan = true; controls.screenSpacePanning = true } catch (e) { } }
 function skAyarla(on) { SKM.on = !!on; try { localStorage.setItem(SK_KEY, on ? '1' : '0') } catch (e) { }
-  try { if (on) { GKK.an = null; skUygula() } else { controls.enablePan = false; controls.minAzimuthAngle = 0.12; controls.maxAzimuthAngle = 1.6; controls.minDistance = 6; controls.minPolarAngle = 0.45; controls.maxPolarAngle = 0.95; camFit();
+  try { if (on) { GKK.an = null; skUygula() } else { controls.enablePan = false; camera.near = 0.1; camera.updateProjectionMatrix(); if (controls.target.y !== 0.2) controls.target.y = 0.2; controls.minAzimuthAngle = 0.12; controls.maxAzimuthAngle = 1.6; controls.minDistance = 6; controls.minPolarAngle = 0.45; controls.maxPolarAngle = 0.95; camFit();
       const T = controls.target, v = camera.position.clone().sub(T), r = Math.max(6, Math.min(controls.maxDistance, v.length())); camera.position.copy(T).addScaledVector(v.normalize(), r);
       let po = Math.acos(Math.max(-1, Math.min(1, (camera.position.y - T.y) / r))); if (po < 0.45 || po > 0.95) { const az = Math.atan2(camera.position.x - T.x, camera.position.z - T.z); po = Math.max(0.45, Math.min(0.95, po)); camera.position.set(T.x + r * Math.sin(po) * Math.sin(az), T.y + r * Math.cos(po), T.z + r * Math.sin(po) * Math.cos(az)) }
       { const T2 = controls.target, v2 = camera.position.clone().sub(T2), r2 = v2.length(), p2 = Math.acos(Math.max(-1, Math.min(1, v2.y / r2))); let az = Math.atan2(v2.x, v2.z); if (az < 0.12 || az > 1.6) { az = 0.86; camera.position.set(T2.x + r2 * Math.sin(p2) * Math.sin(az), T2.y + r2 * Math.cos(p2), T2.z + r2 * Math.sin(p2) * Math.cos(az)) } }
