@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795638295",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795638862",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2324';
+const OLC_DERLEME = '20261125-2328';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28034,6 +28034,104 @@ ${Y} #kamBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
 #kamMenu .ksTx{display:flex;flex-direction:column;line-height:1.15}
 #kamMenu .ksTx b{font:900 14px/1.15 var(--font-display,sans-serif);color:#4a2a14}#kamMenu .ksTx small{font:700 11px/1.2 var(--font-display,sans-serif);color:#8a5a30}
 `; document.head.appendChild(st) }
+
+// ================= V392 · GÖRSEL KALİTE 3: KARAKTER HAREKETLERİ VE DIŞ DÜNYA =================
+// Kullanıcı belgesi (25 Kasım 2026, 20:14) madde 3 (karakter hareketleri) ve 7 (dış dünya). Karakter modelleri, görev süreleri, müşteri yapay
+// zekâsı ve yol bulma DEĞİŞMEZ: buradaki her şey ya yalnız görüntüdür (kemik eklemeleri, parçacık) ya da dönüş yönünü yumuşatır.
+//  3a) Dönüşler: yürürken bir sonraki köşeye 0,35 m kala yüz yavaşça yeni yöne döner (konum ve rota aynı; köşede ani dönüş olmaz).
+//  3b) Oturup bekleyen müşteri hafifçe nefes alır gibi sallanır; sipariş bekleyen ara ara başını çevirir (var olan bakış sistemine ek). Eklemeler yalnız o karede güncellenen karaktere yapılır;
+//      baş ve gövde kemikleri her karede animasyon değerine geri alındığı için (p8 _fb) birikmez.
+//  3c) Servis edilince müşteri 1,4 sn sevinir: başını sallar, gövdesi kıpırdar (kalpler p996'da).
+//  3d) Mutfakta hazırlama (IDLE_WORK pozu tezgâhın arkasında) sırasında ocaktan hafif buhar (var olan buhar havuzu, yeni parçacık yok).
+//  3e) Masa temizlenirken ve temizlenince masada küçük parıltılar.
+//  7a) Ağaçlar, palmiyeler, çalılar ve saksı bitkileri rüzgârda hafifçe sallanır: yaprak malzemelerine tek satırlık köşe kaydırması
+//      (GPU'da, yeni nesne yok; zemine yakın çimen kıpırdamaz). Kafenin içindeki yeşil eşyalar (tezgâh, sandalye) etkilenmez.
+//  7b) Gündüz kafenin önünde birkaç kelebek, gece ateş böcekleri (toplam 18 küçük nokta, tek çizim çağrısı); yalnız kafe ekranında güncellenir.
+//  7c) Gece sokak lambalarının altında yerde sıcak ışık havuzu (ışık kaynağı değil, saydam disk; gündüz görünmez).
+var GC = { chars: new Set(), kare: 0, t: 0, kit: null, kitT: 0, ruzgar: { value: 0 }, sway: new Map(), klon: new Set(), swT: 0, isl: null };
+// ---------------- 3a) yumuşak dönüş + karakter kaydı ----------------
+{ const _u = Char.prototype.update; Char.prototype.update = function (dt) { GC.chars.add(this); this._gcU = GC.kare; const r = _u.apply(this, arguments);
+    try { const P = this.path; if (P && P.length > 1 && !this.trans && !this.seat) { const a = P[0], b = P[1], dx = a.x - this.pos.x, dz = a.z - this.pos.z, d = Math.hypot(dx, dz);
+        if (d < 0.35 && d > 1e-3) { const h2 = Math.atan2(b.x - a.x, b.z - a.z); let df = h2 - this.o.rotation.y; df = Math.atan2(Math.sin(df), Math.cos(df)); this.o.rotation.y += df * (0.35 - d) / 0.35 * Math.min(1, dt * 7) } } } catch (e) { }
+    return r } }
+// ---------------- 3b/3c) müşteri bekleme ve sevinç ----------------
+const GC_DURUM = new WeakMap();
+function gcMusteri(dt) { let L = []; try { L = customers } catch (e) { return } const t = GC.t;
+  for (const c of L) { const ch = c.char; if (!ch || !ch.o || !ch.o.visible) continue; if (ch._gcU !== GC.kare) continue;   // bu kare güncellenmeyen karaktere ekleme yapılmaz (birikmesin) const o = GC_DURUM.get(c); if (o !== c.state) { GC_DURUM.set(c, c.state); if (c.state === 'EATING' && o) ch._sev = 1.4 }
+    const sp = ch.o.getObjectByName('mixamorigSpine2'), hd = ch.head; if (!sp) continue; const ph = (ch.lookPh || 0) * 3;
+    if (ch._sev > 0) { ch._sev -= dt; const u = 1 - Math.max(0, ch._sev) / 1.4, k = Math.sin(u * Math.PI);
+      if (hd) { hd.rotation.x += Math.sin(u * Math.PI * 6) * 0.16 * k; hd.rotation.z += Math.sin(u * Math.PI * 3) * 0.12 * k }
+      sp.rotation.z += Math.sin(u * Math.PI * 4) * 0.07 * k }
+    else if (ch.seat && (c.state === 'WAITING_TO_ORDER' || c.state === 'WAITING_FOR_FOOD' || c.state === 'WAITING_FOR_GROUP' || c.state === 'EATING')) {
+      sp.rotation.x += Math.sin(t * 1.6 + ph) * 0.018; sp.rotation.z += Math.sin(t * 0.7 + ph) * 0.025;
+      if (c.state === 'WAITING_FOR_FOOD' && hd) { const w = Math.max(0, Math.sin(t * 0.45 + ph) - 0.6) / 0.4; hd.rotation.y += Math.sin(t * 1.1 + ph) * 0.35 * w } } } }
+// ---------------- 3d) mutfak buharı ----------------
+function gcMutfakKutu() { try { if (!KG) return null; const b = new THREE.Box3().setFromObject(KG); b.expandByScalar(0.5); return b } catch (e) { return null } }
+function gcBuhar() { if (GC.t - GC.kitT > 2) { GC.kitT = GC.t; GC.kit = gcMutfakKutu() } const B = GC.kit; if (!B) return;
+  for (const ch of GC.chars) { const on = ch.cur === 'IDLE_WORK' && ch.o.visible && !ch.seat && B.containsPoint(ch.pos);
+    if (on && !ch._buhar) { const c = ch; c._buhar = steamOn(() => { const y = c.o.rotation.y; return new THREE.Vector3(c.pos.x + Math.sin(y) * 0.42, (typeof KIT !== 'undefined' ? KIT.ch : 0.66) + 0.12, c.pos.z + Math.cos(y) * 0.42) }, 2.2) }
+    else if (!on && ch._buhar) { steamOff(ch._buhar); ch._buhar = null } } }
+// ---------------- 3e) temizlik parıltısı ----------------
+function gcParilti(x, y, z, n) { try { if (typeof gfPatla !== 'function' || !gfKafede()) return; const p = gfEkran(new THREE.Vector3(x, y, z)); if (p) gfPatla(p.x, p.y, n, 'pirilti', 34, 13) } catch (e) { } }
+{ const _cc = clnClear; clnClear = function (t, instant) { const kirli = !!(t && t.dirty); const r = _cc.apply(this, arguments);
+    try { if (kirli && !instant && t.center) { gcParilti(t.center.x, (t.topY || 0.7) + 0.1, t.center.z, 7); setTimeout(() => gcParilti(t.center.x, (t.topY || 0.7) + 0.15, t.center.z, 4), 220) } } catch (e) { } return r } }
+function gcSilme() { try { for (const ch of GC.chars) { if (ch.cur !== 'IDLE_WORK' || ch.seat || !ch.o.visible) continue; if (GC.kit && GC.kit.containsPoint(ch.pos)) continue; let yakin = false; try { yakin = TABLES.some(t => t.dirty && t.center && Math.hypot(t.center.x - ch.pos.x, t.center.z - ch.pos.z) < 1.3) } catch (e) { } if (!yakin) continue;
+      ch._silT = (ch._silT || 0) - 1; if (ch._silT > 0) continue; ch._silT = 3; const y = ch.o.rotation.y; gcParilti(ch.pos.x + Math.sin(y) * 0.5, 0.78, ch.pos.z + Math.cos(y) * 0.5, 3) } } catch (e) { } }
+// ---------------- 7a) rüzgâr: yaprak malzemelerine köşe kaydırması ----------------
+function gcYesil(m) { if (!m || !m.color || m.transparent || m.map) return false; const c = m.color; return c.g > c.r * 1.12 && c.g > c.b * 1.12 && c.g > 0.18 }
+function gcSallanan(m) { let s = GC.sway.get(m); if (s) return s; s = m.clone(); s.onBeforeCompile = sh => { sh.uniforms.uRuz = GC.ruzgar;
+    sh.vertexShader = 'uniform float uRuz;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      { vec4 gw = modelMatrix * vec4(transformed, 1.0); float gh = clamp((gw.y - 0.35) * 0.035, 0.0, 0.085);
+        transformed.x += sin(uRuz * 1.7 + gw.x * 0.37 + gw.z * 0.23) * gh; transformed.z += cos(uRuz * 1.3 + gw.x * 0.19 - gw.z * 0.33) * gh * 0.7; }`) };
+  s.customProgramCacheKey = () => 'gcRuzgar'; GC.sway.set(m, s); GC.klon.add(s); return s }
+function gcRuzgarKur() { try { const ic = new Set(), aday = []; const x0 = RM.x0 - 0.4, x1 = RM.x1 + 0.4, z0 = RM.z0 - 0.4, z1 = RM.z1 + 0.4, b = new THREE.Box3(), c = new THREE.Vector3();
+    scene.traverse(o => { if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || !o.geometry || Array.isArray(o.material)) return; let p = o; while (p) { if (p.userData && (p.userData.isChar || p.userData.uid != null && o.material !== M.leaf)) return; p = p.parent }
+      const m = o.material; if (GC.sway.has(m) || GC.klon.has(m)) return; if (!gcYesil(m)) return;
+      b.setFromObject(o); b.getCenter(c); const icerde = c.x > x0 && c.x < x1 && c.z > z0 && c.z < z1 && c.y < 3.4;
+      if (icerde && m !== M.leaf) ic.add(m); else aday.push(o) });
+    let n = 0; for (const o of aday) { if (ic.has(o.material)) continue; o.material = gcSallanan(o.material); n++ } return n } catch (e) { console.warn('rüzgâr', e); return 0 } }
+setTimeout(() => { try { gcRuzgarKur() } catch (e) { } }, 1200); setTimeout(() => { try { gcRuzgarKur() } catch (e) { } }, 2300);
+// ---------------- 7b) kelebekler ve ateş böcekleri ----------------
+function gcIsikKur() { if (GC.isl) return; const N = 18, geo = new THREE.BufferGeometry(), pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const cv = document.createElement('canvas'); cv.width = cv.height = 32; const x = cv.getContext('2d'), g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,.75)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32);
+  const tex = new THREE.CanvasTexture(cv); const mat = new THREE.PointsMaterial({ size: 0.16, map: tex, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true, toneMapped: false, fog: false });
+  const P = new THREE.Points(geo, mat); P.frustumCulled = false; P.userData.wallKeep = true; P.name = 'gcBocek'; scene.add(P);
+  const B = []; for (let i = 0; i < N; i++) B.push({ ph: Math.random() * 100, r: 0.6 + Math.random() * 1.4, h: 0.5 + Math.random() * 1.2, sp: 0.25 + Math.random() * 0.35, ax: 0, az: 0 });
+  GC.isl = { P, B, pos, col, N, yer: 0 } }
+function gcIsikYer() { const I = GC.isl; const x0 = RM.x0, x1 = RM.x1 + ((typeof GDN !== 'undefined' && GDN.r) || 0), z1 = RM.z1 + ((typeof GDN !== 'undefined' && GDN.f) || 0);
+  let ox = 0; try { if (k2Up()) ox = K2.dx } catch (e) { }
+  I.B.forEach((b, i) => { const t = i / I.N; if (i % 2) { b.ax = x0 + (x1 - x0) * t + ox; b.az = z1 + 1.6 + Math.random() * 2.2 } else { b.ax = x1 + 1.4 + Math.random() * 2 + ox; b.az = RM.z0 + (z1 - RM.z0) * t } }); I.yer = RM.x1 + ':' + RM.z1 + ':' + ox }
+function gcIsik(dt) { if (!GC.isl) gcIsikKur(); const I = GC.isl; let kafe = false; try { kafe = UI.mode === 'cafe' && !(typeof VISIT !== 'undefined' && VISIT.on) } catch (e) { }
+  I.P.visible = kafe; if (!kafe) return; let ox = 0; try { if (k2Up()) ox = K2.dx } catch (e) { } if (I.yer !== RM.x1 + ':' + RM.z1 + ':' + ox) gcIsikYer();
+  const gece = 1 - (typeof GK_GUN === 'number' ? GK_GUN : 1), t = GC.t, gun = 1 - gece;
+  I.P.material.size = gece > 0.5 ? 0.16 : 0.2; I.P.material.blending = gece > 0.5 ? THREE.AdditiveBlending : THREE.NormalBlending; I.P.material.opacity = 1;
+  for (let i = 0; i < I.N; i++) { const b = I.B[i], k = t * b.sp + b.ph, j = i * 3;
+    if (gece > 0.5) { // ateş böceği: yavaş süzülür, yanıp söner
+      I.pos[j] = b.ax + Math.sin(k * 0.9) * b.r; I.pos[j + 1] = b.h + Math.sin(k * 1.7) * 0.25; I.pos[j + 2] = b.az + Math.cos(k * 0.7) * b.r;
+      const f = Math.max(0, Math.sin(k * 2.3 + i)) * (gece - 0.5) * 2; I.col[j] = 1.0 * f; I.col[j + 1] = 0.9 * f; I.col[j + 2] = 0.35 * f }
+    else if (i < 6) { // kelebek: gündüz, çiçeklerin üstünde zikzak
+      const fl = Math.abs(Math.sin(t * 14 + i)); I.pos[j] = b.ax + Math.sin(k * 1.3) * b.r; I.pos[j + 1] = 0.6 + b.h * 0.5 + Math.abs(Math.sin(k * 2.6)) * 0.3; I.pos[j + 2] = b.az + Math.sin(k * 0.9 + 1) * b.r;
+      const c = [[1, 0.78, 0.35], [0.95, 0.55, 0.72], [0.7, 0.82, 1]][i % 3]; I.col[j] = c[0] * (0.55 + 0.45 * fl) * gun; I.col[j + 1] = c[1] * (0.55 + 0.45 * fl) * gun; I.col[j + 2] = c[2] * (0.55 + 0.45 * fl) * gun }
+    else { I.pos[j + 1] = -50 } }
+  I.P.geometry.attributes.position.needsUpdate = true; I.P.geometry.attributes.color.needsUpdate = true }
+// ---------------- 7c) sokak lambası ışık havuzları ----------------
+var GCL = { g: null, n: 0, t: 0 };
+function gcLambaKur() { try { const G = ENV.glows || []; if (!G.length) return; if (GCL.g && GCL.n === G.length) return; if (GCL.g) { scene.remove(GCL.g); GCL.g.traverse(o => o.geometry && o.geometry.dispose()) }
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64; const x = cv.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,205,130,.85)'); gr.addColorStop(0.45, 'rgba(255,190,110,.35)'); gr.addColorStop(1, 'rgba(255,180,100,0)'); x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+    const geo = new THREE.PlaneGeometry(3.2, 3.2); geo.rotateX(-Math.PI / 2); const grp = new THREE.Group(); grp.name = 'gcLamba'; grp.userData.wallKeep = true;
+    const rc = new THREE.Raycaster(), v = new THREE.Vector3(), asagi = new THREE.Vector3(0, -1, 0);
+    const hedef = scene.children.filter(o => o !== grp && !(o.userData && (o.userData.isChar || o.userData.uid != null)) && o.visible && !o.isLight && o.name !== 'gcBocek' && o.name !== 'temasGolge' && o.name !== 'gkDekal');
+    for (const gl of G) { gl.getWorldPosition(v); rc.set(v.clone().add(new THREE.Vector3(0, -0.3, 0)), asagi); rc.far = 8; const h = rc.intersectObjects(hedef, true).find(q => q.face && q.object !== gl && q.distance > 0.2);
+      const y = h ? h.point.y + 0.02 : 0.02; const m = new THREE.Mesh(geo, mat); m.position.set(v.x, y, v.z); m.renderOrder = 3; grp.add(m) }
+    scene.add(grp); GCL.g = grp; GCL.n = G.length; GCL.mat = mat } catch (e) { console.warn('lamba havuzu', e) } }
+function gcLamba(dt) { GCL.t += dt; if (GCL.t > 4 || !GCL.g) { GCL.t = 0; gcLambaKur() } if (!GCL.mat) return; const gece = 1 - (typeof GK_GUN === 'number' ? GK_GUN : 1);
+  GCL.mat.opacity = Math.max(0, (gece - 0.35) / 0.65) * 0.75; GCL.g.visible = GCL.mat.opacity > 0.01 }
+// ---------------- döngü ----------------
+{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { GC.t += dt; GC.ruzgar.value = GC.t; let kafe = false; try { kafe = UI.mode === 'cafe' } catch (e) { }
+      gcMusteri(dt); gcBuhar(); if (kafe) { GC.swT += dt; if (GC.swT > 1) { GC.swT = 0; gcSilme() } } gcIsik(dt); gcLamba(dt); GC.kare++;
+      GC.ruzT = (GC.ruzT || 0) + dt; if (GC.ruzT > 8) { GC.ruzT = 0; gcRuzgarKur() } } catch (e) { if (!GC.hata) { GC.hata = 1; console.warn('canlılık', e) } } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
