@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795638862",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795639408",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2328';
+const OLC_DERLEME = '20261125-2340';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -24830,8 +24830,8 @@ function tbPark() { const q = tbParkYeri();
 // ---- karşılama: yalnız kendi karakterini oluşturur ----
 rhWelcome = function () { if (S.created) return; S.tut = 'create'; try { markDirty() } catch (e) { } RH.shown = 'welcome';
   coach({ owner: 'rh', title: tbT('Hoş geldin, şefim!', 'Welcome, chef!'), dim: true, center: true,
-    text: tbT('Ben <b>Tabby</b>. Kafemiz hazır ama şimdilik burada bir tek sen varsın! Önce kendi karakterini oluştur: ilk günlerde siparişler, mutfak ve kasa senden.',
-      'I’m <b>Tabby</b>. Our café is ready, but for now it’s just you! First, create your own character: for the first days, orders, cooking and the till are all yours.'),
+    text: tbT('Ben <b>Tabby</b>! Kafemiz hazır. Önce kendi karakterini oluştur: ilk günlerde her iş senden.',
+      'I’m <b>Tabby</b>! Our café is ready. First, create your character: for the first days, every job is yours.'),
     buttons: [{ label: tbT('Karakterimi oluştur', 'Create my character'), green: true, icon: 'paw', onClick: () => { coachOff(); RH.shown = ''; UI.backTo = 'cafe'; openEditor('waiter', 'create') } }] }) };
 
 // ---- karakter editörü: tek karakter · işe alımda tek rol ----
@@ -24851,8 +24851,8 @@ function tbEdAyak() { try { const ok = $('ceOk');
     const x = _r.apply(this, arguments); tbEdDuzen(); tbEdAyak(); return x } }
 { const _f = renderCEFoot; renderCEFoot = function () { const x = _f.apply(this, arguments); tbEdAyak(); return x } }
 { const _h = tutCreateHint; tutCreateHint = function (role) { let m = null;
-    try { if (tbYarat() && role === 'waiter') m = [tbT('Senin karakterin', 'Your character'), tbT('Bu kedi <b>sensin</b>! İlk günlerde kafede her işi o yapacak: siparişleri alacak, mutfakta hazırlayacak, masalara taşıyacak, masaları temizleyecek ve hesabı alacak. Kürkünden kıyafetine her şeyi sen seç.',
-        'This cat is <b>you</b>! For the first days they’ll do every job in the café: take orders, cook in the kitchen, serve and clean the tables, and take payments. Choose everything from fur to outfit.')];
+    try { if (tbYarat() && role === 'waiter') m = [tbT('Senin karakterin', 'Your character'), tbT('Bu kedi <b>sensin</b>! İlk günlerde kafedeki her işi o yapacak. Kürkünden kıyafetine her şeyi sen seç.',
+        'This cat is <b>you</b>! For the first days they’ll do every job in the café. Choose everything from fur to outfit.')];
       else if (tbIseEd() && role === 'barista') m = [tbT('Yeni iş arkadaşı: Şef', 'New teammate: Chef'), tbT('Mutfağa bir <b>şef</b> alalım! Yemekleri artık o hazırlayacak, sen de misafirlerle ilgileneceksin. Ona da kendine has bir hava ver.',
         'Let’s hire a <b>chef for the kitchen</b>! They’ll do the cooking from now on, so you can look after the guests. Give them a style of their own.')];
       else if (tbIseEd() && role === 'cashier') m = [tbT('Yeni iş arkadaşı: Kasiyer', 'New teammate: Cashier'), tbT('Kasaya bir <b>kasiyer</b> alalım! Hesapları o alacak, hiçbir müşteri kasada beklemeyecek. Hadi onu tasarlayalım!',
@@ -24865,8 +24865,8 @@ function tbEdAyak() { try { const ok = $('ceOk');
     const ch = S.chars.waiter; ch.name = nm; ch.look = JSON.parse(JSON.stringify(CE.cfg.look)); ch.wear = JSON.parse(JSON.stringify(CE.cfg.wear)); ch.freeEdits = 1;
     applyCharToGame('waiter'); S.created = true; S.solo = { v: 2, f: 'tek', n: 0 }; markDirty(); saveNow(); sfx('goal'); tbOlc('tek_basla');
     const ac = () => coach({ owner: 'tb', title: tbT(`Hazırsın, ${nm}!`, `You’re all set, ${nm}!`), dim: true, center: true,
-      text: tbT('Kafede şimdilik bir tek sen varsın: siparişi alacak, mutfakta hazırlayacak, masaya taşıyacak, masayı temizleyecek ve hesabı da kendin alacaksın. Hadi kapıyı açalım!',
-        'For now it’s just you in the café: you’ll take the order, cook it in the kitchen, serve it, clean the table and take the payment yourself. Let’s open the door!'),
+      text: tbT('Şimdilik kafede bir tek sen varsın; her işi sen yapacaksın. Hadi kapıyı açalım!',
+        'For now it’s just you, so every job is yours. Let’s open the door!'),
       buttons: [{ label: tbT('Kafeyi aç', 'Open the café'), green: true, icon: 'cafe', onClick: () => { coachOff(); if (S.tut === 'create') { S.tut = 'cafe1'; tutCafeStart() } markDirty(); closeEditor(true) } }] });
     if (!S.cafeName && !(S.seen && S.seen.cafeNamed) && typeof cafeNameAsk === 'function') cafeNameAsk(ac, true); else ac();
     return true } }
@@ -25046,8 +25046,8 @@ function tbKasiyerGeldi() { const k = S.chars.cashier.name; try { sfx('chime') }
 function tbEkipTamam() { const C = S.chars, w = C.waiter.name, b = C.barista.name, c = C.cashier.name; tbOlc('tek_ekip', { n: (S.solo && S.solo.n) | 0 });
   S.otoKilit = 2; if (!S.auto) { S.auto = true; try { drawAuto() } catch (e) { } } markDirty(); try { autoBtnVis() } catch (e) { } try { otoParla() } catch (e) { } try { sfx('levelup') } catch (e) { }
   coach({ owner: 'tb', title: tbT('Ekibimiz tamam!', 'Our team is complete!'), dim: true, center: true,
-    text: tbT(`<b>${w}</b>, <b>${b}</b> ve <b>${c}</b> artık birlikte çalışıyor! Otomatik modu açtım: siparişleri ${w} alıp masalara taşıyor, ${b} mutfakta hazırlıyor, ${c} hesabı alıyor. Sen de birleştirme tahtasında yeni tarifler açıp kafeni büyüt! İstersen üstteki <b>Otomatik</b> düğmesinden kontrolü yeniden alabilirsin.`,
-      `<b>${w}</b>, <b>${b}</b> and <b>${c}</b> now work together! I switched on Auto: ${w} takes the orders and serves, ${b} cooks in the kitchen and ${c} takes the payments. You can unlock new recipes on the merge board and grow your café! Tap <b>Auto</b> at the top whenever you want to take control again.`),
+    text: tbT(`<b>${w}</b>, <b>${b}</b> ve <b>${c}</b> artık birlikte çalışıyor! Otomatik modu açtım; sen de birleştirme tahtasında yeni tarifler açıp kafeni büyüt. Kontrolü istediğin an üstteki <b>Otomatik</b> düğmesinden geri alırsın.`,
+      `<b>${w}</b>, <b>${b}</b> and <b>${c}</b> now work together! I switched on Auto, so you can unlock new recipes on the merge board and grow your café. Tap <b>Auto</b> at the top whenever you want control back.`),
     buttons: [{ label: tbT('Harika!', 'Great!'), green: true, icon: 'paw', onClick: () => coachOff() }] }) }
 setInterval(() => { try { if (typeof S === 'undefined' || !S || !soloOn()) return; const T = S.solo;
     if (T.ise) { if (tbSakin()) tbIseAl(T.ise); return }   // işe alım yarıda kaldıysa (uygulama kapandı/arka plana gitti) editör yeniden açılır
@@ -27964,6 +27964,7 @@ function skCiz(set) { let row = set.querySelector('.skSerbest'); if (!SKM.on) { 
 // seçenekleri ikonu eklermisin arayüze buradan bu bakış açısına geçebilsin oyuncu".
 //  · Ana ekranda Düzenle'nin yanında "Kamera" düğmesi; dokununca küçük menü: Üstten (oyunun normal kuşbakışı) · Yakın bakış (kafenin içinden,
 //    göz hizasına yakın, alçak açı: tezgâh solda, masalar sağda, arka duvar ve pencere görünür).
+//  · (V393) Yakın bakış sabit: yakınlaştırma / döndürme / kaydırma yok, odak hep aynı.
 //  · Seçim cihaza kaydedilir (localStorage, oyun kaydına girmez). Geçiş 0,9 sn yumuşak kayar. Yakın bakışta da parmakla döndürme ve
 //    yakınlaştırma çalışır; eğim sınırı alçak açıya izin verecek kadar genişler (0,45–1,42 rad), yatay sınır oyunun normal sınırı (0,12–1,6).
 //  · Kafe büyüyünce / kat değişince bakış kafenin ortasına göre yeniden kurulur. Duraklarda da çalışır. Serbest kamera açıksa onun sınırları geçerli.
@@ -27977,7 +27978,13 @@ function ksHedef() { const k = (() => { try { return kmK() } catch (e) { return 
   if (KSC.mod === 'yakin') return { d: KSC.yk.d * Math.pow(k, 0.7), pol: KSC.yk.pol, az: KSC.yk.az, ty: KSC.yk.ty };
   let d = 12.6, pol = 0.74; try { d = kmVars(); pol = kmPol() } catch (e) { } const v = camera.position.clone().sub(T);
   let az = Math.atan2(v.x, v.z); az = Math.max(0.12, Math.min(1.6, az)); if (az < 0.2) az = 0.86; return { d, pol, az, ty: 0.2 } }
-function ksSinir() { try { if (typeof SKM !== 'undefined' && SKM.on) return; if (KSC.mod === 'yakin') { controls.maxPolarAngle = 1.42; if (controls.minDistance > 3) controls.minDistance = 3 } } catch (e) { } }
+// (V393) kullanıcı (23:38): "sabit değiller bu yeni açılarda onları sabitle yani oyuncu daha fazla yakınlaşamasın veya uzaklaşamasın odağıda aynı kalsın"
+// → yakın bakışta yakınlaştırma, döndürme ve kaydırma kapalı; kamera her karede hedef açıda tutulur. Üstten görünüm serbest. Serbest kamera açıksa kilit yok.
+function ksSerbest() { return typeof SKM !== 'undefined' && SKM.on }
+function ksKilit(on) { try { controls.enableZoom = !on; controls.enableRotate = !on; if (on) controls.enablePan = false } catch (e) { } }
+function ksSinir() { try { if (ksSerbest()) { ksKilit(false); return } if (KSC.mod === 'yakin') { controls.maxPolarAngle = 1.42; if (controls.minDistance > 3) controls.minDistance = 3; ksKilit(true) } else ksKilit(false) } catch (e) { } }
+function ksSabitle() { if (KSC.mod !== 'yakin' || KSC.an || ksSerbest()) return; try { const H = ksHedef(), T = controls.target; if (Math.abs(T.y - H.ty) > 1e-3) T.y = H.ty;
+    const p = new THREE.Vector3(T.x + H.d * Math.sin(H.pol) * Math.sin(H.az), T.y + H.d * Math.cos(H.pol), T.z + H.d * Math.sin(H.pol) * Math.cos(H.az)); if (camera.position.distanceToSquared(p) > 1e-6) { camera.position.copy(p); controls.update() } } catch (e) { } }
 function ksGit(anlik) { const T = controls.target, v = camera.position.clone().sub(T), r = v.length(), H = ksHedef();
   const b = { d: r, pol: Math.acos(Math.max(-1, Math.min(1, v.y / r))), az: Math.atan2(v.x, v.z), ty: T.y };
   let daz = H.az - b.az; while (daz > Math.PI) daz -= 2 * Math.PI; while (daz < -Math.PI) daz += 2 * Math.PI;
@@ -27989,7 +27996,7 @@ function ksTick(dt) { const A = KSC.an; if (!A) return; if (KSC.mod === 'yakin')
   if (A.t >= 1) { KSC.an = null; if (KSC.mod !== 'yakin') { try { controls.maxPolarAngle = 0.95 } catch (e) { } } } }
 function ksSec(m) { if (m !== 'yakin') m = 'ust'; KSC.mod = m; try { localStorage.setItem(KS_KEY, m) } catch (e) { } try { GKK.an = null } catch (e) { } ksGit(false); ksMenuKapat(); ksDugme() }
 // her kare: geçiş + sınırlar (duraklar eğim sınırını her karede yazar; bu sarmalayıcı onlardan sonra çalışır)
-{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { if (KSC.an) ksTick(Math.min(dt, 0.05)); else if (KSC.mod === 'yakin') ksSinir() } catch (e) { } return r } }
+{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { if (KSC.an) ksTick(Math.min(dt, 0.05)); else { ksSinir(); ksSabitle() } } catch (e) { } return r } }
 // oyuncu ekrana dokununca geçiş durur
 try { const cv = renderer.domElement; for (const t of ['pointerdown', 'wheel']) cv.addEventListener(t, () => { if (KSC.an) { KSC.an = null; if (KSC.mod !== 'yakin') try { controls.maxPolarAngle = 0.95 } catch (e) { } } }, { passive: true }) } catch (e) { }
 // otomatik kamera yalnız "Üstten"de
@@ -28132,6 +28139,30 @@ function gcLamba(dt) { GCL.t += dt; if (GCL.t > 4 || !GCL.g) { GCL.t = 0; gcLamb
 { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { GC.t += dt; GC.ruzgar.value = GC.t; let kafe = false; try { kafe = UI.mode === 'cafe' } catch (e) { }
       gcMusteri(dt); gcBuhar(); if (kafe) { GC.swT += dt; if (GC.swT > 1) { GC.swT = 0; gcSilme() } } gcIsik(dt); gcLamba(dt); GC.kare++;
       GC.ruzT = (GC.ruzT || 0) + dt; if (GC.ruzT > 8) { GC.ruzT = 0; gcRuzgarKur() } } catch (e) { if (!GC.hata) { GC.hata = 1; console.warn('canlılık', e) } } return r } }
+
+// ================= V393 · GÖRSEL KALİTE 4: BAŞLANGIÇ EĞİTİMİ =================
+// Kullanıcı belgesi (25 Kasım 2026, 20:14) madde 4. Karakter oluşturma, rehber adımları ve ekonomi aynı. (Uzun rehber metinleri p974'te kısaltıldı.)
+//  1) Eğitim sürerken (S.tut !== 'done') oyuncunun kendi karakteri ve garsonlar %35 daha hızlı yürür: ilk görevlerde karakterin yürümesini
+//     beklemek sıkmasın. Eğitim bitince hız normale döner. Hazırlama ve yeme süreleri, müşteri davranışı değişmez.
+//  2) İlk kazanç özel: ilk ödemede (oyunun ilk siparişi) ekranın ortasında "İlk kazancın!" yazısı, büyük altın patlaması ve konfeti
+//     (dokunmayı engellemez, 2,4 sn). Altınların sayaca uçuşu V387'den.
+var GE = { hiz: 1.35 };
+{ const _u = Char.prototype.update; Char.prototype.update = function (dt) { try { if (this.canRun) { if (this._sp0 == null) this._sp0 = this.speed; const egt = typeof S !== 'undefined' && S.tut !== 'done';
+        this.speed = egt ? this._sp0 * GE.hiz : this._sp0 } } catch (e) { } return _u.apply(this, arguments) } }
+function geIlkKazanc(n) { try { const W = innerWidth, H = innerHeight, d = document.createElement('div'); d.className = 'geIlk'; d.setAttribute('aria-hidden', 'true');
+    d.innerHTML = `<small>${typeof kaT === 'function' ? kaT('İlk kazancın!', 'Your first earnings!') : 'İlk kazancın!'}</small><b>+${n}</b>`;
+    gfKat().appendChild(d); setTimeout(() => gfPatla(W / 2, H * 0.4, 14, 'yildiz', Math.min(W, H) * 0.3, 18), 150); gfKonfeti(48);
+    try { sfx('goal') } catch (e) { } setTimeout(() => d.classList.add('bit'), 2000); setTimeout(() => d.remove(), 2500) } catch (e) { } }
+{ const _pay = pay; pay = function () { let ilk = false; try { ilk = !EVMODE && !(S.stats && S.stats.orders) && !(S.seen && S.seen.ilkKazanc) } catch (e) { } const once = S.coins; const r = _pay.apply(this, arguments);
+    try { const k = S.coins - once; if (ilk && k > 0) { S.seen = S.seen || {}; S.seen.ilkKazanc = 1; markDirty(); setTimeout(() => geIlkKazanc(k), 500) } } catch (e) { } return r } }
+{ const st = document.createElement('style'); st.textContent = `
+#gkFx .geIlk{position:absolute;left:50%;top:40%;translate:-50% -50%;display:flex;flex-direction:column;align-items:center;padding:10px 26px 12px;background:#fff8ec;border:3.5px solid #5a2f12;border-radius:22px;
+  box-shadow:0 5px 0 #5a2f12,0 0 0 8px rgba(255,210,74,.45),0 0 40px rgba(255,200,80,.7);animation:geIn .55s cubic-bezier(.25,1.6,.45,1) both}
+#gkFx .geIlk small{font:900 14px/1.2 var(--font-display,sans-serif);color:#c07a12;letter-spacing:.5px;text-transform:uppercase}
+#gkFx .geIlk b{font:900 40px/1.05 var(--font-display,sans-serif);color:#e8a21c;-webkit-text-stroke:2px #5a2f12;paint-order:stroke fill}
+#gkFx .geIlk.bit{animation:geOut .45s ease-in both}
+@keyframes geIn{0%{scale:.3;opacity:0}60%{scale:1.1;opacity:1}100%{scale:1}}@keyframes geOut{to{scale:.9;opacity:0}}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
