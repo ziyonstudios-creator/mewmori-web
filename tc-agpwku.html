@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795617552",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795619753",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24600,7 +24600,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-1717';
+const OLC_DERLEME = '20261125-1813';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -25833,7 +25833,7 @@ setInterval(() => { try { if (started && kaAcik()) { kaEsitle(); kaCip() } } cat
 function kaAcilanlar(a) { const T = kaTablo(), L0 = T.L[a - 1] || 0, L1 = T.L[a], out = [];
   try { const cap0 = tableCap(L0 || 1), cap1 = tableCap(L1); if (cap1 > cap0) out.push({ ic: ic('table'), t: kaT(`Masa sınırı ${cap1}`, `Table limit ${cap1}`) }) } catch (e) { }
   const rc = RECIPES.filter(r => !r.def && !r.hidden && !r.br && r.lvl > L0 && r.lvl <= L1 && (r.lvl | 0) < 99);
-  if (rc.length) out.push({ ic: `<img src="${productThumb(rc[0].id)}" alt="">`, t: kaT(`${rc.length} keşfedilebilir tarif: `, `${rc.length} discoverable recipes: `) + rc.slice(0, 4).map(r => kaTr(r.name)).join(', ') + (rc.length > 4 ? '…' : ''), tarif: rc });
+  if (rc.length) out.push({ ic: `<img src="${productThumb(rc[0].id)}" alt="">`, t: kaT(`${rc.length} keşfedilebilir tarif: `, `${rc.length} discoverable recipe${rc.length === 1 ? '' : 's'}: `) + rc.slice(0, 4).map(r => kaTr(r.name)).join(', ') + (rc.length > 4 ? '…' : ''), tarif: rc });
   const it = CATALOG.filter(c => (c.lvl | 0) > L0 && (c.lvl | 0) <= L1 && (c.lvl | 0) < 99 && !c.hidden);
   if (it.length) out.push({ ic: `<img src="${itemThumb(it[0].id)}" alt="">`, t: kaT(`Markette ${it.length} yeni eşya`, `${it.length} new items in the Market`) });
   try { for (const k in HIRE) HIRE[k].forEach(h => { if (h.lv > L0 && h.lv <= L1) out.push({ ic: ic('paw'), t: kaT(`Yeni ${ROLE_NAME[k].toLowerCase()} yeri (Ekip)`, `New ${kaTr(ROLE_NAME[k]).toLowerCase()} slot (Team)`) }) }) } catch (e) { }
@@ -26066,7 +26066,7 @@ tbOlayGoster = function () { const O = TB.olay; if (!O) return; TB.olay = null; 
   const yol = acik ? kaT(`Ekip’ten bir <b>${ekAd(R).toLowerCase()}</b> alabilirim (${kaFmt(R.c)} altın).`, `I can hire a <b>${ekAd(R).toLowerCase()}</b> from the Team (${kaFmt(R.c)} gold).`)
     : kaT(`Kafeyi <b>Aşama ${R.a}</b>${kaEk(kaTablo().L[R.a])} yükseltince bir ${ekAd(R).toLowerCase()} alabilirim.`, `Once I upgrade the café to <b>stage ${R.a}</b>, I can hire a ${ekAd(R).toLowerCase()}.`);
   coach({ owner: 'tb', title: bas, text: `<b>${nm}</b>: ${ne} ${yol}`, dim: true, center: true,
-    buttons: [{ label: acik ? kaT('Ekibe git', 'Go to Team') : kaT('Kafeyi yükselt', 'Upgrade café'), green: true, icon: acik ? 'paw' : 'cafe', onClick: () => { coachOff(); if (acik) { try { setMode('team') } catch (e) { } } else kaPencere() } },
+    buttons: [{ label: acik ? kaT('Ekibe git', 'Go to Team') : kaT('Kafeyi yükselt', 'Upgrade café'), green: true, icon: acik ? 'paw' : 'cafe', onClick: () => { coachOff(); if (acik) { try { setMode('team') } catch (e) { } } else kaPencere(kaAsama() + 1) } },   // (V379) ödeme sıradaki aşamanın sayfasında
       { label: kaT('Sonra', 'Later'), onClick: () => coachOff() }] }); try { tbKonusan('waiter') } catch (e) { } };
 tbIseAl = function (rol) { };   // eski bedava işe alım yok
 
@@ -26857,49 +26857,66 @@ const AS_RES = s => EA_ON ? `img/asama/${EVMODE}${s}.webp` : `img/asama/c${s}.we
 const AS_ROZET = '<svg class="asRoz" viewBox="0 0 100 70" aria-hidden="true"><path class="yp" d="M23 41C13 28 3 29 0 38c4 11 14 13 23 7z"/><path class="yd" d="M22 43Q10 37 1 38"/><path class="yp" d="M77 41c10-13 20-12 23-3-4 11-14 13-23 7z"/><path class="yd" d="M78 43q12-6 21-5"/>'
   + '<path class="kb" d="M24 30L27 8Q28 4 31.5 6.5L43 15Q50 13 57 15L68.5 6.5Q72 4 73 8L76 30Q80 37 79 46Q77 67 50 67Q23 67 21 46Q20 37 24 30Z"/><path class="ki" d="M29.5 11.5L31 22.5L38.5 17Z"/><path class="ki" d="M70.5 11.5L69 22.5L61.5 17Z"/><ellipse class="kp" cx="50" cy="27" rx="16" ry="4.5"/></svg>';
 const AS_VB = { w: 320, h: 190 }, AS_YOL = (() => { const cx = 160, cy = 95, rx = 153.5, ry = 88.5; return `M${cx} ${cy - ry}A${rx} ${ry} 0 1 1 ${cx} ${cy + ry}A${rx} ${ry} 0 1 1 ${cx} ${cy - ry}` })();
-function asIlerleme(s, a) { const T = kaTablo(); if (s < a) return 1; if (s > a) return 0; if (a >= T.max) return 1; try { return ahIlerleme(a) } catch (e) { const c = T.altin[a + 1] || 1; return Math.max(0, Math.min(1, (S.coins || 0) / c)) } }
+// (V379) Kullanıcı (25 Kasım 2026, 18:00, 1. aşamanın ayrıntısının ekran görüntüsüyle): "1.aşamaya tıklandığında sadece 1.aşamada açık olan
+// şeyleri göstersin 2.aşamaya geç burada gözükmesin. 2.aşamaya geçebilmesi için 2.aşamaya bastığında açılan yerden altın ödemesi gözüksün"
+//  • Her aşamanın sayfası kendi içeriğini gösterir. Ulaşılmış aşama (şu anki ve geçilmişler): yalnız "N. aşamada açılanlar".
+//    Henüz ulaşılmamış aşama: "N. aşamaya geçmek için" hedefleri (bir önceki aşamanın hedefleri, p991 AH[N-1]) ve "N. aşamada açılacaklar".
+//  • Ödeme (altın / elmas düğmeleri) yalnız sıradaki aşamanın sayfasında: kaydırırken o kart ortadayken ve ayrıntısı açıkken.
+//  • Hedeflerin ilerleme halkası ve "1/4 hedef" yazısı sıradaki aşamanın kartında (o aşamaya ulaşmanın ilerlemesi); şu anki aşamanın halkası
+//    dolu. Hedefler tamamlanınca sıradaki kart parlar, "Yükseltmeye hazır!" yazar ve pencere o kartla açılır.
+function asIlerleme(s, a) { const T = kaTablo(); if (s <= a) return 1; if (s > a + 1 || a >= T.max) return 0; try { return ahIlerleme(a) } catch (e) { const c = T.altin[a + 1] || 1; return Math.max(0, Math.min(1, (S.coins || 0) / c)) } }
 function asKart(s, a) { const T = kaTablo(), d = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit', p = asIlerleme(s, a);
   const dolu = p > 0 ? `<path class="hd" pathLength="100" stroke-dasharray="${p >= 1 ? '100 0' : (p * 100).toFixed(2) + ' 100'}" d="${AS_YOL}"/>` : '';
-  const nx = a < T.max ? a + 1 : 0; let O = null; try { O = d === 'su' && nx ? ahOzet(a) : null } catch (e) { }
+  let O = null; try { O = d === 'sonraki' ? ahOzet(a) : null } catch (e) { }
   const alt = d === 'gecti' ? `${ic('check')}<span>${kaT('Tamamlandı', 'Completed')}</span>`
-    : d === 'su' ? (nx ? (O && O.hazir ? `${ic('check')}<span>${kaT('Yükseltmeye hazır!', 'Ready to upgrade!')}</span>` : `<span>${kaT('Şu an buradasın', 'You are here')} · </span>${ic('target')}<b>${O ? O.tam + '/' + O.n : ''}</b><span>${kaT('hedef', 'goals')}</span>`) : `<span>${kaT('Şu an buradasın · en üst aşama', 'You are here · top stage')}</span>`)
-    : d === 'sonraki' ? `${ic('lock')}<span>${kaT('Sıradaki aşama', 'Next stage')}</span>` : `${ic('lock')}<span>${kaT('Kilitli', 'Locked')}</span>`;
-  const hazir = d === 'su' && nx && O && O.hazir;   // (V372) bütün hedefler tamam: halka dolu, kart parlar
+    : d === 'su' ? `<span>${a >= T.max ? kaT('Şu an buradasın · en üst aşama', 'You are here · top stage') : kaT('Şu an buradasın', 'You are here')}</span>`
+    : d === 'sonraki' ? (O && O.hazir ? `${ic('check')}<span>${kaT('Yükseltmeye hazır!', 'Ready to upgrade!')}</span>`
+      : `${ic('lock')}<span>${kaT('Sıradaki aşama', 'Next stage')}${O ? ' · ' : ''}</span>${O ? `${ic('target')}<b>${O.tam}/${O.n}</b><span>${kaT('hedef', 'goals')}</span>` : ''}`)
+    : `${ic('lock')}<span>${kaT('Kilitli', 'Locked')}</span>`;
+  const hazir = d === 'sonraki' && O && O.hazir;   // sıradaki aşamanın bütün hedefleri tamam: halka dolu, kart parlar
   return `<button type="button" class="asKart ${d}${hazir ? ' hazir' : ''}" data-s="${s}" data-p="${p.toFixed(4)}" aria-label="${kaT(`${s}. aşama: ${kaAd(s)}`, `Stage ${s}: ${kaAd(s)}`)}"><span class="asCer">
       <span class="asElips">${EA_ON && !EA_GORSEL[EVMODE] ? eaYerTutucu(s) : `<img class="asRes" src="${AS_RES(s)}" alt="" draggable="false" loading="lazy" decoding="async">`}<span class="asPerde"></span>${d === 'sonraki' || d === 'kilit' ? `<span class="asKilit">${ic('lock')}</span>` : ''}</span>
       <svg class="asHalka" viewBox="0 0 ${AS_VB.w} ${AS_VB.h}" preserveAspectRatio="none" aria-hidden="true"><path class="hz" d="${AS_YOL}"/><path class="hy" d="${AS_YOL}"/>${dolu}</svg>
-      ${d === 'su' && p > 0 && p < 1 ? '<span class="asDugum"></span>' : ''}
+      ${d === 'sonraki' && p > 0 && p < 1 ? '<span class="asDugum"></span>' : ''}
       <span class="asMad">${AS_ROZET}<span class="asMadT"><em>${kaT('AŞAMA', 'STAGE')}</em><b>${s}</b></span>${d === 'gecti' ? `<i class="asTik">${ic('check')}</i>` : ''}</span>
       <span class="asSerit"><i>${kaAd(s)}</i></span></span>
     <span class="asAlt">${alt}</span></button>` }
-function asDugumler(k) { k.querySelectorAll('.asKart.su').forEach(c => { const n = c.querySelector('.asDugum'), y = c.querySelector('.asHalka .hd'), p = +c.dataset.p; if (!n || !y) return;
+function asDugumler(k) { k.querySelectorAll('.asKart').forEach(c => { const n = c.querySelector('.asDugum'), y = c.querySelector('.asHalka .hd'), p = +c.dataset.p; if (!n || !y) return;
     try { const L = y.getTotalLength(), P = y.getPointAtLength(L * p); n.style.left = (P.x / AS_VB.w * 100).toFixed(2) + '%'; n.style.top = (P.y / AS_VB.h * 100).toFixed(2) + '%' } catch (e) { n.remove() } }) }
+// hedef çipi / satırı: s = hedeflerin ait olduğu aşama (sayaç yalnız şu anki aşamanın hedeflerinde)
 function asHedefCip(g, s, a) { const say = s === a && !g.done && !g.ikili ? `<em>${g.puan ? ahPuan(g.cur) : ahSay(Math.min(g.cur, g.n))}/${g.puan ? ahPuan(g.n) : ahSay(g.n)}</em>` : '';
   return `<span class="asC${g.done ? ' ok' : ''}">${g.done ? ic('check') : '<i class="asCo"></i>'}<span>${g.kisa}</span>${say}</span>` }
-function asBilgi(W, s) { const T = kaTablo(), a = kaAsama(), b = W.body.querySelector('.asBil'); if (!b) return; let O = null; try { O = ahOzet(s) } catch (e) { }
-  let bas, ik, govde;
-  if (!O) { bas = s <= a ? kaT('Kafen en üst aşamada!', 'Your café is at the top stage!') : kaT(`${s}. aşama · son aşama`, `Stage ${s} · final stage`); ik = s <= a ? 'star' : 'lock';
-    govde = `<p class="asSon">${s <= a ? kaT('Bütün aşamaları geçtin. Kafen efsane oldu!', 'You passed every stage. Your café is legendary!') : kaT('Son aşama: buraya ulaşınca kafen efsane olur. Ayrıntılar için dokun.', 'Final stage: reach it and your café becomes legendary. Tap for details.')}</p>` }
-  else { bas = s < a ? kaT(`${s}. aşama tamamlandı`, `Stage ${s} completed`) : s === a ? kaT(`${s + 1}. aşamaya geçmek için`, `To reach stage ${s + 1}`) : kaT(`${s}. aşamayı geçmek için`, `To pass stage ${s}`);
-    ik = s < a ? 'check' : s === a ? 'target' : 'lock'; govde = `<div class="asCipler">${O.G.map(g => asHedefCip(g, s, a)).join('')}</div>` }
-  b.className = 'asBil ' + (s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit');
-  b.innerHTML = `<h4>${ic(ik)}<span>${bas}</span>${O && s <= a ? `<b class="asSay">${O.tam}/${O.n}</b>` : ''}<em>${kaAd(s)}</em><button type="button" class="asDetAc">${kaT('Ayrıntılar', 'Details')} ›</button></h4>${govde}`;
+// aşamada açılanlar / açılacaklar (yeni çalışan, tarifler, eşyalar…)
+function asAcilanListe(s) { const T = kaTablo(), L = kaAcilanlar(s), rol = T.rol[s] && typeof CALISAN_ACIK !== 'undefined' && CALISAN_ACIK ? `<div class="kaSat">${ic('paw')}<span>${kaT('Yeni çalışan: ', 'New staff: ')}<b>${T.rol[s][kaEN() ? 1 : 0]}</b></span></div>` : '';
+  return (rol + L.map(x => `<div class="kaSat">${x.ic}<span>${x.t}</span></div>`).join('')) || `<div class="kaSat"><span>${s === 1 ? kaT('Küçük kafen, mutfağın ve Birleştir tahtan: ilk tariflerle başla.', 'Your little café, your kitchen and the Merge board: start with the first recipes.') : kaT('Kafen büyür, daha çok müşteri gelir.', 'Your café grows and more guests arrive.')}</span></div>` }
+// kartların altındaki şerit: ortadaki aşamanın kendi içeriği
+function asBilgi(W, s) { const T = kaTablo(), a = kaAsama(), b = W.body.querySelector('.asBil'); if (!b) return; const dr = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit';
+  let bas, ik, say = '', govde;
+  if (s <= a) { const son = s === a && a >= T.max; bas = son ? kaT('Kafen en üst aşamada!', 'Your café is at the top stage!') : kaT(`${s}. aşamada açılanlar`, `Unlocked at stage ${s}`); ik = son ? 'star' : 'gift'; govde = `<div class="asLis">${asAcilanListe(s)}</div>` }
+  else { let O = null; try { O = ahOzet(s - 1) } catch (e) { }
+    bas = kaT(`${s}. aşamaya geçmek için`, `To reach stage ${s}`); ik = dr === 'sonraki' ? 'target' : 'lock'; if (O && dr === 'sonraki') say = `<b class="asSay">${O.tam}/${O.n}</b>`;
+    govde = O ? `<div class="asCipler">${O.G.map(g => asHedefCip(g, s - 1, a)).join('')}</div>` : `<div class="asLis">${asAcilanListe(s)}</div>` }
+  b.className = 'asBil ' + dr;
+  b.innerHTML = `<h4>${ic(ik)}<span>${bas}</span>${say}<em>${kaAd(s)}</em><button type="button" class="asDetAc">${kaT('Ayrıntılar', 'Details')} ›</button></h4>${govde}`;
   W.body.querySelectorAll('.asNok .asDt i').forEach((n, i) => n.classList.toggle('on', i + 1 === s)) }
-// ---- ayrıntı: aşamanın hedefleri (tik, sayaç, çubuk) ve açılanlar ----
+// ---- ayrıntı: ulaşılmış aşamada açılanlar; ulaşılmamış aşamada oraya geçmenin hedefleri (tik, sayaç, çubuk) ve açılacaklar ----
 function asHedefSatir(g, s, a) { const sayi = s === a && !g.ikili ? (g.puan ? `${ahPuan(g.cur)} / ${ahPuan(g.n)}` : `${ahSay(Math.min(g.cur, g.n))} / ${ahSay(g.n)}`) : '';
   return `<div class="asH${g.done ? ' ok' : ''}${s > a ? ' kil' : ''}"><span class="asHt">${g.done ? ic('check') : ''}</span><span class="asHi">${ic(g.ic)}</span><span class="asHm">${g.t}</span><em>${sayi}</em>${s === a && !g.done && !g.ikili ? `<i class="asHb"><b style="width:${(g.p * 100).toFixed(1)}%"></b></i>` : ''}</div>` }
-function asDetay(W, s) { const T = kaTablo(), a = kaAsama(), w = W.body.querySelector('.asWin'), D = w && w.querySelector('.asDet'); if (!D) return; let O = null; try { O = ahOzet(s) } catch (e) { }
-  const durum = s < a ? kaT('Tamamlandı', 'Completed') : s === a ? (O ? (O.hazir ? kaT('Yükseltmeye hazır!', 'Ready to upgrade!') : kaT(`${O.tam}/${O.n} hedef tamam`, `${O.tam}/${O.n} goals done`)) : kaT('En üst aşama', 'Top stage')) : kaT('Kilitli', 'Locked');
-  const bas = s < a ? kaT(`${s}. aşamayı geçtin`, `You passed stage ${s}`) : s === a ? kaT(`${s + 1}. aşamaya geçmek için`, `To reach stage ${s + 1}`) : kaT(`${s}. aşamayı geçmek için`, `To pass stage ${s}`);
-  const not = O && s > a ? `<p class="asDetNot">${ic('lock')}<span>${s === a + 1 ? kaT(`Önce ${a}. aşamanın hedeflerini tamamla ve kafeni yükselt.`, `First complete stage ${a}’s goals and upgrade your café.`) : kaT(`${s}. aşamaya ulaşınca bu hedefler başlar.`, `These goals start when you reach stage ${s}.`)}</span></p>` : '';
-  const L = kaAcilanlar(s), rol = T.rol[s] && typeof CALISAN_ACIK !== 'undefined' && CALISAN_ACIK ? `<div class="kaSat">${ic('paw')}<span>${kaT('Yeni çalışan: ', 'New staff: ')}<b>${T.rol[s][kaEN() ? 1 : 0]}</b></span></div>` : '';
-  const liste = (rol + L.map(x => `<div class="kaSat">${x.ic}<span>${x.t}</span></div>`).join('')) || `<div class="kaSat"><span>${s === 1 ? kaT('Küçük kafen, mutfağın ve Birleştir tahtan: ilk tariflerle başla.', 'Your little café, your kitchen and the Merge board: start with the first recipes.') : kaT('Kafen büyür, daha çok müşteri gelir.', 'Your café grows and more guests arrive.')}</span></div>`;
-  const hed = O ? `<h5>${ic(s < a ? 'check' : s === a ? 'target' : 'lock')}<span>${bas}</span>${s <= a ? `<b>${O.tam}/${O.n}</b>` : ''}</h5><div class="asHL">${O.G.map(g => asHedefSatir(g, s, a)).join('')}</div>${not}`
-    : `<h5>${ic('star')}<span>${s <= a ? kaT('Kafen en üst aşamada! Bütün aşamaları geçtin.', 'Your café is at the top stage! You passed every stage.') : kaT('Son aşama: buraya ulaşınca kafen efsane olur.', 'Final stage: reach it and your café becomes legendary.')}</span></h5>`;
+function asDetay(W, s) { const T = kaTablo(), a = kaAsama(), w = W.body.querySelector('.asWin'), D = w && w.querySelector('.asDet'); if (!D) return;
+  let O = null; if (s > a) try { O = ahOzet(s - 1) } catch (e) { }
+  const durum = s < a ? kaT('Tamamlandı', 'Completed') : s === a ? (a >= T.max ? kaT('En üst aşama', 'Top stage') : kaT('Şu an buradasın', 'You are here'))
+    : s === a + 1 ? (O ? (O.hazir ? kaT('Yükseltmeye hazır!', 'Ready to upgrade!') : kaT(`${O.tam}/${O.n} hedef tamam`, `${O.tam}/${O.n} goals done`)) : kaT('Sıradaki aşama', 'Next stage')) : kaT('Kilitli', 'Locked');
+  let hed = '';
+  if (O) { const not = s > a + 1 ? `<p class="asDetNot">${ic('lock')}<span>${kaT(`Önce ${s - 1}. aşamaya ulaş; bu hedefler o zaman başlar.`, `Reach stage ${s - 1} first; these goals start then.`)}</span></p>` : '';
+    hed = `<h5>${ic(s === a + 1 ? 'target' : 'lock')}<span>${kaT(`${s}. aşamaya geçmek için`, `To reach stage ${s}`)}</span>${s === a + 1 ? `<b>${O.tam}/${O.n}</b>` : ''}</h5><div class="asHL">${O.G.map(g => asHedefSatir(g, s - 1, a)).join('')}</div>${not}` }
+  else if (s === a && a >= T.max) hed = `<h5>${ic('star')}<span>${kaT('Kafen en üst aşamada! Bütün aşamaları geçtin.', 'Your café is at the top stage! You passed every stage.')}</span></h5>`;
+  const acB = s <= a ? kaT(`${s}. aşamada açılanlar`, `Unlocked at stage ${s}`) : kaT(`${s}. aşamada açılacaklar`, `Unlocks at stage ${s}`);
   D.innerHTML = `<div class="asDetBas"><button type="button" class="asGeri">‹ ${kaT('Aşamalar', 'Stages')}</button><b>${kaT(`${s}. aşama`, `Stage ${s}`)} · ${kaAd(s)}</b><span class="asDetDr">${durum}</span></div>
-    <div class="asDetGv"><div class="asDetSol">${asKart(s, a)}</div><div class="asDetSag">${hed}<h5 class="asDetA">${ic('gift')}<span>${kaT(`${s}. aşamada açılanlar`, `Unlocked at stage ${s}`)}</span></h5><div class="asLis">${liste}</div></div></div>`;
-  asDugumler(D); D.querySelector('.asGeri').onclick = () => { try { sfx('tap') } catch (e) { } w.classList.remove('det') };
-  w.classList.add('det'); const sg = D.querySelector('.asDetSag'); if (sg) sg.scrollTop = 0 }
+    <div class="asDetGv"><div class="asDetSol">${asKart(s, a)}</div><div class="asDetSag">${hed}<h5 class="asDetA${hed ? '' : ' ilk'}">${ic('gift')}<span>${acB}</span></h5><div class="asLis">${asAcilanListe(s)}</div></div></div>`;
+  asDugumler(D); D.querySelector('.asGeri').onclick = () => { try { sfx('tap') } catch (e) { } w.classList.remove('det'); asAyak(W, W._sec) };
+  w.classList.add('det'); asAyak(W, s); const sg = D.querySelector('.asDetSag'); if (sg) sg.scrollTop = 0 }
+// alt şerit (ödeme düğmeleri) yalnız sıradaki aşamanın sayfasında
+function asAyak(W, s) { try { const f = W.foot; if (f) f.classList.toggle('asYok', !(W._nx && s === W._nx)) } catch (e) { } }
 const AS_SUR = { d: null };
 addEventListener('pointermove', e => { const d = AS_SUR.d; if (!d) return; const dx = e.clientX - d.x; if (Math.abs(dx) > 4) d.m = true; d.k.scrollLeft = d.l - dx / (d.o || 1) }, { passive: true });
 addEventListener('pointerup', () => { const d = AS_SUR.d; if (!d) return; AS_SUR.d = null; d.k.classList.remove('tut'); if (d.m) { d.k._surT = Date.now(); asOrtala(d.k, asOrtadaki(d.k), true) } });
@@ -26907,16 +26924,35 @@ function asOrtadaki(k) { const r = k.getBoundingClientRect(), m = r.left + r.wid
 // (V372) pencere ölçekli çizilir (iPad'de --u ≈ 1,4): ekran pikseli → kaydırma pikseli; yoksa 3. aşamada açılınca 4. kart ortaya geliyordu
 const asOlcek = k => { try { const r = k.getBoundingClientRect(); return (k.clientWidth && r.width) ? r.width / k.clientWidth : 1 } catch (e) { return 1 } };
 function asOrtala(k, c, yumusak) { if (!c) return; const r = k.getBoundingClientRect(), q = c.getBoundingClientRect(); k.scrollTo({ left: k.scrollLeft + ((q.left + q.width / 2) - (r.left + r.width / 2)) / asOlcek(k), behavior: yumusak ? 'smooth' : 'auto' }) }
-kaPencere = function () { if (!kaAcik() && !EA_ON) return; const T = kaTablo(), a = kaAsama(), nx = a < T.max ? a + 1 : 0;
+kaPencere = function (acS) { if (!kaAcik() && !EA_ON) return; const T = kaTablo(), a = kaAsama(), nx = a < T.max ? a + 1 : 0;
+  let O = null; try { O = nx ? ahOzet(a) : null } catch (e) { }
+  // (V379) hedefler tamamsa pencere ödemenin olduğu sıradaki aşamayla açılır; "Kafeyi yükselt" gibi düğmeler sıradaki aşamayı ister (acS)
+  const ilk = acS >= 1 && acS <= T.max ? Math.round(acS) : nx && O && O.hazir ? nx : a;
   const W = skWin('skKafe', EA_ON ? kaT(`${EVENTS[EVMODE].city} Aşamaları`, `${EVENTS[EVMODE].city} Stages`) : kaT('Kafe Aşamaları', 'Café Stages'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); W.m.classList.add('asModal');
+  W._nx = nx; W._sec = ilk;
   W.body.innerHTML = `<div class="asWin"><div class="asSar"><button type="button" class="asOk sol" aria-label="‹">‹</button><div class="asKay"><div class="asIz">${Array.from({ length: T.max }, (_, i) => asKart(i + 1, a)).join('')}</div></div><button type="button" class="asOk sag" aria-label="›">›</button></div>
     <div class="asNok"><b class="asNm">${(EA_ON ? (S.cafeName || EVENTS[EVMODE].cafe) : S.cafeName) || kaT('Kafen', 'Your café')}</b><span class="asDt">${Array.from({ length: T.max }, (_, i) => `<i class="${i + 1 < a ? 'ok' : ''}"></i>`).join('')}</span><span class="asSy">${kaT('Aşama', 'Stage')} ${a} / ${T.max} · ${kaT('Gün', 'Day')} ${S.dayN || 1}</span></div><div class="asBil"></div><div class="asDet"></div></div>`;
+  // ödeme şeridi (yalnız sıradaki aşamanın sayfasında görünür)
+  W.foot.classList.add('asFoot');
+  if (nx) { const c = T.altin[nx], g = T.elmas[nx];
+    const ok = S.coins >= c && (!O || O.hazir), okG = S.gems >= g && (!O || O.altinDisi);
+    const eks = !O || O.hazir ? kaT('Hazırsın! Yükseltmek için dokun.', 'Ready! Tap to upgrade.') : O.altinDisi ? kaT(`Hedefler tamam! Daha ${kaFmt(c - S.coins)} altın gerekli ya da elmasla yükselt.`, `Goals done! ${kaFmt(c - S.coins)} more gold needed, or upgrade with gems.`)
+      : kaT(`Önce hedefleri tamamla · ${O.tam}/${O.n} tamam.`, `Complete the goals first · ${O.tam}/${O.n} done.`);
+    W.foot.innerHTML = `<div class="kaAlt"><button class="skbtn green kaAl" type="button" ${ok ? '' : 'disabled'}>${ic('coin')}${kaT(`${nx}. aşamaya yükselt`, `Upgrade to stage ${nx}`)} · ${kaFmt(c)}</button>
+      <button class="skbtn kaGem" type="button" ${okG ? '' : 'disabled'}>${ic('gem')}${g}</button></div>
+      <p class="kaEks">${eks}</p>`;
+    W.foot.querySelector('.kaAl').onclick = () => kaYukselt('altin', W);
+    const gb = W.foot.querySelector('.kaGem'); gb.onclick = () => { if (!gb.dataset.onay) { gb.dataset.onay = '1'; gb.innerHTML = `${ic('gem')}${g} · ${kaT('emin misin?', 'sure?')}`; return } kaYukselt('elmas', W) } }
+  else W.foot.innerHTML = '';
+  // şeridin yüksekliği bir kez ölçülür: gizlenince içerik büyür ama kart boyu (dar / geniş) değişmesin
+  try { const h1 = W.body.clientHeight; W.foot.classList.add('asYok'); W._ayH = Math.max(0, W.body.clientHeight - h1) } catch (e) { W._ayH = 0 }
+  asAyak(W, ilk);
   // dar pencere (telefon yatay): kartlar küçülür, alttaki liste kendi içinde kayar
-  const sigdir = () => { try { const w = W.body.querySelector('.asWin'); if (w) w.classList.toggle('dar', W.body.clientHeight < 290) } catch (e) { } };
+  const sigdir = () => { try { const w = W.body.querySelector('.asWin'); if (w) w.classList.toggle('dar', W.body.clientHeight - (W.foot.classList.contains('asYok') ? (W._ayH || 0) : 0) < 290) } catch (e) { } };
   sigdir(); try { new ResizeObserver(sigdir).observe(W.body) } catch (e) { }
-  const k = W.body.querySelector('.asKay'); let sec = a;
+  const k = W.body.querySelector('.asKay'); let sec = ilk;
   const oklar = s => { const l = W.body.querySelector('.asOk.sol'), r = W.body.querySelector('.asOk.sag'); if (l) l.disabled = s <= 1; if (r) r.disabled = s >= T.max };
-  const guncelle = () => { const c = asOrtadaki(k); if (!c) return; const s = +c.dataset.s; if (s !== sec) { sec = s; asBilgi(W, s); oklar(s); k.querySelectorAll('.asKart').forEach(x => x.classList.toggle('orta', x === c)) } };
+  const guncelle = () => { const c = asOrtadaki(k); if (!c) return; const s = +c.dataset.s; if (s !== sec) { sec = s; W._sec = s; asBilgi(W, s); oklar(s); asAyak(W, s); k.querySelectorAll('.asKart').forEach(x => x.classList.toggle('orta', x === c)) } };
   k.addEventListener('scroll', () => { cancelAnimationFrame(k._raf); k._raf = requestAnimationFrame(guncelle) }, { passive: true });
   // fareyle sürükleme (dokunmatikte tarayıcının kendi kaydırması); pencere başına değil, tek dinleyiciyle (AS_SUR)
   k.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; AS_SUR.d = { k, x: e.clientX, l: k.scrollLeft, m: false, o: asOlcek(k) }; k.classList.add('tut') });
@@ -26925,17 +26961,7 @@ kaPencere = function () { if (!kaAcik() && !EA_ON) return; const T = kaTablo(), 
   W.body.querySelector('.asOk.sol').onclick = () => { const c = asOrtadaki(k); asOrtala(k, c && c.previousElementSibling, true) };
   W.body.querySelector('.asOk.sag').onclick = () => { const c = asOrtadaki(k); asOrtala(k, c && c.nextElementSibling, true) };
   W.body.querySelectorAll('.asNok .asDt i').forEach((n, i) => n.onclick = () => asOrtala(k, k.querySelectorAll('.asKart')[i], true));
-  asDugumler(k); asBilgi(W, a); oklar(a); requestAnimationFrame(() => { asOrtala(k, k.querySelector(`.asKart[data-s="${a}"]`), false); k.querySelectorAll('.asKart').forEach(x => x.classList.toggle('orta', +x.dataset.s === a)) });
-  if (nx) { const c = T.altin[nx], g = T.elmas[nx]; let O = null; try { O = ahOzet(a) } catch (e) { }
-    const ok = S.coins >= c && (!O || O.hazir), okG = S.gems >= g && (!O || O.altinDisi);
-    const eks = !O || O.hazir ? kaT('Hazırsın! Yükseltmek için dokun.', 'Ready! Tap to upgrade.') : O.altinDisi ? kaT(`Hedefler tamam! Daha ${kaFmt(c - S.coins)} altın gerekli ya da elmasla yükselt.`, `Goals done! ${kaFmt(c - S.coins)} more gold needed, or upgrade with gems.`)
-      : kaT(`Önce hedefleri tamamla · ${O.tam}/${O.n} tamam. Görmek için karta dokun.`, `Complete the goals first · ${O.tam}/${O.n} done. Tap the card to see them.`);
-    W.foot.classList.add('asFoot'); W.foot.innerHTML = `<div class="kaAlt"><button class="skbtn green kaAl" type="button" ${ok ? '' : 'disabled'}>${ic('coin')}${kaT(`${nx}. aşamaya yükselt`, `Upgrade to stage ${nx}`)} · ${kaFmt(c)}</button>
-      <button class="skbtn kaGem" type="button" ${okG ? '' : 'disabled'}>${ic('gem')}${g}</button></div>
-      <p class="kaEks">${eks}</p>`;
-    W.foot.querySelector('.kaAl').onclick = () => kaYukselt('altin', W);
-    const gb = W.foot.querySelector('.kaGem'); gb.onclick = () => { if (!gb.dataset.onay) { gb.dataset.onay = '1'; gb.innerHTML = `${ic('gem')}${g} · ${kaT('emin misin?', 'sure?')}`; return } kaYukselt('elmas', W) } }
-  else W.foot.innerHTML = `<p class="kaEks">${kaT('Kafen en üst aşamada!', 'Your café is at the top stage!')}</p>` };
+  asDugumler(k); asBilgi(W, ilk); oklar(ilk); requestAnimationFrame(() => { asOrtala(k, k.querySelector(`.asKart[data-s="${ilk}"]`), false); k.querySelectorAll('.asKart').forEach(x => x.classList.toggle('orta', +x.dataset.s === ilk)) }) };
 
 // ---- görünüm ----
 { const INK = '#4a2a14', st = document.createElement('style'); st.textContent = `
@@ -27030,7 +27056,10 @@ html.land #game#game#game #skKafe#skKafe.skmodal .skwin{top:max(6px,calc((100*va
 #skKafe .asC.ok{background:#eaf7da;border-color:#8cc63f;color:#2f5f17}
 #skKafe .asC .asCo{width:13px;height:13px;border-radius:50%;border:2px solid #c9a46a;box-sizing:border-box;flex:none;background:#fffdf7}
 #skKafe .asC em{font-style:normal;font-weight:900;color:#a0662a}
-#skKafe .asBil.kilit .asC,#skKafe .asBil.sonraki .asC{opacity:.8}
+#skKafe .asBil.kilit .asC{opacity:.8}
+#skKafe .skfoot.asYok{display:none!important}
+#skKafe .asDetSag h5.asDetA.ilk{margin-top:2px;padding-top:0;border-top:0}
+#skKafe .asKart.sonraki .asAlt{color:#7a5236}#skKafe .asKart.sonraki.hazir .asAlt{color:#3f6b1e}
 #skKafe .asSon{margin:2px 0 4px;font:800 12px var(--font-body);color:#7a5236}
 /* (V372) ayrıntı görünümü */
 #skKafe .asDet{display:none;flex:1;min-height:0;flex-direction:column;gap:6px}
