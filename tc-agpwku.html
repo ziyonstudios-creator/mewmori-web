@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795637346",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795638295",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2304';
+const OLC_DERLEME = '20261125-2324';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27958,6 +27958,82 @@ function skCiz(set) { let row = set.querySelector('.skSerbest'); if (!SKM.on) { 
   row.querySelector('button').onclick = () => { skAyarla(false); skCiz(set) } }
 // otomatik kamera (p995) serbest kipte durur
 { const _kb = kmBos; kmBos = function () { if (SKM.on) return false; return _kb.apply(this, arguments) } }
+
+// ================= V391 · KAMERA SEÇENEKLERİ: "Üstten" / "Yakın bakış" =================
+// Kullanıcı (25 Kasım 2026, 23:17) serbest kamerayla bulduğu açının ekran görüntüsünü gönderdi: "bu açıyı özel bir açı yapıp oyunda kamera
+// seçenekleri ikonu eklermisin arayüze buradan bu bakış açısına geçebilsin oyuncu".
+//  · Ana ekranda Düzenle'nin yanında "Kamera" düğmesi; dokununca küçük menü: Üstten (oyunun normal kuşbakışı) · Yakın bakış (kafenin içinden,
+//    göz hizasına yakın, alçak açı: tezgâh solda, masalar sağda, arka duvar ve pencere görünür).
+//  · Seçim cihaza kaydedilir (localStorage, oyun kaydına girmez). Geçiş 0,9 sn yumuşak kayar. Yakın bakışta da parmakla döndürme ve
+//    yakınlaştırma çalışır; eğim sınırı alçak açıya izin verecek kadar genişler (0,45–1,42 rad), yatay sınır oyunun normal sınırı (0,12–1,6).
+//  · Kafe büyüyünce / kat değişince bakış kafenin ortasına göre yeniden kurulur. Duraklarda da çalışır. Serbest kamera açıksa onun sınırları geçerli.
+//  · Otomatik kamera yerleşmesi (p995) yalnız "Üstten" görünümde çalışır.
+const KS_KEY = 'tabbychef-kamera';
+var KSC = { mod: 'ust', an: null, yk: { d: 6.0, pol: 1.32, az: 0.16, ty: 0.7 } };
+try { const v = localStorage.getItem(KS_KEY); if (v === 'yakin') KSC.mod = 'yakin' } catch (e) { }
+function ksYakin() { return KSC.mod === 'yakin' }
+// yakın bakış: kafe büyüdükçe biraz geri çekilir
+function ksHedef() { const k = (() => { try { return kmK() } catch (e) { return 1 } })(), T = controls.target;
+  if (KSC.mod === 'yakin') return { d: KSC.yk.d * Math.pow(k, 0.7), pol: KSC.yk.pol, az: KSC.yk.az, ty: KSC.yk.ty };
+  let d = 12.6, pol = 0.74; try { d = kmVars(); pol = kmPol() } catch (e) { } const v = camera.position.clone().sub(T);
+  let az = Math.atan2(v.x, v.z); az = Math.max(0.12, Math.min(1.6, az)); if (az < 0.2) az = 0.86; return { d, pol, az, ty: 0.2 } }
+function ksSinir() { try { if (typeof SKM !== 'undefined' && SKM.on) return; if (KSC.mod === 'yakin') { controls.maxPolarAngle = 1.42; if (controls.minDistance > 3) controls.minDistance = 3 } } catch (e) { } }
+function ksGit(anlik) { const T = controls.target, v = camera.position.clone().sub(T), r = v.length(), H = ksHedef();
+  const b = { d: r, pol: Math.acos(Math.max(-1, Math.min(1, v.y / r))), az: Math.atan2(v.x, v.z), ty: T.y };
+  let daz = H.az - b.az; while (daz > Math.PI) daz -= 2 * Math.PI; while (daz < -Math.PI) daz += 2 * Math.PI;
+  KSC.an = { b, h: { d: H.d, pol: H.pol, az: b.az + daz, ty: H.ty }, t0: performance.now() - (anlik ? 1e5 : 0), sure: 900 }; if (anlik) ksTick(0) }
+function ksTick(dt) { const A = KSC.an; if (!A) return; if (KSC.mod === 'yakin') ksSinir(); else { try { controls.maxPolarAngle = Math.max(0.95, controls.maxPolarAngle) } catch (e) { } }
+  A.t = Math.min(1, (performance.now() - A.t0) / A.sure); const u = A.t < 1 ? 1 - Math.pow(1 - A.t, 3) : 1, L = (a, b) => a + (b - a) * u;
+  const d = L(A.b.d, A.h.d), po = L(A.b.pol, A.h.pol), az = L(A.b.az, A.h.az), T = controls.target; T.y = L(A.b.ty, A.h.ty);
+  camera.position.set(T.x + d * Math.sin(po) * Math.sin(az), T.y + d * Math.cos(po), T.z + d * Math.sin(po) * Math.cos(az)); controls.update();
+  if (A.t >= 1) { KSC.an = null; if (KSC.mod !== 'yakin') { try { controls.maxPolarAngle = 0.95 } catch (e) { } } } }
+function ksSec(m) { if (m !== 'yakin') m = 'ust'; KSC.mod = m; try { localStorage.setItem(KS_KEY, m) } catch (e) { } try { GKK.an = null } catch (e) { } ksGit(false); ksMenuKapat(); ksDugme() }
+// her kare: geçiş + sınırlar (duraklar eğim sınırını her karede yazar; bu sarmalayıcı onlardan sonra çalışır)
+{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { if (KSC.an) ksTick(Math.min(dt, 0.05)); else if (KSC.mod === 'yakin') ksSinir() } catch (e) { } return r } }
+// oyuncu ekrana dokununca geçiş durur
+try { const cv = renderer.domElement; for (const t of ['pointerdown', 'wheel']) cv.addEventListener(t, () => { if (KSC.an) { KSC.an = null; if (KSC.mod !== 'yakin') try { controls.maxPolarAngle = 0.95 } catch (e) { } } }, { passive: true }) } catch (e) { }
+// otomatik kamera yalnız "Üstten"de
+{ const _kb = kmBos; kmBos = function () { if (KSC.mod === 'yakin' || KSC.an) return false; return _kb.apply(this, arguments) } }
+// kafe büyüyünce / kat değişince yakın bakışı yeniden kur
+{ const _cf = camFit; camFit = function () { const r = _cf.apply(this, arguments); try { if (KSC.mod === 'yakin' && KSC.ilk) ksGit(false) } catch (e) { } return r } }
+// açılışta: kayıtlı seçim yakın bakışsa oyun başlayınca ona geç
+{ let bekle = 0; const iv = setInterval(() => { try { bekle++; if (bekle > 120) return clearInterval(iv); if (typeof started === 'undefined' || !started || (typeof PERF !== 'undefined' && PERF.covered)) return;
+    clearInterval(iv); KSC.ilk = true; if (KSC.mod === 'yakin') { try { GKK.ilk = true; GKK.an = null } catch (e) { } ksGit(false) } } catch (e) { } }, 500) }
+
+// ---------------- düğme + menü ----------------
+const KS_IC = '<svg viewBox="0 0 64 64" fill="#ffc93c" stroke="#4a2a14" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><rect x="8" y="20" width="36" height="28" rx="6" fill="#fff6e2"/><path d="M44 29l12-7v24l-12-7z"/><circle cx="26" cy="34" r="7"/><path d="M14 14h12"/></svg>';
+function ksDugme() { try { const y = $('y2'); if (!y) return; let b = $('kamBtn');
+    if (!b) { b = document.createElement('button'); b.type = 'button'; b.id = 'kamBtn'; b.className = 'k3b'; b.setAttribute('aria-label', 'Kamera');
+      b.innerHTML = `<span class="k3c">${KS_IC}</span><span class="k3t">Kamera</span>`; b.onclick = ev => { ev.stopPropagation(); if (UI.mode !== 'cafe' || UI.modal) return; try { sfx('tap') } catch (e) { } ksMenu() }; y.appendChild(b) }
+    const d = $('duzBtn'), goster = !!d && !d.hidden && UI.mode === 'cafe'; if (b.hidden === goster) b.hidden = !goster; b.classList.toggle('solo', !!d && d.classList.contains('solo')) } catch (e) { } }
+ksDugme(); setInterval(ksDugme, 900);
+function ksMenuKapat() { const m = $('kamMenu'); if (m) m.remove() }
+function ksMenu() { if ($('kamMenu')) return ksMenuKapat(); const b = $('kamBtn'); if (!b) return; const r = b.getBoundingClientRect();
+  const m = document.createElement('div'); m.id = 'kamMenu'; m.setAttribute('role', 'menu');
+  const sec = (k, ad, alt, ic) => `<button type="button" role="menuitemradio" aria-checked="${KSC.mod === k}" data-km="${k}"${KSC.mod === k ? ' class="on"' : ''}><span class="ksIc">${ic}</span><span class="ksTx"><b>${ad}</b><small>${alt}</small></span></button>`;
+  const icUst = '<svg viewBox="0 0 48 48"><path d="M8 30l16-9 16 9-16 9z" fill="#e7b36a" stroke="#4a2a14" stroke-width="3" stroke-linejoin="round"/><path d="M24 6v10M19 12l5 5 5-5" fill="none" stroke="#4a2a14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const icYk = '<svg viewBox="0 0 48 48"><path d="M4 38h40" stroke="#4a2a14" stroke-width="3" stroke-linecap="round"/><rect x="9" y="22" width="12" height="16" rx="2" fill="#86a34c" stroke="#4a2a14" stroke-width="3"/><path d="M27 38V28h12v10M26 28h14" fill="#e7b36a" stroke="#4a2a14" stroke-width="3" stroke-linejoin="round"/><circle cx="33" cy="14" r="5" fill="#ffc93c" stroke="#4a2a14" stroke-width="3"/></svg>';
+  m.innerHTML = sec('ust', 'Üstten', 'Kafenin tamamı', icUst) + sec('yakin', 'Yakın bakış', 'Kafenin içinden', icYk);
+  m.style.left = Math.max(8, r.left) + 'px'; m.style.bottom = (innerHeight - r.top + 8) + 'px'; document.body.appendChild(m);
+  m.querySelectorAll('[data-km]').forEach(x => x.onclick = ev => { ev.stopPropagation(); try { sfx('tap') } catch (e) { } ksSec(x.dataset.km) });
+  setTimeout(() => { const kap = ev => { if (!ev.target.closest('#kamMenu') && !ev.target.closest('#kamBtn')) { ksMenuKapat(); document.removeEventListener('pointerdown', kap, true) } }; document.addEventListener('pointerdown', kap, true) }, 0) }
+{ const _sm = setMode; setMode = function () { ksMenuKapat(); const r = _sm.apply(this, arguments); try { ksDugme() } catch (e) { } return r } }
+{ const st = document.createElement('style'); const Y = 'html.land #game#game #y2'; st.textContent = `
+${Y} #kamBtn{position:absolute!important;left:calc(var(--el) + 124px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important}
+${Y} #kamBtn.solo{left:calc(var(--el) + 62px)!important}
+${Y} #kamBtn .k3c{left:4px;top:0;width:48px;height:48px;padding-top:4.5px}
+${Y} #kamBtn .k3c svg{width:28px;height:28px}
+${Y} #kamBtn .k3t{top:38px;height:16px;padding:1px 6px 0;font-size:9.5px}
+#kamMenu{position:fixed;z-index:40;display:flex;flex-direction:column;gap:6px;padding:7px;background:#fff8ec;border:3px solid #4a2a14;border-radius:18px;box-shadow:0 4px 0 #4a2a14,0 8px 18px rgba(60,30,10,.25);animation:ksIn .18s cubic-bezier(.2,1.3,.4,1);transform-origin:0 100%}
+@keyframes ksIn{from{opacity:0;scale:.85}}
+#kamMenu button{all:unset;display:flex;align-items:center;gap:9px;min-width:168px;padding:6px 10px 6px 6px;border-radius:12px;border:2.5px solid transparent;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#kamMenu button.on{background:#ffe7a8;border-color:#e0a21e}
+#kamMenu button:active{scale:.96}
+#kamMenu .ksIc{width:40px;height:40px;flex:none;display:grid;place-items:center;background:#fff;border:2.5px solid #4a2a14;border-radius:11px}
+#kamMenu .ksIc svg{width:32px;height:32px}
+#kamMenu .ksTx{display:flex;flex-direction:column;line-height:1.15}
+#kamMenu .ksTx b{font:900 14px/1.15 var(--font-display,sans-serif);color:#4a2a14}#kamMenu .ksTx small{font:700 11px/1.2 var(--font-display,sans-serif);color:#8a5a30}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
