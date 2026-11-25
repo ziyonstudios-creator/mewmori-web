@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795626318",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795626929",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24110,11 +24110,10 @@ for (const O of OBJECTIVES) if (!O.xp3) { O.xp = Math.round(O.xp * XP_ANA); O.xp
   const st = S.tut, m = UI.mode, ad = () => RECIPE[G_REC].name;
   if (st === 'g_mg' && S.unlocked[G_REC]) { RH2.ok = []; RH2.allow = []; if (document.querySelector('.tkanim')) return rh2Hide(); if (m !== 'merge') return setMode('merge');
     return rh2Show('mgok3', { title: 'İlk tarifin açıldı! 🎉', dim: true, center: true, text: `<b>${ad()}</b> artık senin! Şimdi onu menüne ekleyelim ki müşteriler sipariş edebilsin.`,
-      buttons: [{ label: 'Tariflere bak', green: true, icon: 'book', onClick: rh2Go('book', () => { S.tut = 'g_rb'; RH2.sub = ''; UI.rbTab = RECIPE[G_REC].cat; UI.rbFam = null; markDirty() }) }] }) }
-  if (st === 'g_rb') { if (m !== 'book') return setMode('book'); RH2.allow = []; RH2.ok = [];
-    const kart = () => document.querySelector(`#book [data-rid="${G_REC}"], #book [data-id="${G_REC}"], #book [data-r="${G_REC}"]`);
-    return rh2Show('rb3', { title: 'Tarif defterimiz', text: `Açtığın bütün tarifler burada durur. <b>${ad()}</b> ${/[aıou][^aeıioöuü]*$/i.test(ad()) ? 'da' : 'de'} artık defterinde! Şimdi menüye geçip onu menüne ekleyelim.`, target: () => kart() || $('rbTabs'), place: 'bottom',
+      // (V385) Kullanıcı (25 Kasım 2026, 20:07): "rehber birleştirden sonra tarif menüsünü anlatmasın direk menüye eklemeye geçsin" →
+      // Tarif defteri adımı (g_rb) atlanır: düğme doğrudan Menü'ye, "Menüye ekle" adımına götürür. Kayıtta g_rb'de kalan da Menü'ye geçer.
       buttons: [{ label: 'Menüye ekleyelim', green: true, icon: 'menu', onClick: rh2Go('menu', () => { S.tut = 'g_mn'; RH2.sub = 'mnA'; menuTab = 'menu'; try { UI.mnCat = RECIPE[G_REC].cat } catch (e) { } markDirty() }) }] }) }
+  if (st === 'g_rb') { S.tut = 'g_mn'; RH2.sub = 'mnA'; RH2.shown = ''; menuTab = 'menu'; try { UI.mnCat = RECIPE[G_REC].cat } catch (e) { } markDirty(); return setMode('menu') }
   if (st === 'g_mn') { if (m !== 'menu') return setMode('menu'); RH2.ok = [];
     if (menuTab !== 'menu' || UI.mnCat !== RECIPE[G_REC].cat) { menuTab = 'menu'; UI.mnCat = RECIPE[G_REC].cat; try { renderMenu() } catch (e) { } }
     const satir = () => document.querySelector(`.mnA [data-mi="${G_REC}"]`), tg = () => document.querySelector(`.mnA [data-tg="${G_REC}"]`), art = () => { const s = satir(); return s && s.querySelector('[data-pd="1"]') };
@@ -24600,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2003';
+const OLC_DERLEME = '20261125-2009';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27620,6 +27619,15 @@ if (IP_ON) { const _as = applyState; applyState = function () { try { ipGecis();
 setInterval(() => { try { if (typeof started !== 'undefined' && started) ipSabit() } catch (e) { } }, 1500);
 // paket bilgisindeki "Seviye N · iki tane birleştir…" satırı artık yok
 if (IP_ON) { const st = document.createElement('style'); st.textContent = '.pkSvBilgi{display:none!important}'; document.head.appendChild(st) }
+// ================= V385 · BAŞLANGIÇTA TAHTADA YALNIZ PAKETLER =================
+// Kullanıcı (25 Kasım 2026, 20:07): "oyunun başlangıcında birleştir ekranında paketlerden hariç ürünlerde gözüküyor onlarıda kaldır."
+//  • Yeni oyunun tahtası boş başlar (eskiden 2 kahve, 1 un, 1 şeker hazır geliyordu); paketler ihtiyaç oldukça gelir (p972/p977). Kafesi henüz
+//    kurulmamış (girişi bitmemiş) kayıtta da tahtadaki hazır ürünler kalkar. Duraklar (EVMODE) değişmez.
+function ipBosTahta(b) { try { for (let i = 0; i < b.length; i++) { const v = b[i], it = v && ITEMS[v]; if (v && !(it && it.fam === 'bag')) b[i] = null } } catch (e) { } return b }
+if (!EVMODE) {
+  { const _db = defaultBoard; defaultBoard = function () { return ipBosTahta(_db.apply(this, arguments)) } }
+  try { if (typeof S !== 'undefined' && S && !S.created && Array.isArray(S.board)) ipBosTahta(S.board) } catch (e) { }
+  { const _as = applyState; applyState = function () { try { if (S && !S.created && Array.isArray(S.board)) ipBosTahta(S.board) } catch (e) { } return _as.apply(this, arguments) } } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
