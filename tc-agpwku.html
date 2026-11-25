@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795639408",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795639913",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2340';
+const OLC_DERLEME = '20261125-2350';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27921,44 +27921,6 @@ button:active:not(:disabled){scale:.94}
 @media (prefers-reduced-motion:reduce){#gkFx{display:none}.modal:not([hidden]),#merge:not([hidden]),#recipes:not([hidden]),#menuScr:not([hidden]),#team:not([hidden]),#ui:not(.off){animation:none}}
 `; document.head.appendChild(st) }
 
-// ================= V387 · SERBEST KAMERA (yalnız bu cihazda, gizli anahtar) =================
-// Kullanıcı (25 Kasım 2026, 22:03): "benim şuanda sadece bana özel kamera hareketini sınırsız hale getirir misin" — ekran kaydıyla yeni bir
-// görünüm tarzı gösterecek. Oyuncuların göreceği bir ayar DEĞİL: Ayarlar'da "Grafik" yazısına art arda 7 kez dokununca (iki dokunuş arası en çok 2 sn) bu
-// cihazda açılır (localStorage, kayda girmez, sunucuya gitmez); açıkken Ayarlar'da "Serbest kamera" satırı görünür ve oradan kapatılır.
-// Açıkken: yakınlaştırma 0,4–90 m, eğim tepeden zemin hizasına kadar (0,02–π/2 rad; V389: kamera zemine iner, bakış noktası 12 cm'nin altına inmez,
-// kamera 10 cm'nin altına girmez, yakın kırpma 5 cm), yatayda 360° dönüş (V388: oyunun normal
-// 0,12–1,6 rad yatay sınırı kalkar), iki parmakla kaydırma (pan) açık; otomatik kamera
-// yerleşmesi (p995) çalışmaz. Duraklarda da geçerli. Kapatınca oyunun normal sınırları ve kafeye ortalanmış bakış geri gelir.
-const SK_KEY = 'tabbychef-serbest-kamera';
-var SKM = { on: false, dok: [] };
-try { SKM.on = localStorage.getItem(SK_KEY) === '1' } catch (e) { }
-function gkSerbest() { return !!SKM.on }
-function skUygula() { try { if (!SKM.on) return; controls.minDistance = 0.4; controls.maxDistance = 90; controls.minPolarAngle = 0.02; controls.maxPolarAngle = Math.PI / 2 - 0.004;
-    { const T = controls.target; if (T.y < 0.12) T.y = 0.12; if (T.y > 12) T.y = 12 } if (camera.position.y < 0.1) camera.position.y = 0.1; if (camera.near > 0.05) { camera.near = 0.05; camera.updateProjectionMatrix() } controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; controls.enableRotate = true; controls.enablePan = true; controls.screenSpacePanning = true } catch (e) { } }
-function skAyarla(on) { SKM.on = !!on; try { localStorage.setItem(SK_KEY, on ? '1' : '0') } catch (e) { }
-  try { if (on) { GKK.an = null; skUygula() } else { controls.enablePan = false; camera.near = 0.1; camera.updateProjectionMatrix(); if (controls.target.y !== 0.2) controls.target.y = 0.2; controls.minAzimuthAngle = 0.12; controls.maxAzimuthAngle = 1.6; controls.minDistance = 6; controls.minPolarAngle = 0.45; controls.maxPolarAngle = 0.95; camFit();
-      const T = controls.target, v = camera.position.clone().sub(T), r = Math.max(6, Math.min(controls.maxDistance, v.length())); camera.position.copy(T).addScaledVector(v.normalize(), r);
-      let po = Math.acos(Math.max(-1, Math.min(1, (camera.position.y - T.y) / r))); if (po < 0.45 || po > 0.95) { const az = Math.atan2(camera.position.x - T.x, camera.position.z - T.z); po = Math.max(0.45, Math.min(0.95, po)); camera.position.set(T.x + r * Math.sin(po) * Math.sin(az), T.y + r * Math.cos(po), T.z + r * Math.sin(po) * Math.cos(az)) }
-      { const T2 = controls.target, v2 = camera.position.clone().sub(T2), r2 = v2.length(), p2 = Math.acos(Math.max(-1, Math.min(1, v2.y / r2))); let az = Math.atan2(v2.x, v2.z); if (az < 0.12 || az > 1.6) { az = 0.86; camera.position.set(T2.x + r2 * Math.sin(p2) * Math.sin(az), T2.y + r2 * Math.cos(p2), T2.z + r2 * Math.sin(p2) * Math.cos(az)) } }
-      controls.update() } } catch (e) { console.warn('serbest kamera', e) }
-  try { toast(on ? '<b>Serbest kamera açık</b><br>Bu cihazda: iki parmakla kaydır, dilediğin kadar yaklaş, uzaklaş, eğ' : '<b>Serbest kamera kapandı</b>', ic('check'), 2600) } catch (e) { } }
-// her karede sınırları koru (kafe büyüyünce camFit, duraklar eğimi her karede yeniden yazar)
-{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); if (SKM.on) skUygula(); return r } }
-// Ayarlar: gizli dokunuş + açıkken görünen satır
-{ const _os = openSettings; openSettings = function () { const r = _os.apply(this, arguments); try { skSatir() } catch (e) { } return r } }
-// Ayarlar penceresi açıldıktan hemen sonra satırlarını yeniden çiziyor (dil, dikey ekran, ölçüm satırları): dinleyici etikete değil belgeye bağlı.
-document.addEventListener('pointerdown', ev => { try { const sp = ev.target && ev.target.closest && ev.target.closest('#skSet .row'); if (!sp) return;
-    const t0 = (sp.querySelector('span') || {}).textContent || ''; if (!/^\s*(Grafik|Graphics)\s*$/.test(t0)) return; if (ev.target.closest('button')) return;
-    const t = performance.now(); if (SKM.dok.length && t - SKM.dok[SKM.dok.length - 1] > 2000) SKM.dok = []; SKM.dok.push(t);   // art arda dokunuşlar arası en çok 2 sn
-    if (SKM.dok.length >= 7) { SKM.dok = []; skAyarla(!SKM.on); const set = document.querySelector('#skSet .skset'); if (set) skCiz(set) } } catch (e) { } }, true);
-function skSatir() { const W = $('skSet'); if (!W) return; const set = W.querySelector('.skset'); if (!set) return; skCiz(set); setTimeout(() => { try { const s2 = document.querySelector('#skSet .skset'); if (s2) skCiz(s2) } catch (e) { } }, 120) }
-function skCiz(set) { let row = set.querySelector('.skSerbest'); if (!SKM.on) { if (row) row.remove(); return }
-  if (!row) { row = document.createElement('div'); row.className = 'row skSerbest'; set.appendChild(row) }
-  row.innerHTML = `${uiIc('i_bolt')}<span>Serbest kamera</span><button class="skbtn green" type="button">Açık · kapat</button>`;
-  row.querySelector('button').onclick = () => { skAyarla(false); skCiz(set) } }
-// otomatik kamera (p995) serbest kipte durur
-{ const _kb = kmBos; kmBos = function () { if (SKM.on) return false; return _kb.apply(this, arguments) } }
-
 // ================= V391 · KAMERA SEÇENEKLERİ: "Üstten" / "Yakın bakış" =================
 // Kullanıcı (25 Kasım 2026, 23:17) serbest kamerayla bulduğu açının ekran görüntüsünü gönderdi: "bu açıyı özel bir açı yapıp oyunda kamera
 // seçenekleri ikonu eklermisin arayüze buradan bu bakış açısına geçebilsin oyuncu".
@@ -27967,9 +27929,11 @@ function skCiz(set) { let row = set.querySelector('.skSerbest'); if (!SKM.on) { 
 //  · (V393) Yakın bakış sabit: yakınlaştırma / döndürme / kaydırma yok, odak hep aynı.
 //  · Seçim cihaza kaydedilir (localStorage, oyun kaydına girmez). Geçiş 0,9 sn yumuşak kayar. Yakın bakışta da parmakla döndürme ve
 //    yakınlaştırma çalışır; eğim sınırı alçak açıya izin verecek kadar genişler (0,45–1,42 rad), yatay sınır oyunun normal sınırı (0,12–1,6).
-//  · Kafe büyüyünce / kat değişince bakış kafenin ortasına göre yeniden kurulur. Duraklarda da çalışır. Serbest kamera açıksa onun sınırları geçerli.
+//  · Kafe büyüyünce / kat değişince bakış kafenin ortasına göre yeniden kurulur. Duraklarda da çalışır. (V394: serbest kamera kaldırıldı.)
 //  · Otomatik kamera yerleşmesi (p995) yalnız "Üstten" görünümde çalışır.
 const KS_KEY = 'tabbychef-kamera';
+// (V394) kullanıcı (23:50): "serbest kamerayı kapat kaldır" — p997 derlemeden çıkarıldı; cihazda kalmış anahtar silinir.
+try { localStorage.removeItem('tabbychef-serbest-kamera') } catch (e) { }
 var KSC = { mod: 'ust', an: null, yk: { d: 6.0, pol: 1.32, az: 0.16, ty: 0.7 } };
 try { const v = localStorage.getItem(KS_KEY); if (v === 'yakin') KSC.mod = 'yakin' } catch (e) { }
 function ksYakin() { return KSC.mod === 'yakin' }
@@ -27979,8 +27943,8 @@ function ksHedef() { const k = (() => { try { return kmK() } catch (e) { return 
   let d = 12.6, pol = 0.74; try { d = kmVars(); pol = kmPol() } catch (e) { } const v = camera.position.clone().sub(T);
   let az = Math.atan2(v.x, v.z); az = Math.max(0.12, Math.min(1.6, az)); if (az < 0.2) az = 0.86; return { d, pol, az, ty: 0.2 } }
 // (V393) kullanıcı (23:38): "sabit değiller bu yeni açılarda onları sabitle yani oyuncu daha fazla yakınlaşamasın veya uzaklaşamasın odağıda aynı kalsın"
-// → yakın bakışta yakınlaştırma, döndürme ve kaydırma kapalı; kamera her karede hedef açıda tutulur. Üstten görünüm serbest. Serbest kamera açıksa kilit yok.
-function ksSerbest() { return typeof SKM !== 'undefined' && SKM.on }
+// → yakın bakışta yakınlaştırma, döndürme ve kaydırma kapalı; kamera her karede hedef açıda tutulur. Üstten görünüm serbest. (V394: serbest kamera kaldırıldı.)
+function ksSerbest() { return false }   // (V394) serbest kamera kaldırıldı
 function ksKilit(on) { try { controls.enableZoom = !on; controls.enableRotate = !on; if (on) controls.enablePan = false } catch (e) { } }
 function ksSinir() { try { if (ksSerbest()) { ksKilit(false); return } if (KSC.mod === 'yakin') { controls.maxPolarAngle = 1.42; if (controls.minDistance > 3) controls.minDistance = 3; ksKilit(true) } else ksKilit(false) } catch (e) { } }
 function ksSabitle() { if (KSC.mod !== 'yakin' || KSC.an || ksSerbest()) return; try { const H = ksHedef(), T = controls.target; if (Math.abs(T.y - H.ty) > 1e-3) T.y = H.ty;
