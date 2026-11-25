@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795621483",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795622590",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24600,7 +24600,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-1843';
+const OLC_DERLEME = '20261125-1901';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -26867,6 +26867,8 @@ const AS_VB = { w: 320, h: 190 }, AS_YOL = (() => { const cx = 160, cy = 95, rx 
 //    yine gözüküyor bunu kaldır. aşamanın içerisine girildiğinde yükseltme alanı gözüksün") → yalnız aşamanın içinde (ayrıntı); kaydırırken yok.
 //  • Hedeflerin ilerleme halkası ve "1/4 hedef" yazısı sıradaki aşamanın kartında (o aşamaya ulaşmanın ilerlemesi); şu anki aşamanın halkası
 //    dolu. Hedefler tamamlanınca sıradaki kart parlar, "Yükseltmeye hazır!" yazar ve pencere o kartla açılır.
+// (V382) Kullanıcı (25 Kasım 18:55, ekran görüntüsüyle): "bu alttaki kısmı menüden kaldır" → kart listesinin altındaki şerit ("N. aşamada
+//    açılanlar … Ayrıntılar ›") kalktı; aşamanın içeriği karta dokununca açılan sayfada. Kartlar ve nokta satırı pencerede dikeyde ortalanır.
 function asIlerleme(s, a) { const T = kaTablo(); if (s <= a) return 1; if (s > a + 1 || a >= T.max) return 0; try { return ahIlerleme(a) } catch (e) { const c = T.altin[a + 1] || 1; return Math.max(0, Math.min(1, (S.coins || 0) / c)) } }
 function asKart(s, a) { const T = kaTablo(), d = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit', p = asIlerleme(s, a);
   const dolu = p > 0 ? `<path class="hd" pathLength="100" stroke-dasharray="${p >= 1 ? '100 0' : (p * 100).toFixed(2) + ' 100'}" d="${AS_YOL}"/>` : '';
@@ -26893,7 +26895,8 @@ function asHedefCip(g, s, a) { const say = s === a && !g.done && !g.ikili ? `<em
 function asAcilanListe(s) { const T = kaTablo(), L = kaAcilanlar(s), rol = T.rol[s] && typeof CALISAN_ACIK !== 'undefined' && CALISAN_ACIK ? `<div class="kaSat">${ic('paw')}<span>${kaT('Yeni çalışan: ', 'New staff: ')}<b>${T.rol[s][kaEN() ? 1 : 0]}</b></span></div>` : '';
   return (rol + L.map(x => `<div class="kaSat">${x.ic}<span>${x.t}</span></div>`).join('')) || `<div class="kaSat"><span>${s === 1 ? kaT('Küçük kafen, mutfağın ve Birleştir tahtan: ilk tariflerle başla.', 'Your little café, your kitchen and the Merge board: start with the first recipes.') : kaT('Kafen büyür, daha çok müşteri gelir.', 'Your café grows and more guests arrive.')}</span></div>` }
 // kartların altındaki şerit: ortadaki aşamanın kendi içeriği
-function asBilgi(W, s) { const T = kaTablo(), a = kaAsama(), b = W.body.querySelector('.asBil'); if (!b) return; const dr = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit';
+function asBilgi(W, s) { W.body.querySelectorAll('.asNok .asDt i').forEach((n, i) => n.classList.toggle('on', i + 1 === s));
+  const T = kaTablo(), a = kaAsama(), b = W.body.querySelector('.asBil'); if (!b) return; const dr = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit';
   let bas, ik, say = '', govde;
   if (s <= a) { const son = s === a && a >= T.max; bas = son ? kaT('Kafen en üst aşamada!', 'Your café is at the top stage!') : kaT(`${s}. aşamada açılanlar`, `Unlocked at stage ${s}`); ik = son ? 'star' : 'gift'; govde = `<div class="asLis">${asAcilanListe(s)}</div>` }
   else { let O = null; try { O = ahOzet(s - 1) } catch (e) { }
@@ -26916,8 +26919,10 @@ function asDetay(W, s) { const T = kaTablo(), a = kaAsama(), w = W.body.querySel
   const acB = s <= a ? kaT(`${s}. aşamada açılanlar`, `Unlocked at stage ${s}`) : kaT(`${s}. aşamada açılacaklar`, `Unlocks at stage ${s}`);
   D.innerHTML = `<div class="asDetBas"><button type="button" class="asGeri">‹ ${kaT('Aşamalar', 'Stages')}</button><b>${kaT(`${s}. aşama`, `Stage ${s}`)} · ${kaAd(s)}</b><span class="asDetDr">${durum}</span></div>
     <div class="asDetGv"><div class="asDetSol">${asKart(s, a)}</div><div class="asDetSag">${hed}<h5 class="asDetA${hed ? '' : ' ilk'}">${ic('gift')}<span>${acB}</span></h5><div class="asLis">${asAcilanListe(s)}</div></div></div>`;
-  asDugumler(D); D.querySelector('.asGeri').onclick = () => { try { sfx('tap') } catch (e) { } w.classList.remove('det'); asAyak(W, W._sec) };
-  w.classList.add('det'); asAyak(W, s); const sg = D.querySelector('.asDetSag'); if (sg) sg.scrollTop = 0 }
+  asDugumler(D); D.querySelector('.asGeri').onclick = () => { try { sfx('tap') } catch (e) { } w.classList.remove('det'); asAyak(W, W._sec); try { W._sigdir && W._sigdir() } catch (e) { }
+    // kart boyu görünüm değişince değişebilir: ortadaki kart yeniden ortalanır
+    try { const k = W.body.querySelector('.asKay'), c = k && k.querySelector(`.asKart[data-s="${W._sec}"]`); if (c) { asOrtala(k, c, false); requestAnimationFrame(() => asOrtala(k, c, false)) } } catch (e) { } };
+  w.classList.add('det'); asAyak(W, s); try { W._sigdir && W._sigdir() } catch (e) { } const sg = D.querySelector('.asDetSag'); if (sg) sg.scrollTop = 0 }
 // alt şerit (ödeme düğmeleri) yalnız sıradaki aşamanın İÇİNDE (ayrıntı açıkken); kaydırırken hiç görünmez (V380)
 function asAyak(W, s) { try { const f = W.foot, w = W.body.querySelector('.asWin'), det = !!(w && w.classList.contains('det')); if (f) f.classList.toggle('asYok', !(det && W._nx && s === W._nx)) } catch (e) { } }
 const AS_SUR = { d: null };
@@ -26934,7 +26939,7 @@ kaPencere = function (acS, gir) { if (!kaAcik() && !EA_ON) return; const T = kaT
   const W = skWin('skKafe', EA_ON ? kaT(`${EVENTS[EVMODE].city} Aşamaları`, `${EVENTS[EVMODE].city} Stages`) : kaT('Kafe Aşamaları', 'Café Stages'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); W.m.classList.add('asModal');
   W._nx = nx; W._sec = ilk;
   W.body.innerHTML = `<div class="asWin"><div class="asSar"><button type="button" class="asOk sol" aria-label="‹">‹</button><div class="asKay"><div class="asIz">${Array.from({ length: T.max }, (_, i) => asKart(i + 1, a)).join('')}</div></div><button type="button" class="asOk sag" aria-label="›">›</button></div>
-    <div class="asNok"><b class="asNm">${(EA_ON ? (S.cafeName || EVENTS[EVMODE].cafe) : S.cafeName) || kaT('Kafen', 'Your café')}</b><span class="asDt">${Array.from({ length: T.max }, (_, i) => `<i class="${i + 1 < a ? 'ok' : ''}"></i>`).join('')}</span><span class="asSy">${kaT('Aşama', 'Stage')} ${a} / ${T.max} · ${kaT('Gün', 'Day')} ${S.dayN || 1}</span></div><div class="asBil"></div><div class="asDet"></div></div>`;
+    <div class="asNok"><b class="asNm">${(EA_ON ? (S.cafeName || EVENTS[EVMODE].cafe) : S.cafeName) || kaT('Kafen', 'Your café')}</b><span class="asDt">${Array.from({ length: T.max }, (_, i) => `<i class="${i + 1 < a ? 'ok' : ''}"></i>`).join('')}</span><span class="asSy">${kaT('Aşama', 'Stage')} ${a} / ${T.max} · ${kaT('Gün', 'Day')} ${S.dayN || 1}</span></div><div class="asDet"></div></div>`;   // (V382) alttaki şerit kalktı
   // ödeme şeridi (yalnız sıradaki aşamanın sayfasında görünür)
   W.foot.classList.add('asFoot');
   if (nx) { const c = T.altin[nx], g = T.elmas[nx];
@@ -26951,8 +26956,10 @@ kaPencere = function (acS, gir) { if (!kaAcik() && !EA_ON) return; const T = kaT
   try { const h1 = W.body.clientHeight; W.foot.classList.add('asYok'); W._ayH = Math.max(0, W.body.clientHeight - h1) } catch (e) { W._ayH = 0 }
   asAyak(W, ilk);
   // dar pencere (telefon yatay): kartlar küçülür, alttaki liste kendi içinde kayar
-  const sigdir = () => { try { const w = W.body.querySelector('.asWin'); if (w) w.classList.toggle('dar', W.body.clientHeight - (W.foot.classList.contains('asYok') ? (W._ayH || 0) : 0) < 290) } catch (e) { } };
-  sigdir(); try { new ResizeObserver(sigdir).observe(W.body) } catch (e) { }
+  // (V382) kart listesinde şerit ve ödeme yok: kartlar sığdıkça büyük kalır (telefonda da); aşamanın içi ödeme şeridi görünecekmiş gibi ölçülür
+  const sigdir = () => { try { const w = W.body.querySelector('.asWin'); if (!w) return; const yok = W.foot.classList.contains('asYok'), ay = W._ayH || 0;
+      w.classList.toggle('dar', w.classList.contains('det') ? W.body.clientHeight - (yok ? ay : 0) < 290 : W.body.clientHeight + (yok ? 0 : ay) < 272) } catch (e) { } };
+  W._sigdir = sigdir; sigdir(); try { new ResizeObserver(sigdir).observe(W.body) } catch (e) { }
   const k = W.body.querySelector('.asKay'); let sec = ilk;
   const oklar = s => { const l = W.body.querySelector('.asOk.sol'), r = W.body.querySelector('.asOk.sag'); if (l) l.disabled = s <= 1; if (r) r.disabled = s >= T.max };
   const guncelle = () => { const c = asOrtadaki(k); if (!c) return; const s = +c.dataset.s; if (s !== sec) { sec = s; W._sec = s; asBilgi(W, s); oklar(s); asAyak(W, s); k.querySelectorAll('.asKart').forEach(x => x.classList.toggle('orta', x === c)) } };
@@ -26960,7 +26967,7 @@ kaPencere = function (acS, gir) { if (!kaAcik() && !EA_ON) return; const T = kaT
   // fareyle sürükleme (dokunmatikte tarayıcının kendi kaydırması); pencere başına değil, tek dinleyiciyle (AS_SUR)
   k.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; AS_SUR.d = { k, x: e.clientX, l: k.scrollLeft, m: false, o: asOlcek(k) }; k.classList.add('tut') });
   k.querySelectorAll('.asKart').forEach(c => c.onclick = () => { if (k._surT && Date.now() - k._surT < 250) return; try { sfx('tap') } catch (e) { } asOrtala(k, c, false); asDetay(W, +c.dataset.s) });
-  W.body.querySelector('.asBil').onclick = () => { try { sfx('tap') } catch (e) { } asDetay(W, sec) };
+  { const sb = W.body.querySelector('.asBil'); if (sb) sb.onclick = () => { try { sfx('tap') } catch (e) { } asDetay(W, sec) } }
   W.body.querySelector('.asOk.sol').onclick = () => { const c = asOrtadaki(k); asOrtala(k, c && c.previousElementSibling, true) };
   W.body.querySelector('.asOk.sag').onclick = () => { const c = asOrtadaki(k); asOrtala(k, c && c.nextElementSibling, true) };
   W.body.querySelectorAll('.asNok .asDt i').forEach((n, i) => n.onclick = () => asOrtala(k, k.querySelectorAll('.asKart')[i], true));
@@ -27061,6 +27068,7 @@ html.land #game#game#game #skKafe#skKafe.skmodal .skwin{top:max(6px,calc((100*va
 #skKafe .asC .asCo{width:13px;height:13px;border-radius:50%;border:2px solid #c9a46a;box-sizing:border-box;flex:none;background:#fffdf7}
 #skKafe .asC em{font-style:normal;font-weight:900;color:#a0662a}
 #skKafe .asBil.kilit .asC{opacity:.8}
+#skKafe .asWin:not(.det){justify-content:center}
 #skKafe .skfoot.asYok{display:none!important}
 #skKafe .asDetSag h5.asDetA.ilk{margin-top:2px;padding-top:0;border-top:0}
 #skKafe .asKart.sonraki .asAlt{color:#7a5236}#skKafe .asKart.sonraki.hazir .asAlt{color:#3f6b1e}
