@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795600881",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795604246",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-1254';
+const OLC_DERLEME = '20261125-1355';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -26811,9 +26811,14 @@ ${G} .toast>div{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box
 //  • (V370) Elipsin çevresi ilerleme halkası: şu anki aşamada sonraki aşamaya biriken altın kadar dolar (ucunda altın düğüm), geçilmiş aşamalarda
 //    tam dolu, sonraki/kilitli aşamalarda boş. Tepede üst arayüzdeki gibi aşama madalyonu (geçilmiş: yeşil + ✓ · şu an: altın · kilitli: gri),
 //    altta aşamanın adını taşıyan şerit, kartın altında durum yazısı (Şu an buradasın · 640/700 · Tamamlandı · Kilitli).
+//  • (V371) Kullanıcının kendi çizimleri (25 Kasım 13:46; istemleri birlikte hazırladık, her aşamada açılanlar sahnede): img/asama/c1–c8.webp
+//    (720×408, elips oranına kırpılmış). Tepedeki madalyon kullanıcının taslağındaki gibi kedi kulaklı altın rozet + iki yaprak; alttaki şerit
+//    uçları çatallı kurdele; halkanın yolu altın çerçeve gibi (ilerleme yeşil dolar, para yetince halka parlar).
 //  • Ortadaki kartın altında o aşamada açılanlar listelenir; alt şeritte yükseltme düğmeleri (altın / elmas) aynı.
-const AS_RES = s => `img/asama/a${s}.webp`;
+const AS_RES = s => `img/asama/c${s}.webp`;   // (V371) kullanıcının çizimleri
 // halka: çerçeve 320×190 (görüntü 300×170 + 10 px pay); merkez çizgi görüntü kenarının 3,5 px dışında; tepeden saat yönünde
+const AS_ROZET = '<svg class="asRoz" viewBox="0 0 100 70" aria-hidden="true"><path class="yp" d="M23 41C13 28 3 29 0 38c4 11 14 13 23 7z"/><path class="yd" d="M22 43Q10 37 1 38"/><path class="yp" d="M77 41c10-13 20-12 23-3-4 11-14 13-23 7z"/><path class="yd" d="M78 43q12-6 21-5"/>'
+  + '<path class="kb" d="M24 30L27 8Q28 4 31.5 6.5L43 15Q50 13 57 15L68.5 6.5Q72 4 73 8L76 30Q80 37 79 46Q77 67 50 67Q23 67 21 46Q20 37 24 30Z"/><path class="ki" d="M29.5 11.5L31 22.5L38.5 17Z"/><path class="ki" d="M70.5 11.5L69 22.5L61.5 17Z"/><ellipse class="kp" cx="50" cy="27" rx="16" ry="4.5"/></svg>';
 const AS_VB = { w: 320, h: 190 }, AS_YOL = (() => { const cx = 160, cy = 95, rx = 153.5, ry = 88.5; return `M${cx} ${cy - ry}A${rx} ${ry} 0 1 1 ${cx} ${cy + ry}A${rx} ${ry} 0 1 1 ${cx} ${cy - ry}` })();
 function asIlerleme(s, a) { const T = kaTablo(); if (s < a) return 1; if (s > a) return 0; if (a >= T.max) return 1; const c = T.altin[a + 1] || 1; return Math.max(0, Math.min(1, (S.coins || 0) / c)) }
 function asKart(s, a) { const T = kaTablo(), d = s < a ? 'gecti' : s === a ? 'su' : s === a + 1 ? 'sonraki' : 'kilit', p = asIlerleme(s, a);
@@ -26824,11 +26829,11 @@ function asKart(s, a) { const T = kaTablo(), d = s < a ? 'gecti' : s === a ? 'su
     : d === 'sonraki' ? `${ic('lock')}<span>${kaT('Sıradaki', 'Next')} · </span>${ic('coin')}<b>${kaFmt(T.altin[s])}</b>` : `${ic('lock')}<span>${kaT('Kilitli', 'Locked')}</span>`;
   const hazir = d === 'su' && nx && p >= 1;   // yükseltmeye yetiyor: halka altın, hafif parlar
   return `<button type="button" class="asKart ${d}${hazir ? ' hazir' : ''}" data-s="${s}" data-p="${p.toFixed(4)}" aria-label="${kaT(`${s}. aşama: ${kaAd(s)}`, `Stage ${s}: ${kaAd(s)}`)}"><span class="asCer">
-      <span class="asElips"><img class="asRes" src="${AS_RES(s)}" alt="" draggable="false"><span class="asPerde"></span>${d === 'sonraki' || d === 'kilit' ? `<span class="asKilit">${ic('lock')}</span>` : ''}</span>
+      <span class="asElips"><img class="asRes" src="${AS_RES(s)}" alt="" draggable="false" loading="lazy" decoding="async"><span class="asPerde"></span>${d === 'sonraki' || d === 'kilit' ? `<span class="asKilit">${ic('lock')}</span>` : ''}</span>
       <svg class="asHalka" viewBox="0 0 ${AS_VB.w} ${AS_VB.h}" preserveAspectRatio="none" aria-hidden="true"><path class="hz" d="${AS_YOL}"/><path class="hy" d="${AS_YOL}"/>${dolu}</svg>
       ${d === 'su' && p > 0 && p < 1 ? '<span class="asDugum"></span>' : ''}
-      <span class="asMad"><em>${kaT('AŞAMA', 'STAGE')}</em><b>${s}</b>${d === 'gecti' ? `<i class="asTik">${ic('check')}</i>` : ''}</span>
-      <span class="asSerit">${kaAd(s)}</span></span>
+      <span class="asMad">${AS_ROZET}<span class="asMadT"><em>${kaT('AŞAMA', 'STAGE')}</em><b>${s}</b></span>${d === 'gecti' ? `<i class="asTik">${ic('check')}</i>` : ''}</span>
+      <span class="asSerit"><i>${kaAd(s)}</i></span></span>
     <span class="asAlt">${alt}</span></button>` }
 function asDugumler(k) { k.querySelectorAll('.asKart.su').forEach(c => { const n = c.querySelector('.asDugum'), y = c.querySelector('.asHalka .hd'), p = +c.dataset.p; if (!n || !y) return;
     try { const L = y.getTotalLength(), P = y.getPointAtLength(L * p); n.style.left = (P.x / AS_VB.w * 100).toFixed(2) + '%'; n.style.top = (P.y / AS_VB.h * 100).toFixed(2) + '%' } catch (e) { n.remove() } }) }
@@ -26874,9 +26879,9 @@ kaPencere = function () { if (!kaAcik()) return; const T = kaTablo(), a = kaAsam
 #skKafe .skscroll{overflow:hidden!important;display:flex!important;flex-direction:column!important}
 /* büyük ekranda (iPad) pencere biraz daha uzun: liste sığsın */
 html.land #game#game#game #skKafe#skKafe.skmodal .skwin{top:max(6px,calc((100*var(--vh) - 500px)/2))!important;bottom:max(6px,calc((100*var(--vh) - 500px)/2))!important}
-#skKafe .asWin{--asW:300px;--asH:170px;--asP:4px;--asMt:18px;--asMd:46px;--asMb:20px;--asSf:13px;--asKl:56px;flex:1;min-height:0;grid-column:1/-1;display:flex;flex-direction:column;gap:5px;min-width:0;font-family:var(--font-display);color:${INK}}
-#skKafe .asWin.dar{--asW:228px;--asH:129px;--asP:2px;--asMt:13px;--asMd:38px;--asMb:16px;--asSf:11.5px;--asKl:44px;gap:3px}
-#skKafe .asWin.dar .asNok{display:none}#skKafe .asWin.dar .asAlt{margin-top:7px;font-size:11px}
+#skKafe .asWin{--asW:300px;--asH:170px;--asP:4px;--asMt:24px;--asRw:84px;--asBt:-26px;--asMe:7px;--asMb:19px;--asSf:13px;--asKl:56px;flex:1;min-height:0;grid-column:1/-1;display:flex;flex-direction:column;gap:5px;min-width:0;font-family:var(--font-display);color:${INK}}
+#skKafe .asWin.dar{--asW:221px;--asH:125px;--asP:2px;--asMt:18px;--asRw:68px;--asBt:-20px;--asMe:5.8px;--asMb:15.5px;--asSf:11.5px;--asKl:44px;gap:3px}
+#skKafe .asWin.dar .asNok{display:none}#skKafe .asWin.dar .asAlt{margin-top:8px;font-size:11px}
 #skKafe .asWin.dar .asNok{font-size:12px}#skKafe .asWin.dar .asBil h4{padding:3px 10px 1px;font-size:12px}
 #skKafe .asSar{position:relative;flex:none}
 #skKafe .asKay{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;cursor:grab;touch-action:pan-x;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 38px,#000 calc(100% - 38px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 38px,#000 calc(100% - 38px),transparent 100%)}
@@ -26894,30 +26899,42 @@ html.land #game#game#game #skKafe#skKafe.skmodal .skwin{top:max(6px,calc((100*va
 #skKafe .asHalka{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:2;pointer-events:none}
 #skKafe .asHalka path{fill:none;vector-effect:non-scaling-stroke}
 #skKafe .asHalka .hz{stroke:${INK};stroke-width:13px}
-#skKafe .asHalka .hy{stroke:#f5e4c3;stroke-width:7px}
+#skKafe .asHalka .hy{stroke:#f7cd57;stroke-width:7px}
+#skKafe .asKart.sonraki .asHalka .hy{stroke:#f3d68a}
 #skKafe .asHalka .hd{stroke:#86c440;stroke-width:7px;stroke-linecap:round}
 #skKafe .asKart.gecti .asHalka .hd{stroke:#7fbf3f}
 #skKafe .asKart.su .asCer{filter:drop-shadow(0 0 7px rgba(255,205,80,.75))}
-#skKafe .asKart.hazir .asHalka .hd{stroke:#f6b93a}#skKafe .asKart.hazir .asCer{animation:asParla 1.6s ease-in-out infinite}
+#skKafe .asKart.hazir .asCer{animation:asParla 1.6s ease-in-out infinite}
 @keyframes asParla{50%{filter:drop-shadow(0 0 13px rgba(255,200,60,.95))}}
 @media (prefers-reduced-motion:reduce){#skKafe .asKart.hazir .asCer{animation:none}}
 #skKafe .asKart.kilit .asHalka .hy{stroke:#e2d6c2}
-#skKafe .asDugum{position:absolute;z-index:3;width:17px;height:17px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle at 35% 35%,#fff4c2,#f6b93a 60%,#d98f1c);border:2.5px solid ${INK};box-sizing:border-box;pointer-events:none}
-#skKafe .asMad{position:absolute;left:50%;top:6.5px;transform:translate(-50%,-50%);z-index:4;width:var(--asMd);height:var(--asMd);box-sizing:border-box;border:3px solid ${INK};border-radius:50%;box-shadow:0 3px 0 ${INK};background:linear-gradient(#fff3dc,#efdcb6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;pointer-events:none}
-#skKafe .asMad::after{content:'';position:absolute;inset:3px;border:1.5px dashed rgba(255,250,235,.95);border-radius:50%}
-#skKafe .asMad em{position:relative;z-index:1;font:800 6.5px/1 var(--font-body);letter-spacing:.02em;color:#7a5236;font-style:normal;margin-top:2px}
-#skKafe .asWin.dar .asMad em{font-size:5.8px;letter-spacing:0}
-#skKafe .asMad b{position:relative;z-index:1;font:900 var(--asMb)/1 var(--font-display);color:${INK}}
-#skKafe .asKart.su .asMad{background:linear-gradient(#ffe08a,#f6b93a)}
-#skKafe .asKart.gecti .asMad{background:linear-gradient(#d4f08e,#8cc63f)}#skKafe .asKart.gecti .asMad em{color:#3f6b1e}
-#skKafe .asKart.kilit .asMad{background:linear-gradient(#ece4d8,#cdc2b2)}#skKafe .asKart.kilit .asMad b,#skKafe .asKart.kilit .asMad em{color:#7d6f5f}
-#skKafe .asTik{position:absolute;right:-5px;bottom:-4px;width:18px;height:18px;border-radius:50%;background:#7fc24a;border:2px solid #2f6b22;display:grid;place-items:center}#skKafe .asTik .ic{width:11px;height:11px}
-#skKafe .asSerit{position:absolute;left:50%;bottom:6.5px;transform:translate(-50%,50%);z-index:4;max-width:calc(var(--asW) - 40px);box-sizing:border-box;padding:4px 14px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:900 var(--asSf)/1 var(--font-display);color:${INK};background:linear-gradient(#fffaf0,#f3e2c0);border:2.5px solid ${INK};border-radius:9px;box-shadow:0 2px 0 ${INK};pointer-events:none}
-#skKafe .asKart.su .asSerit{background:linear-gradient(#fff3b8,#ffd75e)}
-#skKafe .asKart.kilit .asSerit{background:linear-gradient(#f4efe6,#dcd2c2);color:#6d604f}
+#skKafe .asDugum{position:absolute;z-index:3;width:17px;height:17px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle at 35% 35%,#ffffff,#c8f08f 55%,#6fb52c);border:2.5px solid ${INK};box-sizing:border-box;pointer-events:none}
+/* (V371) kedi kulaklı altın rozet + yapraklar (kullanıcının taslağındaki gibi) */
+#skKafe .asMad{position:absolute;left:50%;top:var(--asBt);transform:translateX(-50%);z-index:4;width:var(--asRw);aspect-ratio:100/70;pointer-events:none}
+#skKafe .asRoz{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 0 ${INK})}
+#skKafe .asRoz .yp{fill:#8cc63f;stroke:${INK};stroke-width:2.6;stroke-linejoin:round}
+#skKafe .asRoz .yd{fill:none;stroke:#4f8a24;stroke-width:1.6;stroke-linecap:round}
+#skKafe .asRoz .kb{fill:#fcc944;stroke:${INK};stroke-width:3;stroke-linejoin:round}
+#skKafe .asRoz .ki{fill:#f0a53a}
+#skKafe .asRoz .kp{fill:rgba(255,255,255,.4)}
+#skKafe .asKart.sonraki .asRoz .kb{fill:#f6d987}
+#skKafe .asKart.kilit .asRoz{filter:drop-shadow(0 2px 0 ${INK}) grayscale(.8) brightness(.97)}
+#skKafe .asMadT{position:absolute;left:50%;top:61%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+#skKafe .asMadT em{font:800 var(--asMe)/1 var(--font-body);letter-spacing:.03em;color:#6b4423;font-style:normal}
+#skKafe .asMadT b{font:900 var(--asMb)/1 var(--font-display);color:${INK};margin-top:1px}
+#skKafe .asKart.kilit .asMadT b,#skKafe .asKart.kilit .asMadT em{color:#6d604f}
+#skKafe .asTik{position:absolute;right:17%;bottom:-3px;width:18px;height:18px;border-radius:50%;background:#7fc24a;border:2px solid #2f6b22;display:grid;place-items:center;z-index:1}#skKafe .asTik .ic{width:11px;height:11px}
+/* (V371) isim şeridi: uçları çatallı kurdele */
+#skKafe .asSerit{position:absolute;left:50%;bottom:6.5px;transform:translate(-50%,50%);z-index:4;display:block;max-width:calc(var(--asW) - 44px);pointer-events:none}
+#skKafe .asSerit>i{position:relative;z-index:1;display:block;box-sizing:border-box;padding:4px 14px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:900 var(--asSf)/1 var(--font-display);font-style:normal;color:${INK};background:linear-gradient(#fffaf0,#f3e2c0);border:2.5px solid ${INK};border-radius:6px;box-shadow:0 2px 0 ${INK}}
+#skKafe .asSerit::before,#skKafe .asSerit::after{content:'';position:absolute;top:6px;bottom:-1px;width:17px;z-index:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20' preserveAspectRatio='none'%3E%3Cpath d='M18 1.5H1.5L6.5 10L1.5 18.5H18' fill='%23efd592' stroke='%234a2a14' stroke-width='2.2' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+#skKafe .asSerit::before{left:-12px}#skKafe .asSerit::after{right:-12px;transform:scaleX(-1)}
+#skKafe .asKart.su .asSerit>i{background:linear-gradient(#fff3b8,#ffd75e)}
+#skKafe .asKart.kilit .asSerit>i{background:linear-gradient(#f4efe6,#dcd2c2);color:#6d604f}
+#skKafe .asKart.kilit .asSerit::before,#skKafe .asKart.kilit .asSerit::after{filter:grayscale(1)}
 #skKafe .asKilit{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--asKl);height:var(--asKl);border-radius:50%;background:rgba(255,250,240,.93);border:3.5px solid ${INK};box-shadow:0 3px 0 ${INK};display:grid;place-items:center;z-index:1;pointer-events:none}
 #skKafe .asKilit .ic{width:52%;height:52%}
-#skKafe .asAlt{display:flex;align-items:center;justify-content:center;gap:3px;margin-top:9px;font:800 11.5px/1.1 var(--font-body);color:#7a5236;max-width:var(--asW);white-space:nowrap;overflow:hidden}
+#skKafe .asAlt{display:flex;align-items:center;justify-content:center;gap:3px;margin-top:10px;font:800 11.5px/1.1 var(--font-body);color:#7a5236;max-width:var(--asW);white-space:nowrap;overflow:hidden}
 #skKafe .asAlt .ic{width:14px;height:14px;flex:none}#skKafe .asAlt b{font-weight:900;color:${INK}}
 #skKafe .asKart.su .asAlt{color:#8a5a12}
 #skKafe .asOk{position:absolute;top:calc(var(--asP) + var(--asMt) + var(--asH) / 2 + 10px - 18px);z-index:5;width:36px;height:36px;border:3px solid ${INK};border-radius:50%;background:#fffaf0;box-shadow:0 3px 0 ${INK};font:900 22px/1 var(--font-display);color:${INK};display:grid;place-items:center;padding:0 0 3px;cursor:pointer}
