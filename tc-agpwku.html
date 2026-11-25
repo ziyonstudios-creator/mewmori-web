@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795608120",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795609258",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-1458';
+const OLC_DERLEME = '20261125-1518';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27156,7 +27156,7 @@ const EA_ULKE = {
     sifat: ['Türk', 'Turkish'], renk: ['#2f7fb8', '#fff6e2', '#d9453b'] },
   jp: { ad: ['', 'Çayevi', 'Mochi dükkânı', 'Taiyaki tezgâhı', 'Ramen evi', 'Kyoto’nun gözdesi'], adEN: ['', 'Tea house', 'Mochi shop', 'Taiyaki stand', 'Ramen house', 'Kyoto’s favourite'],
     sifat: ['Japon', 'Japanese'], renk: ['#e98aa0', '#fff6e2', '#c8323a'] } };
-const EA_GORSEL = { it: false, tr: false, jp: false };   // kullanıcının çizimleri eklenince true (img/asama/it1–5, tr1–5, jp1–5)
+const EA_GORSEL = { it: true, tr: false, jp: false };   // (V374) Roma çizimleri geldi   // kullanıcının çizimleri eklenince true (img/asama/it1–5, tr1–5, jp1–5)
 const EA_AH = { 1: [['siparis', 15], ['birlestir', 15], ['ulke', 1], ['altin']], 2: [['etarif'], ['siparis', 50], ['ulke', 3], ['altin']],
   3: [['etarif'], ['siparis', 120], ['ulke', 6], ['puan', 4], ['altin']], 4: [['etarif'], ['siparis', 250], ['ulke', 10], ['puan', 4.3], ['altin']] };
 try { EA_ON = !!(typeof EVMODE !== 'undefined' && EVMODE && EA_ULKE[EVMODE]) } catch (e) { }
