@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795606032",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795608120",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24566,7 +24566,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-1420';
+const OLC_DERLEME = '20261125-1458';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -26752,7 +26752,7 @@ function ayYuvarlak() { const y = $('y2'); if (!y) return null; let g = $('ayGun
     g.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (x) { } let s = ''; try { const t = ($('dayPill') && $('dayPill').textContent || '').trim(); s = t } catch (x) { }
       toast(kaT(`<b>${S.dayN || 1}. gün</b>${s ? `<br>${s}` : ''}`, `<b>Day ${S.dayN || 1}</b>${s ? `<br>${s}` : ''}`), ic('clock'), 1800) };
     y.appendChild(g) }
-  const por = y.querySelector('.y2prof .por'); if (por && !por.dataset.ay) { por.dataset.ay = '1'; por.addEventListener('click', e => { if (!S.created || S.tut !== 'done' || !(typeof kaAcik === 'function' && kaAcik())) return; e.stopPropagation(); e.preventDefault(); try { sfx('tap') } catch (x) { } kaPencere() }, true) }
+  const por = y.querySelector('.y2prof .por'); if (por && !por.dataset.ay) { por.dataset.ay = '1'; por.addEventListener('click', e => { if (!S.created || S.tut !== 'done' || !((typeof kaAcik === 'function' && kaAcik()) || EA_ON)) return; e.stopPropagation(); e.preventDefault(); try { sfx('tap') } catch (x) { } kaPencere() }, true) }
   return g }
 function ayCiz() { try { if (!S || !S.created) return; const g = ayYuvarlak(); if (!g) return; const em = g.querySelector('em'), b = g.querySelector('b'), t = kaT('GÜN', 'DAY'), n = String(S.dayN || 1);
     if (em.textContent !== t) em.textContent = t; if (b.textContent !== n) b.textContent = n; g.hidden = S.tut !== 'done' } catch (e) { } }
@@ -26818,7 +26818,7 @@ ${G} .toast>div{min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box
 //    şerit ortadaki aşamanın geçme hedeflerini tikli çipler hâlinde gösterir; karta ya da şeride dokununca aşamanın ayrıntısı açılır: solda kart,
 //    sağda hedefler (tik, sayaç, ilerleme çubuğu) ve o aşamada açılanlar; "‹ Aşamalar" ile geri. Halka = hedeflerin ilerlemesi (p991).
 //  • (eski) Ortadaki kartın altında o aşamada açılanlar listelenir; alt şeritte yükseltme düğmeleri (altın / elmas) aynı.
-const AS_RES = s => `img/asama/c${s}.webp`;   // (V371) kullanıcının çizimleri
+const AS_RES = s => EA_ON ? `img/asama/${EVMODE}${s}.webp` : `img/asama/c${s}.webp`;   // (V371) kullanıcının çizimleri · (V373) ülke etkinliğinde o ülkenin kartları
 // halka: çerçeve 320×190 (görüntü 300×170 + 10 px pay); merkez çizgi görüntü kenarının 3,5 px dışında; tepeden saat yönünde
 const AS_ROZET = '<svg class="asRoz" viewBox="0 0 100 70" aria-hidden="true"><path class="yp" d="M23 41C13 28 3 29 0 38c4 11 14 13 23 7z"/><path class="yd" d="M22 43Q10 37 1 38"/><path class="yp" d="M77 41c10-13 20-12 23-3-4 11-14 13-23 7z"/><path class="yd" d="M78 43q12-6 21-5"/>'
   + '<path class="kb" d="M24 30L27 8Q28 4 31.5 6.5L43 15Q50 13 57 15L68.5 6.5Q72 4 73 8L76 30Q80 37 79 46Q77 67 50 67Q23 67 21 46Q20 37 24 30Z"/><path class="ki" d="M29.5 11.5L31 22.5L38.5 17Z"/><path class="ki" d="M70.5 11.5L69 22.5L61.5 17Z"/><ellipse class="kp" cx="50" cy="27" rx="16" ry="4.5"/></svg>';
@@ -26832,7 +26832,7 @@ function asKart(s, a) { const T = kaTablo(), d = s < a ? 'gecti' : s === a ? 'su
     : d === 'sonraki' ? `${ic('lock')}<span>${kaT('Sıradaki aşama', 'Next stage')}</span>` : `${ic('lock')}<span>${kaT('Kilitli', 'Locked')}</span>`;
   const hazir = d === 'su' && nx && O && O.hazir;   // (V372) bütün hedefler tamam: halka dolu, kart parlar
   return `<button type="button" class="asKart ${d}${hazir ? ' hazir' : ''}" data-s="${s}" data-p="${p.toFixed(4)}" aria-label="${kaT(`${s}. aşama: ${kaAd(s)}`, `Stage ${s}: ${kaAd(s)}`)}"><span class="asCer">
-      <span class="asElips"><img class="asRes" src="${AS_RES(s)}" alt="" draggable="false" loading="lazy" decoding="async"><span class="asPerde"></span>${d === 'sonraki' || d === 'kilit' ? `<span class="asKilit">${ic('lock')}</span>` : ''}</span>
+      <span class="asElips">${EA_ON && !EA_GORSEL[EVMODE] ? eaYerTutucu(s) : `<img class="asRes" src="${AS_RES(s)}" alt="" draggable="false" loading="lazy" decoding="async">`}<span class="asPerde"></span>${d === 'sonraki' || d === 'kilit' ? `<span class="asKilit">${ic('lock')}</span>` : ''}</span>
       <svg class="asHalka" viewBox="0 0 ${AS_VB.w} ${AS_VB.h}" preserveAspectRatio="none" aria-hidden="true"><path class="hz" d="${AS_YOL}"/><path class="hy" d="${AS_YOL}"/>${dolu}</svg>
       ${d === 'su' && p > 0 && p < 1 ? '<span class="asDugum"></span>' : ''}
       <span class="asMad">${AS_ROZET}<span class="asMadT"><em>${kaT('AŞAMA', 'STAGE')}</em><b>${s}</b></span>${d === 'gecti' ? `<i class="asTik">${ic('check')}</i>` : ''}</span>
@@ -26873,10 +26873,10 @@ function asOrtadaki(k) { const r = k.getBoundingClientRect(), m = r.left + r.wid
 // (V372) pencere ölçekli çizilir (iPad'de --u ≈ 1,4): ekran pikseli → kaydırma pikseli; yoksa 3. aşamada açılınca 4. kart ortaya geliyordu
 const asOlcek = k => { try { const r = k.getBoundingClientRect(); return (k.clientWidth && r.width) ? r.width / k.clientWidth : 1 } catch (e) { return 1 } };
 function asOrtala(k, c, yumusak) { if (!c) return; const r = k.getBoundingClientRect(), q = c.getBoundingClientRect(); k.scrollTo({ left: k.scrollLeft + ((q.left + q.width / 2) - (r.left + r.width / 2)) / asOlcek(k), behavior: yumusak ? 'smooth' : 'auto' }) }
-kaPencere = function () { if (!kaAcik()) return; const T = kaTablo(), a = kaAsama(), nx = a < T.max ? a + 1 : 0;
-  const W = skWin('skKafe', kaT('Kafe Aşamaları', 'Café Stages'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); W.m.classList.add('asModal');
+kaPencere = function () { if (!kaAcik() && !EA_ON) return; const T = kaTablo(), a = kaAsama(), nx = a < T.max ? a + 1 : 0;
+  const W = skWin('skKafe', EA_ON ? kaT(`${EVENTS[EVMODE].city} Aşamaları`, `${EVENTS[EVMODE].city} Stages`) : kaT('Kafe Aşamaları', 'Café Stages'), 'cat_peek'); W.m.setAttribute('data-dilyok', '1'); W.m.classList.add('asModal');
   W.body.innerHTML = `<div class="asWin"><div class="asSar"><button type="button" class="asOk sol" aria-label="‹">‹</button><div class="asKay"><div class="asIz">${Array.from({ length: T.max }, (_, i) => asKart(i + 1, a)).join('')}</div></div><button type="button" class="asOk sag" aria-label="›">›</button></div>
-    <div class="asNok"><b class="asNm">${S.cafeName || kaT('Kafen', 'Your café')}</b><span class="asDt">${Array.from({ length: T.max }, (_, i) => `<i class="${i + 1 < a ? 'ok' : ''}"></i>`).join('')}</span><span class="asSy">${kaT('Aşama', 'Stage')} ${a} / ${T.max} · ${kaT('Gün', 'Day')} ${S.dayN || 1}</span></div><div class="asBil"></div><div class="asDet"></div></div>`;
+    <div class="asNok"><b class="asNm">${(EA_ON ? (S.cafeName || EVENTS[EVMODE].cafe) : S.cafeName) || kaT('Kafen', 'Your café')}</b><span class="asDt">${Array.from({ length: T.max }, (_, i) => `<i class="${i + 1 < a ? 'ok' : ''}"></i>`).join('')}</span><span class="asSy">${kaT('Aşama', 'Stage')} ${a} / ${T.max} · ${kaT('Gün', 'Day')} ${S.dayN || 1}</span></div><div class="asBil"></div><div class="asDet"></div></div>`;
   // dar pencere (telefon yatay): kartlar küçülür, alttaki liste kendi içinde kayar
   const sigdir = () => { try { const w = W.body.querySelector('.asWin'); if (w) w.classList.toggle('dar', W.body.clientHeight < 290) } catch (e) { } };
   sigdir(); try { new ResizeObserver(sigdir).observe(W.body) } catch (e) { }
@@ -27078,10 +27078,14 @@ function ahTanim(s, k, x) { const T = kaTablo(), st = (S && S.stats) || {};
     case 'tezgah': return { ic: 'market', n: 1, ikili: 1, f: () => { try { return tzKurulu() ? 1 : 0 } catch (e) { return 0 } }, t: kaT('Seyyar tezgâhı kur', 'Set up the market stall'), kisa: kaT('Tezgâh', 'Stall') };
     case 'tzsat': return { ic: 'market', n: x, f: () => (S.tz && S.tz.n) | 0, t: kaT(`Tezgâhta ${x} ürün sat`, `Sell ${x} items at the stall`), kisa: kaT(`${x} tezgâh satışı`, `${x} stall sales`) };
     case 'puan': return { ic: 'star', n: x, puan: 1, f: () => { try { return repAvg() } catch (e) { return 0 } }, t: kaT(`Kafe puanın ${ahPuan(x)} ★ olsun`, `Reach a ${ahPuan(x)} ★ café rating`), kisa: `${ahPuan(x)} ★` };
+    // (V373) ülke etkinliği: o aşamada açılan tarifler ve ülke eşyası
+    case 'etarif': { const R = eaTarifler(s), ad = R.map(r => kaTr(r.name)).join(', '); return { ic: 'book', n: R.length || 1, f: () => R.filter(r => S.recipes && S.recipes[r.id]).length, t: kaT(`Tarifleri keşfet: ${ad}`, `Discover the recipes: ${ad}`), kisa: R.length === 1 ? kaTr(R[0].name) : kaT(`${R.length} tarif`, `${R.length} recipes`) } }
+    case 'ulke': { const U = (typeof EA_ULKE !== 'undefined' && EA_ULKE[EVMODE]) || { sifat: ['', ''] }; return { ic: 'chair', n: x, f: () => { try { return (S.furniture || []).filter(r => eaEv(CAT[r.id]) === EVMODE).length } catch (e) { return 0 } }, t: kaT(`${x} ${U.sifat[0]} eşyası yerleştir`, `Place ${x} ${U.sifat[1]} item${x > 1 ? 's' : ''}`), kisa: kaT(`${x} ${U.sifat[0]} eşya`, `${x} ${U.sifat[1]} item${x > 1 ? 's' : ''}`) } }
     case 'altin': { const c = T.altin[s + 1] || 0; return { ic: 'coin', n: c, altin: 1, f: () => Math.max(0, S.coins | 0), t: kaT(`${kaFmt(c)} altın biriktir`, `Save up ${kaFmt(c)} gold`), kisa: kaT(`${kaFmt(c)} altın`, `${kaFmt(c)} gold`) } } }
   return { ic: 'star', n: 1, f: () => 0, t: k, kisa: k } }
 // aşamanın hedefleri ve durumu (s: aşama; geçmek için). Gelecek aşama: yalnız liste (done/p yok)
-function ahDurum(s) { const L = AH[s]; if (!L) return null; const a = kaAsama(), kay = (S.kaH && S.kaH[s]) || {};
+function ahDurum(s) { const L = (EA_ON ? EA_AH : AH)[s];   // (V373) ülke etkinliğinde EA_AH (p992)
+  if (!L) return null; const a = kaAsama(), kay = (S.kaH && S.kaH[s]) || {};
   return L.map(([k, x]) => { const g = ahTanim(s, k, x), cur = s === a ? g.f() : 0; let done = false;
     if (s < a) done = true; else if (s === a) done = g.altin ? cur >= g.n : (!!kay[k] || cur >= g.n);
     const p = done ? 1 : s === a ? Math.max(0, Math.min(1, cur / (g.n || 1))) : 0;
@@ -27094,7 +27098,7 @@ function ahIlerleme(a) { const O = ahOzet(a); return O ? O.P : 1 }
 
 // ---- tamamlananları kaydet, bildir; AŞAMA yuvarlağı parlasın ----
 const AH_D = { a: 0, ilk: true };
-function ahTick() { try { if (!AH_ON || !S || !S.created || S.tut !== 'done' || !kaAcik()) return; const a = kaAsama(), T = kaTablo(); if (a >= T.max) { ahParla(false); return }
+function ahTick() { try { if (!AH_ON || !S || !S.created || S.tut !== 'done' || !(kaAcik() || EA_ON)) return; const a = kaAsama(), T = kaTablo(); if (a >= T.max) { ahParla(false); return }
     const sessiz = AH_D.ilk || AH_D.a !== a; AH_D.ilk = false; AH_D.a = a;   // açılışta ve aşama değişince: zaten tamam olanlar bildirimsiz tiklenir
     if (!S.kaH || typeof S.kaH !== 'object') S.kaH = {}; const kay = S.kaH[a] || (S.kaH[a] = {}); let ch = false;
     for (const g of ahDurum(a)) { if (g.altin || kay[g.k] || g.cur < g.n) continue; kay[g.k] = 1; ch = true;
@@ -27115,7 +27119,7 @@ kaCip = function () { const e = $('kaChip'); if (e) e.hidden = true };
 try { kaCip() } catch (e) { }
 
 // ---- kafe adının altındaki çubuk: hedeflerin ilerlemesi ----
-{ const _hx = hudXP; hudXP = function () { const r = _hx.apply(this, arguments); try { if (AH_ON && kaAcik() && S && S.created) { const a = kaAsama(), T = kaTablo(), O = a < T.max ? ahOzet(a) : null;
+{ const _hx = hudXP; hudXP = function () { const r = _hx.apply(this, arguments); try { if (AH_ON && (kaAcik() || EA_ON) && S && S.created) { const a = kaAsama(), T = kaTablo(), O = a < T.max ? ahOzet(a) : null;
         const f = $('xpFill'); if (f) f.style.width = ((O ? O.P : 1) * 100).toFixed(1) + '%';
         const tx = $('xpTxt'); if (tx) tx.textContent = O ? kaT(`${O.tam}/${O.n} hedef`, `${O.tam}/${O.n} goals`) : kaT('En üst aşama', 'Top stage');
         const xb = f && f.closest('.xpbar'); if (xb) xb.classList.toggle('kaHazir', !!(O && O.hazir)) } } catch (e) { } return r } }
@@ -27128,6 +27132,101 @@ setInterval(() => { try { if (typeof started !== 'undefined' && started) hudXP()
 html.land #game#game#game #y2 .y2prof.ahHazir .por::before{content:''!important;position:absolute!important;inset:-4px!important;border-radius:50%!important;border:3px solid #ffe27a!important;pointer-events:none!important;animation:ahNabiz 1.5s ease-in-out infinite}
 @keyframes ahNabiz{0%,100%{box-shadow:0 0 6px 2px rgba(255,200,40,.75);opacity:.85}50%{box-shadow:0 0 16px 6px rgba(255,190,20,.95);opacity:1}}
 @media (prefers-reduced-motion:reduce){html.land #game#game#game #y2 .y2prof.ahHazir .por::before{animation:none;box-shadow:0 0 12px 4px rgba(255,190,20,.9)}}
+`; document.head.appendChild(st) }
+
+// ================= V373 · ÜLKE ETKİNLİKLERİNDE AŞAMA SİSTEMİ: HER ÜLKENİN KENDİ 5 AŞAMASI, HEDEFLERİ VE KARTLARI =================
+// Kullanıcı (25 Kasım 2026, 14:36): "bu aşama sistemi her haftalık ülke etkinliği içinde ayrı ayrı yap istediğin promptaları bana söyle"
+//  • Etkinlik kafesinde (EVMODE: it / tr / jp) XP seviyesi yerine aşama: 5 aşama; aşama → içerik seviyesi EA_L = [0,1,3,5,7,10]
+//    (ülkenin tarifleri EV_RECIPES 1–8, eşyaları evLvl 1–10). S.lvl = EA_L[aşama] ve S.evl = S.lvl: Dünya Keşfi ödülleri (E.tiers →
+//    ana kafeye altın), tariflerin/eşyaların ana kafeye getirilmesi aynen işler. Eski etkinlik kaydı: XP seviyesini kapsayan en küçük aşamaya
+//    geçer (hiçbir şey kilitlenmez). Her ülkenin ilerlemesi kendi etkinlik kaydında (S.asama, S.kaH) ayrı tutulur.
+//  • Ülkeye özgü aşama adları (Roma: Espresso köşesi → Gelato tezgâhı → Trattoria → Pizzeria → Roma’nın gözdesi; İstanbul ve Kyoto benzer).
+//  • Hedefler (p991'in hedef motoru, EA_AH tablosu): sipariş, birleştirme, o aşamada açılan tarifleri keşfetmek, ülke eşyası yerleştirmek,
+//    kafe puanı ve etkinlik altını. Yükseltme etkinlik altınıyla ya da elmasla; elmas hediyesi yok (etkinlik elmas çiftliği olmasın).
+//    Açılanlar listesinde ana kafeye gidecek altın ödülü görünür.
+//  • Kartlarda ülkenin kendi çizimleri (img/asama/<ülke><n>.webp; istemleri kullanıcıya verildi, EA_GORSEL). Çizim gelene dek geçici kart:
+//    ülke renklerinde zemin + o aşamanın yemekleri.
+//  • Dünya Keşfi panelindeki "N. seviye" yazıları aşamaya çevrilir; ödül satırları aşamaya göre toplanır.
+var EA_ON = false;
+const EA_L = [0, 1, 3, 5, 7, 10];
+const EA_ULKE = {
+  it: { ad: ['', 'Espresso köşesi', 'Gelato tezgâhı', 'Trattoria', 'Pizzeria', 'Roma’nın gözdesi'], adEN: ['', 'Espresso corner', 'Gelato counter', 'Trattoria', 'Pizzeria', 'Rome’s favourite'],
+    sifat: ['İtalyan', 'Italian'], renk: ['#3a8f4b', '#fff6e2', '#d9453b'] },
+  tr: { ad: ['', 'Galata kahvecisi', 'Lokumcu', 'Baklavacı', 'Semaver köşesi', 'İstanbul’un gözdesi'], adEN: ['', 'Galata coffeehouse', 'Turkish delight shop', 'Baklava house', 'Samovar corner', 'Istanbul’s favourite'],
+    sifat: ['Türk', 'Turkish'], renk: ['#2f7fb8', '#fff6e2', '#d9453b'] },
+  jp: { ad: ['', 'Çayevi', 'Mochi dükkânı', 'Taiyaki tezgâhı', 'Ramen evi', 'Kyoto’nun gözdesi'], adEN: ['', 'Tea house', 'Mochi shop', 'Taiyaki stand', 'Ramen house', 'Kyoto’s favourite'],
+    sifat: ['Japon', 'Japanese'], renk: ['#e98aa0', '#fff6e2', '#c8323a'] } };
+const EA_GORSEL = { it: false, tr: false, jp: false };   // kullanıcının çizimleri eklenince true (img/asama/it1–5, tr1–5, jp1–5)
+const EA_AH = { 1: [['siparis', 15], ['birlestir', 15], ['ulke', 1], ['altin']], 2: [['etarif'], ['siparis', 50], ['ulke', 3], ['altin']],
+  3: [['etarif'], ['siparis', 120], ['ulke', 6], ['puan', 4], ['altin']], 4: [['etarif'], ['siparis', 250], ['ulke', 10], ['puan', 4.3], ['altin']] };
+try { EA_ON = !!(typeof EVMODE !== 'undefined' && EVMODE && EA_ULKE[EVMODE]) } catch (e) { }
+const eaEv = c => c ? (c.ev || (c.par && CAT[c.par] && CAT[c.par].ev) || null) : null;
+const eaNo = L => { L = +L; for (let s = 1; s < EA_L.length; s++) if (EA_L[s] >= L) return s; return EA_L.length - 1 };
+// aşamada açılan (keşfedilecek) tarifler; 1. aşamada hazır gelenler
+function eaTarifler(s) { const L0 = EA_L[s - 1] || 0, L1 = EA_L[s]; return RECIPES.filter(r => !r.hidden && (s === 1 ? (r.lvl | 0) <= L1 : (!r.def && (r.lvl | 0) > L0 && (r.lvl | 0) <= L1))) }
+// aşamaya ulaşınca ana kafeye gidecek ülke ödülü (E.tiers: içerik seviyesi → altın)
+function eaOdul(s, id) { try { const E = EVENTS[id || EVMODE], L0 = EA_L[s - 1] || 0, L1 = EA_L[s]; return E.tiers.filter(([L]) => L > L0 && L <= L1).reduce((t, x) => t + x[1], 0) } catch (e) { return 0 } }
+// geçici kart (çizim gelene dek): ülke renkleri + aşamanın yemekleri
+function eaYerTutucu(s) { const U = EA_ULKE[EVMODE] || EA_ULKE.it, R = eaTarifler(s).slice(0, 3);
+  return `<span class="asYer" style="--y1:${U.renk[0]};--y2:${U.renk[1]};--y3:${U.renk[2]}"><span class="asYerS"></span><span class="asYerT">${R.map(r => { let u = ''; try { u = productThumb(r.id) } catch (e) { } return u ? `<img src="${u}" alt="" draggable="false">` : '' }).join('')}</span></span>` }
+
+if (EA_ON) {
+  const U = EA_ULKE[EVMODE];
+  KA_T = { max: 5, L: EA_L.slice(), altin: [0, 0, 300, 900, 2000, 3500], elmas: [0, 0, 15, 30, 50, 80], hediye: [0, 0, 0, 0, 0, 0], ad: U.ad, adEN: U.adEN, rol: {}, ev: EVMODE };
+  // ---- XP yerine aşama: seviye yalnız yükseltmeyle değişir ----
+  { const _ax = addXP; addXP = function () { } }
+  function eaEsitle() { try { if (!S || !S.created) return; const T = KA_T; let ch = false;
+      if (!(S.asama >= 1)) { S.asama = Math.max(1, kaNo(Math.max(1, S.lvl | 0)) || 1); S.eaGecis = S.lvl | 0; ch = true }
+      if (S.asama > T.max) { S.asama = T.max; ch = true }
+      const L = T.L[S.asama]; if ((S.lvl | 0) !== L) { S.lvl = L; ch = true } if (S.evl !== S.lvl) { S.evl = S.lvl; S.evx = 0; ch = true }
+      if (ch) markDirty() } catch (e) { console.warn('etkinlik aşaması', e) } }
+  { const _ls = loadState; loadState = function () { const r = _ls.apply(this, arguments); eaEsitle(); return r } }
+  setInterval(() => { try { if (typeof started !== 'undefined' && started) eaEsitle() } catch (e) { } }, 1500);
+  // ---- etiketler: "Seviye N" → "Aşama n" (pazar kilitleri, tarif defteri) ----
+  { const _ke = kaEt; kaEt = function (L, ek) { const n = kaNo(L); return kaT('Aşama ', 'Stage ') + (n == null ? L : n) + (ek ? kaT(n == null ? '’de' : kaEk(L), '') : '') } }
+  // ---- üst gösterge: yuvarlakta AŞAMA ----
+  { const _hx = hudXP; hudXP = function () { const r = _hx.apply(this, arguments); try { eaEsitle(); const a = kaAsama(), b = $('lvlBadge');
+        if (b) { const h = `<em class="kaG">${kaT('AŞAMA', 'STAGE')}</em><span>${a}</span>`; if (b.innerHTML !== h) b.innerHTML = h }   // özgün hudXP her çağrıda yıldızlı seviye yazar: her seferinde düzelt
+        const n2 = $('lvlNum2'); if (n2) n2.textContent = a; const f = $('xpFill'), lv = f && f.closest('.lv'); if (lv) lv.setAttribute('data-ka', kaT('AŞAMA ', 'STAGE ') + a) } catch (e) { } return r } }
+  // ---- açılanlar: ülkenin tarifleri, eşyaları ve ana kafeye ödül ----
+  kaAcilanlar = function (a) { const T = KA_T, L0 = T.L[a - 1] || 0, L1 = T.L[a], out = [];
+    try { const c0 = tableCap(L0 || 1), c1 = tableCap(L1); if (c1 > c0) out.push({ ic: ic('table'), t: kaT(`Masa sınırı ${c1}`, `Table limit ${c1}`) }) } catch (e) { }
+    const rc = eaTarifler(a); if (rc.length) { let u = ''; try { u = productThumb(rc[0].id) } catch (e) { }
+      out.push({ ic: u ? `<img src="${u}" alt="">` : ic('book'), t: (a === 1 ? kaT('Hazır tarifler: ', 'Starter recipes: ') : kaT(`${rc.length} keşfedilebilir tarif: `, `${rc.length} discoverable recipe${rc.length > 1 ? 's' : ''}: `)) + rc.map(r => kaTr(r.name)).join(', '), tarif: rc }) }
+    const it = CATALOG.filter(c => eaEv(c) === EVMODE && (c.evLvl | 0) > L0 && (c.evLvl | 0) <= L1);
+    if (it.length) { let u = ''; try { u = itemThumb(it[0].id) } catch (e) { } out.push({ ic: u ? `<img src="${u}" alt="">` : ic('market'), t: kaT(`Markette ${it.length} yeni ${U.sifat[0]} eşyası`, `${it.length} new ${U.sifat[1]} item${it.length > 1 ? 's' : ''} in the Market`) }) }
+    const g = eaOdul(a); if (g) out.push({ ic: ic('coin'), t: kaT(`Ana kafene +${kaFmt(g)} altın ödül`, `+${kaFmt(g)} gold reward for your main café`) });
+    return out };
+  // ---- yükseltince etkinlik seviyesi (Dünya Keşfi ödülleri) eşitlenir ----
+  { const _ky = kaYukselt; kaYukselt = function () { const r = _ky.apply(this, arguments); eaEsitle(); try { saveNow() } catch (e) { } return r } }
+}
+
+// ---- Dünya Keşfi paneli (ana kafede de): seviye yazıları aşamaya, ödüller aşamaya göre ----
+function eaPanelDuzelt() { const p = $('evP'); if (!p || p.hidden) return; const id = (typeof EVMODE !== 'undefined' && EVMODE) || evOfWeek(evWeek()); if (!EA_ULKE[id]) return;
+  const ek = n => ({ 3: 'te', 4: 'te', 5: 'te' }[n] || 'de');
+  p.querySelectorAll('.evlv').forEach(e => { const m = (e.textContent || '').match(/(\d+)\.\s*seviye/i); if (m) e.textContent = kaT(`Aşama ${eaNo(+m[1])}`, `Stage ${eaNo(+m[1])}`) });
+  p.querySelectorAll('li.bu small').forEach(e => { const t = e.textContent || ''; let m = t.match(/^(\d+)\.\s*seviyede$/i);
+    if (m) { const n = eaNo(+m[1]); e.textContent = kaT(`Aşama ${n}’${ek(n)}`, `At stage ${n}`); return }
+    m = t.match(/^Seviye (\d+) · tariflerden aç$/i); if (m) e.textContent = kaT(`Aşama ${eaNo(+m[1])} · tariflerden aç`, `Stage ${eaNo(+m[1])} · unlock in Recipes`) });
+  // ödüllerin üstündeki açıklama: seviye → aşama
+  const ul0 = p.querySelector('ul.evtiers'), sub = ul0 && ul0.previousElementSibling; if (sub && sub.classList.contains('evsub') && !sub.dataset.ea) { sub.dataset.ea = 1; const d0 = EVMODE ? S : evArch(id), lv0 = evlOf(d0);
+    sub.innerHTML = kaT(`Bu kafenin kendi aşamaları var: 1. aşamadan başlar, ana kafenin aşaması değişmez. Burada aşama atladıkça ana kafene altın gelir.${d0 && lv0 ? ` Şu an <b>${eaNo(lv0)}. aşama</b>.` : ''}`,
+      `This café has its own stages: it starts at stage 1 and your main café’s stage does not change. Each stage you reach here sends gold to your main café.${d0 && lv0 ? ` Now at <b>stage ${eaNo(lv0)}</b>.` : ''}`) }
+  const rows = [...p.querySelectorAll('li.evt')]; if (rows.length && !rows[0].dataset.ea) { const E = EVENTS[id], d = EVMODE ? S : evArch(id), lv = evlOf(d), cl = EVMODE ? 0 : ((S.evClaim && S.evClaim[id]) || 1);
+    const ul = rows[0].parentElement; let h = '';
+    for (let s = 2; s < EA_L.length; s++) { const grp = E.tiers.filter(([L]) => L > EA_L[s - 1] && L <= EA_L[s]); if (!grp.length) continue; const g = grp.reduce((t, x) => t + x[1], 0);
+      const got = grp.every(([L]) => EVMODE ? lv >= L : (cl >= L && lv >= L)), reach = lv >= grp[grp.length - 1][0];
+      h += `<li class="evt${got ? ' got' : reach ? ' reach' : ''}" data-ea="1"><span class="evl">${kaT(`Aşama ${s}`, `Stage ${s}`)}</span><span class="evg">${got ? ic('check') : ''}${UI_GOLD(g)}</span></li>` }
+    if (h && ul) ul.innerHTML = h } }
+try { const _re = renderEvents; renderEvents = function () { const r = _re.apply(this, arguments); try { eaPanelDuzelt() } catch (e) { console.warn('etkinlik paneli', e) } return r } } catch (e) { }
+
+// ---- görünüm: geçici kart ----
+{ const INK = '#4a2a14', st = document.createElement('style'); st.textContent = `
+#skKafe .asYer{position:absolute;inset:0;display:block;background:radial-gradient(ellipse at 50% 62%,#fffaf0 0%,#ffeccb 42%,#f6d79a 78%,#e8b96a 100%)}
+#skKafe .asYerS{position:absolute;left:0;right:0;top:0;height:22%;background:repeating-linear-gradient(90deg,var(--y1) 0 10%,var(--y2) 10% 20%,var(--y3) 20% 30%);-webkit-mask:radial-gradient(circle at 50% 0,#000 0 62%,transparent 63%) 0 0/10% 100% repeat-x;mask:radial-gradient(circle at 50% 0,#000 0 62%,transparent 63%) 0 0/10% 100% repeat-x;opacity:.9}
+#skKafe .asYerT{position:absolute;left:8%;right:8%;top:24%;bottom:14%;display:flex;align-items:center;justify-content:center;gap:4%}
+#skKafe .asYerT img{height:72%;max-width:32%;object-fit:contain;filter:drop-shadow(0 4px 3px rgba(74,42,20,.3))}
+#skKafe .asYerT img:nth-child(2){height:86%}
 `; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
