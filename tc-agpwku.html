@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795623696",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795626318",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24600,7 +24600,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-1909';
+const OLC_DERLEME = '20261125-2003';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -26140,21 +26140,19 @@ function kaPaketAsama(k) { if (!kaPkAcik() || !PK_HAVUZ[k]) return 0; const T = 
         if (n) h = h.replace('class="it', 'class="it kaPkKilit').replace(/<\/div>$/, `<span class="kaPkK">${ic('lock')}${n}</span></div>`) } } } catch (e) { } return h } }
 
 // ---- ampul: mavi ışık isteğe bağlı ----
-function kaAmpul() { try { if (!kaAcik()) return true; if (S.ampul === true) return true; if (S.ampul === false) return false; return zrOgretici() || zrAcik() < 3 } catch (e) { return true } }
+// (V384) Kullanıcı (25 Kasım 2026, 20:00): "birleştir[me]deki ampul özelliğini kaldır" → Birleştir'deki ampul düğmesi kalktı, oyuncunun
+// açıp kapatması yok (eski kayıtlardaki S.ampul yok sayılır). Mavi ışık ve tam malzeme adları öğretici sürerken ve ilk 3 tarif açılana dek;
+// sonra malzemeler oyuncunun kendi keşfi (tarif penceresinde "?" + ailesinin simgesi, defterde silüet).
+function kaAmpul() { try { if (!kaAcik()) return true; return zrOgretici() || zrAcik() < 3 } catch (e) { return true } }
 { const _nh = nyHintDraw; nyHintDraw = function () { if (kaAmpul()) return _nh.apply(this, arguments);
     try { if (UI.mode !== 'merge') return; const plq = document.querySelector('#merge .k3plq'); if (plq && plq.dataset.nx) { plq.dataset.nx = ''; plq.classList.remove('nx'); const b = plq.querySelector('b'); if (b) b.textContent = kaT('Birleştir', 'Merge'); plq.onclick = null }
       document.querySelectorAll('#merge .cell.nx,#pkRaf .pk.nx,#merge .thdv.nx').forEach(e => e.classList.remove('nx')); document.querySelectorAll('#merge .thd .thr.cur').forEach(e => e.classList.remove('cur')) } catch (e) { } } }
-function kaAmpulDugme() { if (!kaAcik()) return; const mg = $('merge'); if (!mg || UI.mode !== 'merge') return; let b = mg.querySelector('.kaAmpul');
-  if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'kaAmpul'; b.setAttribute('data-dilyok', '1'); mg.appendChild(b);
-    b.onclick = e => { e.stopPropagation(); S.ampul = !kaAmpul(); markDirty(); try { sfx(S.ampul ? 'chime' : 'tap') } catch (x) { } kaAmpulDugme(); try { renderMerge() } catch (x) { } try { if (UI.tkW) renderTk() } catch (x) { }
-      toast(S.ampul ? kaT('<b>Ampul açık</b><br>Sıradaki adım parlıyor, tariflerin malzemeleri tam görünüyor', '<b>Hints on</b><br>The next step glows and recipe ingredients are shown in full') : kaT('<b>Ampul kapalı</b><br>Malzemeleri kendin keşfet; takılırsan yeniden yak', '<b>Hints off</b><br>Discover the ingredients yourself; switch it back on if you get stuck'), ic('bulb'), 2200) } }
-  try { const t = mg.querySelector('.thd') || mg.querySelector('.info'), R = mg.getBoundingClientRect(); if (t) { const q = t.getBoundingClientRect(); b.style.left = Math.round(q.left - R.left + 8) + 'px'; b.style.top = Math.round(q.top - R.top + 8) + 'px' } } catch (e) { }
-  const on = kaAmpul(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', kaT('İpucu ampulü', 'Hint bulb')); if (!b.firstChild) b.innerHTML = ic('bulb') }
+function kaAmpulDugme() { try { const e = document.querySelector('#merge .kaAmpul'); if (e) e.remove() } catch (e) { } }   // (V384) düğme yok
 { const _rm = renderMerge; renderMerge = function () { const r = _rm.apply(this, arguments); try { kaAmpulDugme() } catch (e) { } return r } }
 // öğretici ve ilk 3 tarif bitince ampul kendiliğinden kapanır: bir kerelik bildirim
 setInterval(() => { try { if (!started || !kaAcik() || !S.created || KA3.bildi) return; S.seen = S.seen || {}; if (S.seen.ampul) { KA3.bildi = true; return }
-    if (S.ampul == null && !kaAmpul() && UI.mode === 'merge' && !UI.modal) { S.seen.ampul = 1; KA3.bildi = true; markDirty();
-      toast(kaT('<b>Artık malzemeleri sen keşfet!</b><br>Mavi ışık kapandı. Takılırsan sol üstteki ampule dokun', '<b>Now discover the ingredients yourself!</b><br>The blue glow is off. Tap the bulb at the top left if you get stuck'), ic('bulb'), 4800); kaAmpulDugme() } } catch (e) { } }, 1500);
+    if (!kaAmpul() && UI.mode === 'merge' && !UI.modal) { S.seen.ampul = 1; KA3.bildi = true; markDirty();
+      toast(kaT('<b>Artık malzemeleri sen keşfet!</b><br>Mavi ışık kapandı. Tarifte soru işaretli malzemeyi o aileden üreterek bulursun', '<b>Now discover the ingredients yourself!</b><br>The blue glow is off. Make items from a “?” ingredient’s family to reveal it'), ic('book'), 4800) } } catch (e) { } }, 1500);
 
 // ---- tarif penceresi: bilinmeyen malzeme "?" + ailesinin simgesi ----
 function kaBilinir(it, I) { try { return kaAmpul() || !!(S.items && S.items[it]) || ((I && I.dl && I.dl[it]) | 0) > 0 } catch (e) { return true } }
@@ -26164,7 +26162,7 @@ function kaAile(it) { const m = ITEMS[it]; if (!m) return null; if (m.chain && I
         const art = row.querySelector('.tkart'), nm = row.querySelector('.tkname'); row.classList.add('kaGizli');
         if (art) art.innerHTML = `${a ? itemArt(a) : itemArt(it)}<i class="kaSoru">?</i>`;
         if (nm) nm.innerHTML = `<b>${a ? kaT(`${kaTr(ITEMS[a].name)} ailesi`, `${kaTr(ITEMS[a].name)} family`) : kaT('Bir karışım', 'A mix')}</b><small>${m && m.lv ? kaT('Kademe ? · henüz üretmedin', 'Tier ? · not made yet') : kaT('Henüz yapmadın', 'Not made yet')}</small>` });
-      const not = W.w.body.querySelector('.tknote'); if (not && !kaAmpul() && W.w.body.querySelector('.kaGizli')) not.innerHTML = kaT('Soru işaretli malzemeyi o aileden üreterek keşfet: doğru kademeyi bir kez üretince adı görünür. Takılırsan Birleştir’deki <b>ampule</b> dokun.', 'Discover the “?” ingredient by making items from that family: once you make the right tier, its name appears. Stuck? Tap the <b>bulb</b> on the Merge screen.') } catch (e) { console.warn('tarif ipucu', e) } return r } }
+      const not = W.w.body.querySelector('.tknote'); if (not && !kaAmpul() && W.w.body.querySelector('.kaGizli')) not.innerHTML = kaT('Soru işaretli malzemeyi o aileden üreterek keşfet: doğru kademeyi bir kez üretince adı görünür.', 'Discover the “?” ingredient by making items from that family: once you make the right tier, its name appears.') } catch (e) { console.warn('tarif ipucu', e) } return r } }
 // ---- Tarif Defteri: başlanmamış kilitli tarif silüet ----
 { const _rb = renderBook; renderBook = function () { const r = _rb.apply(this, arguments); try { if (!kaAcik()) return r;
       document.querySelectorAll('#rbList [data-rc].tkLocked').forEach(card => { const I = tkInfo(card.dataset.rc); card.classList.toggle('kaSil', !!(I && !I.done && !(I.pct > 0) && !kaAmpul())) }) } catch (e) { } return r } }
@@ -26597,27 +26595,22 @@ function tzTahtaDugme() { const n = $('mgName'), kap = n && !n.hidden ? n : $('m
   const i = UI.mgSel; if (i == null) return; const v = S.board[i], it = v && ITEMS[v]; if (!it || !it.chain || it.fam === 'bag') return;
   const ek = (cls, h, fn, t) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + cls; b.setAttribute('data-dilyok', '1'); b.innerHTML = h; if (t) { b.title = t; b.setAttribute('aria-label', t) } b.onclick = e => { e.stopPropagation(); fn(b) }; kap.appendChild(b); return b };
   if (tzKurulu() && tzSatilir(v)) ek('green tzKoyB', `${ic('market')}${insT('Tezgâha', 'Stall')}<em>${tzFiyat(v)}</em>`, () => { if (tzRafaKoyId(v)) { try { refreshCell(i) } catch (e) { } renderInfo(); toast(insT(`<b>${kaTr(it.name)} tezgâhta</b><br>${tzFiyat(v)} altına satılacak`, `<b>${kaTr(it.name)} is on the stall</b><br>It’ll sell for ${tzFiyat(v)} gold`), `<span class="ic">${itemArt(v)}</span>`, 1800) } }, insT('Tezgâha koy', 'Put on the stall'));
-  ek('light tzDepB', ic('box'), () => tzDepoyaKoy(i), insT('Depoya koy', 'Store'));
   ek('light tzSilB', ic('trash'), b => { const deger = (it.lv | 0) >= 3 || tzFiyat(v) >= 9; if (deger && !b.dataset.ok) { b.dataset.ok = '1'; b.classList.remove('light'); b.classList.add('red'); b.innerHTML = `${ic('trash')}${insT('Emin misin?', 'Sure?')}`; try { sfx('tap') } catch (e) { } return }
     S.board[i] = null; UI.mgSel = null; markDirty(); try { sfx('tap') } catch (e) { } try { refreshCell(i) } catch (e) { } renderInfo() }, insT('Kaldır (ödülsüz)', 'Remove (no reward)')) }
 try { const _mn = mgNameDraw; mgNameDraw = function () { const r = _mn.apply(this, arguments); try { if (TZ_ON) { tzTahtaDugme(); tzDepoCiz() } } catch (e) { console.warn('tezgâh düğmeleri', e) } return r } } catch (e) { }
 { const _ri = renderInfo; renderInfo = function () { const r = _ri.apply(this, arguments); try { if (TZ_ON) { const n = $('mgName'); if (!n || n.hidden) tzTahtaDugme(); tzDepoCiz() } } catch (e) { } return r } }
 // depo: 6 yer, geçici saklama (tahtanın sol altında)
-function tzDepoyaKoy(i) { const T = tzS(), v = S.board[i]; if (!v) return; const k = T.depo.indexOf(null);
-  if (k < 0) { try { sfx('nope') } catch (e) { } toast(insT(`<b>Depo dolu</b><br>${TZ.depo} yer var; önce birini tahtaya geri al`, `<b>Storage is full</b><br>${TZ.depo} slots; take one back to the board first`), ic('box'), 2200); return }
-  T.depo[k] = v; S.board[i] = null; if (UI.mgSel === i) UI.mgSel = null; markDirty(); try { sfx('pop') } catch (e) { } try { refreshCell(i) } catch (e) { } renderInfo() }
-function tzDepodanAl(k) { const T = tzS(), v = T.depo[k]; if (!v) return; let t = -1; try { t = nearestEmpty(MG_MID()) } catch (e) { t = S.board.indexOf(null) }
-  if (t < 0) { try { sfx('nope') } catch (e) { } toast(insT('Tahta dolu', 'Your board is full'), ic('lock'), 1800); return }
-  S.board[t] = v; T.depo[k] = null; markDirty(); try { sfx('pop') } catch (e) { } try { refreshCell(t, 'pop') } catch (e) { } tzDepoCiz() }
-function tzDepoCiz() { if (!TZ_ON || UI.mode !== 'merge') return; const bw = $('merge'); if (!bw) return; const T = tzS(), n = T.depo.filter(Boolean).length; let b = $('tzDepo');
-  if (!b) { b = document.createElement('div'); b.id = 'tzDepo'; b.setAttribute('data-dilyok', '1'); b.innerHTML = `<button type="button" class="tzDb">${ic('box')}<b class="tzDn"></b></button><div class="tzDp" hidden></div>`;
-    b.querySelector('.tzDb').onclick = e => { e.stopPropagation(); const p = b.querySelector('.tzDp'); p.hidden = !p.hidden; try { sfx('tap') } catch (x) { } tzDepoCiz() };
-    b.querySelector('.tzDp').onclick = e => { e.stopPropagation(); const x = e.target.closest('[data-d]'); if (x) tzDepodanAl(+x.dataset.d) } }
-  if (b.parentElement !== bw) bw.appendChild(b); const nm = $('mgName'); b.hidden = !!(nm && !nm.hidden); if (b.hidden) { b.querySelector('.tzDp').hidden = true; return } const s = b.querySelector('.tzDb .tzDn'), tx = `${insT('Depo', 'Storage')} ${n}/${TZ.depo}`; if (s.textContent !== tx) s.textContent = tx;
-  const p = b.querySelector('.tzDp'); if (!p.hidden) { const h = `<small>${insT('Dokun: tahtaya geri gelir', 'Tap to bring back to the board')}</small><div>${T.depo.map((v, k) => `<button type="button" class="tzDs${v ? '' : ' bos'}" ${v ? `data-d="${k}"` : 'disabled'}>${v ? itemArt(v) : ''}</button>`).join('')}</div>`; if (p._h !== h) { p._h = h; p.innerHTML = h } } }
+// (V384) Kullanıcı (25 Kasım 2026, 20:02): "depo özelliğini de kaldır" → Birleştir'deki Depo düğmesi ve seçili üründeki "Depoya koy" kalktı.
+// Depoda kalmış ürünler tahtada yer açıldıkça kendiliğinden tahtaya döner (tzDepoBosalt).
+function tzDepoCiz() { try { const e = $('tzDepo'); if (e) e.remove() } catch (e) { } }   // (V384) depo düğmesi yok
+function tzDepoBosalt() { if (!TZ_ON || typeof started === 'undefined' || !started || !S || !S.created || !Array.isArray(S.board) || !S.tz || !Array.isArray(S.tz.depo)) return;
+  if (typeof mgDrag !== 'undefined' && mgDrag) return; let ch = false;
+  for (let k = 0; k < S.tz.depo.length; k++) { const v = S.tz.depo[k]; if (!v) continue; const t = S.board.indexOf(null); if (t < 0) break; S.board[t] = v; S.tz.depo[k] = null; ch = true; try { refreshCell(t, 'pop') } catch (e) { } }
+  if (ch) { markDirty(); try { if (UI.mode === 'merge') renderMerge() } catch (e) { } } }
+setInterval(() => { try { tzDepoBosalt() } catch (e) { } }, 2000);
 { const _rm = renderMerge; renderMerge = function () { const r = _rm.apply(this, arguments); try { tzDepoCiz() } catch (e) { } return r } }
-try { const _nn = nyNext; nyNext = function () { const st = _nn.apply(this, arguments); try { if (TZ_ON && st && st.block && st.block.t === 'Birleştir ya da sat') st.block = { ...st.block, t: insT('Birleştir, depola ya da kaldır', 'Merge, store or remove') } } catch (e) { } return st } } catch (e) { }
-{ const _t = toast; toast = function (msg) { try { if (TZ_ON && msg === 'Tahta dolu: birleştir ya da sat') arguments[0] = insT('Tahta dolu: birleştir, depoya koy ya da kaldır', 'Board full: merge, store or remove items') } catch (e) { } return _t.apply(this, arguments) } }
+try { const _nn = nyNext; nyNext = function () { const st = _nn.apply(this, arguments); try { if (TZ_ON && st && st.block && st.block.t === 'Birleştir ya da sat') st.block = { ...st.block, t: insT('Birleştir ya da kaldır', 'Merge or remove') } } catch (e) { } return st } } catch (e) { }
+{ const _t = toast; toast = function (msg) { try { if (TZ_ON && msg === 'Tahta dolu: birleştir ya da sat') arguments[0] = insT('Tahta dolu: birleştir ya da kaldır', 'Board full: merge or remove items') } catch (e) { } return _t.apply(this, arguments) } }
 
 // ---- kafe: tezgâh çipi · yükseltme penceresi ----
 function tzCip() { const host = document.querySelector('#y2 .k3chips'); let e = $('tzChip');
