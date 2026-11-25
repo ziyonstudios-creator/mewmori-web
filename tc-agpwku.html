@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795626929",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795632829",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -638,10 +638,10 @@ function winShaped(WG){const {y:wy,w:ww,h:wh}=WIN,s=OPSH.win;
   const bar=(w,h,x,y,z=-0.1,d=0.06)=>box(w,h,d,M.green,x,y,z);
   if(s==='yuvarlak'){const r=ww/2;const f=new THREE.Mesh(new THREE.TorusGeometry(r+0.05,0.07,8,40),M.green);f.position.set(0,wy,0.02);f.castShadow=true;WG.add(f);
     const f2=new THREE.Mesh(new THREE.TorusGeometry(r*0.42,0.035,6,28),M.green);f2.position.set(0,wy,-0.1);WG.add(f2);
-    for(const a of [0,Math.PI/2]){const b=bar(ww,0.06,0,wy);b.rotation.z=a}box(ww*0.6,0.1,0.3,M.woodDark,0,wy-r-0.1,0.06);box(0.22,0.26,0.1,M.woodDark,0,wy+r+0.12,0.05);return}
+    for(const a of [0,Math.PI/2]){const b=bar(ww,0.06,0,wy);b.rotation.z=a}box(ww*0.6,0.1,0.3,M.woodDark,0,wy-r-0.1,0.06,{round:0.03});box(0.22,0.26,0.1,M.woodDark,0,wy+r+0.12,0.05);return}
   // çerçeve
   bar(ww+0.24,0.12,0,wy+wh/2+0.06,0.02,0.12);bar(ww+0.24,0.12,0,wy-wh/2-0.0,0.02,0.12);for(const sx of [-1,1])bar(0.12,wh,sx*(ww/2+0.06),wy,0.02,0.12);
-  box(ww+0.34,0.1,0.34,M.woodDark,0,wy-wh/2-0.06,0.07);   // denizlik
+  box(ww+0.34,0.1,0.34,M.woodDark,0,wy-wh/2-0.06,0.07,{round:0.03});   // denizlik (V386: köşeler yumuşak)
   box(ww+0.44,0.14,0.16,M.woodDark,0,wy+wh/2+0.2,0.05);   // lento
   // kayıtlar
   if(s==='rect'){bar(0.06,wh,0,wy);bar(ww,0.06,0,wy+wh*0.22)}
@@ -677,7 +677,7 @@ function openingHole(path,k,t){const D=OP_DIM()[k];if(k==='door'&&OPSH.door!=='a
 // klasik pencere: cam (ilk çocuk) + denizlik, kemer, dikmeler, kayıtlar. PARENT=WG iken çağrılır (buildShell ve market küçük resmi, p84)
 function winClassic(WG){if(OPSH.win!=='arch')return winShaped(WG);const {y:wy,w:ww,h:wh}=WIN;
    const gl=new THREE.Mesh(new THREE.ShapeGeometry(archHole(new THREE.Shape(),0,wy,ww,wh),24),M.glass);gl.position.z=-0.1;WG.add(gl);
-   box(ww+0.3,0.1,0.34,M.woodDark,0,wy-wh/2-0.038,0.07);
+   box(ww+0.3,0.1,0.34,M.woodDark,0,wy-wh/2-0.038,0.07,{round:0.03});
    const archF=new THREE.Mesh(new THREE.TorusGeometry(ww/2+0.05,0.06,8,32,Math.PI),M.green);archF.position.set(0,wy+wh/2,0.02);archF.castShadow=true;WG.add(archF);
    box(0.12,wh,0.12,M.green,-ww/2-0.05,wy,0.02);box(0.12,wh,0.12,M.green,ww/2+0.05,wy,0.02);
    box(0.06,wh+ww/2,0.06,M.green,0,wy-wh/2+(wh+ww/2)/2,-0.1);box(ww,0.06,0.06,M.green,0,wy+wh/2,-0.1)}
@@ -1071,16 +1071,16 @@ function counterFront(x,w,zf,h){box(w+0.02,0.07,0.03,M.woodDark,x,0.035,zf+0.012
 const KIT_EXT={parts:null,cash:null,reg:null};
 function buildKitchenParts(){if(KIT_EXT.parts&&KIT_EXT.parts())return;const {bx,bw,bz,bd,bh,cx,cz,cw,cd,ch}=KIT;
  // arka dolap (duvara dayalı): lavabo, fırın, raflar
- box(bw,bh,bd,M.cream,bx,bh/2,bz);box(bw+0.1,0.08,bd+0.1,M.wood,bx,bh+0.02,bz);
+ box(bw,bh,bd,M.cream,bx,bh/2,bz,{round:0.03});box(bw+0.1,0.08,bd+0.1,M.wood,bx,bh+0.02,bz,{round:0.03});   // (V386) köşeler yumuşak
  box(0.6,0.12,0.4,M.steel,bx-0.9,bh+0.08,bz,{round:0.03});cyl(0.03,0.03,0.3,M.steel,bx-0.9,bh+0.3,bz-0.15,8);
  for(const dx of [-1.42,-0.9,-0.38,1.32]){box(0.46,bh-0.2,0.02,KM.door,bx+dx,bh/2-0.01,bz+bd/2+0.008,{round:0.008,shadow:false});const k=sph(0.02,M.gold,bx+dx+0.17,bh/2+0.05,bz+bd/2+0.03);k.castShadow=false}   // dolap kapakları
  buildBackShelf(bx,bw);   // yeni raf tasarımı (p25)
  obst(bx-bw/2-0.05,bx+bw/2+0.05,-4,bz+bd/2+0.05);
  // ön tezgah: arkasında geniş çalışma alanı
- box(cw,ch-0.08,cd,M.green,cx,(ch-0.08)/2,cz);box(cw+0.15,0.1,cd+0.15,M.wood,cx,ch-0.03,cz,{round:0.02});
+ box(cw,ch-0.08,cd,M.green,cx,(ch-0.08)/2,cz,{round:0.035});box(cw+0.15,0.1,cd+0.15,M.wood,cx,ch-0.03,cz,{round:0.04});
  counterFront(cx,cw,cz+cd/2,ch);counterFront(-4.25,0.8,cz+cd/2,ch);
  obst(cx-cw/2-0.1,cx+cw/2+0.1,cz-cd/2-0.1,cz+cd/2+0.1);
- box(0.8,ch-0.08,cd,M.green,-4.25,(ch-0.08)/2,cz);box(0.95,0.1,cd+0.15,M.wood,-4.25,ch-0.03,cz,{round:0.02});obst(-4.75,cx-cw/2,cz-cd/2-0.1,cz+cd/2+0.1);
+ box(0.8,ch-0.08,cd,M.green,-4.25,(ch-0.08)/2,cz,{round:0.035});box(0.95,0.1,cd+0.15,M.wood,-4.25,ch-0.03,cz,{round:0.04});obst(-4.75,cx-cw/2,cz-cd/2-0.1,cz+cd/2+0.1);
  // öğütücü (kolu döner)
  STATION.grinder=inGroup(grp(cx-0.45,0,cz-0.1),()=>{cyl(0.12,0.1,0.3,M.dark,0,ch+0.17,0,12);cyl(0.1,0.1,0.14,M.steel,0,ch+0.36,0,12)});
  {const crank=new THREE.Group();crank.position.set(0,ch+0.44,0);STATION.grinder.add(crank);const arm=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.02,0.02),M.woodDark);arm.position.x=0.08;crank.add(arm);const knob=new THREE.Mesh(new THREE.SphereGeometry(0.025,8,6),M.red);knob.position.set(0.16,0.03,0);crank.add(knob);STATION.crank=crank}
@@ -1391,7 +1391,7 @@ function cObstSync(){for(const o of COBST){const i=OBST.indexOf(o);if(i>=0)OBST.
 function buildCash(){if(CG){scene.remove(CG);disposeTree(CG)}for(const o of COBST){const i=OBST.indexOf(o);if(i>=0)OBST.splice(i,1)}COBST=[];
   CG=new THREE.Group();CG.name='cash';CG.userData.block='c';CGI=new THREE.Group();CGI.position.set(-C_PIV.x,0,-C_PIV.z);CG.add(CGI);scene.add(CG);cPose();const P0=PARENT;PARENT=CGI;const n0=OBST.length;
   try{const {x,z,w,d,h}=CASH;
-    if(!(KIT_EXT.cash&&KIT_EXT.cash())){box(w,h-0.08,d,M.green,x,(h-0.08)/2,z);box(w+0.12,0.1,d+0.12,M.wood,x,h-0.03,z,{round:0.02});
+    if(!(KIT_EXT.cash&&KIT_EXT.cash())){box(w,h-0.08,d,M.green,x,(h-0.08)/2,z,{round:0.035});box(w+0.12,0.1,d+0.12,M.wood,x,h-0.03,z,{round:0.04});   // (V386) köşeler yumuşak
     counterFront(x,w,z+d/2,h)}   // (V148) tema seçiliyse gövdeyi paket kurar
     const n=Math.max(1,REGS.length);REGS.length=0;CASH_DECOR.g=null;layoutRegisters(n);
     obst(x-w/2-0.06,x+w/2+0.06,z-d/2-0.06,z+d/2+0.06);obst(x-0.6,x+0.6,CASH.stand.z-0.3,CASH.stand.z+0.25)}finally{PARENT=P0}
@@ -1608,7 +1608,7 @@ const CATALOG=[
  {id:'w_mint',kind:'wall',name:'Nane yeşili',price:40,lvl:5,color:0xcfe8d6},
  {id:'w_lav',kind:'wall',name:'Lavanta',price:45,lvl:7,color:0xddd3ee},
  {id:'w_sky',kind:'wall',name:'Gökyüzü mavisi',price:50,lvl:9,color:0xcfe4f2},
- {id:'f_classic',kind:'floor',name:'Klasik ahşap parke',price:0,lvl:1,own:true,pat:'plank',c1:0xc98a4e,c2:0xb87a42},
+ {id:'f_classic',kind:'floor',name:'Klasik ahşap parke',price:0,lvl:1,own:true,pat:'plank',c1:0xd09a62,c2:0xc08a52},   // (V386) daha doğal bal meşesi tonu (eski: c98a4e / b87a42)
  {id:'f_light',kind:'floor',name:'Açık meşe',price:40,lvl:2,pat:'plank',c1:0xe2b37c,c2:0xcf9f68},
  {id:'f_tiles',kind:'floor',name:'Dama karo',price:60,lvl:4,pat:'check',c1:0xf3e6cf,c2:0xc98a4e},
  {id:'f_terra',kind:'floor',name:'Terrakota karo',price:70,lvl:6,pat:'tile',c1:0xd27a52,c2:0xb8603c},
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2009';
+const OLC_DERLEME = '20261125-2132';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27628,6 +27628,131 @@ if (!EVMODE) {
   { const _db = defaultBoard; defaultBoard = function () { return ipBosTahta(_db.apply(this, arguments)) } }
   try { if (typeof S !== 'undefined' && S && !S.created && Array.isArray(S.board)) ipBosTahta(S.board) } catch (e) { }
   { const _as = applyState; applyState = function () { try { if (S && !S.created && Array.isArray(S.board)) ipBosTahta(S.board) } catch (e) { } return _as.apply(this, arguments) } } }
+
+// ================= V386 · GÖRSEL KALİTE 1: KAMERA VE KAFE ATMOSFERİ =================
+// Kullanıcı (25 Kasım 2026, 20:14): "TabbyChef – Görsel Kalite ve Oynanış Deneyimi Güncellemesi" belgesi, madde 1 (kamera), 2 (kafenin görsel
+// atmosferi) ve 9 (performans). Karakter modelleri, sekiz aşama, fiyatlar, açılma koşulları ve kayıtlar değişmez; harici 3B programı yok.
+//  1) KAMERA (ana kafe): oyun açılınca kamera yumuşakça kafeye yaklaşır ve biraz alçalır (uzaklık 17,9 → 12,6; eğim 0,62 → 0,74 rad): küçük
+//     başlangıç kafesi ekranı doldurur, karakterler seçilir. Kafe genişledikçe varsayılan uzaklık oda ölçüsüyle büyür (12,6 × k^0,9; en büyük
+//     kafede 23,5) ve eğim eski değerine doğru dikleşir (0,74 → 0,62); kamera oraya yumuşakça kayar, oyuncunun kendi yakınlaştırma oranı ve eğim
+//     farkı korunur. Yakınlaştırma, uzaklaştırma, döndürme aynen duruyor; oyuncu ekrana dokununca otomatik hareket hemen durur. Rehber kamerası,
+//     tezgâh kipi, genişletme kipi, tadilat sahnesi, rezervasyon kamerası ve duraklar (EVMODE) bu sistemin dışında.
+//  2) ATMOSFER: ışık daha sıcak ve dolgun (gökyüzü ışığı ↑, güneş ↓ → gölgeler daha açık), gölge kenarları yumuşak (PCF + yarıçap); mobilya,
+//     tezgâh ve karakterlerin altında yumuşak temas gölgeleri (tek InstancedMesh); duvar diplerinde hafif kararma (zemin-duvar birleşimi düz
+//     görünmesin); pencere ve kapının önünde gündüz sıcak ışık yaması; gece kafenin genel sıcak ışığı (lamba havuzunun boş yuvası) ve zeminde
+//     ışık havuzu. Ayrıca kaynakta: sabit tezgâh, arka dolap, kasa gövdesi ve pencere denizliklerinin köşeleri yuvarlatıldı (p2, p4, p0);
+//     varsayılan parke daha doğal bal meşesi tonu (p5).
+//  9) PERFORMANS: yeni ışık kaynağı yok (gece ışığı var olan havuzdan); eklenenler temas gölgeleri 1 çizim çağrısı + 7 küçük düzlem.
+//     Temas gölgeleri kare başına yalnız karakterler için güncellenir; mobilya düzeni değişince yeniden hesaplanır.
+var GK = { on: true };
+// ---------------- 1) kamera ----------------
+var GKK = { on: false, oran: 1, polF: 0, an: null, ilk: false, vSon: 0, pol: 0.74, d1: 12.6, en: 1.78, dokT: 0 };
+try { GKK.on = !EVMODE } catch (e) { }
+function kmK() { return Math.max((RM.x1 - RM.x0) / 9.5, (RM.z1 - RM.z0) / 8) }
+// dar ekranda (iPad 4:3) kafe yatayda sığsın: en-boy oranı 1,78'in altına indikçe uzaklık aynı oranda artar (iPhone 12,6 · iPad ≈ 16,8)
+function kmVars() { let a = 2; try { a = camera.aspect || 2 } catch (e) { } return GKK.d1 * Math.pow(kmK(), 0.9) * Math.max(1, GKK.en / Math.max(0.6, a)) }
+// kafe büyüdükçe varsayılan eğim biraz dikleşir (0,74 → 0,62 rad): geniş salonun tamamı görünür
+function kmPol() { return Math.max(0.62, GKK.pol - 0.12 * Math.max(0, Math.min(1, kmK() - 1))) }
+function kmBos() { try { if (!controls.enabled || UI.mode !== 'cafe' || UI.modal) return false; if (typeof CAM !== 'undefined' && CAM.on) return false; if (typeof TZ !== 'undefined' && TZ.on) return false;
+    if (typeof XM !== 'undefined' && XM.cam) return false; if ($('cine')) return false; if (typeof ED !== 'undefined' && ED.busy) return false;
+    if (typeof TD !== 'undefined' && (TD.on || TD.kam && TD.kam.faz && TD.kam.faz !== 'yok')) return false; if (typeof RZK !== 'undefined' && RZK && RZK.on) return false; return true } catch (e) { return false } }
+function kmGit(d, pol) { GKK.an = { d: Math.max(controls.minDistance, Math.min(controls.maxDistance, d)), pol: pol == null ? null : pol } }
+function kmTick(dt) { const A = GKK.an; if (!A || !kmBos()) return; const T = controls.target, v = camera.position.clone().sub(T); let r = v.length(); if (!(r > 0.01)) return;
+  let po = Math.acos(Math.max(-1, Math.min(1, v.y / r))); const az = Math.atan2(v.x, v.z), k = 1 - Math.exp(-Math.min(dt, 0.05) * 2.6);
+  r += (A.d - r) * k; if (A.pol != null) po += (Math.max(controls.minPolarAngle, Math.min(controls.maxPolarAngle, A.pol)) - po) * k;
+  camera.position.set(T.x + r * Math.sin(po) * Math.sin(az), T.y + r * Math.cos(po), T.z + r * Math.sin(po) * Math.cos(az));
+  if (Math.abs(A.d - r) < 0.03 && (A.pol == null || Math.abs(A.pol - po) < 0.006)) GKK.an = null }
+if (GKK.on) {
+  // oyuncu dokununca otomatik hareket durur; bırakınca kendi yakınlaştırma oranı kaydedilir
+  try { const cv = renderer.domElement; for (const t of ['pointerdown', 'wheel', 'touchstart']) cv.addEventListener(t, () => { GKK.an = null; GKK.dokT = performance.now() }, { passive: true });
+    controls.addEventListener('end', () => { try { if (GKK.ilk && kmBos()) { const v = camera.position.clone().sub(controls.target), r = v.length(); GKK.oran = Math.max(0.5, Math.min(2, r / kmVars())); GKK.polF = Math.acos(Math.max(-1, Math.min(1, v.y / r))) - kmPol() } } catch (e) { } }) } catch (e) { }
+}
+// ---------------- 2) ışık: daha sıcak, daha dolgun ----------------
+try { for (const K of DAY_KEYS) { const gece = K.si < 0.6; K.hemi = +(K.hemi * (gece ? 1.34 : 1.14)).toFixed(3); K.si = +(K.si * (gece ? 1 : 0.9)).toFixed(3); K.exp = +(K.exp + (gece ? 0.05 : 0.03)).toFixed(3);
+    if (!gece) { const c = new THREE.Color(K.sun).lerp(new THREE.Color(0xffd29a), 0.18); K.sun = c.getHex(); const h = new THREE.Color(K.hc).lerp(new THREE.Color(0xffe8c8), 0.3); K.hc = h.getHex() }
+    else { const h = new THREE.Color(K.hc).lerp(new THREE.Color(0xf0dcf0), 0.45); K.hc = h.getHex() } }
+  if (HEMI) HEMI.groundColor.set(0x8f6f4c); } catch (e) { console.warn('ışık ayarı', e) }
+var GK_GUN = 1;   // 0 gece … 1 öğle
+{ const _dt = dayTick; dayTick = function () { const d0 = dayLast, zor = !!arguments[0], r = _dt.apply(this, arguments); try { if (dayLast === d0 && !zor) return r; GK_GUN = Math.max(0, Math.min(1, (sun.intensity - 0.5) / 1.1));
+      // gece: tezgâhın üstündeki lamba bütün kafeyi sıcak aydınlatsın (yeni ışık yok, erim ve güç artar)
+      for (const pl of LAMP_POOL) if (pl.position.y > -1 && !pl.userData.gk) { pl.distance = 9.5; pl.decay = 1.5; pl.intensity *= 1.0 + 1.3 * (1 - GK_GUN) }
+      glUygula() } catch (e) { } return r } }
+// gece: kafenin genel sıcak ışığı. Oyuncu hiç lamba almamış olsa da akşam olunca kafe sıcak aydınlanır. YENİ IŞIK KAYNAĞI YOK: lamba havuzunun
+// (LAMP_POOL, 6 ışık) son yuvası boşsa o kullanılır; oyuncu altı lamba yerleştirmişse yuva onundur, dokunulmaz. Pil tasarrufu kipinde havuz
+// kapalıdır (p36): orada yalnız zemindeki ışık havuzu görünür.
+var GKL = { x: 0, z: 0, t: 0, I: 6.6 };
+function gkLambaK() { try { const t = dayPhase(); let i = 0; while (i < DAY_KEYS.length - 2 && DAY_KEYS[i + 1].t <= t) i++; const A = DAY_KEYS[i], B = DAY_KEYS[i + 1], u0 = (t - A.t) / Math.max(1e-6, B.t - A.t), u = u0 * u0 * (3 - 2 * u0); return A.lamp + (B.lamp - A.lamp) * u } catch (e) { return 0 } }
+function glUygula() { const pl = LAMP_POOL[LAMP_POOL.length - 1]; if (!pl) return; const ud = pl.userData;
+  const benim = !!ud.gk && pl.position.y > -1 && Math.abs(pl.position.x - GKL.x) < 0.01 && Math.abs(pl.position.z - GKL.z) < 0.01, bos = pl.position.y <= -1;
+  if (!bos && !benim) { ud.gk = 0; return }   // yuva oyuncunun lambasında
+  const L = gkLambaK(), birak = () => { if (benim) { pl.intensity = 0; pl.position.set(0, -5, 0); pl.distance = 5; pl.decay = 2 } ud.gk = 0 };
+  if (L < 0.02 || !GK.on) return birak();
+  const W = RM.x1 - RM.x0, D = RM.z1 - RM.z0; let ox = 0; try { if (k2Up()) ox = K2.dx } catch (e) { }
+  // çizgi film gölgelemesinde ışığın basamak halkası (yarıçap ≈ 2,8 × yükseklik) kafenin köşelerinin dışında kalsın diye büyük kafede ışık yükselir
+  let gr = 0, gf = 0; try { gr = GDN.r || 0; gf = GDN.f || 0 } catch (e) { }
+  const R = Math.hypot(W / 2 + gr, D / 2 + gf), h = Math.max(WALL_H - 0.7, R / 2.7);
+  GKL.x = (RM.x0 + RM.x1) / 2 + ox; GKL.z = (RM.z0 + RM.z1) / 2; pl.position.set(GKL.x, h, GKL.z); ud.gk = 1;
+  pl.distance = Math.hypot(R, h) * 1.3; pl.decay = 1.2; pl.intensity = GKL.I * L * Math.pow(h / 2.5, 1.2) }
+try { const _lp = lampPoolSet; lampPoolSet = function () { const r = _lp.apply(this, arguments); try { glUygula() } catch (e) { } return r } } catch (e) { }   // eşya değişince havuz sıfırlanır: genel ışık hemen geri gelir
+// gölge kenarları: PCF + yarıçap (PCFSoft'ta yarıçap etkisiz); eco'da zaten PCF
+try { GFX.bal.soft = false; GFX.high.soft = false; sun.shadow.radius = 2.6; sun.shadow.bias = -0.0007; sun.shadow.normalBias = 0.02;
+  if (renderer.shadowMap.type !== THREE.PCFShadowMap) { renderer.shadowMap.type = THREE.PCFShadowMap; renderer.shadowMap.needsUpdate = true; scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.needsUpdate = true) }) } } catch (e) { }
+// ---------------- 2b) temas gölgeleri ----------------
+var GKG = { m: null, max: 192, sabit: [], imza: '', t: 0, _m: null, _b: null, _v: null };
+function gkDoku(ciz, w, h) { const cv = document.createElement('canvas'); cv.width = w || 64; cv.height = h || 64; ciz(cv.getContext('2d'), cv.width, cv.height); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t }
+function kgKur() { if (GKG.m) return; const tex = gkDoku((c, W, H) => { const g = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W / 2); g.addColorStop(0, 'rgba(46,26,12,0.62)'); g.addColorStop(0.45, 'rgba(46,26,12,0.34)'); g.addColorStop(0.8, 'rgba(46,26,12,0.08)'); g.addColorStop(1, 'rgba(46,26,12,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H) });
+  const geo = new THREE.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, fog: true });
+  const m = new THREE.InstancedMesh(geo, mat, GKG.max); m.frustumCulled = false; m.renderOrder = 2; m.count = 0; m.userData.wallKeep = true; m.name = 'temasGolge'; scene.add(m);
+  GKG.m = m; GKG._m = new THREE.Matrix4(); GKG._b = new THREE.Box3(); GKG._v = new THREE.Vector3(); GKG._q = new THREE.Quaternion(); GKG._s = new THREE.Vector3() }
+// mobilya, tezgâh, kasa: ayak izleri (düzen değişince)
+function kgSabit() { const L = []; try { for (const o of scene.children) { if (!o.visible) continue; const ud = o.userData || {}; const mob = ud.uid != null, sabit = o.name === 'kitchen' || o.name === 'cash'; if (!mob && !sabit) continue;
+      GKG._b.setFromObject(o); if (GKG._b.isEmpty()) continue; const mn = GKG._b.min, mx = GKG._b.max; if (mn.y > 0.5 || mn.y < -0.5 || mx.y - mn.y < 0.14) continue;   // duvar süsü, halı vb.
+      const dx = mx.x - mn.x, dz = mx.z - mn.z; if (dx > 9 || dz > 9) continue; L.push([(mn.x + mx.x) / 2, (mn.z + mx.z) / 2, dx * 1.22 + 0.22, dz * 1.22 + 0.22, sabit ? 0.9 : 1]) } } catch (e) { } GKG.sabit = L }
+function kgImza() { let h = 0, n = 0; try { for (const o of scene.children) { const ud = o.userData; if (!ud || !o.visible) continue; if (ud.uid == null && o.name !== 'kitchen' && o.name !== 'cash') continue;
+      n++; const ic = o.children[0] ? o.children[0].children.length : 0; h = (h * 31 + Math.round(o.position.x * 100) * 7 + Math.round(o.position.z * 100) * 13 + Math.round(o.rotation.y * 100) + (ud.uid | 0) * 3 + o.children.length + ic) | 0 } } catch (e) { } return n + ':' + h }
+function kgTick(dt) { if (!GKG.m) kgKur(); const m = GKG.m; GKG.t += dt; if (GKG.t > 0.6) { GKG.t = 0; const im = kgImza(); if (im !== GKG.imza) { GKG.imza = im; kgSabit() } }
+  let n = 0; const M = GKG._m, q = GKG._q, s = GKG._s, v = GKG._v; q.identity();
+  for (const [x, z, sx, sz] of GKG.sabit) { if (n >= GKG.max) break; v.set(x, 0.021, z); s.set(sx, 1, sz); M.compose(v, q, s); m.setMatrixAt(n++, M) }
+  for (const o of scene.children) { if (n >= GKG.max) break; if (!o.userData || !o.userData.isChar || !o.visible) continue; const p = o.position; if (p.y > 0.05 || p.y < -0.05) continue; const k = (o.scale.x || 1) * 0.74; v.set(p.x, p.y - 0.016, p.z); s.set(k, 1, k); M.compose(v, q, s); m.setMatrixAt(n++, M) }
+  m.count = n; m.instanceMatrix.needsUpdate = true; m.material.opacity = 0.5 + 0.38 * GK_GUN }
+// ---------------- 2c) duvar dibi kararması + pencere ışığı ----------------
+var GKD = { g: null, imza: '', t: 0, back: [], left: [], front: [], right: [], isik: null };
+function kdImza() { try { return [RM.x0, RM.x1, RM.z0, RM.z1].join(',') + '|' + SHELL.g.uuid + '|' + SHELL.g.children.filter(c => c.userData && c.userData.opening).map(c => c.userData.wall + c.userData.opening + c.position.x.toFixed(2) + c.position.z.toFixed(2)).join(';') } catch (e) { return '' } }
+function kdKur() { if (GKD.g) { scene.remove(GKD.g); GKD.g.traverse(o => { if (o.geometry) o.geometry.dispose() }) }
+  const G = new THREE.Group(); G.name = 'gkDekal'; G.userData.wallKeep = true; GKD.g = G; GKD.back = []; GKD.left = []; GKD.front = []; GKD.right = [];
+  if (!GKD.aoMat) { GKD.aoMat = new THREE.MeshBasicMaterial({ map: gkDoku((c, W, H) => { const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(52,30,14,0.46)'); g.addColorStop(0.35, 'rgba(52,30,14,0.2)'); g.addColorStop(1, 'rgba(52,30,14,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H) }, 8, 64), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+    GKD.isikMat = new THREE.MeshBasicMaterial({ map: gkDoku((c, W, H) => { const g = c.createRadialGradient(W / 2, 0, 0, W / 2, 0, H); g.addColorStop(0, 'rgba(255,238,190,0.85)'); g.addColorStop(0.5, 'rgba(255,232,176,0.32)'); g.addColorStop(1, 'rgba(255,232,176,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+        c.globalCompositeOperation = 'destination-in'; const m = c.createLinearGradient(0, 0, W, 0); m.addColorStop(0, 'rgba(0,0,0,0)'); m.addColorStop(0.22, 'rgba(0,0,0,1)'); m.addColorStop(0.78, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = m; c.fillRect(0, 0, W, H) }, 64, 64), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, fog: false }) }
+  const W = RM.x1 - RM.x0, D = RM.z1 - RM.z0, AO = 0.85;
+  // zeminde: arka duvar (z0) ve sol duvar (x0) boyunca kararma (doku: v=1 duvar tarafı koyu)
+  const pl = (w, d) => { const g = new THREE.PlaneGeometry(w, d); g.rotateX(-Math.PI / 2); return g };
+  const b = new THREE.Mesh(pl(W, AO), GKD.aoMat); b.position.set((RM.x0 + RM.x1) / 2, 0.017, RM.z0 + AO / 2); G.add(b); GKD.back.push(b);
+  const l = new THREE.Mesh(pl(D, AO), GKD.aoMat); l.rotation.y = Math.PI / 2; l.position.set(RM.x0 + AO / 2, 0.018, (RM.z0 + RM.z1) / 2); G.add(l); GKD.left.push(l);
+  // ön (z1) ve sağ (x1) duvar: yalnız kamera öbür yana geçip bu duvarlar görününce (p82 nwWalls)
+  const f = new THREE.Mesh(pl(W, AO), GKD.aoMat); f.rotation.y = Math.PI; f.position.set((RM.x0 + RM.x1) / 2, 0.017, RM.z1 - AO / 2); G.add(f); GKD.front.push(f);
+  const rg = new THREE.Mesh(pl(D, AO), GKD.aoMat); rg.rotation.y = -Math.PI / 2; rg.position.set(RM.x1 - AO / 2, 0.018, (RM.z0 + RM.z1) / 2); G.add(rg); GKD.right.push(rg);
+  // pencere / kapı önünde ışık yaması (doku: v=1 açıklık tarafı parlak)
+  try { for (const c of SHELL.g.children) { const ud = c.userData || {}; if (!ud.opening) continue; const kapi = ud.opening !== 'win', w = kapi ? 2.3 : 3.2, d = kapi ? 3.0 : 3.8;
+      const m = new THREE.Mesh(pl(w, d), GKD.isikMat);
+      if (ud.wall === 'back') { m.position.set(c.position.x, 0.026, RM.z0 + d / 2 + 0.05); GKD.back.push(m) }
+      else if (ud.wall === 'left') { m.rotation.y = Math.PI / 2; m.position.set(RM.x0 + d / 2 + 0.05, 0.027, c.position.z); GKD.left.push(m) } else continue;
+      m.userData.isik = 1; G.add(m) } } catch (e) { }
+  // gece: zeminde sıcak ışık havuzu (lamba ışığı hissi; ışık kaynağı eklemez, düşük grafik ayarında da görünür)
+  try { if (!GKD.geceMat) GKD.geceMat = new THREE.MeshBasicMaterial({ map: gkDoku((c, Wc, Hc) => { const g = c.createRadialGradient(Wc / 2, Hc / 2, 0, Wc / 2, Hc / 2, Wc / 2); g.addColorStop(0, 'rgba(255,196,120,0.9)'); g.addColorStop(0.5, 'rgba(255,180,100,0.38)'); g.addColorStop(1, 'rgba(255,170,90,0)'); c.fillStyle = g; c.fillRect(0, 0, Wc, Hc) }), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, fog: false, toneMapped: false });
+    const r = Math.min(W, D) * 1.05, gm = new THREE.Mesh(pl(r * 1.25, r), GKD.geceMat); gm.position.set((RM.x0 + RM.x1) / 2, 0.028, (RM.z0 + RM.z1) / 2); gm.userData.isik = 1; G.add(gm) } catch (e) { }
+  for (const m of G.children) { m.renderOrder = m.userData.isik ? 3 : 1; m.frustumCulled = false } scene.add(G) }
+// (gece zemin ışığı: lamba havuzu açıksa asıl ışık oradan gelir, zemin yaması hafifler)
+function kdTick(dt) { GKD.t += dt; if (!GKD.g || GKD.t > 0.7) { GKD.t = 0; const im = kdImza(); if (im !== GKD.imza || !GKD.g) { GKD.imza = im; kdKur() } }
+  try { const hb = !!(ENV.hide && ENV.hide.back), hl = !!(ENV.hide && ENV.hide.left); for (const m of GKD.back) m.visible = !hb; for (const m of GKD.left) m.visible = !hl;
+    const nf = typeof NW !== 'undefined' && NW.g && NW.g.front && NW.hide.front === false, nr = typeof NW !== 'undefined' && NW.g && NW.g.right && NW.hide.right === false; for (const m of GKD.front) m.visible = !!nf; for (const m of GKD.right) m.visible = !!nr } catch (e) { }
+  if (GKD.isikMat) GKD.isikMat.opacity = 0.36 * GK_GUN; if (GKD.geceMat) { let lamba = false; try { lamba = !!GFX[PERF.q].lamps } catch (e) { } GKD.geceMat.opacity = (lamba ? 0.16 : 0.34) * Math.pow(1 - GK_GUN, 1.3) } if (GKD.aoMat) GKD.aoMat.opacity = 0.55 + 0.35 * GK_GUN }
+// ---------------- döngü ----------------
+{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { if (!GK.on) return r;
+      if (GKK.on) { const v = kmVars(); if (!GKK.ilk) { if (typeof started !== 'undefined' && started && !PERF.covered && kmBos()) { GKK.ilk = true; GKK.vSon = v; kmGit(v, kmPol()) } }
+        else if (Math.abs(v - GKK.vSon) > 0.02 * GKK.vSon) { GKK.vSon = v; kmGit(v * GKK.oran, kmPol() + GKK.polF) }   // kafe genişledi ya da ekran oranı değişti
+        kmTick(dt) }
+      kgTick(dt); kdTick(dt); GKL.t += dt; if (GKL.t > 0.5) { GKL.t = 0; glUygula() } } catch (e) { if (!GK.hata) { GK.hata = 1; console.warn('görsel kalite', e) } } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
