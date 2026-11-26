@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795685801",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795687798",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261126-1232';
+const OLC_DERLEME = '20261126-1305';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28412,6 +28412,109 @@ function btEkipOnar() { try { if (!S || !S.ekip || !S.staff) return; let deg = f
       if ((S.staff[rol] | 0) < n && n <= HIRE_MAX[rol]) { S.staff[rol] = n; deg = true } }
     if (deg) markDirty() } catch (e) { console.warn('ekip onarımı', e) } }
 { const _as = applyState; applyState = function () { const r = _as.apply(this, arguments); btEkipOnar(); return r } }
+//  5) [P0] Henüz ulaşılmamış aşamanın tarifi birleştirmeyle keşfedilebiliyordu (ör. Aşama 3'te bitki2 → Yeşil Çay, Aşama 4 tarifi). Belge madde 1:
+//     "Oyuncu henüz ulaşmadığı kafe aşamasındaki tarifleri keşfedemesin." Ana kafede tarifin aşaması (r.lvl > o anki aşamanın içerik seviyesi)
+//     henüz gelmediyse: ürün tahtada kalır ama tarif keşfedilmez, bir kez kısa ipucu çıkar ("… Aşama 4'te keşfedilebilir"); ürün kaydı
+//     işaretlenmez, böylece o aşamaya geçince aynı ürünü yeniden birleştirmek tarifi keşfeder. Tarif zincirleri ve açılma koşulları aynı.
+//     Tarif Defteri'nden açma (tkUnlock) da aynı kuralla korunur (ekranda zaten kilitliydi). Ülke duraklarının kendi düzeni var: dokunulmaz.
+var BTK = { ipucu: {} };
+function btTarifKilitli(r) { try { if (EVMODE || !r || S.recipes[r.id] || S.unlocked[r.id]) return false; const L = kaTablo().L[kaAsama()]; return (r.lvl | 0) > L && (r.lvl | 0) < 99 } catch (e) { return false } }
+{ const _di = discoverItem; discoverItem = function (id) { const r = (() => { try { return recipeByDisc[id] } catch (e) { return null } })();
+    if (r && btTarifKilitli(r)) { if (!BTK.ipucu[r.id]) { BTK.ipucu[r.id] = 1; try { toast(kaT(`<b>${kaTr(r.name)}</b> tarifi ${kaEt(r.lvl, true)} keşfedilebilir`, `<b>${kaTr(r.name)}</b> can be discovered at ${kaEt(r.lvl)}`), `<img src="${productThumb(r.id)}" alt="">`, 2600) } catch (e) { } } return }
+    return _di.apply(this, arguments) } }
+{ const _tu = tkUnlock; tkUnlock = function (id) { try { const r = RECIPE[id]; if (r && btTarifKilitli(r)) { try { sfx('nope') } catch (e) { } return } } catch (e) { } return _tu.apply(this, arguments) } }
+
+// ================= V402 · BETA P1: FİYAT VE MALZEME KALİTESİ BİLGİSİ =================
+// Kullanıcının kapalı beta belgesi (26 Kasım 2026, 11:46), madde 2 ve 3. Hiçbir ekonomik değer değişmez; gösterilen her sayı oyunun kendi
+// hesabından gelir (rastgele / uydurma yüzde yok):
+//   maliyet  = needN(ürün) × unitPrice(kalite)            (p24: malzeme sayısı × kalitenin birim fiyatı)
+//   kâr      = satış fiyatı − maliyet                       (ürün başına brüt)
+//   talep    = demandMul() = clamp(fiyatDüzeyi^−2, 0,4, 2,6) (p22: menünün ortalama fiyat düzeyi müşteri gelişini çarpar)
+//   memnuniyet= qualScore(kalite, fiyatDüzeyi) = clamp(kalite − 2,5 × (fiyatDüzeyi − 1), 1, 5) (yorum puanına giren kalite puanı)
+//  1) Menü: bir ürünün fiyatı −/+ ile değişince satırın altında bilgi kartı: malzeme maliyeti, satış fiyatı, ürün başına brüt kâr (çubuk),
+//     menü fiyat düzeyi ve müşteri gelişi çarpanı (çubuk), "Uygun / Dengeli / Pahalı" kısa açıklaması (önerilen fiyata oranla).
+//  2) Kalite: kartların altında karşılaştırma tablosu (seçili sütun vurgulu): malzeme birim maliyeti, menüdeki ürün başına ortalama maliyet,
+//     ortalama kâr marjı, bugünkü fiyat düzeyinde memnuniyet puanı, bugünkü satışlara göre tahmini günlük malzeme gideri (satış yoksa "—").
+var BF = { son: null };
+const bfF = (n, d = 1) => (Math.round(n * Math.pow(10, d)) / Math.pow(10, d)).toLocaleString(kaEN() ? 'en-US' : 'tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: d });
+function bfSup() { try { return SUP(stockS().sup) || SUP(SUP_DEF) } catch (e) { return SUPPLIERS[2] } }
+function bfMaliyet(r, s) { return needN(r) * unitPrice(s || bfSup()) }
+// etiket oyunun kendi fiyat etiketiyle aynı (p22 priceLabel / fairness: fiyat ÷ (önerilen × kalite payı)); açıklama aynı orana göre
+function bfDuzey(p, r) { let f = p / r.price, L = null; try { f = fairness(r, p); L = priceLabel(r) } catch (e) { }
+  const t = f <= 0.95 ? kaT('Önerilen fiyatın altında: daha çok müşteri gelir, ürün başına kâr azalır.', 'Below the suggested price: more guests come, less profit per item.')
+    : f <= 1.05 ? kaT('Önerilen fiyata yakın: kâr ve müşteri sayısı dengede.', 'Close to the suggested price: profit and guests in balance.')
+    : kaT('Ürün başına kâr artar ama menü pahalılaştıkça daha az müşteri gelir; misafirler daha hızlı servis ve daha iyi malzeme bekler.', 'More profit per item, but a pricier menu brings fewer guests, and they expect faster service and better ingredients.');
+  return [L ? L[1] : '#e0a33a', L ? kaTr(L[0]) : '', t] }
+function bfKart(id) { const r = RECIPE[id]; if (!r) return ''; const s = bfSup(), p = priceOf(r), c = bfMaliyet(r, s), kar = p - c, marj = p > 0 ? kar / p : 0, PI = priceIndex(), dm = demandMul(), [dk, dad, dacik] = bfDuzey(p, r);
+  const kad = (KALITE_AD[s.id] || [s.name])[0], dmP = Math.max(0, Math.min(1, (dm - CONFIG.demand.min) / (CONFIG.demand.max - CONFIG.demand.min)));
+  return `<div class="bfKart" data-bf="${id}"><div class="bfUst"><b>${kaTr(r.name)}</b><span class="bfEt" style="background:${dk};color:#fff">${dad}</span></div>
+    <div class="bfSat"><span>${kaT('Malzeme maliyeti', 'Ingredient cost')}</span><b>${bfF(c)} ${ic('coin')}</b><small>${needN(r)} ${kaT('malzeme', 'ingredients')} · ${kaTr(kad)}</small></div>
+    <div class="bfSat"><span>${kaT('Satış fiyatı', 'Sale price')}</span><b>${p} ${ic('coin')}</b><small>${kaT('önerilen', 'suggested')} ${r.price}</small></div>
+    <div class="bfSat"><span>${kaT('Ürün başına brüt kâr', 'Gross profit per item')}</span><b class="${kar >= 0 ? 'ar' : 'ek'}">${kar >= 0 ? '+' : '−'}${bfF(Math.abs(kar))} ${ic('coin')}</b><i class="bfBar"><i style="width:${Math.max(0, Math.min(100, marj * 100)).toFixed(0)}%"></i></i><small>%${bfF(marj * 100, 0)}</small></div>
+    <div class="bfSat"><span>${kaT('Müşteri gelişi', 'Guest arrivals')}</span><b>×${bfF(dm, 2)}</b><i class="bfBar talep"><i style="width:${(dmP * 100).toFixed(0)}%"></i></i><small>${kaT('menü fiyat düzeyi', 'menu price level')} %${bfF(PI * 100, 0)}</small></div>
+    <p>${dacik}</p></div>` }
+{ const _sp = setPrice; setPrice = function (id) { const r = _sp.apply(this, arguments); if (r) BF.son = id; return r } }
+{ const _rm = renderMenu; renderMenu = function () { const r = _rm.apply(this, arguments);
+    try { if (BF.son && UI.mode === 'menu') { const row = document.querySelector(`#menuList [data-pi="${BF.son}"]`); if (row && !row.nextElementSibling?.classList?.contains('bfKart')) row.insertAdjacentHTML('afterend', bfKart(BF.son)) } } catch (e) { console.warn('fiyat bilgisi', e) } return r } }
+{ const _sm = setMode; setMode = function () { BF.son = null; return _sm.apply(this, arguments) } }
+// ---------------- 2) kalite karşılaştırması ----------------
+function bfGunlukKullanim() { try { const dk = Math.max(1, (nowT() - (S.dayStart || nowT())) / 60000), W = finWindow(dk), E = W.ev; let n = 0, adet = 0; for (const k in E) if (k.startsWith('sold:')) { const r = RECIPE[k.slice(5)]; if (r) { n += needN(r) * E[k]; adet += E[k] } } return { n, adet } } catch (e) { return { n: 0, adet: 0 } } }
+function bfKaliteTablo() { const rs = RECIPES.filter(r => S.unlocked[r.id] && S.menu[r.id]); if (!rs.length) return ''; const PI = priceIndex(), sec = bfSup().id, G = bfGunlukKullanim();
+  const sat = s => { const u = unitPrice(s), mal = rs.reduce((a, r) => a + needN(r) * u, 0) / rs.length, gel = rs.reduce((a, r) => a + priceOf(r), 0) / rs.length, marj = gel > 0 ? (gel - mal) / gel : 0, mem = qualScore(s.q, PI);
+    return { u, mal, marj, mem, gun: G.n ? G.n * u : null } };
+  const V = SUPPLIERS.map(s => [s, sat(s)]), enMarj = Math.max(...V.map(([, v]) => v.marj)), enMem = Math.max(...V.map(([, v]) => v.mem));
+  const hc = (s, html, cls = '') => `<td class="${s.id === sec ? 'sec ' : ''}${cls}">${html}</td>`;
+  return `<div class="bfKal"><table><thead><tr><th></th>${V.map(([s]) => `<th class="${s.id === sec ? 'sec' : ''}">${kaTr((KALITE_AD[s.id] || [s.name])[0])}</th>`).join('')}</tr></thead><tbody>
+    <tr><th>${kaT('Malzeme birim maliyeti', 'Cost per ingredient')}</th>${V.map(([s, v]) => hc(s, bfF(v.u, 2))).join('')}</tr>
+    <tr><th>${kaT('Ürün başına maliyet (menü ort.)', 'Cost per item (menu avg.)')}</th>${V.map(([s, v]) => hc(s, bfF(v.mal, 1))).join('')}</tr>
+    <tr><th>${kaT('Ortalama kâr marjı', 'Average profit margin')}</th>${V.map(([s, v]) => hc(s, '%' + bfF(v.marj * 100, 0), v.marj === enMarj ? 'en' : '')).join('')}</tr>
+    <tr><th>${kaT('Memnuniyet (bugünkü fiyatlarla, 5 üzerinden)', 'Satisfaction (at today’s prices, of 5)')}</th>${V.map(([s, v]) => hc(s, bfF(v.mem, 1), v.mem === enMem ? 'en' : '')).join('')}</tr>
+    <tr><th>${kaT('Tahmini günlük malzeme gideri', 'Estimated daily ingredient cost')}</th>${V.map(([s, v]) => hc(s, v.gun == null ? '—' : bfF(v.gun, 0))).join('')}</tr></tbody></table>
+    <p>${G.adet ? kaT(`Günlük gider bugün satılan ${G.adet} ürüne göre hesaplandı.`, `Daily cost is based on the ${G.adet} items sold today.`) : kaT('Günlük gider bugün satış yapınca görünür.', 'Daily cost appears after today’s first sales.')}
+    ${kaT('En pahalı kalite her zaman en kârlı değildir: kâr marjı düşer; memnuniyet de menünün fiyat düzeyine bağlıdır (pahalı menüde misafir daha çok bekler).', 'The priciest quality isn’t always the most profitable: the margin shrinks, and satisfaction also depends on how pricey your menu is.')}</p></div>` }
+{ const _kc = kaliteCiz; kaliteCiz = function (L) { const r = _kc.apply(this, arguments); try { const g = L.querySelector('.klGrid'); if (g && !L.querySelector('.bfKal')) g.insertAdjacentHTML('afterend', bfKaliteTablo()) } catch (e) { console.warn('kalite tablosu', e) } return r } }
+{ const st = document.createElement('style'); st.textContent = `
+.bfKart{margin:2px 0 8px;padding:8px 10px 7px;background:#fffaf0;border:2.5px solid #4a2a14;border-radius:14px;box-shadow:0 2px 0 #4a2a14;animation:bfIn .22s ease-out;font-family:var(--font-display,sans-serif)}
+@keyframes bfIn{from{opacity:0;translate:0 -4px}}
+.bfUst{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}.bfUst b{font:900 13px/1.2 var(--font-display);color:#4a2a14}
+.bfEt{font:900 11px/1 var(--font-display);padding:3px 9px;border-radius:99px;border:2px solid #4a2a14}.bfEt.uy{background:#d6efb6}.bfEt.de{background:#ffe7a8}.bfEt.pa{background:#f8c9c0}
+.bfSat{display:grid;grid-template-columns:minmax(110px,1.3fr) auto minmax(60px,1fr) auto;align-items:center;gap:2px 8px;padding:2px 0;font:700 11.5px/1.25 var(--font-display);color:#6b4220}
+.bfSat>span{grid-column:1}.bfSat>b{grid-column:2;display:inline-flex;align-items:center;gap:3px;font:900 12.5px/1 var(--font-display);color:#4a2a14;white-space:nowrap}.bfSat>b svg{width:12px;height:12px}
+.bfSat>b.ar{color:#3d6b1e}.bfSat>b.ek{color:#b33a2a}.bfSat>small{grid-column:4;font:700 10.5px/1.2 var(--font-display);color:#9a7050;white-space:nowrap}
+.bfSat>small:nth-child(3){grid-column:3/5}
+.bfBar{grid-column:3;display:block;height:9px;border-radius:99px;background:#f0dcc0;border:1.5px solid #4a2a14;overflow:hidden}.bfBar>i{display:block;height:100%;background:linear-gradient(#b8e27a,#6fb43c)}
+.bfBar.talep>i{background:linear-gradient(#bfe0ff,#5aa0e0)}
+.bfKart p{margin:4px 0 0;font:700 11px/1.3 var(--font-display);color:#7a5236}
+.bfKal{margin:10px 0 4px;padding:8px;background:#fffaf0;border:2.5px solid #4a2a14;border-radius:14px;box-shadow:0 2px 0 #4a2a14;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.bfKal table{border-collapse:separate;border-spacing:0;width:100%;min-width:480px;font:700 11.5px/1.2 var(--font-display,sans-serif);color:#4a2a14}
+.bfKal th,.bfKal td{padding:5px 6px;text-align:center;border-bottom:1.5px dashed #e6cfae}.bfKal tbody th{text-align:left;font-weight:800;color:#6b4220;min-width:120px}
+.bfKal thead th{font-weight:900}.bfKal .sec{background:#ffe7a8}.bfKal thead th.sec{border-radius:8px 8px 0 0}.bfKal td.en{color:#3d6b1e;font-weight:900}
+.bfKal p{margin:6px 2px 0;font:700 11px/1.35 var(--font-display,sans-serif);color:#7a5236}
+`; document.head.appendChild(st) }
+// ---------------- 3) çalışan geliştirme: şimdi → sonra (belge madde 4) ----------------
+// Değerler oyunun kendi formüllerinden (p38 / p937): yürüme stSpdMul, hazırlama stPrepMul × menüdeki ürünlerin ortalama hazırlama süresi,
+// ödeme stCashMul, kalite stQual, bahşiş stTipBonus. Özellik geçici olarak bir kademe artırılıp hesaplanır, hemen geri alınır.
+function bfEkObj(key) { for (const L of [WSTAFF, BSTAFF, CSTAFF]) { const o = L.find(x => x.key === key); if (o) return o } return { key } }
+function bfEkDeger(key) { const o = bfEkObj(key), st = stOf(key), role = (typeof ekRol === 'function' ? ekRol(key) : roleOfKey(key)), R = [];
+  const ms = RECIPES.filter(r => S.unlocked[r.id] && S.menu[r.id]), ort = ms.length ? ms.reduce((a, r) => a + (r.prep || 0), 0) / ms.length : 0;
+  R.push(['yur', kaT('Yürüme hızı', 'Walking speed'), '×', stSpdMul(st)]);
+  if (role === 'barista' && ort) R.push(['haz', kaT('Ortalama hazırlama süresi', 'Average prep time'), 'sn', ort * stPrepMul(o)]);
+  if (role === 'barista') R.push(['kal', kaT('Ürün kalitesi katkısı', 'Product quality bonus'), '+', stQual(o)]);
+  if (role === 'cashier') R.push(['ode', kaT('Ödeme süresi', 'Payment time'), '%', 100 * stCashMul(o)]);
+  if (role === 'waiter') R.push(['ser', kaT('Servis kalitesi katkısı', 'Service quality bonus'), '+', stQual(o)]);
+  R.push(['bah', kaT('Ekibin bahşiş şansı', 'Team tip chance'), '%+', 100 * stTipBonus()]); return R }
+function bfEkTablo(key, k) { const st = stOf(key), v = st[k] | 0 || 1; if (v >= EK_MAX) return ''; let A, B; try { A = bfEkDeger(key); st[k] = v + 1; B = bfEkDeger(key) } finally { st[k] = v }
+  const fm = (b, x) => b === 'sn' ? bfF(x, 1) + ' ' + kaT('sn', 's') : b === '%' ? '%' + bfF(x, 0) : b === '%+' ? '+' + bfF(x, 1) + kaT(' puan', ' pts') : b === '×' ? '×' + bfF(x, 2) : '+' + bfF(x, 2);
+  const satir = A.map((a, i) => { const b = B[i]; if (Math.abs(b[3] - a[3]) < 1e-6) return ''; const fark = a[3] ? (b[3] - a[3]) / Math.abs(a[3]) * 100 : 0, iyi = (a[2] === 'sn' || a[2] === '%') ? b[3] < a[3] : b[3] > a[3];
+    return `<tr><th>${a[1]}</th><td>${fm(a[2], a[3])}</td><td class="ok">›</td><td class="yeni">${fm(a[2], b[3])}</td><td class="${iyi ? 'iyi' : 'kot'}">${a[3] && (a[2] === 'sn' || a[2] === '%' || a[2] === '×') ? (fark > 0 ? '+' : '−') + '%' + bfF(Math.abs(fark), 1) : ''}</td></tr>` }).join('');
+  return satir ? `<table class="bfEk"><thead><tr><th></th><th>${kaT('Şimdi', 'Now')}</th><th></th><th>${kaT('Sonra', 'After')}</th><th></th></tr></thead><tbody>${satir}</tbody></table>` : '' }
+{ const _ea = ekAsk; ekAsk = function (key, k) { const r = _ea.apply(this, arguments); try { const m = $('ekUpM'), inf = m && m.querySelector('.ekinfo'); if (inf && !m.querySelector('.bfEk')) inf.insertAdjacentHTML('afterend', bfEkTablo(key, k)) } catch (e) { console.warn('geliştirme bilgisi', e) } return r } }
+{ const st = document.createElement('style'); st.textContent = `
+.bfEk{width:100%;border-collapse:collapse;margin:4px 0 8px;font:700 12px/1.2 var(--font-display,sans-serif);color:#4a2a14}
+.bfEk th,.bfEk td{padding:3px 5px;text-align:center}.bfEk tbody th{text-align:left;color:#6b4220;font-weight:800}.bfEk thead th{font:900 10.5px/1 var(--font-display,sans-serif);color:#a0672a}
+.bfEk td.yeni{font-weight:900;color:#3d6b1e}.bfEk td.ok{color:#a0672a}.bfEk td.iyi{color:#3d6b1e;font-weight:900}.bfEk td.kot{color:#b33a2a}
+.bfEk tbody tr+tr{border-top:1.5px dashed #e6cfae}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
