@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795691340",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795692768",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261126-1407';
+const OLC_DERLEME = '20261126-1426';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28622,6 +28622,64 @@ html #game .ekRt small{display:block!important;-webkit-line-clamp:unset!importan
  html.land #game#game #skSet .skset{gap:6px!important}html.land #game#game #skSet .skset .row{padding-top:4px!important;padding-bottom:4px!important;min-height:0!important}
  html.land #game#game #skSet .skset .row .skbtn{min-height:36px!important;height:38px!important;padding-top:0!important;padding-bottom:0!important}}
 @media (max-width:780px){html #game #teamList>.ekRoller{grid-template-columns:minmax(0,1fr)!important}}
+`; document.head.appendChild(st) }
+
+// ================= V405 · KAPALI BETA: MARKET — SAHİP OLDUKLARIM, SATIN ALINANLAR, OKUNAKLI KARTLAR =================
+// Kapalı beta belgesi (26 Kasım 2026), madde 5: "sahip olunanlar" filtresi, satın alınmış ürünlerin belirgin gösterilmesi, fiyat/durum net,
+// kesilen ürün adları. Kazara satın alma: kartın üstüne dokunmak yalnız ayrıntı kartını açar, ödeme o karttaki ayrı düğmeyle yapılır
+// (iki adım; ayrıca eklenmedi). Geçici önizleme: duvar ve zemin zaten önizleniyor; diğer eşyalar için beta sonrasına bırakıldı.
+//  · Rozet: kafede duran adet ("Kafede ×2"), depoda duran adet, ya da "Sende" / "Kullanımda" (duvar, zemin, sandalye, makine).
+//  · "Sahip olduklarım" düğmesi (pazarın üst kenarında, kapatma düğmesinin solunda): açıkken o kategoride yalnız sahip olunanlar görünür; yoksa açıklama çıkar.
+var MKS = { on: false };
+function mkSahip(id) { const c = CAT[id]; if (!c) return null; const F = S.furniture || [], kafe = F.filter(f => f.id === id && !f.stored).length, depo = F.filter(f => f.id === id && f.stored).length;
+  const kul = (c.kind === 'wall' && S.wall === id) || (c.kind === 'floor' && S.floor === id) || (c.kind === 'chair' && S.chairDefault === id) || (c.kind === 'equip' && S.owned[id]);
+  if (kafe) return { t: kaT('Kafede', 'In café') + (kafe > 1 ? ' ×' + kafe : ''), k: 'kafe' }; if (kul) return { t: kaT('Kullanımda', 'In use'), k: 'kul' };
+  if (depo) return { t: kaT('Depoda', 'Stored') + (depo > 1 ? ' ×' + depo : ''), k: 'depo' }; if (S.owned[id]) return { t: kaT('Sende', 'Owned'), k: 'sende' }; return null }
+function mkSahipCiz() { const g = $('mkGrid'), mk = $('market'); if (!g || !mk || mk.classList.contains('choose')) return; const uygun = !['clothes', 'upg', 'expand', 'store'].includes(UI.tab);
+  let b = $('mkSahipB'); if (!b) { b = document.createElement('button'); b.type = 'button'; b.id = 'mkSahipB'; mk.appendChild(b); b.onclick = e => { e.stopPropagation(); MKS.on = !MKS.on; try { sfx('tap') } catch (x) { } renderMarket() } }
+  if (b) { b.hidden = !uygun; b.setAttribute('aria-pressed', MKS.on); b.innerHTML = (MKS.on ? '✓ ' : '') + kaT('Sahip olduklarım', 'Owned') }
+  g.querySelectorAll('.mkSahipRoz').forEach(x => x.remove()); g.querySelectorAll('.mkBos2').forEach(x => x.remove()); let n = 0;
+  g.querySelectorAll('.card[data-id]').forEach(c => { const s = mkSahip(c.dataset.id); c.classList.toggle('mkVar', !!s); c.querySelectorAll('.own').forEach(x => x.hidden = !!s);
+    if (s) { c.insertAdjacentHTML('beforeend', `<span class="mkSahipRoz ${s.k}">${s.k === 'kul' || s.k === 'kafe' ? '✓ ' : ''}${s.t}</span>`) }
+    const gor = !(uygun && MKS.on && !s); c.hidden = !gor; if (gor) n++ });
+  if (uygun && MKS.on && !n) g.insertAdjacentHTML('beforeend', `<div class="mkBos2"><b>${kaT('Bu kategoride henüz eşyan yok', 'You own nothing in this category yet')}</b><button type="button" class="skbtn cream">${kaT('Tümünü göster', 'Show all')}</button></div>`);
+  const bb = g.querySelector('.mkBos2 button'); if (bb) bb.onclick = e => { e.stopPropagation(); MKS.on = false; renderMarket() } }
+{ const _rm = renderMarket; renderMarket = function () { const r = _rm.apply(this, arguments); try { mkSahipCiz() } catch (e) { console.warn('market sahip', e) } return r } }
+{ const _sm = setMode; setMode = function (m) { if (m === 'market' && UI.mode !== 'market') MKS.on = false; return _sm.apply(this, arguments) } }
+{ const st = document.createElement('style'); st.textContent = `
+#mkSahipB{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;padding:3px 9px;border-radius:999px;border:2.5px solid #4a2a14;background:#fff6e6;color:#4a2a14;font:900 11.5px/1.1 var(--font-display,sans-serif);box-shadow:0 2px 0 #4a2a14;white-space:nowrap}
+#mkSahipB[aria-pressed="true"]{background:linear-gradient(#cdeb8b,#93cf52)}
+html.land #game #market #mkSahipB{position:absolute!important;right:64px;left:auto;top:-14px;z-index:5;transform:none!important}
+#mkGrid .card.mkVar{border-color:#3d6b1e!important;box-shadow:0 3px 0 #2c5214,0 0 0 2px #b6e08a!important}
+html #game #mkGrid .card{position:relative!important}
+.mkSahipRoz{position:absolute;right:3px;top:3px;z-index:2;padding:1px 7px;border-radius:999px;font:900 9.5px/1.25 var(--font-display,sans-serif);white-space:nowrap;border:2px solid #3d6b1e;background:#e6f6d0;color:#2c5214;pointer-events:none}
+.mkSahipRoz.depo,.mkSahipRoz.sende{border-color:#8a6a4a;background:#f6e6cc;color:#5a3a1c}
+html #game #mkGrid .card>b{white-space:normal!important;overflow:hidden!important;text-overflow:clip!important;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.1!important;font-size:11px!important;text-align:center;word-break:break-word}
+#mkGrid .mkBos2{flex:1 0 auto;align-self:center;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 16px;font:800 12.5px/1.25 var(--font-display,sans-serif);color:#fff6e6;text-align:center}
+`; document.head.appendChild(st) }
+
+// ================= V405 · KAPALI BETA: GÜNLÜK GİRİŞ ÖDÜLÜ GÖRSELLERİ =================
+// Kapalı beta belgesi (26 Kasım 2026), madde 6. Takvimde alınan / bugün / gelecek günler ve 7-14-21-28 özel günleri zaten ayrı görünüyordu
+// (p947). Eklenenler: bugünün hücresi hafifçe nabız atar; özel günlere "Özel" kurdelesi; "Hediyeni al" denince hücreden yıldızlar saçılır,
+// altın ya da elmas simgeleri sayaca uçar (eşya ödülünde hediye kutusu Market düğmesine), özel günde konfeti. Çift alma: girisAl aynı gün ikinci
+// çağrıda null döner (G.g bugüne yazılır); düğme de yeniden çizilir — test edildi.
+function glUc(html, a, hedef, n) { try { const b = hedef && hedef.getBoundingClientRect(); if (!b || !b.width) return; const tx = b.left + b.width * 0.3, ty = b.top + b.height / 2;
+    for (let i = 0; i < n; i++) { const sx = a.x + (Math.random() - 0.5) * 30, sy = a.y + (Math.random() - 0.5) * 20, mx = (sx + tx) / 2 + (Math.random() - 0.5) * 80, my = Math.max(20, Math.min(sy, ty) - 60 - Math.random() * 40);
+      gfPar(html, sx, sy, 'gl-uc', [{ transform: 'translate(-50%,-50%) scale(.6)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1.1)', opacity: 1, offset: 0.12 },
+        { transform: `translate(calc(-50% + ${mx - sx}px),calc(-50% + ${my - sy}px)) scale(1)`, opacity: 1, offset: 0.5 }, { transform: `translate(calc(-50% + ${tx - sx}px),calc(-50% + ${ty - sy}px)) scale(.55)`, opacity: 0.2 }], 820, { boy: 26, gec: i * 70, ease: 'cubic-bezier(.4,0,.6,1)' }) }
+    setTimeout(() => { try { hedef.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 300 }) } catch (e) { } }, 820 + n * 70) } catch (e) { } }
+{ const _ga = girisAl; girisAl = function () { let a = null; try { const D = girisDurum(); if (D.hazir) { const h = document.querySelectorAll('#skDaily .grh')[D.gun - 1] || $('grAl'); if (h) { const r = h.getBoundingClientRect(); a = { x: r.left + r.width / 2, y: r.top + r.height / 2 } } } } catch (e) { }
+    const s = _ga.apply(this, arguments); try { if (s && a) { const o = s.o; gfPatla(a.x, a.y, 10, 'yildiz', 54, 14);
+        if (o.t === 'a') glUc(uiIc('i_coin'), a, $('coinPill'), 7); else if (o.t === 'e') glUc(uiIc('i_gem'), a, $('gemPill'), 6); else glUc(uiIc('i_gift'), a, document.querySelector('[data-nav="market"]') || $('coinPill'), 1);
+        if (s.gun % 7 === 0) setTimeout(() => gfKonfeti(40), 200) } } catch (e) { } return s } }
+{ const st = document.createElement('style'); st.textContent = `
+#gkFx .gl-uc{display:grid;place-items:center;filter:drop-shadow(0 2px 1px rgba(60,30,10,.35))}#gkFx .gl-uc svg,#gkFx .gl-uc img,#gkFx .gl-uc .uic{width:100%;height:100%}
+#skDaily .grh.bg{animation:glNabiz 1.6s ease-in-out infinite}
+@keyframes glNabiz{50%{transform:scale(1.04);box-shadow:0 0 0 4px rgba(147,207,82,.55)}}
+#skDaily .grh.by{position:relative}
+#skDaily .grh.by::before{content:'${kaT('Özel', 'Special')}';position:absolute;left:50%;top:-7px;transform:translateX(-50%);padding:0 6px;border-radius:999px;background:#d9534f;color:#fff;font:900 8.5px/1.45 var(--font-display,sans-serif);border:1.5px solid #fff;letter-spacing:.03em;pointer-events:none;z-index:1}
+#skDaily .grh.by.al::before{background:#a08a70}
+@media (prefers-reduced-motion:reduce){#skDaily .grh.bg{animation:none}}
 `; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
