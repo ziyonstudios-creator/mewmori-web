@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>TabbyChef – Kurucu Şefler Kapalı Beta Testi</title>
+<link rel="icon" href="../site/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#4a2e1c;--ink2:#7a5536;--cream:#fff8ec;--bg:#f7e7cf;--card:#fffdf8;--line:#e8cfa9;--olive:#7d8f3a;--olive2:#5f6f26;--olivebg:#eef3d8;--gold:#f0b52e;--gold2:#c98a12;--red:#c0392b;
+  --disp:"Baloo 2","Nunito",system-ui,sans-serif;--body:"Nunito",system-ui,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:700 16px/1.45 var(--body);min-height:100vh}
+a{color:var(--olive2)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 40px}
+header.top{position:sticky;top:0;z-index:5;background:rgba(247,231,207,.96);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:2px solid var(--line)}
+.topin{max-width:720px;margin:0 auto;padding:10px 16px 10px;display:flex;align-items:center;gap:12px}
+.topin img{width:52px;height:auto;flex:none}
+.prog{flex:1;min-width:0}
+.prog b{display:block;font:800 13px/1.2 var(--body);color:var(--ink2);margin-bottom:5px}
+.bar{height:12px;border-radius:999px;background:#ead6b6;border:2px solid var(--ink);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(#a9c25a,var(--olive));transition:width .25s}
+.lang{flex:none;display:flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--card)}
+.lang button{all:unset;cursor:pointer;padding:6px 11px;font:900 13px/1 var(--body)}
+.lang button[aria-pressed="true"]{background:var(--olive);color:#fff}
+.lang button:focus-visible{outline:3px solid var(--gold);outline-offset:-3px}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:22px;box-shadow:0 5px 0 #dcc19a;padding:20px 18px;margin-top:18px}
+.hero h1{font:800 clamp(24px,6vw,32px)/1.15 var(--disp);margin:0 0 6px}
+.hero .sub{font:800 18px/1.3 var(--disp);color:var(--olive2);margin:0 0 12px}
+.hero p{margin:0 0 10px;font-weight:700;color:var(--ink2)}
+.hero p strong{color:var(--ink)}
+.tip{display:flex;gap:10px;align-items:flex-start;background:var(--olivebg);border:2px solid #cbd79c;border-radius:14px;padding:10px 12px;margin-top:6px;font-size:14.5px}
+.q{scroll-margin-top:90px}
+.q h2{font:800 19px/1.25 var(--disp);margin:0 0 4px;display:flex;gap:10px;align-items:flex-start}
+.q h2 .n{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--gold);border:2px solid var(--ink);font:900 14px/1 var(--body);margin-top:-1px}
+.q .req{font-size:12.5px;font-weight:800;color:var(--ink2);margin:0 0 12px 40px}
+.opts{display:grid;gap:9px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:flex-start;width:100%;padding:12px 14px;border:2.5px solid var(--line);border-radius:16px;background:#fffaf0;transition:border-color .12s,background .12s}
+.opt .dot{flex:none;width:22px;height:22px;border-radius:50%;border:2.5px solid var(--ink2);margin-top:1px;display:grid;place-items:center;background:#fff}
+.opt .tx{min-width:0}
+.opt .tx b{display:block;font:900 16px/1.25 var(--body)}
+.opt .tx small{display:block;font:700 14px/1.35 var(--body);color:var(--ink2);margin-top:2px}
+.opt:hover{border-color:#d6b98d}
+.opt:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.opt[aria-checked="true"]{border-color:var(--olive2);background:var(--olivebg);box-shadow:0 3px 0 #b9c77f}
+.opt[aria-checked="true"] .dot{border-color:var(--olive2);background:var(--olive)}
+.opt[aria-checked="true"] .dot::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+.q.eksik{border-color:var(--red);box-shadow:0 5px 0 #e3a79f}
+.q .uyari{display:none;margin:10px 0 0;color:var(--red);font-weight:900;font-size:14px}
+.q.eksik .uyari{display:block}
+.ipuclari{margin:6px 0 12px;padding-left:20px;color:var(--ink2);font-size:14.5px}
+.ipuclari li{margin:2px 0}
+textarea{width:100%;min-height:180px;resize:vertical;border:2.5px solid var(--line);border-radius:16px;padding:12px 14px;font:700 16px/1.45 var(--body);color:var(--ink);background:#fffaf0}
+textarea:focus{outline:none;border-color:var(--olive)}
+.say{text-align:right;font-size:12.5px;color:var(--ink2);margin-top:4px}
+.gonder{margin-top:20px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:12px 30px;border-radius:999px;border:3px solid var(--ink);background:linear-gradient(#a9c25a,var(--olive));color:#fff;font:800 19px/1 var(--disp);text-shadow:0 1px 0 rgba(0,0,0,.25);box-shadow:0 4px 0 var(--ink)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.btn[disabled]{opacity:.75;cursor:wait}
+.btn.ikincil{background:var(--card);color:var(--ink);text-shadow:none;font-size:16px;min-height:46px}
+.spin{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.45);border-top-color:#fff;animation:d .8s linear infinite}
+@keyframes d{to{transform:rotate(360deg)}}
+.hata{display:none;width:100%;background:#fdeceb;border:2px solid #e3a79f;color:var(--red);border-radius:14px;padding:10px 12px;font-weight:800;font-size:14.5px;text-align:center}
+.hata.on{display:block}
+.not{font-size:13px;color:var(--ink2);text-align:center;margin-top:22px;line-height:1.5}
+.durum{text-align:center}
+.durum img{width:120px;height:auto}
+.durum h1{font:800 26px/1.2 var(--disp);margin:8px 0 8px}
+.durum p{color:var(--ink2);margin:0 0 10px}
+.imza{font:800 16px/1.4 var(--disp);color:var(--ink);margin-top:14px}
+#konfeti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+#konfeti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:k 1.6s ease-in forwards}
+@keyframes k{to{transform:translateY(105vh) rotate(540deg);opacity:.9}}
+@media (prefers-reduced-motion:reduce){#konfeti{display:none}.bar i{transition:none}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top" id="ust" hidden>
+  <div class="topin">
+    <img src="../site/logo.svg" alt="TabbyChef">
+    <div class="prog" aria-live="polite"><b id="progT"></b><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="10" id="progB"><i id="progI"></i></div></div>
+    <div class="lang" role="group" aria-label="Dil / Language"><button type="button" data-l="tr">TR</button><button type="button" data-l="en">EN</button></div>
+  </div>
+</header>
+<main class="wrap" id="ana">
+  <div class="card durum" id="yukle"><img src="../site/logo.svg" alt="TabbyChef"><p id="yukleT">Yükleniyor…</p></div>
+</main>
+<div id="konfeti" aria-hidden="true"></div>
+<script>
+(function(){
+'use strict';
+var SBU='https://ampchjrsfqmmgcevpvms.supabase.co/rest/v1/rpc/',KEY='sb_publishable__hWgNWgALQ1Td2peh8aIUQ_6htQjU9m',FORM_SURUM='bf-1.0';
+var Q=[
+ {id:'q1',tr:'TabbyChef hakkındaki ilk izlenimin nasıl?',en:'What is your first impression of TabbyChef?',o:[
+  ['cok_iyi','Çok iyi','Oyun ilk dakikadan itibaren ilgimi çekti.','Very good','The game caught my interest from the first minute.'],
+  ['iyi','İyi','Oyunu beğendim ve devam etmek istedim.','Good','I liked the game and wanted to keep playing.'],
+  ['orta','Ortalama','Oyun fena değil ancak beni çok etkilemedi.','Average','The game is not bad, but it didn’t impress me much.'],
+  ['kotu','Kötü','Oyun beklentilerimi karşılamadı.','Bad','The game didn’t meet my expectations.'],
+  ['cok_kotu','Çok kötü','Oyuna devam etmek istemedim.','Very bad','I didn’t want to keep playing.']]},
+ {id:'q2',tr:'Başlangıç eğitimi yeterince anlaşılır mı?',en:'Is the starting tutorial clear enough?',o:[
+  ['cok_anlasilir','Çok anlaşılır','Bütün işlemleri zorlanmadan öğrendim.','Very clear','I learned everything without any trouble.'],
+  ['anlasilir','Anlaşılır','Ufak tereddütler dışında ne yapacağımı anladım.','Clear','Apart from small doubts, I understood what to do.'],
+  ['biraz_karisik','Biraz karışık','Bazı işlemleri anlamakta zorlandım.','A bit confusing','I had trouble understanding some actions.'],
+  ['cok_karisik','Çok karışık','Ne yapmam gerektiğini anlayamadım.','Very confusing','I couldn’t understand what I was supposed to do.']]},
+ {id:'q3',tr:'Oyunun görsel tasarımlarını nasıl buldun?',en:'How do you find the game’s visual design?',o:[
+  ['cok_guzel','Çok güzel','Karakterler, kafe ve arayüzler oldukça etkileyici.','Beautiful','The characters, café and interfaces are really impressive.'],
+  ['guzel','Güzel','Genel tasarımı beğendim ancak küçük eksiklikler var.','Nice','I like the overall design, but there are small gaps.'],
+  ['orta','Ortalama','Görseller yeterli ancak dikkat çekici değil.','Average','The visuals are adequate but not eye-catching.'],
+  ['gelistirilmeli','Geliştirilmeli','Görsel kalitenin önemli ölçüde iyileştirilmesi gerekiyor.','Needs work','The visual quality needs significant improvement.']]},
+ {id:'q4',tr:'Kafe yönetimi ve müşteri hizmetleri eğlenceli mi?',en:'Are café management and serving customers fun?',o:[
+  ['cok_eglenceli','Çok eğlenceli','Sipariş, hazırlık, servis ve kafe yönetiminden keyif aldım.','Very fun','I enjoyed taking orders, preparing, serving and running the café.'],
+  ['eglenceli','Eğlenceli','Oynanışı beğendim ancak bazı işlemler geliştirilebilir.','Fun','I like the gameplay, but some actions could be improved.'],
+  ['sikici','Bir süre sonra sıkıcı','Tekrarlanan görevler zamanla ilgimi azalttı.','Boring after a while','Repetitive tasks made me lose interest over time.'],
+  ['hic','Hiç eğlenceli değil','Kafe yönetimi bana keyif vermedi.','Not fun at all','I didn’t enjoy running the café.']]},
+ {id:'q5',tr:'Birleştir sistemini nasıl buldun?',en:'How do you find the Merge system?',o:[
+  ['cok_eglenceli','Çok eğlenceli','Malzemeleri birleştirmek ve yeni tarifler keşfetmek hoşuma gitti.','Very fun','I enjoyed merging ingredients and discovering new recipes.'],
+  ['gelistirilmeli','Eğlenceli ama geliştirilmeli','Sistemi beğendim ancak bazı eksiklikleri olduğunu düşünüyorum.','Fun, but needs work','I like the system, but I think it has some gaps.'],
+  ['karmasik','Fazla karmaşık','Malzemeleri nasıl birleştireceğimi anlamakta zorlandım.','Too complicated','I had trouble understanding how to merge ingredients.'],
+  ['sikici','Sıkıcı','Birleştirme işlemleri ilgimi çekmedi.','Boring','Merging didn’t interest me.'],
+  ['denemedim','Henüz denemedim','Bu bölümü değerlendirecek kadar oynamadım.','Haven’t tried it yet','I haven’t played enough to rate this part.']]},
+ {id:'q6',tr:'Kafeni geliştirme ve para kazanma hızı nasıl?',en:'How fast do you earn money and upgrade your café?',o:[
+  ['cok_hizli','Çok hızlı','Altın kazanmak ve kafeyi yükseltmek fazla kolay.','Too fast','Earning gold and upgrading the café is too easy.'],
+  ['dengeli','Dengeli','Harcanan zaman ve elde edilen kazanç birbiriyle uyumlu.','Balanced','The time spent and the rewards feel well matched.'],
+  ['biraz_yavas','Biraz yavaş','İlerlemek için beklediğimden biraz daha fazla uğraşmam gerekiyor.','A bit slow','Progress takes a little more effort than I expected.'],
+  ['cok_yavas','Çok yavaş','Para kazanmak ve kafeyi geliştirmek motivasyonumu azaltıyor.','Too slow','Earning money and upgrading the café lowers my motivation.']]},
+ {id:'q7',tr:'Market, ekip ve diğer yönetim ekranları anlaşılır mı?',en:'Are the Market, Team and other management screens clear?',o:[
+  ['cok_anlasilir','Çok anlaşılır','Aradığım özellikleri kolayca bulabiliyorum.','Very clear','I can easily find the features I’m looking for.'],
+  ['genel_anlasilir','Genellikle anlaşılır','Çoğu ekranı rahatlıkla kullanabiliyorum.','Mostly clear','I can use most screens comfortably.'],
+  ['biraz_karisik','Biraz karışık','Bazı menüleri ve özellikleri bulmakta zorlanıyorum.','A bit confusing','I have trouble finding some menus and features.'],
+  ['cok_karisik','Çok karışık','Yönetim ekranlarını kullanmakta ciddi zorluk yaşıyorum.','Very confusing','I have serious difficulty using the management screens.'],
+  ['incelemedim','Henüz yeterince incelemedim','Bu ekranları değerlendirecek kadar kullanmadım.','Haven’t explored enough','I haven’t used these screens enough to rate them.']]},
+ {id:'q8',tr:'Oynarken teknik sorun yaşadın mı?',en:'Did you run into technical problems while playing?',o:[
+  ['yok','Hiç yaşamadım','Oyun akıcı ve sorunsuz çalıştı.','None at all','The game ran smoothly without problems.'],
+  ['kucuk','Küçük takılmalar','Oynanışı engellemeyen ufak sorunlarla karşılaştım.','Minor hiccups','I hit small issues that didn’t stop me from playing.'],
+  ['sik','Sık sık hata yaşadım','Donma, takılma veya çalışmayan özelliklerle karşılaştım.','Frequent errors','I ran into freezes, stutters or features that didn’t work.'],
+  ['engelleyici','Oyun kapandı veya ilerleyemedim','Oyuna devam etmemi engelleyen ciddi bir sorun yaşadım.','The game crashed or I got stuck','I hit a serious problem that stopped me from continuing.']]},
+ {id:'q9',tr:'Etkinlikleri nasıl buldun?',en:'How did you find the events?',o:[
+  ['cok_eglenceli','Çok eğlenceli','Etkinlikleri tamamlamak ve ödüller kazanmak hoşuma gitti.','Very fun','I enjoyed completing events and earning rewards.'],
+  ['gelistirilmeli','Güzel ama geliştirilmeli','Etkinlikleri beğendim ancak daha iyi olabilirler.','Nice, but needs work','I liked the events, but they could be better.'],
+  ['ilgisiz','İlgimi çekmedi','Etkinliklere katılmak için yeterli motivasyon hissetmedim.','Didn’t interest me','I didn’t feel motivated enough to join events.'],
+  ['denemedim','Henüz denemedim','Etkinliklere ulaşmadım veya katılmadım.','Haven’t tried yet','I haven’t reached or joined any events.']]},
+ {id:'q10',tr:'TabbyChef’i resmi çıkışından sonra oynamaya devam eder misin?',en:'Will you keep playing TabbyChef after its official launch?',o:[
+  ['kesinlikle','Kesinlikle','Oyunu düzenli olarak oynamak istiyorum.','Definitely','I want to play the game regularly.'],
+  ['buyuk_ihtimal','Büyük ihtimalle','Oyunu beğendim ve tekrar oynamayı düşünüyorum.','Probably','I liked the game and plan to play again.'],
+  ['kararsiz','Kararsızım','Yapılacak geliştirmelere göre karar vereceğim.','Not sure','I’ll decide based on future improvements.'],
+  ['sanmiyorum','Sanmıyorum','Oyun ilgimi yeterince çekmedi.','I don’t think so','The game didn’t interest me enough.'],
+  ['hayir','Hayır','Oyunu tekrar oynamayı düşünmüyorum.','No','I don’t plan to play again.']]}
+];
+var T={
+ tr:{title:'TabbyChef – Kurucu Şefler Kapalı Beta Testi',sub:'🐾 TabbyChef’in geleceğini birlikte şekillendirelim!',
+  hello:'Sevgili Şef,',p1:'TabbyChef’in ilk oyuncularından biri olduğun için teşekkür ederiz. Oyun deneyimin hakkında paylaşacağın düşünceler, resmi çıkış öncesinde oyunumuzu geliştirmemize yardımcı olacak.',
+  p2:'Olumlu ve olumsuz bütün görüşlerin bizim için eşit derecede değerli. Lütfen cevaplarında tamamen dürüst ol.',tip:'Formu doldurmadan önce en az <b>20–30 dakika</b> oynamanı öneriyoruz. Form yaklaşık 3–5 dakika sürer.',
+  prog:function(n){return n+' / 10 soru cevaplandı'},req:'Zorunlu · bir seçenek seç',eksik:'Bu soruyu cevaplamayı unuttun.',
+  q11:'Kendi fikirlerini bizimle paylaş!',q11s:'TabbyChef’i daha güzel bir oyun haline getirmek için senin fikirlerine ihtiyacımız var. (İsteğe bağlı)',
+  ip:['Oyunda en çok neyi beğendin?','Seni rahatsız eden veya sıkan şeyler nelerdi?','Hangi özelliklerin eklenmesini isterdin?','Karşılaştığın hatalar var mı?','Bir şeyi değiştirebilseydin neyi değiştirirdin?','Teknik sorun yaşadıysan cihaz modelin nedir?'],
+  ph:'Düşüncelerini buraya yazabilirsin…',send:'Geri bildirimi gönder',sending:'Gönderiliyor…',
+  missing:function(n){return n+' soru cevapsız. Seni ilk eksik soruya götürdük.'},
+  neterr:'Bağlantı kurulamadı. Cevapların bu cihazda saklı; internet gelince tekrar dene.',srverr:'Sunucu şu an cevap vermiyor. Cevapların saklı; biraz sonra tekrar dene.',ansErr:'Cevaplardan biri geçersiz görünüyor. Sayfayı yenileyip tekrar dene.',
+  note:'Bu form yalnız kapalı beta geri bildirimi için kullanılır. Cevapların oyunu geliştirmek amacıyla TabbyChef ekibi tarafından değerlendirilir; diğer oyuncular göremez. Cevaplar e-posta adresin olmadan, beta katılımcı numaranla saklanır. Ayrıntılar: ',privacy:'Gizlilik Politikası',privUrl:'../gizlilik/',
+  thx:'🐾 Teşekkürler, Kurucu Şef!',thx1:'Geri bildirimin başarıyla kaydedildi.',thx2:'TabbyChef’in geleceğini şekillendirmemize yardımcı olduğun için teşekkür ederiz. Senin gibi ilk oyuncularımız sayesinde daha güzel bir oyun dünyası oluşturuyoruz.',thx3:'Kafende görüşmek üzere!',team:'TabbyChef Ekibi',
+  done:'Bu bağlantıyla geri bildirim zaten gönderildi.',done2:'Her katılımcı formu bir kez doldurabilir. Katkın için teşekkürler!',
+  bad:'Bu bağlantı geçersiz.',bad2:'Bağlantıyı e-postadaki haliyle eksiksiz açtığından emin ol. Sorun sürerse bize yaz: ',nolink:'Bu form kişisel davet bağlantısıyla açılır.',nolink2:'Kapalı beta katılımcılarına özel bağlantı e-postayla gönderilir. Bağlantıyı e-postandaki düğmeden aç.',
+  loaderr:'Bağlantı kontrol edilemedi.',retry:'Tekrar dene',loading:'Yükleniyor…',draft:'Önceki cevapların geri yüklendi.'},
+ en:{title:'TabbyChef – Founding Chefs Closed Beta',sub:'🐾 Let’s shape the future of TabbyChef together!',
+  hello:'Dear Chef,',p1:'Thank you for being one of TabbyChef’s very first players. Your thoughts on your experience will help us improve the game before the official launch.',
+  p2:'Positive and negative opinions are equally valuable to us. Please be completely honest in your answers.',tip:'We recommend playing for at least <b>20–30 minutes</b> before filling in the form. It takes about 3–5 minutes.',
+  prog:function(n){return n+' / 10 questions answered'},req:'Required · pick one option',eksik:'You forgot to answer this question.',
+  q11:'Share your own ideas with us!',q11s:'We need your ideas to make TabbyChef an even better game. (Optional)',
+  ip:['What did you like most in the game?','What bothered or bored you?','Which features would you like to see added?','Did you run into any bugs?','If you could change one thing, what would it be?','If you had technical problems, what is your device model?'],
+  ph:'Write your thoughts here…',send:'Send feedback',sending:'Sending…',
+  missing:function(n){return n+' question'+(n>1?'s are':' is')+' unanswered. We took you to the first one.'},
+  neterr:'Could not connect. Your answers are saved on this device; try again when you’re online.',srverr:'The server isn’t responding right now. Your answers are saved; please try again shortly.',ansErr:'One of the answers looks invalid. Please reload the page and try again.',
+  note:'This form is used only for closed beta feedback. Your answers are reviewed by the TabbyChef team to improve the game; other players can’t see them. Answers are stored with your beta participant number, not your email address. Details: ',privacy:'Privacy Policy',privUrl:'../privacy/',
+  thx:'🐾 Thank you, Founding Chef!',thx1:'Your feedback has been saved successfully.',thx2:'Thank you for helping us shape the future of TabbyChef. Thanks to early players like you, we’re building a lovelier game world.',thx3:'See you at your café!',team:'The TabbyChef Team',
+  done:'Feedback has already been sent with this link.',done2:'Each participant can fill in the form once. Thank you for your help!',
+  bad:'This link is not valid.',bad2:'Make sure you opened the full link exactly as it appears in the email. If the problem continues, write to us: ',nolink:'This form opens with a personal invitation link.',nolink2:'Closed beta participants receive a personal link by email. Please open it from the button in your email.',
+  loaderr:'Could not check the link.',retry:'Try again',loading:'Loading…',draft:'Your previous answers were restored.'}
+};
+var P=new URLSearchParams(location.search),TOKEN=(P.get('k')||'').trim(),VER=(P.get('v')||'').slice(0,24),L=(P.get('lang')==='en'?'en':P.get('lang')==='tr'?'tr':null);
+var DK='tabbychef-bf-'+TOKEN.slice(0,12),A={},YORUM='',durum='yukle',gonderiyor=false;
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function t(k){return T[L||'tr'][k]}
+function rpc(n,b){return fetch(SBU+n,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(function(r){if(!r.ok){var e=new Error('http '+r.status);e.http=r.status;throw e}return r.json()})}
+function kaydet(){ls(DK,JSON.stringify({a:A,y:YORUM,l:L}))}
+function yukleTaslak(){try{var d=JSON.parse(ls(DK)||'null');if(d&&d.a){A=d.a;YORUM=d.y||'';if(!L&&d.l)L=d.l;return Object.keys(A).length>0||!!YORUM}}catch(e){}return false}
+function setDil(l){L=l;document.documentElement.lang=l;document.title=t('title');document.querySelectorAll('.lang [data-l]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.l===l))});kaydet();ciz()}
+document.querySelectorAll('.lang [data-l]').forEach(function(b){b.onclick=function(){setDil(b.dataset.l)}});
+function ilerleme(){var n=Q.filter(function(q){return A[q.id]}).length;$('progT').textContent=T[L].prog(n);$('progI').style.width=(n*10)+'%';$('progB').setAttribute('aria-valuenow',n)}
+function $(i){return document.getElementById(i)}
+function durumKart(img,h,p,ek){$('ana').innerHTML='<div class="card durum"><img src="../site/logo.svg" alt="TabbyChef"><h1>'+h+'</h1>'+p+(ek||'')+'</div>'}
+function ciz(){var m=$('ana');document.title=t('title');
+  if(durum==='yukle'){$('ust').hidden=true;m.innerHTML='<div class="card durum"><img src="../site/logo.svg" alt="TabbyChef"><p>'+t('loading')+'</p></div>';return}
+  if(durum==='yukhata'){$('ust').hidden=false;durumKart(0,t('loaderr'),'<p>'+t('neterr')+'</p>','<button class="btn ikincil" type="button" id="tekrar">'+t('retry')+'</button>');$('tekrar').onclick=basla;ilerlemeGizle();return}
+  if(durum==='yok'){$('ust').hidden=false;ilerlemeGizle();durumKart(0,t('nolink'),'<p>'+t('nolink2')+'</p>');return}
+  if(durum==='gecersiz'){$('ust').hidden=false;ilerlemeGizle();durumKart(0,t('bad'),'<p>'+t('bad2')+'<a href="mailto:destek@tabbychef.app">destek@tabbychef.app</a></p>');return}
+  if(durum==='bitti'){$('ust').hidden=false;ilerlemeGizle();durumKart(0,t('done'),'<p>'+t('done2')+'</p>');return}
+  if(durum==='tesekkur'){$('ust').hidden=false;ilerlemeGizle();durumKart(0,esc(t('thx')),'<p><b>'+t('thx1')+'</b></p><p>'+t('thx2')+'</p><p>'+t('thx3')+'</p><div class="imza">'+t('team')+'</div>');return}
+  $('ust').hidden=false;$('ust').querySelector('.prog').hidden=false;var h='';
+  h+='<section class="card hero"><h1>'+t('title')+'</h1><p class="sub">'+t('sub')+'</p><p><strong>'+t('hello')+'</strong></p><p>'+t('p1')+'</p><p>'+t('p2')+'</p><div class="tip"><span aria-hidden="true">⏱️</span><span>'+t('tip')+'</span></div>'+(durum==='taslak'?'<div class="tip" style="margin-top:8px"><span aria-hidden="true">💾</span><span>'+t('draft')+'</span></div>':'')+'</section>';
+  Q.forEach(function(q,i){h+='<section class="card q" id="'+q.id+'" role="radiogroup" aria-labelledby="'+q.id+'h"><h2 id="'+q.id+'h"><span class="n">'+(i+1)+'</span><span>'+esc(q[L])+'</span></h2><p class="req">'+t('req')+'</p><div class="opts">';
+    q.o.forEach(function(o){var s=A[q.id]===o[0];h+='<button type="button" class="opt" role="radio" aria-checked="'+s+'" data-q="'+q.id+'" data-o="'+o[0]+'"><span class="dot" aria-hidden="true"></span><span class="tx"><b>'+esc(L==='en'?o[3]:o[1])+'</b><small>'+esc(L==='en'?o[4]:o[2])+'</small></span></button>'});
+    h+='</div><p class="uyari" role="alert">'+t('eksik')+'</p></section>'});
+  h+='<section class="card q" id="q11"><h2><span class="n">11</span><span>'+t('q11')+'</span></h2><p class="req" style="margin-left:40px">'+t('q11s')+'</p><ul class="ipuclari">'+t('ip').map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul><label for="yorum" class="sr" hidden>'+t('q11')+'</label><textarea id="yorum" maxlength="5000" placeholder="'+esc(t('ph'))+'"></textarea><div class="say"><span id="say">0</span> / 5000</div></section>';
+  h+='<div class="gonder"><div class="hata" id="hata" role="alert"></div><button class="btn" type="button" id="gonderB">'+t('send')+'</button></div><p class="not">'+t('note')+'<a href="'+t('privUrl')+'" target="_blank" rel="noopener">'+t('privacy')+'</a>.</p>';
+  m.innerHTML=h;var ta=$('yorum');ta.value=YORUM;$('say').textContent=ta.value.length;
+  ta.oninput=function(){YORUM=ta.value;$('say').textContent=ta.value.length;kaydet()};
+  m.querySelectorAll('.opt').forEach(function(b){b.onclick=function(){sec(b.dataset.q,b.dataset.o)};b.onkeydown=function(e){var k=e.key;if(k!=='ArrowDown'&&k!=='ArrowUp'&&k!=='ArrowRight'&&k!=='ArrowLeft')return;e.preventDefault();var l=[].slice.call(b.parentNode.children),i=l.indexOf(b),n=l[(i+(k==='ArrowDown'||k==='ArrowRight'?1:l.length-1))%l.length];n.focus();sec(n.dataset.q,n.dataset.o)}});
+  $('gonderB').onclick=gonder;ilerleme()}
+function ilerlemeGizle(){$('ust').querySelector('.prog').hidden=true}
+function sec(q,o){A[q]=o;kaydet();var s=$(q);s.classList.remove('eksik');s.querySelectorAll('.opt').forEach(function(b){b.setAttribute('aria-checked',String(b.dataset.o===o))});ilerleme()}
+function hata(m){var e=$('hata');e.textContent=m;e.classList.toggle('on',!!m)}
+function btnDurum(on){var b=$('gonderB');if(!b)return;b.disabled=on;b.innerHTML=on?'<span class="spin" aria-hidden="true"></span>'+t('sending'):t('send')}
+function gonder(){if(gonderiyor)return;hata('');var eks=Q.filter(function(q){return !A[q.id]});
+  Q.forEach(function(q){$(q.id).classList.toggle('eksik',!A[q.id])});
+  if(eks.length){hata(T[L].missing(eks.length));var f=$(eks[0].id);window.scrollTo({top:f.getBoundingClientRect().top+window.scrollY-($('ust').offsetHeight+12),behavior:'smooth'});var o=f.querySelector('.opt');if(o)setTimeout(function(){o.focus({preventScroll:true})},400);return}
+  gonderiyor=true;btnDurum(true);var c={};Q.forEach(function(q){c[q.id]=A[q.id]});
+  rpc('bf_gonder',{p_token:TOKEN,p_cevap:c,p_yorum:YORUM,p_dil:L,p_oyun_surumu:VER||null,p_form_surumu:FORM_SURUM}).then(function(r){gonderiyor=false;
+    if(r&&r.ok){ls(DK,null);durum='tesekkur';ciz();window.scrollTo(0,0);konfeti();return}
+    btnDurum(false);var e=r&&r.err;if(e==='already'){ls(DK,null);durum='bitti';ciz();return}if(e==='token'){durum='gecersiz';ciz();return}hata(e==='answers'?t('ansErr'):t('srverr'))
+  }).catch(function(x){gonderiyor=false;btnDurum(false);hata(navigator.onLine===false||!x.http?t('neterr'):t('srverr'))})}
+function konfeti(){var k=$('konfeti'),c=['#f0b52e','#7d8f3a','#e9a25a','#f2a6a0','#4a2e1c'];for(var i=0;i<46;i++){var e=document.createElement('i');e.style.left=Math.random()*100+'%';e.style.background=c[i%c.length];e.style.animationDelay=(Math.random()*0.5)+'s';e.style.transform='rotate('+(Math.random()*90)+'deg)';k.appendChild(e)}setTimeout(function(){k.innerHTML=''},2600)}
+function basla(){if(!TOKEN){durum='yok';if(!L)L=(navigator.language||'').slice(0,2)==='en'?'en':'tr';setDil(L);return}
+  durum='yukle';if(!L)L='tr';ciz();
+  rpc('bf_kontrol',{p_token:TOKEN}).then(function(r){if(!r||!r.ok){durum='gecersiz';if(!P.get('lang'))L=L||'tr';setDil(L);return}
+    if(!P.get('lang')&&!yukleTaslakL())L=r.lang==='en'?'en':'tr';
+    if(r.done){ls(DK,null);durum='bitti';setDil(L);return}
+    durum=yukleTaslak()?'taslak':'form';setDil(L)}).catch(function(){durum='yukhata';setDil(L||'tr')})}
+function yukleTaslakL(){try{var d=JSON.parse(ls(DK)||'null');if(d&&d.l){L=d.l;return true}}catch(e){}return false}
+addEventListener('online',function(){if(durum==='yukhata')basla()});
+basla();
+})();
+</script>
+</body>
+</html>
