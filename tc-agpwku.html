@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795680135",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795680995",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261126-1101';
+const OLC_DERLEME = '20261126-1110';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28233,6 +28233,81 @@ addEventListener('resize', () => { try { HK.imza = ''; hkCiz() } catch (e) { } }
 #hkKart.kucuk .hkRes img,#hkKart.kucuk .hkRes .hkIc{border-radius:50%;background:#ffe9c2}
 #hkKart.kucuk.hazir .hkRes{background:conic-gradient(#6fb43c var(--p),#f0dcc0 0)}
 `; document.head.appendChild(st) }
+
+// ================= V398 · GÖRSEL KALİTE 2b: ARSANIN ÇEVRE DÜZENLEMESİ (BOŞ / GRİ ALAN) =================
+// Kullanıcı ikinci görsel kalite belgesi (26 Kasım 2026, 10:52), madde 2: "Kafenin dışındaki gri ve cansız bölgeleri çevre düzenlemesiyle daha
+// estetik hale getir … İlerleyen kafe aşamalarının görsel olarak daha zengin görünmesini sağla … Oyuncunun satın alması gereken dekorları
+// ücretsiz ekleme." Kafenin çevresindeki genişleme arsası (22 × 20 m; kışın düz kar) boş ve cansız görünüyordu.
+//  • Yalnız arsanın HENÜZ kafe / bahçe olmayan kısmına, satın alınan dekor olmayan çevre bitkileri: arsa kenarında alçak çalı sırası ve
+//    çimde küçük çiçek öbekleri (kışın: karlı çalılar ve küçük karlı çamlar). Kafe ya da bahçe genişleyince o kısımdakiler kendiliğinden kalkar.
+//  • Müşteri ve kurye yolları boş kalır: kapıdan dışarı uzanan şerit (2,8 m), tedarikçi bırakma / bekleme ve motor park noktaları çevresi.
+//  • Aşama ilerledikçe zenginleşir: çiçek öbeği yoğunluğu aşamayla artar; Aşama 3'ten sonra arsanın ön ve sağ kenarında direkler arasında
+//    süs ampulleri (gece parlar, ışık kaynağı değil); Aşama 5'ten sonra çalı sırası sıklaşır.
+//  • Performans: hepsi InstancedMesh (5 çizim çağrısı), gölge atmaz; yerleşim yalnız oda / bahçe / kapı / aşama değişince yeniden kurulur.
+//  • Yalnız ana kafe; ülke duraklarının kendi çevresi var.
+var CV = { g: null, imza: '', t: 0, amp: null, ampMat: null };
+function cvHash(x, z) { const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; return s - Math.floor(s) }
+function cvYasak() { const Y = []; try { const n = DOOR_OUTN, d = DOOR_IN; for (let k = 0; k < 16; k += 0.7) Y.push({ x: d.x + n.x * k, z: d.z + n.z * k, r: 1.5 }) } catch (e) { }
+  try { for (const p of [SUP_DROP, SUP_STAND]) if (p && p.x != null) Y.push({ x: p.x, z: p.z, r: 1.8 }) } catch (e) { }
+  try { if (SCOOT && SCOOT.park) Y.push({ x: SCOOT.park.x, z: SCOOT.park.z, r: 2 }) } catch (e) { } return Y }
+function cvBos(x, z, Y, pay) { const gr = (GDN && GDN.r) || 0, gf = (GDN && GDN.f) || 0;   // kafe + bahçe dışında mı, yollardan uzak mı
+  if (x > RM.x0 - pay && x < RM.x1 + gr + pay && z > RM.z0 - pay && z < RM.z1 + gf + pay) return false;
+  for (const y of Y) if ((x - y.x) ** 2 + (z - y.z) ** 2 < y.r * y.r) return false; return x > LOT.x0 + 0.3 && x < LOT.x1 - 0.3 && z > LOT.z0 + 0.3 && z < LOT.z1 - 0.3 }
+function cvImza() { let a = 1; try { a = kaAsama() } catch (e) { } let d = ''; try { d = OP.door.wall + OP.door.t } catch (e) { } return [RM.x0, RM.x1, RM.z0, RM.z1, GDN.r, GDN.f, d, a].join(',') }
+function cvKur() { if (CV.g) { scene.remove(CV.g); CV.g.traverse(o => { if (o.geometry) o.geometry.dispose() }) } CV.g = null; CV.amp = null;
+  const kis = typeof KIS !== 'undefined' && KIS, a = (() => { try { return kaAsama() } catch (e) { return 1 } })(), Y = cvYasak(), G = new THREE.Group(); G.name = 'cvCevre'; G.userData.wallKeep = true;
+  const dm = new THREE.Object3D(), toon = c => new THREE.MeshToonMaterial({ color: c, gradientMap: grad });
+  // 1) arsa kenarında çalı sırası
+  const cal = []; const ad = a >= 5 ? 1.5 : 2.1, ic = 0.55;
+  const kenar = (x0, z0, x1, z1) => { const L = Math.hypot(x1 - x0, z1 - z0), n = Math.floor(L / ad); for (let i = 0; i <= n; i++) { const u = i / n, x = x0 + (x1 - x0) * u, z = z0 + (z1 - z0) * u; if (cvBos(x, z, Y, 0.9)) cal.push([x, z, 0.75 + cvHash(x, z) * 0.45]) } };
+  kenar(LOT.x0 + ic, LOT.z1 - ic, LOT.x1 - ic, LOT.z1 - ic); kenar(LOT.x1 - ic, LOT.z0 + ic, LOT.x1 - ic, LOT.z1 - ic); kenar(LOT.x0 + ic, LOT.z0 + ic, LOT.x1 - ic, LOT.z0 + ic); kenar(LOT.x0 + ic, LOT.z0 + ic, LOT.x0 + ic, LOT.z1 - ic);
+  if (cal.length) { const geo = new THREE.IcosahedronGeometry(0.42, 1); const m = new THREE.InstancedMesh(geo, toon(0xffffff), cal.length); const c = new THREE.Color();
+    cal.forEach(([x, z, s], i) => { dm.position.set(x, -0.2 + 0.3 * s, z); dm.scale.set(s * 1.15, s * 0.8, s * 1.15); dm.rotation.set(0, cvHash(z, x) * 6, 0); dm.updateMatrix(); m.setMatrixAt(i, dm.matrix);
+      c.setHex(kis ? 0x6f9a5c : [0x7fae4a, 0x6ea045, 0x8ab855][i % 3]); m.setColorAt(i, c) });
+    m.receiveShadow = true; G.add(m);
+    if (kis) { const cap = new THREE.InstancedMesh(new THREE.SphereGeometry(0.4, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.42), toon(0xf6fafd), cal.length);
+      cal.forEach(([x, z, s], i) => { dm.position.set(x, -0.2 + 0.3 * s + 0.12 * s, z); dm.scale.set(s * 1.12, s * 0.75, s * 1.12); dm.rotation.set(0, 0, 0); dm.updateMatrix(); cap.setMatrixAt(i, dm.matrix) }); G.add(cap) } }
+  // 2) çimde çiçek öbekleri (kışın küçük karlı çamlar); yoğunluk aşamayla artar
+  const ob = [], olas = Math.min(0.8, 0.36 + 0.07 * (a - 1)), adim = 2.3;
+  for (let x = LOT.x0 + 1.2; x < LOT.x1 - 1.2; x += adim) for (let z = LOT.z0 + 1.2; z < LOT.z1 - 1.2; z += adim) { const h = cvHash(x, z); if (h > olas) continue;
+    const px = x + (cvHash(z, x) - 0.5) * 1.3, pz = z + (cvHash(x + 3, z) - 0.5) * 1.3; if (cvBos(px, pz, Y, 1.0)) ob.push([px, pz, h]) }
+  if (ob.length) { if (!kis) { const N = ob.length * 5, bl = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075, 8, 6), toon(0xffffff), N), yp = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 8, 6), toon(0x6ea045), ob.length * 3); const c = new THREE.Color(), RENK = [0xf7a8c8, 0xfbe36a, 0xffffff, 0xf2b0e0, 0xffc28a];
+      let bi = 0, yi = 0; for (const [x, z, h] of ob) { const rk = RENK[Math.floor(h * 97) % RENK.length];
+        for (let k = 0; k < 3; k++) { const a2 = k * 2.1 + h * 6; dm.position.set(x + Math.cos(a2) * 0.16, -0.17, z + Math.sin(a2) * 0.16); dm.scale.set(1, 0.7, 1); dm.updateMatrix(); yp.setMatrixAt(yi++, dm.matrix) }
+        for (let k = 0; k < 5; k++) { const a2 = k * 1.26 + h * 4, r = 0.1 + (k % 2) * 0.1; dm.position.set(x + Math.cos(a2) * r, -0.07 + (k % 3) * 0.03, z + Math.sin(a2) * r); dm.scale.set(1, 1, 1); dm.updateMatrix(); bl.setMatrixAt(bi, dm.matrix); c.setHex(k === 4 ? 0xfbe36a : rk); bl.setColorAt(bi++, c) } }
+      bl.receiveShadow = yp.receiveShadow = true; G.add(yp); G.add(bl) }
+    else { const cam = new THREE.InstancedMesh(new THREE.ConeGeometry(0.32, 0.9, 7), toon(0x4f7f4a), ob.length), kar = new THREE.InstancedMesh(new THREE.ConeGeometry(0.2, 0.32, 7), toon(0xf6fafd), ob.length);
+      ob.forEach(([x, z, h], i) => { const s = 0.95 + h * 0.75; dm.position.set(x, -0.21 + 0.45 * s, z); dm.scale.set(s, s, s); dm.rotation.set(0, h * 6, 0); dm.updateMatrix(); cam.setMatrixAt(i, dm.matrix); dm.position.y = -0.21 + 0.78 * s; dm.updateMatrix(); kar.setMatrixAt(i, dm.matrix) });
+      G.add(cam); G.add(kar) } }
+  // 3) Aşama 3+: ön ve sağ kenarda süs ampulleri
+  if (a >= 3) { const dir = [], h = 2.5, kx = LOT.x1 - 0.35, kz = LOT.z1 - 0.35, x0 = LOT.x0 + 0.6, z0 = LOT.z0 + 0.6;
+    const hat = (A, B) => { const L = Math.hypot(B.x - A.x, B.z - A.z), n = Math.max(1, Math.round(L / 5.2)); const P = []; for (let i = 0; i <= n; i++) P.push({ x: A.x + (B.x - A.x) * i / n, z: A.z + (B.z - A.z) * i / n }); return P };
+    const on = hat({ x: x0, z: kz }, { x: kx, z: kz }), sag = hat({ x: kx, z: z0 }, { x: kx, z: kz }); const D = [...on, ...sag.slice(0, -1)].filter(p => !Y.some(y => (p.x - y.x) ** 2 + (p.z - y.z) ** 2 < y.r * y.r));
+    const dg = new THREE.CylinderGeometry(0.05, 0.065, h, 6), dmz = new THREE.InstancedMesh(dg, toon(0x3d5a36), D.length);
+    D.forEach((p, i) => { dm.position.set(p.x, -0.2 + h / 2, p.z); dm.scale.set(1, 1, 1); dm.rotation.set(0, 0, 0); dm.updateMatrix(); dmz.setMatrixAt(i, dm.matrix) }); G.add(dmz);
+    const amp = [], tel = []; for (const L of [on, sag]) for (let i = 0; i < L.length - 1; i++) { const A = L[i], B = L[i + 1], n = 9;
+      for (let k = 0; k <= n; k++) { const u = k / n, sark = Math.sin(u * Math.PI) * 0.42, P = new THREE.Vector3(A.x + (B.x - A.x) * u, -0.2 + h - 0.08 - sark, A.z + (B.z - A.z) * u); tel.push(P); if (k > 0 && k < n) amp.push(P) } tel.push(null) }
+    const tp = []; for (let i = 0; i < tel.length - 1; i++) if (tel[i] && tel[i + 1]) tp.push(tel[i], tel[i + 1]);
+    const tg = new THREE.BufferGeometry().setFromPoints(tp); G.add(new THREE.LineSegments(tg, new THREE.LineBasicMaterial({ color: 0x3a2a1c })));
+    const am = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false, fog: true }), ai = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075, 8, 6), am, amp.length), c = new THREE.Color(), RK = [0xffd27a, 0xffa8a0, 0xfff1c0, 0xa8d8ff, 0xffc0e8];
+    amp.forEach((P, i) => { dm.position.copy(P); dm.scale.set(1, 1.25, 1); dm.updateMatrix(); ai.setMatrixAt(i, dm.matrix); c.setHex(RK[i % RK.length]); ai.setColorAt(i, c) }); G.add(ai); CV.amp = ai; CV.ampMat = am }
+  G.traverse(o => { if (o.isMesh) { o.castShadow = false; o.frustumCulled = false } }); scene.add(G); CV.g = G }
+function cvTick(dt) { CV.t += dt; if (CV.t > 2 || !CV.g) { CV.t = 0; const i = cvImza(); if (i !== CV.imza) { CV.imza = i; try { cvKur() } catch (e) { console.warn('çevre', e) } } }
+  if (CV.g) { let kafe = true; try { kafe = UI.mode === 'cafe' || UI.mode === 'edit' } catch (e) { } CV.g.visible = kafe }
+  if (CV.ampMat) { const gece = 1 - (typeof GK_GUN === 'number' ? GK_GUN : 1), k = 0.55 + 1.6 * gece; CV.ampMat.color.setRGB(k, k, k) } }
+if (!EVMODE) { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { cvTick(dt) } catch (e) { } return r } }
+
+// ---------------- 4) eşyaların kenarları: zemin / duvar / mobilya daha belirgin ayrılsın ----------------
+// Belge madde 2: "Zemin, duvar ve mobilyaların birbirinden daha belirgin ayrılmasını sağla." Mobilya, tezgâh ve kasa malzemelerinde kameraya
+// yan dönen yüzeyler hafifçe koyulaşır (çizgi film kenarı hissi; ek çizim çağrısı yok, yalnız malzeme gölgelendiricisine bir satır).
+var CVK = { set: new WeakSet(), t: 0 };
+function cvKenarMat(m) { if (!m || CVK.set.has(m) || !m.isMeshToonMaterial || m.transparent || m.onBeforeCompile && m.onBeforeCompile.toString().length > 30) return; CVK.set.add(m);
+  m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', `#include <dithering_fragment>
+    { float gkf = 1.0 - abs(dot(normalize(vViewPosition), normal)); gl_FragColor.rgb *= 1.0 - 0.38 * pow(gkf, 2.2); }`) };
+  m.customProgramCacheKey = () => 'cvKenar'; m.needsUpdate = true }
+function cvKenar() { try { for (const o of scene.children) { const ud = o.userData; if (!ud || (ud.uid == null && o.name !== 'kitchen' && o.name !== 'cash')) continue;
+      o.traverse(m => { if (m.isMesh && !m.isInstancedMesh) { if (Array.isArray(m.material)) m.material.forEach(cvKenarMat); else cvKenarMat(m.material) } }) } } catch (e) { } }
+{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { CVK.t += dt; if (CVK.t > 3) { CVK.t = 0; cvKenar() } } catch (e) { } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
