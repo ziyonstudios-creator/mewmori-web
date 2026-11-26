@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795680995",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795681738",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261126-1110';
+const OLC_DERLEME = '20261126-1121';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28308,6 +28308,57 @@ function cvKenarMat(m) { if (!m || CVK.set.has(m) || !m.isMeshToonMaterial || m.
 function cvKenar() { try { for (const o of scene.children) { const ud = o.userData; if (!ud || (ud.uid == null && o.name !== 'kitchen' && o.name !== 'cash')) continue;
       o.traverse(m => { if (m.isMesh && !m.isInstancedMesh) { if (Array.isArray(m.material)) m.material.forEach(cvKenarMat); else cvKenarMat(m.material) } }) } } catch (e) { } }
 { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { CVK.t += dt; if (CVK.t > 3) { CVK.t = 0; cvKenar() } } catch (e) { } return r } }
+
+// ================= V399 · GÖRSEL KALİTE 3b: MENÜYE EKLEME, ÖZEL KEŞİFLER, PİŞİRME =================
+// Kullanıcının ikinci görsel kalite belgesi (26 Kasım 2026, 10:52), madde 5 ve 6: "Yeni tarifin menüye eklenmesi küçük bir animasyonla
+// gösterilsin · İlk Ballı Süt keşfi oyuncunun ilk önemli başarılarından biri olarak hissettirilsin · Gelişmiş tariflerin keşif animasyonları
+// daha özel olsun · Yemek hazırlanırken küçük pişirme efektleri oluşsun." Sıradan birleştirmeler kısa kalır (p996), hiçbiri dokunmayı engellemez.
+//  1) Menüye ekleme: ürün kartı zıplar, düğmeden yıldızlar saçılır, ürün resmi kavis çizerek ekranın üstündeki menü tabelasına uçar ve
+//     "Menüde" damgası belirir (0,8 sn).
+//  2) Keşif kademeleri (p996 gfTarif üzerine): sıradan tarif — kısa kutlama; gelişmiş tarif (yemek / tatlı, ya da ikiden çok malzemeli /
+//     yüksek fiyatlı) — altın çerçeve, iki halka yıldız, "Özel tarif!"; İLK BALLI SÜT — "İlk büyük keşfin!" başlığı, altın çerçeve, konfeti,
+//     daha uzun (2,8 sn), bir kez.
+//  3) Pişirme: aşçı ya da oyuncu mutfağın yemek tarafında (sağ yarı) çalışırken tavadan küçük turuncu kıvılcımlar ve yağ damlası parıltısı
+//     (0,5 sn arayla 2 parçacık; buhar p999'dan). İçecek tarafında yalnız buhar.
+var KSF = { balli: false, son: null, sonT: 0 };
+try { KSF.balli = !!(S.seen && S.seen.ilkBalli) } catch (e) { }
+// ---------------- 1) menüye ekleme ----------------
+function kmMenuAnim(id) { try { const tg = document.querySelector(`[data-tg="${id}"]`), el = document.querySelector(`[data-mi="${id}"]`) || (tg && tg.parentElement); if (!el) return;
+    const r = el.getBoundingClientRect(); if (!r.width) return; el.animate([{ scale: '1' }, { scale: '1.05' }, { scale: '1' }], { duration: 360, easing: 'cubic-bezier(.3,1.6,.5,1)' });
+    const b = el.querySelector('[data-tg]'), br = b ? b.getBoundingClientRect() : r; gfPatla(br.left + br.width / 2, br.top + br.height / 2, 8, 'yildiz', 46, 13);
+    const img = el.querySelector('img'), ir = img ? img.getBoundingClientRect() : r, tx = innerWidth / 2, ty = 26, sx = ir.left + ir.width / 2, sy = ir.top + ir.height / 2;
+    const src = typeof productThumb === 'function' ? productThumb(id) : ''; if (src) gfPar(`<img src="${src}" alt="">`, sx, sy, 'km-uc', [{ transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+      { transform: `translate(calc(-50% + ${(tx - sx) * 0.45}px),calc(-50% + ${(ty - sy) * 0.15 - 60}px)) scale(1.2)`, opacity: 1, offset: 0.45 }, { transform: `translate(calc(-50% + ${tx - sx}px),calc(-50% + ${ty - sy}px)) scale(.4)`, opacity: 0 }], 760, { boy: Math.max(36, ir.width), ease: 'cubic-bezier(.45,0,.55,1)' });
+    gfPar(kaT('Menüde ✓', 'On menu ✓'), tx, ty + 6, 'km-damga', [{ transform: 'translate(-50%,0) scale(.4) rotate(-8deg)', opacity: 0 }, { transform: 'translate(-50%,0) scale(1.12) rotate(-4deg)', opacity: 1, offset: 0.25 }, { transform: 'translate(-50%,0) scale(1) rotate(-4deg)', opacity: 1, offset: 0.8 }, { transform: 'translate(-50%,-6px) scale(.95) rotate(-4deg)', opacity: 0 }], 1300, { gec: 600 }) } catch (e) { } }
+{ const _sm = setMenu; setMenu = function (id, on) { const once = !!(S.menu && S.menu[id]); const r = _sm.apply(this, arguments); try { if (r && on && !once) requestAnimationFrame(() => requestAnimationFrame(() => kmMenuAnim(id))) } catch (e) { } return r } }
+// ---------------- 2) keşif kademeleri ----------------
+function kmKademe(r) { if (!r) return 1; if (r.id === 'sicak_sut' && !KSF.balli && !(S.seen && S.seen.ilkBalli)) return 3; const n = (r.needs || []).length, ana = r.cat !== 'drink';
+  return (ana && (r.price >= 12 || n >= 2)) || r.price >= 14 || n >= 3 ? 2 : 1 }
+{ const _gt = gfTarif; gfTarif = function (r) { const t = performance.now(); if (r && KSF.son === r.id && t - KSF.sonT < 2500) return; KSF.son = r && r.id; KSF.sonT = t;   // keşif aynı tarif için iki kez çağrılabiliyor
+    const k = kmKademe(r); const s = _gt.apply(this, arguments);
+    // ilk Ballı Süt: eski kartın kapanış zamanlayıcıları kopyaya dokunmasın diye kart kopyasıyla değiştirilir
+    try { let d = GKT.el; if (!d || k < 2) return s; if (k === 3) { const d2 = d.cloneNode(true); d.replaceWith(d2); d = d2; GKT.el = d2 }
+      d.classList.add(k === 3 ? 'km-ilk' : 'km-ozel'); const sm = d.querySelector('.gkTAd small'); if (sm) sm.textContent = k === 3 ? kaT('İlk büyük keşfin!', 'Your first big discovery!') : kaT('Özel tarif!', 'Special recipe!');
+      const bx = innerWidth / 2, by = innerHeight * 0.42; setTimeout(() => gfPatla(bx, by, 10, 'pirilti', Math.min(innerWidth, innerHeight) * 0.22, 14), 420);
+      if (k === 3) { KSF.balli = true; try { S.seen = S.seen || {}; S.seen.ilkBalli = 1; markDirty() } catch (e) { } gfKonfeti(46); try { sfx('goal') } catch (e) { }
+        setTimeout(() => { if (d.isConnected) d.classList.add('bit') }, 2400); setTimeout(() => { if (d.isConnected) d.remove(); if (GKT.el === d) GKT.el = null }, 2850) } } catch (e) { } return s } }
+// ---------------- 3) pişirme kıvılcımları ----------------
+var KSP = { t: 0 };
+function kmPisir(dt) { KSP.t += dt; if (KSP.t < 0.5) return; KSP.t = 0; try { if (!gfKafede() || !GC.kit) return; const B = GC.kit, cx = (B.min.x + B.max.x) / 2;
+    for (const ch of GC.chars) { if (ch.cur !== 'IDLE_WORK' || ch.seat || !ch.o.visible || !B.containsPoint(ch.pos) || ch.pos.x < cx) continue;
+      const y = ch.o.rotation.y, p = gfEkran(new THREE.Vector3(ch.pos.x + Math.sin(y) * 0.45, (typeof KIT !== 'undefined' ? KIT.ch : 0.66) + 0.08, ch.pos.z + Math.cos(y) * 0.45)); if (!p) continue;
+      for (let i = 0; i < 2; i++) { const dx = (Math.random() - 0.5) * 22, dy = -18 - Math.random() * 16; gfPar('', p.x + (Math.random() - 0.5) * 10, p.y, 'km-kiv', [{ transform: 'translate(-50%,-50%) scale(1)', opacity: 1 }, { transform: `translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.3)`, opacity: 0 }], 520 + Math.random() * 200, { boy: 5 }) } } } catch (e) { } }
+{ const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { kmPisir(dt) } catch (e) { } return r } }
+{ const st = document.createElement('style'); st.textContent = `
+#gkFx .km-uc{border-radius:12px;overflow:hidden;filter:drop-shadow(0 3px 2px rgba(60,30,10,.35))}#gkFx .km-uc img{object-fit:contain}
+#gkFx .km-damga{width:auto;height:auto;padding:4px 12px;font:900 14px/1 var(--font-display,sans-serif);color:#3d6b1e;background:#e6f6d0;border:3px solid #3d6b1e;border-radius:10px;white-space:nowrap;box-shadow:0 2px 0 #3d6b1e}
+#gkFx .km-kiv{border-radius:50%;background:radial-gradient(circle,#fff6c0 0,#ffb340 55%,rgba(255,140,40,0) 100%)}
+.gkTarif.km-ozel .gkTRes{border-color:#b87a12;box-shadow:0 4px 0 #8a5a10,0 0 0 6px rgba(255,210,74,.75),0 0 30px rgba(255,200,60,.8)}
+.gkTarif.km-ozel .gkTAd small{color:#b06a00}
+.gkTarif.km-ilk .gkTRes{width:min(36vmin,150px);border-color:#b87a12;box-shadow:0 4px 0 #8a5a10,0 0 0 8px rgba(255,210,74,.8),0 0 44px rgba(255,200,60,.95)}
+.gkTarif.km-ilk .gkTAd{border-color:#b87a12}.gkTarif.km-ilk .gkTAd small{color:#b06a00;font-size:13px}.gkTarif.km-ilk .gkTAd b{font-size:20px}
+.gkTarif.km-ilk .gkTIsik{width:min(80vmin,380px)}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
