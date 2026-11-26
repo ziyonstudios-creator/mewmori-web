@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795681738",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795682736",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261126-1121';
+const OLC_DERLEME = '20261126-1140';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28162,7 +28162,14 @@ const HK_EK = { barista: 'yı', kasiyer: 'i', asci: 'yı', temiz: 'yi', satici: 
 var HK = { el: null, imza: '', durum: null, ayar: { kucuk: false, kapali: '' }, bildi: {} };
 try { const v = JSON.parse(localStorage.getItem(HK_KEY) || 'null'); if (v) HK.ayar = Object.assign(HK.ayar, v) } catch (e) { }
 function hkKaydet() { try { localStorage.setItem(HK_KEY, JSON.stringify(HK.ayar)) } catch (e) { } }
-function hkPortre(R) { try { const k = { barista: 'barista', asci: 'barista', kasiyer: 'cashier' }[R.id]; if (k && S.chars && S.chars[k]) return `<img src="${charThumb(k)}" alt="">` } catch (e) { } return `<span class="hkIc">${ic(R.ic)}</span>` }
+// (V400) portre: 256 px kedi modeli bir kez çizilir, doku ve malzemeleri hemen bırakılır (bellek); resim cihazda saklanır, sonraki açılışta model kurulmaz
+var HKP = {};
+function hkPortreUrl(k) { const cfg = S.chars[k], anah = 'tabbychef-portre-' + k, imza = JSON.stringify([cfg.look, cfg.wear]); if (HKP[k] && HKP[k].i === imza) return HKP[k].u;
+  try { const v = JSON.parse(localStorage.getItem(anah) || 'null'); if (v && v.i === imza) { HKP[k] = v; return v.u } } catch (e) { }
+  const m = buildCat(cfg, 256); let u = ''; try { const mx = new THREE.AnimationMixer(m); mx.clipAction(CLIPS.Idle_12).play(); mx.update(0.6); poseFix(poseRig(m), 0); u = renderThumb(m, { dir: [0.35, 0.15, 1], pad: 0.95 }) } finally {
+    m.traverse(o => { if (!o.isMesh) return; for (const mt of [].concat(o.material)) { if (!mt) continue; for (const key in mt) { const v = mt[key]; if (v && v.isTexture) v.dispose() } mt.dispose() } }) }
+  HKP[k] = { i: imza, u }; try { localStorage.setItem(anah, JSON.stringify(HKP[k])) } catch (e) { } return u }
+function hkPortre(R) { try { const k = { barista: 'barista', asci: 'barista', kasiyer: 'cashier' }[R.id]; if (k && S.chars && S.chars[k]) return `<img src="${hkPortreUrl(k)}" alt="">` } catch (e) { } return `<span class="hkIc">${ic(R.ic)}</span>` }
 function hkDurum() { try { if (!kaAcik() || !S || !S.created || S.tut !== 'done') return null } catch (e) { return null }
   const T = kaTablo(), a = kaAsama(), ise = EK_ROL.filter(R => R.a <= a && !ekVar(R.id)).sort((x, y) => x.a - y.a)[0];
   if (ise) return { tur: 'ise', key: 'ise:' + ise.id, R: ise, gerek: ise.c, baslik: kaT(`${ekAd(ise)}’${HK_EK[ise.id] || 'i'} işe al`, `Hire the ${ekAd(ise).toLowerCase()}`), ust: kaT('Sıradaki hedef', 'Next goal'),
@@ -28271,7 +28278,7 @@ function cvKur() { if (CV.g) { scene.remove(CV.g); CV.g.traverse(o => { if (o.ge
   const ob = [], olas = Math.min(0.8, 0.36 + 0.07 * (a - 1)), adim = 2.3;
   for (let x = LOT.x0 + 1.2; x < LOT.x1 - 1.2; x += adim) for (let z = LOT.z0 + 1.2; z < LOT.z1 - 1.2; z += adim) { const h = cvHash(x, z); if (h > olas) continue;
     const px = x + (cvHash(z, x) - 0.5) * 1.3, pz = z + (cvHash(x + 3, z) - 0.5) * 1.3; if (cvBos(px, pz, Y, 1.0)) ob.push([px, pz, h]) }
-  if (ob.length) { if (!kis) { const N = ob.length * 5, bl = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075, 8, 6), toon(0xffffff), N), yp = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 8, 6), toon(0x6ea045), ob.length * 3); const c = new THREE.Color(), RENK = [0xf7a8c8, 0xfbe36a, 0xffffff, 0xf2b0e0, 0xffc28a];
+  if (ob.length) { if (!kis) { const N = ob.length * 5, bl = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075, 6, 4), toon(0xffffff), N), yp = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 6, 4), toon(0x6ea045), ob.length * 3); const c = new THREE.Color(), RENK = [0xf7a8c8, 0xfbe36a, 0xffffff, 0xf2b0e0, 0xffc28a];
       let bi = 0, yi = 0; for (const [x, z, h] of ob) { const rk = RENK[Math.floor(h * 97) % RENK.length];
         for (let k = 0; k < 3; k++) { const a2 = k * 2.1 + h * 6; dm.position.set(x + Math.cos(a2) * 0.16, -0.17, z + Math.sin(a2) * 0.16); dm.scale.set(1, 0.7, 1); dm.updateMatrix(); yp.setMatrixAt(yi++, dm.matrix) }
         for (let k = 0; k < 5; k++) { const a2 = k * 1.26 + h * 4, r = 0.1 + (k % 2) * 0.1; dm.position.set(x + Math.cos(a2) * r, -0.07 + (k % 3) * 0.03, z + Math.sin(a2) * r); dm.scale.set(1, 1, 1); dm.updateMatrix(); bl.setMatrixAt(bi, dm.matrix); c.setHex(k === 4 ? 0xfbe36a : rk); bl.setColorAt(bi++, c) } }
@@ -28359,6 +28366,21 @@ function kmPisir(dt) { KSP.t += dt; if (KSP.t < 0.5) return; KSP.t = 0; try { if
 .gkTarif.km-ilk .gkTAd{border-color:#b87a12}.gkTarif.km-ilk .gkTAd small{color:#b06a00;font-size:13px}.gkTarif.km-ilk .gkTAd b{font-size:20px}
 .gkTarif.km-ilk .gkTIsik{width:min(80vmin,380px)}
 `; document.head.appendChild(st) }
+
+// ================= V400 · PERFORMANS: DÜŞÜK KALİTEDE HAFİF EFEKTLER =================
+// Kullanıcının ikinci görsel kalite belgesi (26 Kasım 2026, 10:52), madde 8: "Parçacık efektlerini optimize et · Kamera dışında kalan gereksiz
+// çevresel animasyonları durdur · Düşük performanslı cihazlar için uygun görsel kalite seçenekleri oluştur veya mevcut seçenekleri iyileştir ·
+// Ekran geçişlerinde takılma oluşmasını engelle."
+//  • "Pil tasarrufu" (eco) kalitesinde: ekrandaki en çok parçacık 90 → 40, konfeti yarıya iner; ateş böcekleri / kelebekler kapalı;
+//    yaprak sallanması durur (gölgelendirici zamanı donar); pencere kapanışında söner kopya yapılmaz (doğrudan kapanır).
+//  • Her kalitede: çok büyük pencerelerin (800+ öğe, ör. Market) kapanış kopyası yapılmaz — kopyalama takılma yaratmasın.
+//  • Arka plandaysa (sekme gizli) parçacık üretilmez.
+function pfEco() { try { return PERF.q === 'eco' } catch (e) { return false } }
+{ const _p = gfPar; gfPar = function () { if (document.hidden) return null; GKF.max = pfEco() ? 40 : 90; return _p.apply(this, arguments) } }
+{ const _k = gfKonfeti; gfKonfeti = function (n) { return _k.call(this, pfEco() ? Math.ceil(n / 2) : n) } }
+{ const _h = gfHayalet; gfHayalet = function (m) { try { if (pfEco() || m.getElementsByTagName('*').length > 800) return } catch (e) { } return _h.apply(this, arguments) } }
+{ const _i = gcIsik; gcIsik = function (dt) { if (pfEco()) { try { if (GC.isl) GC.isl.P.visible = false } catch (e) { } return } return _i.apply(this, arguments) } }
+{ const _et = envTick; envTick = function (dt) { const t0 = GC.ruzgar.value; const r = _et.apply(this, arguments); try { if (pfEco()) GC.ruzgar.value = t0 } catch (e) { } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
