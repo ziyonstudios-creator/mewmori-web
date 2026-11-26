@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795716511",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795723846",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -730,7 +730,10 @@ function placeCornerPlant(){}
 function registerOuter(){}
 function shiftOuter(){}
 // odayı yeniden boyutlandır (her kenar en fazla ROOM_MAX'a kadar büyür, temelden küçülmez)
-function setRoom(x0,x1,z0,z1,temp){if(typeof x0==='object'&&x0){temp=x1;const r=x0;x0=r.x0;x1=r.x1;z0=r.z0;z1=r.z1}const B=SHELL.base,M=ROOM_MAX;
+// (V409) Kompakt başlangıç: yeni hesaplar küçük bir odayla başlar (S.kmp = {x1,z1}: o kaydın taban ölçüsü; p99o). Eski kayıtlarda S.kmp yoktur,
+// taban yine 9,5 × 8 m'dir. Oda tabandan küçülmez; "taban" kayda göre okunur. Ziyarette (p34) ziyaret edilen kafenin tabanı üçüncü parametreyle verilir.
+function roomBase(){try{const k=S&&S.kmp;if(k&&isFinite(k.x1)&&isFinite(k.z1))return {x0:SHELL.base.x0,z0:SHELL.base.z0,x1:Math.max(0.75,Math.min(SHELL.base.x1,+k.x1)),z1:Math.max(0,Math.min(SHELL.base.z1,+k.z1))}}catch(e){}return SHELL.base}
+function setRoom(x0,x1,z0,z1,temp){let B=null;if(typeof x0==='object'&&x0){temp=x1;B=z0&&typeof z0==='object'?z0:null;const r=x0;x0=r.x0;x1=r.x1;z0=r.z0;z1=r.z1}B=B||roomBase();const M=ROOM_MAX;
   RM.x0=Math.max(M.x0,Math.min(B.x0,x0??RM.x0));RM.x1=Math.min(M.x1,Math.max(B.x1,x1??RM.x1));RM.z0=Math.max(M.z0,Math.min(B.z0,z0??RM.z0));RM.z1=Math.min(M.z1,Math.max(B.z1,z1??RM.z1));
   if(!temp)try{S.room={x0:RM.x0,x1:RM.x1,z0:RM.z0,z1:RM.z1}}catch(e){}roomDims();buildShell();ENV.hide={back:null,left:null};
   try{envShell()}catch(e){}navResize();gridRebuild();buildGrid();camFit();try{wallSlotsSync()}catch(e){}}
@@ -6111,7 +6114,8 @@ function expandDetail(d,id){const e=expSide(id);if(!e){d.hidden=true;return}cons
 const n1=n=>`${n}.`;
 function buyExpand(e){if(typeof e==='string')e=expSide(e);const s=expandState(e.id);if(!s.ok){sfx('nope');return false}
   // arka/sol kenar: duvara dayalı tezgâh ve kasa duvarla birlikte kayar (yerleşim geçerliyse)
-  const shift=(P,piv,base)=>{const bs=base.map(b=>boxW(b,P,piv));if(e.key==='z0'&&bs.some(b=>b.minZ<RM.z0+0.2))return {...P,z:P.z-2};if(e.key==='x0'&&bs.some(b=>b.minX<RM.x0+0.2))return {...P,x:P.x-2};return null};
+  const shift=(P,piv,base)=>{const bs=base.map(b=>boxW(b,P,piv));if(e.key==='z0'&&bs.some(b=>b.minZ<RM.z0+0.2))return {...P,z:P.z-2};if(e.key==='x0'&&bs.some(b=>b.minX<RM.x0+0.2))return {...P,x:P.x-2};
+    if(e.key==='z1'&&bs.some(b=>b.maxZ>RM.z1-0.2))return {...P,z:P.z+2};if(e.key==='x1'&&bs.some(b=>b.maxX>RM.x1-0.2))return {...P,x:P.x+2};return null};   // (V409) sağ/ön kenar da (küçük başlangıç kafesi)
   const nk=shift(KP,K_PIV,KOBST_BASE),nc=shift(CP,C_PIV,COBST_BASE);
   addCoins(-s.c,'decor');S.exp={...(S.exp||{}),[e.id]:expLvOf(e.id)+1};S.expand=expandN();expPreview(null);setRoom(expRect(e));
   let moved=false;if(nk||nc){const k=nk||KP,c=nc||CP;if(!layoutCheck(k,c,true)){Object.assign(KP,k);Object.assign(CP,c);S.layout={...(S.layout||{}),k:{...KP},c:{...CP},op:JSON.parse(JSON.stringify(OP))};moved=true}}
@@ -6181,7 +6185,7 @@ async function visitCafe(uid){try{const sb=await sbClient();const {data,error}=a
     closeWorld();visitEnter(data)}catch(e){console.warn(e);toast('Bu kafeye şu an girilemiyor',ic('alert'),2200)}}
 function visitEnter(c){const L=c.layout||{};VISIT.on=true;VISIT.cafe=c;VISIT.liked=false;VISIT.groups=[];
   for(const R of FURN.values())R.group.visible=false;scene.traverse(o=>{if(o.userData&&o.userData.isChar&&o.visible){o.visible=false;(VISIT.hid=VISIT.hid||[]).push(o)}});
-  const rm=L.room||{x1:4.75,z1:4};VISIT.room={x0:RM.x0,x1:RM.x1,z0:RM.z0,z1:RM.z1};setRoom({x0:rm.x0??-4.75,x1:rm.x1,z0:rm.z0??-4,z1:rm.z1},true);applyWall(CAT[L.wall]?L.wall:'w_cream');applyFloor(CAT[L.floor]?L.floor:'f_classic');
+  const rm=L.room||{x1:4.75,z1:4};VISIT.room={x0:RM.x0,x1:RM.x1,z0:RM.z0,z1:RM.z1};setRoom({x0:rm.x0??-4.75,x1:rm.x1,z0:rm.z0??-4,z1:rm.z1},true,kmpZTaban(rm));applyWall(CAT[L.wall]?L.wall:'w_cream');applyFloor(CAT[L.floor]?L.floor:'f_classic');
   const tabs=[];for(const f of (L.f||[]).slice(0,220)){if(!CAT[f.id])continue;const rec={...f,uid:900000+VISIT.groups.length,chair:CAT[f.chair]?f.chair:'c_cushion'};try{const G=buildFurnGroup(rec);placeGroup(G,rec);scene.add(G);VISIT.groups.push(G);if(CAT[f.id].kind==='table')tabs.push(rec)}catch(e){}}
   lampPoolSet((L.f||[]).filter(f=>CAT[f.id]),false);
   setMode('visit');$('game').classList.add('visiting');visitBar()}
@@ -22791,7 +22795,16 @@ function karTik(dt){if(!KIS)return;const now=performance.now();
   // o sorun olmaz"): kameradan bakınca kafenin iç zeminine izdüşen tane (kafenin üstündeki havada olsa bile) oradan alınır; kar kafenin
   // çevresine ve bahçeye yağar, kafenin içindeki oyun alanının üstünde görünmez.
   const kX0=RM.x0-0.45,kX1=RM.x1+0.45,kZ0=RM.z0-0.45,kZ1=RM.z1+0.45;
-  const ustunde=(x,y,z)=>{if(y>=cam.y-0.05)return true;const s=cam.y/(cam.y-y),px=cam.x+(x-cam.x)*s-kat,pz=cam.z+(z-cam.z)*s;return px>kX0&&px<kX1&&pz>kZ0&&pz<kZ1};
+  // V409 (belge "Final Experience Update" madde 6: "Kar taneleri kafenin içini kapatmasın, görüşü engellemesin"): yalnız zemine izdüşen değil,
+  // kameradan bakınca kafenin HACMİNE (zemin + duvar yüksekliği) denk gelen her tane alınır: uzak duvarların ve mutfağın önünden de kar geçmez.
+  // Kameraya çok yakın taneler (ekranda kocaman, bulanık görünenler) de alınır.
+  const bX0=kX0+kat,bX1=kX1+kat,yakin2=Math.max(3.5,0.3*L)**2;
+  const ustunde=(x,y,z)=>{if(y>=cam.y-0.05)return true;const dx=x-cam.x,dy=y-cam.y,dz=z-cam.z;if(dx*dx+dy*dy+dz*dz<yakin2)return true;
+    let t0=0,t1=1e9,a,b2;
+    if(Math.abs(dx)<1e-9){if(cam.x<bX0||cam.x>bX1)return false}else{a=(bX0-cam.x)/dx;b2=(bX1-cam.x)/dx;if(a>b2){const q=a;a=b2;b2=q}if(a>t0)t0=a;if(b2<t1)t1=b2;if(t0>t1)return false}
+    if(Math.abs(dy)<1e-9){if(cam.y<0||cam.y>ust)return false}else{a=(0-cam.y)/dy;b2=(ust-cam.y)/dy;if(a>b2){const q=a;a=b2;b2=q}if(a>t0)t0=a;if(b2<t1)t1=b2;if(t0>t1)return false}
+    if(Math.abs(dz)<1e-9){if(cam.z<kZ0||cam.z>kZ1)return false}else{a=(kZ0-cam.z)/dz;b2=(kZ1-cam.z)/dz;if(a>b2){const q=a;a=b2;b2=q}if(a>t0)t0=a;if(b2<t1)t1=b2;if(t0>t1)return false}
+    return true};
   for(let i=0;i<N;i++){const j=i*3;let x=A[j],y=A[j+1]-V[i*2]*d,z=A[j+2];x+=Math.sin(t*0.9+V[i*2+1])*0.35*d;z+=Math.cos(t*0.7+V[i*2+1])*0.3*d;
     if(y<cy-hy||y>cy+hy+1){y=cy+hy*(0.6+Math.random()*0.4);x=cx+(Math.random()*2-1)*hx;z=cz+(Math.random()*2-1)*hx}
     else if(Math.abs(x-cx)>hx||Math.abs(z-cz)>hx){x=cx+(Math.random()*2-1)*hx;z=cz+(Math.random()*2-1)*hx;y=cy+(Math.random()*2-1)*hy}
@@ -24599,7 +24612,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261126-2102';
+const OLC_DERLEME = '20261126-2303';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28736,6 +28749,79 @@ function kydTick() { const ac = kydAcik(); if (controls.enablePan !== ac) { cont
       const b = m.querySelector('[data-kort]'); b.onclick = ev => { ev.stopPropagation(); try { sfx('tap') } catch (e) { } kydOrtala(); ksMenuKapat() };
       const ust = m.querySelector('[data-km="ust"] small'); if (ust && KSC.mod !== 'yakin') ust.textContent = kaT('İki parmakla kaydır', 'Drag with two fingers') } } catch (e) { } return r } }
 { const st = document.createElement('style'); st.textContent = `#kamMenu .ksOrt{border-top:2px dashed rgba(74,42,20,.25)!important}`; document.head.appendChild(st) }
+
+// ================= V409 · FINAL DENEYİM 1: KÜÇÜK BAŞLANGIÇ KAFESİ (yalnız yeni hesaplar) =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) "Final Experience Update", madde 2: "Mevcut başlangıç kafesi fazla geniş ve boş hissettiriyor…
+// gerçekten küçük, sıcak, samimi ve mütevazı bir mahalle kafesinde başlamasını istiyorum… Mevcut oyuncuların kayıtlı kafe düzenlerini zorla
+// değiştirme. Yeni başlangıç düzenini öncelikle yeni hesaplarda uygula."
+//  • Yeni hesap (hiç kaydı olmayan oyuncu; etkinlik kafesi hariç) 7,5 × 6 m'lik odayla başlar (eski başlangıç 9,5 × 8 m). Sol-arka köşe aynı
+//    yerdedir: tezgâh, kasa, ödeme sırası ve bütün durma noktaları temel konumlarında kalır; oda sağdan 2 m, önden 2 m kısadır. Ölçü, kasanın
+//    ödeme sırası (x ≤ 2,2) ve tezgâh önü (z ≤ −0,6) sığacak en küçük ızgara ölçüsüdür (karo 0,5 m).
+//  • Kapı sol duvarda z = 1,0'a, pencere arka duvarda x = 1,25'e alınır (kısa duvarlara sığsınlar). Başlangıç: 4 kişilik + 2 kişilik masa
+//    (eskisiyle aynı iki masa, 6 kişi), masanın altında kilim, köşede küçük bitki, kapının yanında kedi tablosu (üçü de 1. aşama dekoru).
+//  • Kayıtta S.kmp = {x1, z1} durur: o kaydın taban ölçüsü (p0 roomBase). Eski kayıtlarda yoktur → hiçbir şey değişmez.
+//  • Büyüme: sağ ("Yan salon") ve ön ("Ön salon") kenarlar birer kademe (+2 m) açılabilir; ikisi açılınca oda eski 9,5 × 8 m başlangıç
+//    ölçüsüne gelir, sonra sol ve arka kenarlar eskisi gibi ikişer kademe büyür. Fiyat, aşama ve malzeme tablosu aynıdır (kaçıncı genişletme
+//    olduğuna göre: 1–4. satırlar Aşama 2–5; yeni hesapta 5. ve 6. genişletme tablodaki mevcut 5.–6. satırları kullanır).
+//  • Bahçe o kenardaki salon açılmadan açılmaz (bahçe, iç mekânın büyüyeceği şeridin üstüne kurulmasın).
+//  • Genişletme kipi: yalnız bu aşamada ya da bir sonraki aşamada ulaşılabilecek alanlar gösterilir (ekran kalabalıklaşmasın; belge 3.2).
+const KMP = { x1: 2.75, z1: 2.0, kapi: 1.0, pencere: 1.25 };
+function kmpOn() { try { return !EVMODE && !!(S && S.kmp && isFinite(S.kmp.x1) && isFinite(S.kmp.z1)) } catch (e) { return false } }
+// yeni hesabın başlangıç durumu (kayıt yokken, loadState'ten hemen sonra; applyState odayı ve eşyaları buradan kurar)
+function kmpYeni() { if (EVMODE) return;
+  S.kmp = { x1: KMP.x1, z1: KMP.z1 }; S.room = { x0: -4.75, x1: KMP.x1, z0: -4, z1: KMP.z1 }; S.exp = { l: 0, r: 0, b: 0, f: 0 };
+  S.layout = { k: { x: 0, z: 0, r: 0 }, c: { x: 0, z: 0, r: 0 }, w: KMP.pencere, op: { door: { wall: 'left', t: KMP.kapi }, win: { wall: 'back', t: KMP.pencere } } };
+  S.furniture = [
+    { uid: 1, id: 't_four', x: 1, z: 0.75, rot: 0, chair: 'c_cushion', col: 1 },      // eşyalar 0,5 m'lik karo ortalarına oturur (p31)
+    { uid: 2, id: 't_round', x: -1.5, z: 0.75, rot: 1, chair: 'c_cushion', col: 0 },
+    { uid: 3, id: 'd_rug', x: 1, z: 0.5, rot: 0 },
+    { uid: 4, id: 'd_plant', x: -4.35, z: -0.25, rot: 0 },
+    { uid: 5, id: 'p_kedi_sb', x: 0, z: 0, rot: 0, slot: 4 }];
+  S.uid = 8 }
+{ const _ls = loadState; loadState = function () { const r = _ls.apply(this, arguments); try { if (!r) kmpYeni() } catch (e) { console.warn('kompakt başlangıç', e) } return r } }
+// sağ ve ön kenar: kompakt kayıtta birer kademe (eski kayıtlarda 0: oralar bahçe)
+try { for (const id of ['r', 'f']) Object.defineProperty(EXP_MAXS, id, { get() { return kmpOn() ? 1 : 0 }, enumerable: true, configurable: true }) } catch (e) { console.warn('kompakt: kademe', e) }
+// bahçe: o kenardaki salon açılmadan açılmaz
+{ const _gs = gardenState; gardenState = function (side) { const s = _gs.apply(this, arguments); try { if (kmpOn() && s && !s.done && expLvOf(side) < 1) return { ...s, ok: false, kmpSira: true, why: kaT('Önce bu taraftaki salonu aç', 'Open the hall on this side first') } } catch (e) { } return s } }
+// sıra: önce yan ve ön salon (kafe eski başlangıç ölçüsüne gelir), sonra sol ve arka kenarlar
+function kmpSirada(id) { try { return kmpOn() && (id === 'l' || id === 'b') && (expLvOf('r') < 1 || expLvOf('f') < 1) } catch (e) { return false } }
+{ const _es = expandState; expandState = function (id) { const s = _es.apply(this, arguments); try { if (s && !s.done && kmpSirada(id)) return { ...s, ok: false, kmpSira: true, why: kaT('Önce yan ve ön salonu aç', 'Open the side and front halls first') } } catch (e) { } return s } }
+// kenar adları: alanın ne işe yaradığını söyler (belge 3.1); sabit oda değildir, oyuncu içini dilediği gibi döşer
+const KMP_AD = { r: ['Yan salon', 'Side hall', 'Kafenin sağ tarafı 2 m açılır: yeni masalar için ferah bir salon.', 'The right side opens by 2 m: a roomy hall for new tables.'],
+  f: ['Ön salon', 'Front hall', 'Kafe öne doğru 2 m büyür: kapıdan girenleri daha geniş bir salon karşılar.', 'The café grows 2 m to the front: a wider hall welcomes your guests.'],
+  l: ['Giriş kanadı', 'Entrance wing', 'Kapının olduğu duvar 2 m dışarı alınır; kapı ve camlar duvarla birlikte gelir, giriş ferahlar.', 'The door wall moves out by 2 m; the door and windows move with it.'],
+  b: ['Mutfak kanadı', 'Kitchen wing', 'Arka duvar 2 m geriye alınır; duvara dayalı tezgâh ve kasa duvarla birlikte kayar, önleri açılır.', 'The back wall moves back by 2 m; the counter and register against it move along.'] };
+try { for (const e of EXP_SIDES) { const A = KMP_AD[e.id]; if (!A) continue; Object.defineProperty(e, 'name', { get() { return kaT(A[0], A[1]) }, enumerable: true, configurable: true }); Object.defineProperty(e, 'desc', { get() { return kaT(A[2], A[3]) }, enumerable: true, configurable: true }) } } catch (e) { console.warn('kompakt: adlar', e) }
+// genişletme kipinde gösterilecek alanlar: sırası gelmemiş kenarlar ve uzak aşamaların alanları gizlenir
+function kmpYakin(s) { try { if (!s || s.done) return false; if (s.kmpSira) return false; const lv = s.lv | 0; if (!lv) return true; return kaNo(lv) <= kaAsama() + 1 } catch (e) { return true } }
+{ const _xs = xmSides; xmSides = function () { const L = _xs.apply(this, arguments); try { const Y = L.filter(o => kmpYakin(o.s)); if (Y.length) return Y;
+      // hiçbiri yakın değilse en yakın aşamadaki tek alan gösterilir (kip boş açılmasın)
+      const K = L.filter(o => !o.s.kmpSira && !o.s.done).sort((a, b) => (a.s.lv | 0) - (b.s.lv | 0)); return K.length ? [K[0]] : [] } catch (e) { return L } } }
+{ const _sa = salonAdd; salonAdd = function () { try { const s = salonState(); if (s && !s.done && !kmpYakin(s)) return } catch (e) { } return _sa.apply(this, arguments) } }
+{ const _ka = k2XmAdd; k2XmAdd = function () { try { const s = k2XmState(); if (s && !s.has && s.lv && !kmpYakin({ lv: s.lv })) return } catch (e) { } return _ka.apply(this, arguments) } }
+// ---- hediye masa (ilk siparişten sonra): küçük odada uygun yerler; hiç yer yoksa hediye kaybolmaz, depoya konur ----
+const KMP_HEDIYE = [[2, 0.25, 0], [0.5, -0.75, 1], [-0.5, 0.25, 0], [0, 1.25, 1]];
+function kmpHediyeDepo() { try { const rec = { uid: ++S.uid, id: 't_round', x: 0, z: 0, rot: 1, chair: S.chairDefault || 'c_cushion', col: 2, stored: true }; S.furniture.push(rec); markDirty();
+    toast(kaT('<b>Hediye: yeni bir masa!</b><br>Depona kondu: Düzenle\'den dilediğin yere koy', '<b>Gift: a new table!</b><br>It is in your storage: place it from Edit'), ic('table'), 4200); return true } catch (e) { console.warn('hediye masa', e); return false } }
+{ const _gt = giftTable; giftTable = function () {
+    let bekle = false; try { bekle = rh2Act() } catch (e) { }
+    if (bekle) return _gt.apply(this, arguments);
+    let dolu = false; try { dolu = placedTables() >= tableCap(S.lvl) } catch (e) { }
+    if (dolu) return _gt.apply(this, arguments);
+    try { if (kmpOn()) { const rec = { uid: ++S.uid, id: 't_round', x: 0, z: 0, rot: 1, chair: S.chairDefault || 'c_cushion', col: 2 };
+        const L = KMP_HEDIYE.slice(); for (let z = RM.z1 - 0.25; z > RM.z0; z -= 0.5) for (let x = RM.x1 - 0.25; x > RM.x0; x -= 0.5) for (const r of [0, 1]) L.push([x, z, r]);
+        for (const [x, z, r] of L) { rec.x = x; rec.z = z; rec.rot = r; if (!validatePlacement(rec, rec.uid)) { S.furniture.push(rec); spawnFurn(rec); refreshWorld(); sfx('place'); markDirty();
+            toast(kaT('<b>Hediye: yeni bir masa!</b><br>Daha çok müşteri ağırlayabilirsin', '<b>Gift: a new table!</b><br>You can seat more guests'), ic('table'), 3200); return true } }
+        S.uid--; return kmpHediyeDepo() } } catch (e) { console.warn('kompakt hediye masa', e) }
+    const r = _gt.apply(this, arguments); if (r === false) return kmpHediyeDepo(); return r } }
+// ---- ziyaret: gezilen kafenin taban ölçüsü odasından anlaşılır (oda tabanından küçük olamaz); kendi kapı/penceren kısa duvara geçici sığdırılır ----
+function kmpZTaban(rm) { try { const B = SHELL.base, x1 = +(rm && rm.x1), z1 = +(rm && rm.z1); return { x0: B.x0, z0: B.z0, x1: Math.min(B.x1, isFinite(x1) ? Math.max(0.75, x1) : B.x1), z1: Math.min(B.z1, isFinite(z1) ? Math.max(0, z1) : B.z1) } } catch (e) { return null } }
+let KMP_ZOP = null;
+{ const _ve = visitEnter; visitEnter = function () { const r = _ve.apply(this, arguments);
+    try { const D = OP_DIM(), eski = JSON.stringify(OP); let deg = false;
+      for (const q in OP) { const o = OP[q], [a, b] = wallSpan(o.wall), w = D[q].w / 2, lo = a + 0.3 + w, hi = b - 0.3 - w; if (hi < lo) continue; const t = Math.max(lo, Math.min(hi, o.t)); if (Math.abs(t - o.t) > 1e-6) { o.t = t; deg = true } }
+      if (deg) { KMP_ZOP = eski; buildShell(); try { envShell(); ENV.hide.back = ENV.hide.left = null; envWalls() } catch (e) { } } } catch (e) { console.warn('kompakt ziyaret', e) } return r } }
+{ const _vl = visitLeave; visitLeave = function () { try { if (VISIT.on && KMP_ZOP) { const E = JSON.parse(KMP_ZOP); KMP_ZOP = null; for (const q in E) if (OP[q]) OP[q].t = E[q].t } } catch (e) { } return _vl.apply(this, arguments) } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
