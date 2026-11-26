@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795679598",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795680135",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261126-1044';
+const OLC_DERLEME = '20261126-1101';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28142,6 +28142,97 @@ function geIlkKazanc(n) { try { const W = innerWidth, H = innerHeight, d = docum
 function suSil() { try { if (S.menu) delete S.menu.su; if (S.unlocked) delete S.unlocked.su } catch (e) { } }
 { const _as = applyState; applyState = function () { const r = _as.apply(this, arguments); suSil(); return r } }
 suSil();
+
+// ================= V397 · HEDEF KARTI: SIRADAKİ BÜYÜK HEDEF (YÜKSELTME ↔ ÇALIŞAN) =================
+// Kullanıcı ikinci görsel kalite belgesi (26 Kasım 2026, 10:52), madde 4 ve 7: "Başlangıç eğitimi tamamlandığında oyuncunun ne yapacağını bilmeden
+// kalmasını engelle … ilk büyük hedef olarak kafesini ikinci aşamaya yükseltmesini ve ilk çalışanı olan baristayı işe almasını göster … Kafe
+// ikinci aşamaya yükseltildiğinde barista işe alma hedefi gösterilsin. Barista satın alındığında ise bir sonraki kafe aşaması hedef olarak sunulsun.
+// Bu sistem sekiz kafe aşamasının tamamında dinamik olarak çalışsın … Hedef kartı kapatılabilir veya küçültülebilir olsun … Kafe yükseltmesi ile
+// çalışan satın alma işlemlerinin ayrı maliyetleri olduğunu doğru şekilde göster." · madde 7: "Yükseltme için gereken altın miktarına
+// ulaşıldığında küçük bir bildirim göster … Bir sonraki aşamada açılacak çalışanı ve önemli özellikleri önceden göster."
+//  • Sıra: açılmış ama işe alınmamış çalışan varsa (en düşük aşamalı) hedef ONU işe almak; yoksa bir sonraki aşamaya yükseltmek. Son aşamada kart yok.
+//  • Kart (üstte, gün yuvarlağı ile altın göstergesi arasında): görsel (çalışan portresi ya da aşama resmi), başlık, mevcut / gereken altın,
+//    canlı ilerleme çubuğu, açılacaklar satırı; yükseltme hedefinde aşama hedefleri sayacı. Fiyatlar ayrı yazılır: yükseltme kartında
+//    "Barista bu aşamada açılır · işe alma ayrıca 🪙200".
+//  • Dokununca: yükseltme → aşama penceresi (o aşamanın ayrıntısı); çalışan → Ekip ekranı. "–" küçültür (yuvarlak ilerleme halkası kalır),
+//    "×" o hedef için kapatır (sonraki hedefte yeniden görünür). Seçimler cihazda (localStorage), kayda girmez.
+//  • Altın yetince bir kez kısa bildirim ve kart parlar. Yalnız ana kafede, eğitim bittikten sonra, kafe ekranında, açık pencere yokken görünür.
+const HK_KEY = 'tabbychef-hedef';
+const HK_EK = { barista: 'yı', kasiyer: 'i', asci: 'yı', temiz: 'yi', satici: 'yı', garson: 'u', guvenlik: 'i' };   // belirtme hâli eki
+var HK = { el: null, imza: '', durum: null, ayar: { kucuk: false, kapali: '' }, bildi: {} };
+try { const v = JSON.parse(localStorage.getItem(HK_KEY) || 'null'); if (v) HK.ayar = Object.assign(HK.ayar, v) } catch (e) { }
+function hkKaydet() { try { localStorage.setItem(HK_KEY, JSON.stringify(HK.ayar)) } catch (e) { } }
+function hkPortre(R) { try { const k = { barista: 'barista', asci: 'barista', kasiyer: 'cashier' }[R.id]; if (k && S.chars && S.chars[k]) return `<img src="${charThumb(k)}" alt="">` } catch (e) { } return `<span class="hkIc">${ic(R.ic)}</span>` }
+function hkDurum() { try { if (!kaAcik() || !S || !S.created || S.tut !== 'done') return null } catch (e) { return null }
+  const T = kaTablo(), a = kaAsama(), ise = EK_ROL.filter(R => R.a <= a && !ekVar(R.id)).sort((x, y) => x.a - y.a)[0];
+  if (ise) return { tur: 'ise', key: 'ise:' + ise.id, R: ise, gerek: ise.c, baslik: kaT(`${ekAd(ise)}’${HK_EK[ise.id] || 'i'} işe al`, `Hire the ${ekAd(ise).toLowerCase()}`), ust: kaT('Sıradaki hedef', 'Next goal'),
+    alt: kaT('İşe alma bedeli yükseltmeden ayrıdır · ', 'Hiring is paid separately from upgrades · ') + (kaEN() ? ise.is[1] : ise.is[0]) };
+  if (a >= T.max) return null; const nx = a + 1, R2 = EK_ROL.find(R => R.a === nx); let O = null; try { O = ahOzet(a) } catch (e) { }
+  let ac = []; try { ac = kaAcilanlar(nx).map(x => String(x.t || '').replace(/<[^>]*>/g, '')).filter(Boolean) } catch (e) { }
+  if (R2) ac = ac.filter(t => !t.includes(ekAd(R2))); const parca = [];
+  if (R2) parca.push(kaT(`Açılır: ${ekAd(R2)} (işe alma ayrı, ${kaFmt(R2.c)} altın)`, `Unlocks: ${ekAd(R2)} (hiring extra, ${kaFmt(R2.c)} gold)`));
+  parca.push(...ac.slice(0, R2 ? 1 : 2));
+  return { tur: 'yuksel', key: 'yuksel:' + nx, nx, R: R2, gerek: T.altin[nx], baslik: `${nx}. ${kaT('Aşama', 'Stage')} · ${kaAd(nx)}`, ust: kaT('Sıradaki hedef', 'Next goal'), alt: parca.join(' · '), O } }
+function hkGorsel(D) { if (D.tur === 'ise' || D.R) return hkPortre(D.R); try { return `<img class="hkAs" src="${AS_RES(D.nx)}" alt="">` } catch (e) { return `<span class="hkIc">${ic('cafe')}</span>` } }
+function hkGorunur() { try { return UI.mode === 'cafe' && !UI.modal && !document.querySelector('.modal:not([hidden]):not(.gkHayalet)') && started && !PERF.covered && !(typeof TZ !== 'undefined' && TZ.on) && !(typeof ED !== 'undefined' && ED.busy) && !$('cine') && !(typeof CAM !== 'undefined' && CAM.on) } catch (e) { return false } }
+function hkYer() { const k = HK.el; if (!k) return; try { const g = $('ayGun'), c = $('coinPill'); if (!g || !c) return; const bg = g.getBoundingClientRect(), bc = c.getBoundingClientRect(), land = document.documentElement.classList.contains('land');
+    if (land && bc.left - bg.right > 150) { const w = Math.min(290, bc.left - bg.right - 16); k.style.width = (HK.ayar.kucuk ? 'auto' : w + 'px'); k.style.left = (bg.right + (bc.left - bg.right - (HK.ayar.kucuk ? k.offsetWidth : w)) / 2) + 'px'; k.style.top = Math.max(6, bg.top + 2) + 'px' }
+    else { const w = Math.min(320, innerWidth - 24); k.style.width = HK.ayar.kucuk ? 'auto' : w + 'px'; k.style.left = ((innerWidth - (HK.ayar.kucuk ? k.offsetWidth : w)) / 2) + 'px'; k.style.top = (Math.max(bg.bottom, bc.bottom) + 8) + 'px' } } catch (e) { } }
+function hkCiz() { const D = hkDurum(); HK.durum = D; let k = HK.el;
+  const goster = !!D && hkGorunur() && HK.ayar.kapali !== D.key; if (!goster) { if (k) k.hidden = true; return }
+  if (!k) { k = document.createElement('div'); k.id = 'hkKart'; k.setAttribute('role', 'button'); document.body.appendChild(k); HK.el = k;
+    k.addEventListener('click', ev => { const b = ev.target.closest('[data-hk]'); ev.stopPropagation(); try { sfx('tap') } catch (e) { }
+      if (b && b.dataset.hk === 'kuc') { HK.ayar.kucuk = !HK.ayar.kucuk; hkKaydet(); HK.imza = ''; return hkCiz() }
+      if (b && b.dataset.hk === 'kap') { if (HK.durum) HK.ayar.kapali = HK.durum.key; hkKaydet(); k.hidden = true; return }
+      if (HK.ayar.kucuk) { HK.ayar.kucuk = false; hkKaydet(); HK.imza = ''; return hkCiz() }
+      const S0 = HK.durum; if (!S0) return; if (S0.tur === 'ise') { try { setMode('team') } catch (e) { } } else { try { kaPencere(S0.nx, true) } catch (e) { } } }) }
+  const para = Math.floor(S.coins), p = Math.max(0, Math.min(1, para / Math.max(1, D.gerek))), hazir = para >= D.gerek;
+  const hd = D.O ? `<span class="hkH${D.O.hazir ? ' ok' : ''}">${ic(D.O.hazir ? 'check' : 'star')}${D.O.tam}/${D.O.n}</span>` : '';
+  const imza = [D.key, para, D.O && D.O.tam, HK.ayar.kucuk, kaEN()].join('|');
+  if (imza !== HK.imza) { HK.imza = imza;
+    if (HK.ayar.kucuk) { k.className = 'hk kucuk' + (hazir ? ' hazir' : ''); k.innerHTML = `<div class="hkRes" style="--p:${(p * 100).toFixed(1)}%">${hkGorsel(D)}</div>`; k.setAttribute('aria-label', D.baslik) }
+    else { k.className = 'hk' + (hazir ? ' hazir' : ''); k.setAttribute('aria-label', D.baslik);
+      if (!k.querySelector('.hkGov') || k.dataset.key !== D.key) { k.dataset.key = D.key;
+        k.innerHTML = `<div class="hkRes">${hkGorsel(D)}</div><div class="hkGov"><small>${D.ust}${hd}</small><b>${D.baslik}</b>
+          <div class="hkBar"><i></i><span>${ic('coin')}<em class="hkPara"></em> / ${kaFmt(D.gerek)}</span></div><p>${D.alt}</p></div>
+          <button class="hkB" type="button" data-hk="kuc" aria-label="${kaT('Küçült', 'Minimise')}">–</button><button class="hkB" type="button" data-hk="kap" aria-label="${kaT('Kapat', 'Close')}">×</button>` }
+      const sm = k.querySelector('.hkGov small'); if (sm) sm.innerHTML = D.ust + hd;
+      k.querySelector('.hkBar i').style.width = (p * 100).toFixed(1) + '%'; k.querySelector('.hkPara').textContent = kaFmt(Math.min(para, 9999999)) } }
+  k.hidden = false; hkYer();
+  // altın yetti: bir kez bildirim (yükseltmede hedefler de tamamsa p991 zaten bildiriyor)
+  if (hazir && !HK.bildi[D.key]) { HK.bildi[D.key] = 1; const gec = D.tur === 'ise' || (D.O && !D.O.hazir);
+    if (gec && HK.ilkTur) { try { toast(D.tur === 'ise' ? kaT(`<b>${ekAd(D.R)}</b> için altının hazır! Ekip’ten işe alabilirsin.`, `You have enough gold for the <b>${ekAd(D.R).toLowerCase()}</b>! Hire them in Team.`) : kaT(`Yükseltme altını hazır! Kalan aşama hedeflerini tamamla.`, `Upgrade gold ready! Finish the remaining stage goals.`), ic('coin'), 3200) } catch (e) { } } }
+  HK.ilkTur = true }
+setInterval(() => { try { hkCiz() } catch (e) { } }, 500);
+addEventListener('resize', () => { try { HK.imza = ''; hkCiz() } catch (e) { } });
+{ const st = document.createElement('style'); st.textContent = `
+#hkKart{position:fixed;z-index:12;display:flex;align-items:center;gap:8px;padding:5px 30px 6px 5px;background:#fff8ec;border:3px solid #4a2a14;border-radius:16px;box-shadow:0 3px 0 #4a2a14,0 6px 14px rgba(60,30,10,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;animation:hkIn .3s cubic-bezier(.2,1.3,.4,1);box-sizing:border-box}
+#hkKart[hidden]{display:none}
+@keyframes hkIn{from{opacity:0;translate:0 -8px}}
+#hkKart .hkRes{flex:none;width:46px;height:46px;border-radius:12px;overflow:hidden;background:#ffe9c2;border:2.5px solid #4a2a14;display:grid;place-items:center}
+#hkKart .hkRes img{width:100%;height:100%;object-fit:cover}#hkKart .hkRes img:not(.hkAs){scale:1.9;transform-origin:50% 16%}#hkKart .hkRes img.hkAs{object-position:50% 40%}
+#hkKart .hkIc svg{width:28px;height:28px}
+#hkKart .hkGov{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+#hkKart small{display:flex;align-items:center;gap:6px;font:800 9.5px/1.1 var(--font-display,sans-serif);color:#a0672a;text-transform:uppercase;letter-spacing:.4px}
+#hkKart .hkH{display:inline-flex;align-items:center;gap:2px;padding:0 5px;border-radius:99px;background:#f3e2c4;color:#6b4220;text-transform:none;letter-spacing:0}#hkKart .hkH.ok{background:#d6efb6;color:#3d6b1e}
+#hkKart .hkH svg{width:10px;height:10px}
+#hkKart b{font:900 13px/1.15 var(--font-display,sans-serif);color:#4a2a14;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hkKart .hkBar{position:relative;height:15px;border-radius:99px;background:#f0dcc0;border:2px solid #4a2a14;overflow:hidden}
+#hkKart .hkBar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#ffd866,#f0a92a);border-radius:99px;transition:width .6s cubic-bezier(.3,.8,.4,1)}
+#hkKart .hkBar span{position:relative;display:flex;align-items:center;justify-content:center;gap:3px;height:100%;font:900 10px/1 var(--font-display,sans-serif);color:#4a2a14}
+#hkKart .hkBar span svg{width:11px;height:11px}#hkKart .hkBar em{font-style:normal}
+#hkKart p{margin:0;font:700 9.5px/1.2 var(--font-display,sans-serif);color:#7a5236;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hkKart .hkB{all:unset;position:absolute;right:5px;width:20px;height:18px;display:grid;place-items:center;font:900 15px/1 var(--font-display,sans-serif);color:#7a5236;border-radius:6px;cursor:pointer}
+#hkKart .hkB[data-hk=kuc]{top:4px}#hkKart .hkB[data-hk=kap]{bottom:4px}
+#hkKart .hkB:active{background:#f3e2c4}
+#hkKart.hazir{border-color:#c98a12;box-shadow:0 3px 0 #8a5a10,0 0 0 4px rgba(255,210,74,.55),0 0 18px rgba(255,200,60,.6);animation:hkIn .3s cubic-bezier(.2,1.3,.4,1),hkPar 1.8s ease-in-out infinite}
+#hkKart.hazir .hkBar i{background:linear-gradient(#b8e27a,#6fb43c)}
+@keyframes hkPar{50%{box-shadow:0 3px 0 #8a5a10,0 0 0 6px rgba(255,210,74,.35),0 0 26px rgba(255,200,60,.85)}}
+#hkKart.kucuk{padding:4px;border-radius:50%;gap:0}
+#hkKart.kucuk .hkRes{width:44px;height:44px;border-radius:50%;border:none;background:conic-gradient(#f0a92a var(--p),#f0dcc0 0);padding:4px;box-sizing:border-box}
+#hkKart.kucuk .hkRes img,#hkKart.kucuk .hkRes .hkIc{border-radius:50%;background:#ffe9c2}
+#hkKart.kucuk.hazir .hkRes{background:conic-gradient(#6fb43c var(--p),#f0dcc0 0)}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
