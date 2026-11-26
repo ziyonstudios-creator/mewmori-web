@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795640247",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795679598",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24599,7 +24599,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261125-2354';
+const OLC_DERLEME = '20261126-1044';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27946,15 +27946,20 @@ function ksHedef() { const k = (() => { try { return kmK() } catch (e) { return 
 // → yakın bakışta yakınlaştırma, döndürme ve kaydırma kapalı; kamera her karede hedef açıda tutulur. Üstten görünüm serbest. (V394: serbest kamera kaldırıldı.)
 function ksSerbest() { return false }   // (V394) serbest kamera kaldırıldı
 // (V395) kullanıcı (23:54): "yakın bakışta kamerayı sağa sola döndürmeye izin ver" → yatay dönüş açık; eğim, uzaklık ve odak sabit.
-function ksKilit(on) { try { controls.enableZoom = !on; controls.enableRotate = true; if (on) { controls.enablePan = false; controls.minPolarAngle = controls.maxPolarAngle = KSC.yk.pol } else if (controls.minPolarAngle !== 0.45 && KSC.kilitli) controls.minPolarAngle = 0.45; KSC.kilitli = on } catch (e) { } }
-function ksSinir() { try { if (ksSerbest()) { ksKilit(false); return } if (KSC.mod === 'yakin') { if (controls.minDistance > 3) controls.minDistance = 3; ksKilit(true) } else ksKilit(false) } catch (e) { } }
+// (V396) kullanıcı (26 Kasım 10:43): "yakın bakışta çok az kamerayı uzaklaştırmaya izin ver" → yakın bakışta uzaklık varsayılan ile %25 fazlası
+// arasında (6 → 7,5 m); daha fazla yaklaşma yok. Eğim ve odak sabit, yatay dönüş açık.
+const KS_UZAK = 1.25;
+function ksKilit(on) { try { controls.enableZoom = true; controls.enableRotate = true;
+    if (on) { const d = ksHedef().d; controls.enablePan = false; controls.minPolarAngle = controls.maxPolarAngle = KSC.yk.pol; controls.minDistance = d; controls.maxDistance = d * KS_UZAK }
+    else if (KSC.kilitli) { controls.minPolarAngle = 0.45; controls.minDistance = 6; try { camFit() } catch (e) { } } KSC.kilitli = on } catch (e) { } }
+function ksSinir() { try { if (ksSerbest()) { ksKilit(false); return } if (KSC.mod === 'yakin') ksKilit(true); else ksKilit(false) } catch (e) { } }
 function ksSabitle() { if (KSC.mod !== 'yakin' || KSC.an || ksSerbest()) return; try { const H = ksHedef(), T = controls.target; if (Math.abs(T.y - H.ty) > 1e-3) T.y = H.ty;
-    const v0 = camera.position.clone().sub(T), az = Math.atan2(v0.x, v0.z); const p = new THREE.Vector3(T.x + H.d * Math.sin(H.pol) * Math.sin(az), T.y + H.d * Math.cos(H.pol), T.z + H.d * Math.sin(H.pol) * Math.cos(az)); if (camera.position.distanceToSquared(p) > 1e-6) { camera.position.copy(p); controls.update() } } catch (e) { } }
+    const v0 = camera.position.clone().sub(T), az = Math.atan2(v0.x, v0.z), d = Math.max(H.d, Math.min(H.d * KS_UZAK, v0.length())); const p = new THREE.Vector3(T.x + d * Math.sin(H.pol) * Math.sin(az), T.y + d * Math.cos(H.pol), T.z + d * Math.sin(H.pol) * Math.cos(az)); if (camera.position.distanceToSquared(p) > 1e-6) { camera.position.copy(p); controls.update() } } catch (e) { } }
 function ksGit(anlik) { const T = controls.target, v = camera.position.clone().sub(T), r = v.length(), H = ksHedef();
   const b = { d: r, pol: Math.acos(Math.max(-1, Math.min(1, v.y / r))), az: Math.atan2(v.x, v.z), ty: T.y };
   let daz = H.az - b.az; while (daz > Math.PI) daz -= 2 * Math.PI; while (daz < -Math.PI) daz += 2 * Math.PI;
   KSC.an = { b, h: { d: H.d, pol: H.pol, az: b.az + daz, ty: H.ty }, t0: performance.now() - (anlik ? 1e5 : 0), sure: 900 }; if (anlik) ksTick(0) }
-function ksTick(dt) { const A = KSC.an; if (!A) return; try { controls.minPolarAngle = 0.45; controls.maxPolarAngle = Math.max(1.42, A.h.pol + 0.02); KSC.kilitli = true } catch (e) { }
+function ksTick(dt) { const A = KSC.an; if (!A) return; try { controls.minDistance = Math.min(controls.minDistance, A.h.d, A.b.d); controls.maxDistance = Math.max(controls.maxDistance, A.h.d, A.b.d); controls.minPolarAngle = 0.45; controls.maxPolarAngle = Math.max(1.42, A.h.pol + 0.02); KSC.kilitli = true } catch (e) { }
   A.t = Math.min(1, (performance.now() - A.t0) / A.sure); const u = A.t < 1 ? 1 - Math.pow(1 - A.t, 3) : 1, L = (a, b) => a + (b - a) * u;
   const d = L(A.b.d, A.h.d), po = L(A.b.pol, A.h.pol), az = L(A.b.az, A.h.az), T = controls.target; T.y = L(A.b.ty, A.h.ty);
   camera.position.set(T.x + d * Math.sin(po) * Math.sin(az), T.y + d * Math.cos(po), T.z + d * Math.sin(po) * Math.cos(az)); controls.update();
@@ -28128,6 +28133,15 @@ function geIlkKazanc(n) { try { const W = innerWidth, H = innerHeight, d = docum
 #gkFx .geIlk.bit{animation:geOut .45s ease-in both}
 @keyframes geIn{0%{scale:.3;opacity:0}60%{scale:1.1;opacity:1}100%{scale:1}}@keyframes geOut{to{scale:.9;opacity:0}}
 `; document.head.appendChild(st) }
+
+// ================= V396 · SU MENÜDEN KALDIRILDI =================
+// Kullanıcı (26 Kasım 2026, 10:43): "menüden su yu kaldır." Oyunda gizlenen öteki tarifler (tart, kruvasan, sandviç; p95) nasıl gizlendiyse öyle:
+// tarif listesinden ve "Su" ailesinden çıkar, menüde ve açık tariflerde olmaz; eski kayıtlarda menüden silinir (oyuncunun parası, seviyesi,
+// öteki tarifleri aynı). Menüde başka ürün kalmazsa oyunun kendi varsayılan ürünleri devreye girer (p10 availableRecipes).
+{ const r = RECIPE.su; if (r) { r.hidden = true; const i = RECIPES.indexOf(r); if (i >= 0) RECIPES.splice(i, 1) } const f = FAMS.findIndex(x => x.id === 'su'); if (f >= 0) FAMS.splice(f, 1) }
+function suSil() { try { if (S.menu) delete S.menu.su; if (S.unlocked) delete S.unlocked.su } catch (e) { } }
+{ const _as = applyState; applyState = function () { const r = _as.apply(this, arguments); suSil(); return r } }
+suSil();
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
