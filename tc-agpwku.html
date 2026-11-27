@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795808446",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795809173",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-2229';
+const OLC_DERLEME = '20261127-2251';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30566,11 +30566,15 @@ var EGB = { on: true, ilk: true };
       if (EGB.on && ilk && d && typeof d === 'object' && !EVMODE && typeof d.tut === 'string' && d.tut !== 'done' && !/^b_/.test(d.tut)) {
         console.info('eğitim yarıda kalmış (' + d.tut + '): oyun baştan başlıyor'); try { localStorage.removeItem(SAVE_KEY) } catch (e) { } return null } } catch (e) { } return d } }
 // ---- (9) V426 Final Polish madde 2: müşteri balonları ve kafe içi eylem düğmeleri küçük ve sade (karakterleri / kafeyi daha az örter).
-//      Balonlar %80; eylem düğmeleri 44 → 38 px yükseklik, 15 → 13,5 px yazı (dokunma alanı yine ≥ 38 px). İlk müşteri eğitiminde eski boy
+//      Balonlar ~%80 (V427: ölçek değil iç boyutlar küçültüldü; `scale` yerleşim kaymasıyla birleşip balonu masadan uzaklaştırıyordu); eylem düğmeleri 44 → 38 px yükseklik, 15 → 13,5 px yazı (dokunma alanı yine ≥ 38 px). İlk müşteri eğitiminde eski boy
 //      (rehber düğmeleri adıyla gösteriyor). Kapatmak için BKS.on=false.
 var BKS = { on: true };
 setInterval(() => { try { const on = BKS.on && S && S.tut === 'done'; document.documentElement.classList.toggle('bks', !!on) } catch (e) { } }, 500);
-{ const st = document.createElement('style'); st.textContent = `html.bks #ui .bubble{scale:.8;transform-origin:50% 100%}
+{ const st = document.createElement('style'); st.textContent = `html.bks #game #ui .bubble{padding:2px 6px!important;border-width:2.5px!important;font-size:11px!important;border-radius:13px 13px 13px 4px!important}
+html.bks #game #ui .bubble img,html.bks #game #ui .bubble .ic{width:24px!important;height:24px!important}
+html.bks #game #ui .bubble.wait{padding:3px 7px 3px 4px!important;border-radius:999px!important}
+html.bks #game #ui .bubble.wait .wi,html.bks #game #ui .bubble.wait .wi svg{width:27px!important;height:27px!important}
+html.bks #game #ui .bubble.wait small{font-size:11px!important}
 html.bks #game #ui .act{height:38px!important;font-size:13.5px!important;padding:1px 12px 0 7px!important;gap:4px!important;border-width:2.5px!important}
 html.bks #game #ui .act .ic{width:22px!important;height:22px!important}html.bks #game #ui .act img{width:20px!important;height:20px!important}`; document.head.appendChild(st) }
 
