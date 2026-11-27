@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795770855",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795774263",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-1155';
+const OLC_DERLEME = '20261127-1249';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -29934,6 +29934,38 @@ function gpTick() { if (EVMODE) return;
   for (const o of GP.L) { const v = o.tur === 'e' ? giz[o.wall] : !giz[o.wall]; if (o.m.visible !== v) o.m.visible = v }
   if (Math.abs(k - GP.son) > 0.004) { GP.son = k; GP.mat.opacity = GP.guc * k } }
 { const _kt = kdTick; kdTick = function (dt) { const r = _kt.apply(this, arguments); try { gpTick() } catch (e) { if (!GP.hata) { GP.hata = 1; console.warn('gece ışığı', e) } } return r } }
+
+// ================= V417 · YAŞAYAN KAFE FAZ 2: MASADA GÖRÜNEN SİPARİŞLER, YİYEN VE SOHBET EDEN MÜŞTERİLER =================
+// Kullanıcı belgesi (27 Kasım 2026, 11:36) madde 4–5: "Müşterinin sipariş ettiği ürünler masasında görünsün… tüketildiği anlaşılabilsin…
+// boş tabak ve bardaklar kalabilsin… Müşteriler yalnızca masada hareketsiz oturan karakterler gibi görünmemeli… yemek yeme hareketleri…
+// birbirleriyle sohbet ediyormuş gibi… Peçetelikler, masa üzerindeki küçük dekorlar."
+// İnceleme: oyunda her tarifin kendi 3B modeli (p7), hazırlanırken tezgâhta belirmesi, masaya konması, yendikçe azalması (p10 consume), kirli
+// tabak (p912) ve mutfak buharı (p999) ZATEN VAR. Eksik olan görünürlüktü: ürünler gerçek ölçüde (fincan 6–8 cm) olduğu için oyunun kamerasında
+// birkaç piksel kalıyor, masada ne olduğu seçilmiyordu. Müşteriler de yerken yalnız hafifçe sallanıyordu.
+//  1) Sipariş ürünleri 1,5 kat çizilir (tezgâhta, tepside, masada; küçük resimler kendi kadrajına sığdığı için değişmez). Kirli tabak 1,4 kat.
+//  2) İçecek içen müşteri kalkınca masada kirli tabak yerine kendi BOŞ bardağı / fincanı kalır; yiyecekte eski kırıntılı tabak.
+//  3) Yerken: müşteri her ~2 sn'de bir başını tabağına eğer (lokma / yudum). Grup hâlinde oturanlar ara ara başını yanındakine çevirir ve
+//     konuşur gibi hafifçe sallar (sırayla; yemek gelene kadar ve lokma aralarında). Yalnız kemik eklemesi (p999 ile aynı yöntem: her karede
+//     animasyon değerine döndüğü için birikmez); müşteri davranışı, süreler, sabır DEĞİŞMEZ.
+//  (Masalara peçetelik denedim, eklemedim: her masanın ortasında zaten küçük bir çiçek var; ikisi üst üste biniyordu.)
+// Kapatmak için YK.on=false (yeni kurulan nesnelerde geçerli).
+var YK = { on: true, urun: 1.5, tabak: 1.4, sonItem: null };
+{ const _mp = makeProduct; makeProduct = function (item) { const g = _mp.apply(this, arguments); try { if (YK.on && YK.urun !== 1 && g && g.children.length) { const ic = new THREE.Group(); ic.name = 'ykIc'; while (g.children.length) ic.add(g.children[0]); ic.scale.setScalar(YK.urun); g.add(ic) } } catch (e) { } return g } }
+// 2) içecekten sonra boş bardak
+{ const _cp = clnPut; clnPut = function (c) { try { YK.sonItem = (c && c.order && c.order.item) || null } catch (e) { YK.sonItem = null } try { return _cp.apply(this, arguments) } finally { YK.sonItem = null } } }
+{ const _dp = dirtyPlate; dirtyPlate = function () { try { const it = YK.on && YK.sonItem; if (it && (it.station === 'coffee' || it.station === 'tea')) { const m = makeProduct(it); if (m.userData.fill) { setBuilt(m, 0.04); m.traverse(o => { if (o.isMesh) o.castShadow = true }); return m } m.traverse(o => { if (o.geometry) o.geometry.dispose() }) } } catch (e) { }
+    const g = _dp.apply(this, arguments); try { if (YK.on) g.scale.setScalar(YK.tabak) } catch (e) { } return g } }
+// 3) yeme ve sohbet
+{ const _gm = gcMusteri; gcMusteri = function (dt) { const r = _gm.apply(this, arguments); if (!YK.on) return r;
+    try { const t = GC.t; for (const c of customers) { const ch = c.char; if (!ch || !ch.o || !ch.o.visible || !ch.seat || ch._gcU !== GC.kare || ch._sev > 0) continue; const hd = ch.head; if (!hd) continue;
+        const ph = (ch.lookPh || 0) * 3, st = c.state; let lokma = 0;
+        if (st === 'EATING') { const p = ((t * 0.5 + ph * 0.37) % 1 + 1) % 1; if (p < 0.38) { lokma = Math.sin(p / 0.38 * Math.PI); hd.rotation.x += 0.42 * lokma; const sp = ch._ykSp || (ch._ykSp = ch.o.getObjectByName('mixamorigSpine2')); if (sp) sp.rotation.x += 0.1 * lokma } }
+        const g = c.group; if (!g || !g.members || g.members.length < 2 || lokma > 0.15) continue; if (st !== 'EATING' && st !== 'WAITING_FOR_FOOD' && st !== 'WAITING_FOR_GROUP' && st !== 'WAITING_TO_ORDER' && st !== 'ORDER_TAKEN') continue;
+        // grup: yavaş bir dalga ile "sohbet" açılıp kapanır; o sırada herkes konuşana (sırayla değişir) bakar, konuşan hafifçe baş sallar
+        const gp = g._ykPh || (g._ykPh = Math.random() * 20), dalga = Math.sin(t * 0.33 + gp); if (dalga < 0.15) continue; const w = Math.min(1, (dalga - 0.15) / 0.25);
+        const M = g.members.filter(m => m && !m.gone && m.char && m.char.seat); if (M.length < 2) continue; const kon = M[Math.floor((t * 0.22 + gp) % M.length)];
+        if (kon === c) { hd.rotation.x += Math.sin(t * 6.5 + ph) * 0.05 * w; const d = M[(M.indexOf(c) + 1) % M.length]; if (d && d !== c) { let a = Math.atan2(d.char.pos.x - ch.pos.x, d.char.pos.z - ch.pos.z) - ch.o.rotation.y; a = Math.atan2(Math.sin(a), Math.cos(a)); hd.rotation.y += Math.max(-0.75, Math.min(0.75, a)) * 0.6 * w } }
+        else { let a = Math.atan2(kon.char.pos.x - ch.pos.x, kon.char.pos.z - ch.pos.z) - ch.o.rotation.y; a = Math.atan2(Math.sin(a), Math.cos(a)); hd.rotation.y += Math.max(-0.75, Math.min(0.75, a)) * 0.7 * w } } } catch (e) { if (!YK.hata) { YK.hata = 1; console.warn('yaşayan kafe', e) } } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
