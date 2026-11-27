@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795806410",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795807697",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-2159';
+const OLC_DERLEME = '20261127-2217';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -27870,7 +27870,7 @@ function gfBirlesme(i, id) { const c = gfHucre(i); if (!c) return; const b = c.g
     try { const y = S.board[dst]; if (a && b && y && y !== a && y !== b && S.board[src] == null) requestAnimationFrame(() => gfBirlesme(dst, y)) } catch (e) { } return r } }
 // paketten çıkan ürün paketten hücresine süzülür
 { const _pt = packTap; packTap = function (k) { const once = S.board.slice(); const r = _pt.apply(this, arguments);
-    try { let t = -1; for (let i = 0; i < S.board.length; i++) if (!once[i] && S.board[i]) { t = i; break } if (t >= 0) { const pk = document.querySelector(`#pkRaf [data-pk="${k}"]`);
+    try { let t = -1; for (let i = 0; i < S.board.length; i++) if (!once[i] && S.board[i]) { t = i; break } const pk0 = document.querySelector(`#pkRaf [data-pk="${k}"]`); if (t >= 0 && pk0 && pk0.offsetParent) { const pk = pk0;   // (V425) raf yokken (paket tahtada) bu yol çalışmaz: ürün 40 px yukarıdan düşüyor + halka efekti çıkıyordu; tahtadaki paketin uçuşu p99zg'de
         requestAnimationFrame(() => { try { const c = gfHucre(t), it = c && c.querySelector('.it'); if (!it) return; it.classList.remove('pop'); const bc = c.getBoundingClientRect(), sc = (bc.width / (c.offsetWidth || bc.width)) || 1;
             let dx = 0, dy = -40; if (pk) { const bp = pk.getBoundingClientRect(); dx = (bp.left + bp.width / 2 - (bc.left + bc.width / 2)) / sc; dy = (bp.top + bp.height / 2 - (bc.top + bc.height / 2)) / sc }
             it.animate([{ translate: `${dx}px ${dy}px`, scale: '.45', opacity: 0.4 }, { translate: '0px -7px', scale: '1.08', opacity: 1, offset: 0.72 }, { translate: '0px 0px', scale: '1', opacity: 1 }], { duration: 380, easing: 'cubic-bezier(.3,.8,.4,1)' });
@@ -30495,12 +30495,12 @@ var PUC = { on: true };
 function pucUc(pi, t) { try { if (!PUC.on || pi == null || t == null || pi === t) return; const pe = board.querySelector(`[data-c="${pi}"]`), te = board.querySelector(`[data-c="${t}"] .it`); if (!pe || !te) return;
     const a = pe.getBoundingClientRect(), b = te.getBoundingClientRect(); if (!(a.width && b.width)) return;
     const g = te.cloneNode(true); g.classList.remove('pop'); g.removeAttribute('data-c'); Object.assign(g.style, { position: 'fixed', left: b.left + 'px', top: b.top + 'px', width: b.width + 'px', height: b.height + 'px', margin: '0', zIndex: 60, pointerEvents: 'none', animation: 'none' });
-    document.body.appendChild(g); te.style.visibility = 'hidden';
-    const dx = a.left + a.width / 2 - (b.left + b.width / 2), dy = a.top + a.height / 2 - (b.top + b.height / 2), yay = -Math.max(18, Math.min(60, Math.hypot(dx, dy) * 0.35));
-    const an = g.animate([{ transform: `translate(${dx}px,${dy}px) scale(.35)`, opacity: .4 }, { transform: `translate(${dx * 0.45}px,${dy * 0.45 + yay}px) scale(.95)`, opacity: 1, offset: .55 }, { transform: 'translate(0,0) scale(1)', opacity: 1 }], { duration: 340, easing: 'cubic-bezier(.3,.6,.4,1)' });
-    const bit = () => { g.remove(); te.style.visibility = ''; try { te.animate([{ transform: 'scale(1.18,.86)' }, { transform: 'scale(.94,1.06)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' }) } catch (e) { } };
-    an.onfinish = bit; an.oncancel = bit; setTimeout(() => { if (g.isConnected) bit() }, 700);
-    const pk = pe.querySelector('.it'); if (pk) pk.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.14,.86)' }, { transform: 'scale(.95,1.06)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'ease-out' }) } catch (e) { console.warn('paket uçuşu', e) } }
+    document.body.appendChild(g); te.classList.remove('pop'); te.style.visibility = 'hidden';
+    const dx = a.left + a.width / 2 - (b.left + b.width / 2), dy = a.top + a.height / 2 - (b.top + b.height / 2);
+    // (V425) düz çizgi: paketin ortasından küçük başlar, karesine kayarak büyür; yay, sıçrama, ek efekt yok
+    const an = g.animate([{ transform: `translate(${dx}px,${dy}px) scale(.5)` }, { transform: 'translate(0,0) scale(1)' }], { duration: 260, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    const bit = () => { g.remove(); te.style.visibility = '' };
+    an.onfinish = bit; an.oncancel = bit; setTimeout(() => { if (g.isConnected) bit() }, 600) } catch (e) { console.warn('paket uçuşu', e) } }
 { const _tb = tapBag; tapBag = function (i) { const once = S.board.slice(); const r = _tb.apply(this, arguments); try { if (PUC.on && UI.mode === 'merge') { let t = -1; for (let k = 0; k < S.board.length; k++) if (!once[k] && S.board[k]) { t = k; break } if (t >= 0) requestAnimationFrame(() => pucUc(i, t)) } } catch (e) { } return r } }
 // ---- (3) kafe içi eylem düğmeleri sabit (kullanıcı 27 Kasım 21:06 / 21:22: "oyun ekranındaki simgeler de basılı tutulup kalmasın, sabit
 //      kalsın: sipariş al, hesap al vesaire") — düğme basınca aşağı inmez; iş dokunulduğu AN (parmak kalkmayı beklemeden) verilir, basılı
@@ -30519,6 +30519,49 @@ document.addEventListener('pointerdown', e => { try { if (!SBT.on || e.button > 
 //      ekranında üstte değil altta ortada çıkar (p101 rhFix altta ortalar). Kafedeki yerleşim değişmedi.
 { const _c = coach; coach = function (o) { try { if (o && o.place === 'head' && UI.mode === 'merge') o = { ...o, place: null } } catch (e) { } return _c.call(this, o) } }
 { const st = document.createElement('style'); st.textContent = `html #coach.rhfix.rhmg .cbub{top:auto!important;bottom:calc(max(10px, var(--sab, 0px)) + 8px)!important}`; document.head.appendChild(st) }   // rehber kendi konumlamasını her karede yeniden yazdığı için: sayfa kuralı
+// ---- (6) V425 menü titremesi (kullanıcı 27 Kasım 22:13: "menüde hala titreme oluyor") — asıl sebep: her dokunuşta menü listesi
+//      (kaydırma kutusu, 18 ürün resmi, satırlar) baştan YENİDEN oluşturuluyordu; telefonda resimler yeniden çözülüp yanıp sönüyor, kaydırma
+//      kutusu yenilendiği için konum bir kare kayıp geri geliyordu. Artık yeni çizim eski DOM'a "yamalanır": yalnız değişen öznitelik / yazı
+//      güncellenir, aynı satır (data-pi) ve resim düğümleri yerinde kalır, kaydırma kutusu aynı öğedir. Dinleyiciler #menuList üstünde
+//      olduğu için (çocuklarda yok) davranış değişmez. Kapatmak için MNM.on=false.
+var MNM = { on: true };
+function mnmKey(n) { if (!n || n.nodeType !== 1) return null; const g = a => n.getAttribute(a); return g('data-pi') ? 'pi:' + g('data-pi') : g('data-bf') ? 'bf:' + g('data-bf') : g('data-mc') ? 'mc:' + g('data-mc') : g('data-mt') ? 'mt:' + g('data-mt') : n.id ? 'id:' + n.id : null }
+function mnmMorph(a, b) { if (a.nodeType !== b.nodeType || a.nodeName !== b.nodeName) { a.replaceWith(b); return b }
+  if (a.nodeType === 3 || a.nodeType === 8) { if (a.data !== b.data) a.data = b.data; return a } if (a.nodeType !== 1) return a; if (a.isEqualNode(b)) return a;
+  for (const at of [...a.attributes]) if (!b.hasAttribute(at.name)) a.removeAttribute(at.name);
+  for (const at of [...b.attributes]) if (a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value);
+  if (a.nodeName === 'INPUT') { a.checked = b.checked; if (a.value !== b.value) a.value = b.value }
+  mnmCocuk(a, b); return a }
+function mnmCocuk(a, b) { const eski = [...a.childNodes], yeni = [...b.childNodes], anah = new Map(); for (const n of eski) { const k = mnmKey(n); if (k && !anah.has(k)) anah.set(k, n) }
+  const kul = new Set(), son = []; let ui = 0;
+  for (const nb of yeni) { const k = mnmKey(nb); let na = k ? anah.get(k) : null; if (na && kul.has(na)) na = null;
+    if (!na && !k) { while (ui < eski.length && (kul.has(eski[ui]) || mnmKey(eski[ui]))) ui++; if (ui < eski.length && eski[ui].nodeName === nb.nodeName) na = eski[ui++] }
+    if (na) { kul.add(na); son.push(mnmMorph(na, nb)) } else son.push(nb) }
+  for (const n of eski) if (!kul.has(n) && n.parentNode === a) n.remove();
+  son.forEach((n, i) => { if (a.childNodes[i] !== n) a.insertBefore(n, a.childNodes[i] || null) }) }
+{ const _rm = renderMenu; renderMenu = function () { const L = $('menuList'); if (!MNM.on || !L || UI.mode !== 'menu' || !L.firstChild) return _rm.apply(this, arguments);
+    const eski = [...L.childNodes], tut = document.createDocumentFragment(); let r;
+    r = _rm.apply(this, arguments);
+    try { const yeni = document.createElement('div'); yeni.append(...L.childNodes); L.append(...eski.filter(n => !n.parentNode || n.parentNode === tut)); if (!L.firstChild) { L.append(...yeni.childNodes); return r }
+      mnmCocuk(L, yeni); try { mnAfit() } catch (e) { } } catch (e) { console.warn('menü yaması', e); } return r } }
+// ---- (7) V425 eğitimde kasaya giden ilk müşteri çalışan kediye takılıyordu (kullanıcı 27 Kasım 22:13). Karakterler birbirinden yana
+//      adımla kaçınıyor (p8); dar tezgâh–masa arasında oyuncunun kedisi dururken müşteri sağa sola adım atıp ilerleyemiyordu. İlk müşteri
+//      eğitimi sürerken (S.tut ≠ 'done') müşteriler çalışanlardan, çalışanlar müşterilerden kaçınmaz (birbirinin içinden geçebilirler;
+//      müşteri–müşteri ve çalışan–çalışan kaçınması aynı). Eğitim bitince eski kurala döner. Kapatmak için EGY.on=false.
+var EGY = { on: true };
+setInterval(() => { try { if (!S || typeof customers === 'undefined') return; const egt = EGY.on && S.created && S.tut && S.tut !== 'done' && !EVMODE;
+    const staff = new Set(WSTAFF.map(w => w.ch)), musteri = () => new Set(customers.map(c => c.char));
+    for (const c of customers) { const ch = c.char; if (!ch) continue; if (egt && !ch._egyO) { ch._egyO = ch.avoidOf || null; ch.avoidOf = () => walkersNear().filter(o => !staff.has(o)) } else if (!egt && ch._egyO !== undefined) { ch.avoidOf = ch._egyO; delete ch._egyO } }
+    for (const w of WSTAFF) { const ch = w.ch; if (egt && !ch._egyO) { ch._egyO = ch.avoidOf || null; ch.avoidOf = () => { const M = musteri(); return walkersNear().filter(o => !M.has(o)) } } else if (!egt && ch._egyO !== undefined) { ch.avoidOf = ch._egyO; delete ch._egyO } } } catch (e) { } }, 250);
+// ---- (8) V425 eğitim yarıda bırakılırsa oyun baştan başlar (kullanıcı 27 Kasım 22:13: "oyuncu oyunu ilk açtığında rehberi yarıda bırakıp
+//      ekranı kapatırsa tekrar açtığında oyun baştan başlasın"). Açılışta okunan kayıtta ilk eğitim bitmemişse (S.tut ≠ 'done'; karakter,
+//      kafe adı, ilk müşteri, birleştirme / menü eğitimi dahil) kayıt silinir ve oyun yeni oyuncu gibi açılır (sinema → karşılama).
+//      Yalnız açılışta bir kez; oyun içinde kayda dokunmaz. Etkinlik kipi (EVMODE) ve etkinlik kurulum adımları (b_…) hariç.
+//      V414'teki "kaldığı yerden sürer" davranışının yerine geçer. Kapatmak için EGB.on=false.
+var EGB = { on: true, ilk: true };
+{ const _rs = readSave; readSave = function () { const d = _rs.apply(this, arguments); try { const ilk = EGB.ilk; EGB.ilk = false;
+      if (EGB.on && ilk && d && typeof d === 'object' && !EVMODE && typeof d.tut === 'string' && d.tut !== 'done' && !/^b_/.test(d.tut)) {
+        console.info('eğitim yarıda kalmış (' + d.tut + '): oyun baştan başlıyor'); try { localStorage.removeItem(SAVE_KEY) } catch (e) { } return null } } catch (e) { } return d } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
