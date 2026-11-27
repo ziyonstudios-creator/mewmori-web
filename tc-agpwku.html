@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795766870",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795770855",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-1105';
+const OLC_DERLEME = '20261127-1155';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -29289,7 +29289,7 @@ if (FK.on) {
 //  3) Eğitimin son adımı: kafeye dönünce üstteki hedef hapı bir kez tanıtılır ("İlk hedefin burada"): belgedeki akışın son maddesi
 //     "İlk büyüme hedefinin gösterilmesi".
 //  4) Son mesajdaki yol tarifi yeni ana ekrana göre: "Daha fazla › Ayarlar › Rehber".
-var EG2 = { hazir: 5, yemek: 3.2, musteri: 1.0, oyuncu: 1.45, egitimde: false };
+var EG2 = { hazir: 5, yemek: 3.2, musteri: 1.3, oyuncu: 1.6, egitimde: false, vurT: -1e9, vurN: 0, el: null };
 const eg2Ilk = () => { try { return !EVMODE && !!S && !!S.created && /^k\d$/.test(S.tut || '') && !((S.stats && S.stats.orders) | 0) } catch (e) { return false } };
 try { GE.hiz = EG2.oyuncu } catch (e) { }
 // 1a) hazırlama: prepare() süreyi çağrı anında o.item.prep'ten okur; yalnız o an için kısaltılmış bir kopya verilir
@@ -29297,7 +29297,7 @@ try { GE.hiz = EG2.oyuncu } catch (e) { }
 // 1b) yeme
 { const _c = consume; consume = function (order, T) { try { if (eg2Ilk() && T > EG2.yemek) T = EG2.yemek } catch (e) { } return _c.call(this, order, T) } }
 // 1a') mutfaktaki hazırlık (istasyonlar arası yürüme dahil ~12 oyun sn) eğitimde V194'ten beri 1,6 kat hızlı akar; ilk siparişte 2 kat
-{ const _ss = simStep; simStep = function (dt) { let f = 1; try { if (S && S.tut === 'k4' && eg2Ilk()) f = 1.25 } catch (e) { } return _ss.call(this, dt * f) } }
+{ const _ss = simStep; simStep = function (dt) { let f = 1; try { if (S && S.tut === 'k4' && eg2Ilk()) f = (performance.now() - EG2.vurT < 520) ? 3.2 : 1.25 } catch (e) { } return _ss.call(this, dt * f) } }
 // 1c) ilk müşteri normal hızda
 { const _sc = spawnCustomer; spawnCustomer = function () { const c = _sc.apply(this, arguments); try { if (c && c.char && eg2Ilk()) c.char.speed = EG2.musteri } catch (e) { } return c } }
 // 2) günlük giriş penceresi eğitimde ve hemen sonrasında kendiliğinden açılmaz
@@ -29332,6 +29332,26 @@ function eg2Hedef() { if (!S.seen || !S.seen.egBit || S.seen.egHedef) return;
 // yalnız "Hesabı al"a izin verildiği için "Temizle"ye dokunmak hiçbir şey yapmıyordu (yeni oyuncu için kafa karıştırıcı). "Temizle" k7 boyunca
 // gizlenir; ödeme alınınca (k8) kendi yönlendirmesiyle çıkar. Yalnız eğitim; normal oyunda değişiklik yok.
 { const _f = fxUI; fxUI = function () { const r = _f.apply(this, arguments); try { if (!EVMODE && S && S.tut === 'k7') for (const [k, e] of els) if (k.startsWith('cln') && e.style.display !== 'none') e.style.display = 'none' } catch (e) { } return r } }
+// ================= V416 · YAŞAYAN KAFE FAZ 1: İLK SİPARİŞTE OYUNCU İZLEMEZ, YAPAR =================
+// Kullanıcı belgesi (27 Kasım 2026, 11:36) madde 6: "başlangıç eğitimi hâlâ fazla bekleme içeriyor… Ürünü hazırlamak için işlem yapar…
+// Oyuncunun kontrolü daha erken ele almasını sağla… hızlandırılan işlemler yalnızca eğitim sürecine özel olmalı."
+// Ölçüm (V415): ilk siparişte oyuncu "Hazırla"dan "Teslim al"a ~15 oyun sn yalnız izliyordu (en uzun bekleme).
+//  • Yalnız eğitimin ilk siparişinde, karakter mutfaktayken başının üstünde "Karıştır!" düğmesi çıkar. Her dokunuş hazırlığı yarım saniye
+//    boyunca 3,2 kat hızlandırır (art arda dokununca kesintisiz). Dokunmayan oyuncu için eski hız (1,25) aynen sürer: takılma olmaz.
+//  • İlk müşteri kasaya 1,3 hızla yürür, oyuncunun karakteri eğitimde 1,6 hızla (önce 1,0 / 1,45). Normal oyunda hiçbir süre değişmez.
+function eg2Hizli() { try { return !!S && S.tut === 'k4' && !!TB.mutfak && eg2Ilk() } catch (e) { return false } }
+function eg2Dugme() { let e = EG2.el; if (!eg2Hizli()) { if (e) { e.remove(); EG2.el = null } return }
+  if (!e) { e = document.createElement('button'); e.type = 'button'; e.className = 'act eg2Hiz'; e.setAttribute('data-dilyok', '1'); e.innerHTML = `<span class="eg2i">${ic('chef')}${fdT('Karıştır!', 'Stir!')}</span>`;
+    e.addEventListener('pointerdown', ev => { ev.stopPropagation(); EG2.vurT = performance.now(); EG2.vurN++; try { sfx('tap') } catch (_) { } const i = e.firstChild; if (i) { i.classList.remove('vur'); void i.offsetWidth; i.classList.add('vur') } });
+    e.addEventListener('click', ev => ev.stopPropagation()); ui.appendChild(e); EG2.el = e }
+  const ch = TB.mutfak.ch; EG2.v = EG2.v || new THREE.Vector3(); EG2.v.set(ch.pos.x + 0.55, 0.95, ch.pos.z + 0.95); place(e, EG2.v);   // tezgâhın önünde (eğitimin yakın kamerasında başın üstü ekran dışında kalıyordu)
+  try { const r = e.getBoundingClientRect(), H = innerHeight; if (r.top < 10 || r.bottom > H - 10) { EG2.v.set(ch.pos.x, 0.6, ch.pos.z + 1.6); place(e, EG2.v) } } catch (_) { } }
+{ const _f = fxUI; fxUI = function () { const r = _f.apply(this, arguments); try { eg2Dugme() } catch (e) { } return r } }
+{ const _rs = rh2Show; rh2Show = function (key, opt) { try { if (key === 'k4' && eg2Hizli() && EG2.el) { CAM.subj = () => WSTAFF[0] && rhPosOf(WSTAFF[0].ch); RH2.allow = [() => EG2.el];
+        return _rs.call(this, 'k4h', { ...opt, text: fdT('Sipariş hazırlanıyor! Hızlandırmak için <b>Karıştır</b>’a art arda dokun.', 'Cooking the order! Tap <b>Stir</b> repeatedly to speed it up.'), target: () => EG2.el }) } } catch (e) { } return _rs.call(this, key, opt) } }
+{ const st = document.createElement('style'); st.textContent = `#ui .eg2Hiz{position:absolute;left:0;top:0;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;background:linear-gradient(#fff3c4,#ffd35c)!important}
+#ui .eg2Hiz .eg2i{display:inline-flex;align-items:center;gap:6px;animation:eg2n 1s ease-in-out infinite}#ui .eg2Hiz .eg2i.vur{animation:eg2v .18s ease-out}
+@keyframes eg2n{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}@keyframes eg2v{0%{transform:scale(.86)}100%{transform:scale(1)}}`; document.head.appendChild(st) }
 // 4) son mesaj: Ayarlar artık "Daha fazla" menüsünde
 { const _rs = rh2Show; rh2Show = function (key, opt) { try { if (key === 'mn2' && opt && typeof opt.text === 'string' && document.documentElement.classList.contains('fd')) opt = { ...opt, text: opt.text.replace('<b>Ayarlar › Rehber</b>', '<b>Daha fazla › Ayarlar › Rehber</b>') } } catch (e) { } return _rs.call(this, key, opt) } }
 
