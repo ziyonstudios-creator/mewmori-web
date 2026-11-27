@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795803667",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795806410",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -16600,12 +16600,12 @@ html.land #game#game #coach.rhmini .cbub:not(.center){width:min(300px,calc(38*va
 // ---- V205: rehber balonu SABİT yerde: kafede sol alt, birleştirmede sağ alt. Satır içi !important ile her karede uygulanır (hiçbir kural ezemez) ----
 (()=>{const st=document.createElement('style');st.textContent=`#coach.rhfix .cbub::after{display:none!important}`;document.head.appendChild(st)})();
 function rhFix(){const box=$('coach');if(!box)return;const bub=box.querySelector('.cbub');if(!bub)return;
-  const on=!box.hidden&&!bub.hidden&&!bub.classList.contains('center')&&!CO.drag;box.classList.toggle('rhfix',on);
+  const on=!box.hidden&&!bub.hidden&&!bub.classList.contains('center')&&(!CO.drag||UI.mode==='merge');box.classList.toggle('rhfix',on);box.classList.toggle('rhmg',on&&UI.mode==='merge');
   const P=['top','bottom','left','right','width','transform','max-width'];
   if(!on){if(bub.dataset.rhfix){for(const k of P)bub.style.removeProperty(k);delete bub.dataset.rhfix}return}
-  const mg=UI.mode==='merge',w=mg?'min(240px,calc(29*var(--vw)))':'min(300px,calc(37*var(--vw)))',S2=(k,v)=>{if(bub.style.getPropertyValue(k)!==v||bub.style.getPropertyPriority(k)!=='important')bub.style.setProperty(k,v,'important')};
-  bub.dataset.rhfix='1';S2('top','auto');S2('bottom','calc(max(10px, var(--sab, 0px)) + 8px)');S2('transform','none');S2('width',w);S2('max-width',w);
-  if(mg){S2('left','auto');S2('right','calc(max(10px, var(--sar, 0px)) + 6px)')}else{S2('right','auto');S2('left','calc(max(12px, var(--sal, 0px)) + 6px)')}}
+  const mg=UI.mode==='merge';if(mg&&CO.place==='head')CO.place=null;const w=mg?'min(430px,calc(54*var(--vw)))':'min(300px,calc(37*var(--vw)))',S2=(k,v)=>{if(bub.style.getPropertyValue(k)!==v||bub.style.getPropertyPriority(k)!=='important')bub.style.setProperty(k,v,'important')};
+  bub.dataset.rhfix='1';S2('top','auto');S2('bottom','calc(max(10px, var(--sab, 0px)) + 8px)');S2('transform',mg?'translateX(-50%)':'none');S2('width',w);S2('max-width',w);
+  if(mg){S2('right','auto');S2('left','50%')}   /* (V424) kullanıcı: birleştirmede rehber kutusu sağda ekranı kapatıyordu → altta ortada, geniş ve alçak */else{S2('right','auto');S2('left','calc(max(12px, var(--sal, 0px)) + 6px)')}}
 (function rhFixLoop(){try{rhFix()}catch(e){}requestAnimationFrame(rhFixLoop)})();
 
 // ================= V206: MENÜ ŞABLON A — tek ekran: solda kategoriler, sağda ailelere göre liste (fiyat −/+ ve menü anahtarı aynı satırda) =================
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-2110';
+const OLC_DERLEME = '20261127-2159';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -29289,7 +29289,7 @@ if (FK.on) {
 //  3) Eğitimin son adımı: kafeye dönünce üstteki hedef hapı bir kez tanıtılır ("İlk hedefin burada"): belgedeki akışın son maddesi
 //     "İlk büyüme hedefinin gösterilmesi".
 //  4) Son mesajdaki yol tarifi yeni ana ekrana göre: "Daha fazla › Ayarlar › Rehber".
-var EG2 = { hazir: 5, yemek: 3.2, musteri: 1.3, oyuncu: 1.6, egitimde: false, vurT: -1e9, vurN: 0, el: null };
+var EG2 = { karistir: false, hazir: 5, yemek: 3.2, musteri: 1.3, oyuncu: 1.6, egitimde: false, vurT: -1e9, vurN: 0, el: null };
 const eg2Ilk = () => { try { return !EVMODE && !!S && !!S.created && /^k\d$/.test(S.tut || '') && !((S.stats && S.stats.orders) | 0) } catch (e) { return false } };
 try { GE.hiz = EG2.oyuncu } catch (e) { }
 // 1a) hazırlama: prepare() süreyi çağrı anında o.item.prep'ten okur; yalnız o an için kısaltılmış bir kopya verilir
@@ -29339,7 +29339,7 @@ function eg2Hedef() { if (!S.seen || !S.seen.egBit || S.seen.egHedef) return;
 //  • Yalnız eğitimin ilk siparişinde, karakter mutfaktayken başının üstünde "Karıştır!" düğmesi çıkar. Her dokunuş hazırlığı yarım saniye
 //    boyunca 3,2 kat hızlandırır (art arda dokununca kesintisiz). Dokunmayan oyuncu için eski hız (1,25) aynen sürer: takılma olmaz.
 //  • İlk müşteri kasaya 1,3 hızla yürür, oyuncunun karakteri eğitimde 1,6 hızla (önce 1,0 / 1,45). Normal oyunda hiçbir süre değişmez.
-function eg2Hizli() { try { return !!S && S.tut === 'k4' && !!TB.mutfak && eg2Ilk() } catch (e) { return false } }
+function eg2Hizli() { try { return EG2.karistir && !!S && S.tut === 'k4' && !!TB.mutfak && eg2Ilk() } catch (e) { return false } }
 function eg2Dugme() { let e = EG2.el; if (!eg2Hizli()) { if (e) { e.remove(); EG2.el = null } return }
   if (!e) { e = document.createElement('button'); e.type = 'button'; e.className = 'act eg2Hiz'; e.setAttribute('data-dilyok', '1'); e.innerHTML = `<span class="eg2i">${ic('chef')}${fdT('Karıştır!', 'Stir!')}</span>`;
     e.addEventListener('pointerdown', ev => { ev.stopPropagation(); EG2.vurT = performance.now(); EG2.vurN++; try { sfx('tap') } catch (_) { } const i = e.firstChild; if (i) { i.classList.remove('vur'); void i.offsetWidth; i.classList.add('vur') } });
@@ -30502,6 +30502,23 @@ function pucUc(pi, t) { try { if (!PUC.on || pi == null || t == null || pi === t
     an.onfinish = bit; an.oncancel = bit; setTimeout(() => { if (g.isConnected) bit() }, 700);
     const pk = pe.querySelector('.it'); if (pk) pk.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.14,.86)' }, { transform: 'scale(.95,1.06)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'ease-out' }) } catch (e) { console.warn('paket uçuşu', e) } }
 { const _tb = tapBag; tapBag = function (i) { const once = S.board.slice(); const r = _tb.apply(this, arguments); try { if (PUC.on && UI.mode === 'merge') { let t = -1; for (let k = 0; k < S.board.length; k++) if (!once[k] && S.board[k]) { t = k; break } if (t >= 0) requestAnimationFrame(() => pucUc(i, t)) } } catch (e) { } return r } }
+// ---- (3) kafe içi eylem düğmeleri sabit (kullanıcı 27 Kasım 21:06 / 21:22: "oyun ekranındaki simgeler de basılı tutulup kalmasın, sabit
+//      kalsın: sipariş al, hesap al vesaire") — düğme basınca aşağı inmez; iş dokunulduğu AN (parmak kalkmayı beklemeden) verilir, basılı
+//      tutmak bir şey değiştirmez. Kapatmak için SBT.on=false.
+var SBT = { on: true };
+document.addEventListener('pointerdown', e => { try { if (!SBT.on || e.button > 0) return; const b = e.target instanceof Element && e.target.closest('#ui button.act'); if (!b || b.dataset.used || b.disabled) return;
+    if (e.defaultPrevented) return; setTimeout(() => { if (b.isConnected && !b.dataset.used) b.click() }, 0) } catch (x) { } }, true);   // yakalama evresi: düğme pointerdown'ı yaymıyor
+{ const st = document.createElement('style'); st.textContent = `html #game #ui .act:active,html #ui .act:active{margin-top:0!important;box-shadow:0 3px 0 #4a2a14!important;transform:none!important}`; document.head.appendChild(st) }
+// ---- (4) menüde ürüne dokununca titreme (kullanıcı 27 Kasım 21:19) — sebep: her −/+ ya da aç/kapa dokunuşunda liste baştan çiziliyor ve
+//      fiyat bilgi kartı (p99h) giriş animasyonunu (yukarıdan kayarak belirme) her seferinde yeniden oynatıyordu; altındaki satırlar da onunla
+//      oynuyordu. Kart artık yalnız İLK açıldığında canlanır, aynı ürünün sonraki dokunuşlarında yerinde durur. Menüdeki aç/kapa ve −/+
+//      düğmeleri basılınca 2 px aşağı inmez.
+{ const _rm = renderMenu; renderMenu = function () { const r = _rm.apply(this, arguments); try { const k = document.querySelector('#menuList .bfKart'); if (k) { if (BF.gos === k.dataset.bf) k.style.animation = 'none'; else BF.gos = k.dataset.bf } else BF.gos = null } catch (e) { } return r } }
+{ const st = document.createElement('style'); st.textContent = `html #game #menuList .tgl:active,html #game #menuList .iconbtn:active,html #game #menuList [data-pd]:active,html #game #menuList [data-tg]:active{transform:none!important;translate:none!important;margin-top:0!important}`; document.head.appendChild(st) }
+// ---- (5) birleştirmede rehber kutusu altta ortada (kullanıcı 27 Kasım 21:19): "başta" (place:'head') yerleşimli adımlar da birleştirme
+//      ekranında üstte değil altta ortada çıkar (p101 rhFix altta ortalar). Kafedeki yerleşim değişmedi.
+{ const _c = coach; coach = function (o) { try { if (o && o.place === 'head' && UI.mode === 'merge') o = { ...o, place: null } } catch (e) { } return _c.call(this, o) } }
+{ const st = document.createElement('style'); st.textContent = `html #coach.rhfix.rhmg .cbub{top:auto!important;bottom:calc(max(10px, var(--sab, 0px)) + 8px)!important}`; document.head.appendChild(st) }   // rehber kendi konumlamasını her karede yeniden yazdığı için: sayfa kuralı
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
