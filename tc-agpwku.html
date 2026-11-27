@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795784742",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795792853",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -23078,8 +23078,8 @@ layConfirm=function(){const why=layoutCheck();if(why){toast(why,ic('close'),2200
 //  • V318: oyuncu oynar — işarete dokun (usta gelir), sonra ilerleme halkasına tekrar tekrar dokun (vuruş). Ustalar kendiliğinden çalışmaz.
 //  • Yıldız: toplam süreye göre 1–3 · ödül fiyatın %3 / %6 / %10'u altın, 3 yıldızda +2 elmas (ilk tahmin). (V319: "Atla" kaldırıldı.)
 //  • Asıl satın alma kurdele kesilince yapılır (altın o anda düşer). Kafe bu sırada çalışmaya devam eder.
-const TD={on:false,gec:0};
-const tdAcik=()=>{try{return !!started&&!!S.created&&S.tut==='done'&&UI.mode==='cafe'&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!(typeof k2Up==='function'&&k2Up())}catch(e){return false}};
+const TD={on:false,gec:0,kapali:true};   // (V421, kullanıcı 27 Kasım 18:07) mini oyun kapalı: koşullar tamamsa alan doğrudan açılır. Geri açmak için kapali:false
+const tdAcik=()=>{try{return !TD.kapali&&!!started&&!!S.created&&S.tut==='done'&&UI.mode==='cafe'&&!(typeof VISIT!=='undefined'&&VISIT.on)&&!(typeof k2Up==='function'&&k2Up())}catch(e){return false}};
 const TD_ASAMA=[{ad:'Temizlik',ic:'i_leaf',soz:'Sarı işarete dokun, usta gelsin. Sonra yeşil halkaya tekrar tekrar dokunarak süpür!'},
   {ad:'İnşaat',ic:'i_bolt',soz:'Zemini döşüyoruz! Ustayı çağır, sonra halkaya dokundukça çekiç vurur.'},
   {ad:'Boya',ic:'i_pencil',soz:'Son dokunuş! Her dokunuşta rulo bir kat daha boyar.'}];
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-1507';
+const OLC_DERLEME = '20261127-1808';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30191,7 +30191,8 @@ function mhPlanBank(w) { const B = mhBanklar().filter(b => !MH.L.some(q => q.ban
   const s1 = mhS(bx, bz), P = mhCevre(), ileri = ((s1 - w.s) % P + P) % P; w.yon = ileri <= P / 2 ? 1 : -1; for (const p of mhYol(w.s, s1, w.yon)) w.plan.push({ t: 'yuru', x: p[0], z: p[1] }); w.s = s1; w.bank = b.join();
   const don = mhNokta(s1); w.plan.push({ t: 'yuru', x: A.x, z: A.z }, { t: 'otur', seat, sn: 16 + Math.random() * 22 }, { t: 'kalk' }, { t: 'yuru', x: don[0], z: don[1] }); return true }
 function mhPlan(w) { w.plan.length = 0; const i = MH.L.indexOf(w);
-  if (i === 0 && MH.merakT <= 0 && !mhGece()) { MH.merakT = 55 + Math.random() * 50; if (mhPlanMerak(w)) return }
+  if (MH.merak && i === 0 && MH.merakT <= 0 && !mhGece()) {   // (V421, kullanıcı 27 Kasım 18:07) kafenin kenarına gelip el sallayan kedi kaldırıldı (MH.merak tanımsız)
+  MH.merakT = 55 + Math.random() * 50; if (mhPlanMerak(w)) return }
   if (i === 1 && MH.bankT <= 0) { MH.bankT = 70 + Math.random() * 60; if (mhPlanBank(w)) return }
   mhPlanGez(w) }
 // ---- adım ----
