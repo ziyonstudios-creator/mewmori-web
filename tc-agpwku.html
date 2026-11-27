@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795776871",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795781147",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-1348';
+const OLC_DERLEME = '20261127-1421';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30132,6 +30132,93 @@ function gnsOniz(id) { const A = gnsAlan(id), ov = $('expOv'); if (!A || !ov || 
 #gnsBar em.eksik{background:#fff0cf;border-color:#b06a12;color:#8a4a0c}#gnsBar em.kilit{background:#eee7da;border-color:#9a8a76;color:#6a5a48}
 #tdHud .tdUst .gnsAtla{pointer-events:auto;position:absolute;right:6px;top:calc(100% + 7px);box-shadow:0 2px 0 #5a2f12;padding:5px 12px;font-size:12.5px}
 `; document.head.appendChild(st) }
+
+// ================= V419 · YAŞAYAN KAFE FAZ 4: YAŞAYAN MAHALLE (kaldırımda gezen, kafeye bakıp el sallayan, bankta oturan kediler) =================
+// Kullanıcı belgesi (27 Kasım 2026, 11:36) madde "yaşayan mahalle" ve 15 (performans).
+// İnceleme — ZATEN VAR (dokunulmadı): çeşitli ağaçlar, palmiyeler, çalı sırası, çiçek öbekleri / karlı çamlar, çit, sokak lambaları ve gece
+// ışık havuzları, banklar, saksılar, uzak binalar, deniz + tekneler + martılar, rüzgârda sallanan bitkiler, kelebek / ateş böceği, sabah–öğle–
+// akşam–gece ışığı ve yumuşak geçişleri, kış teması ve kar yağışı, gece pencere ışıkları. Eksik olan: mahallede müşteri olmayan kimse yoktu.
+// Bu modül müşteri OLMAYAN birkaç süs karakteri ekler (müşterilerle aynı model ve kışlık giysi; yeni model yok):
+//  • kaldırımda (arsanın çevresinde) gezinirler; ara sıra durup kafeye bakar, el sallarlar;
+//  • biri ara sıra arsayı geçip kafenin açık kenarına yaklaşır, içeri bakar, el sallar, geri döner ("içeri bakan kedi");
+//  • biri ara sıra kaldırımdaki banklardan birine oturur.
+// Görünürlük: oyunun varsayılan yakın kamerası kafeyi sıkı kadrajladığı için mahalle en çok uzaklaştırınca, üstten bakışta ve büyük kafede görünür.
+// Kurallar: müşteri listesinde değiller → masa, sipariş, sabır, puan, ekonomi, kayıt ETKİLENMEZ; kafeye girmezler. Yol bulma yok (kaldırım
+// dikdörtgeni üzerinde düz çizgiler). Müşteri yakınsa durup yol verirler. Sayı grafik kalitesine göre: Pil tasarrufu 1, Dengeli 2, Yüksek 3;
+// gece bir eksik. Karakterler bir kez kurulur ve oturum boyunca yeniden kullanılır (kurup silme yok). Ekran dışındakiler üç karede bir
+// güncellenir. Yalnız kafe ekranında, ana kafede, eğitim bittikten sonra çalışır. Sunucuya hiçbir şey gönderilmez.
+// Kapatmak için MH.on=false.
+var MH = { on: true, L: [], t: 0, kur: 9, kare: 0, merakT: 50, bankT: 30, hata: 0, pay: 1.15, yKal: -0.15, bankY: -0.045, bankZ: 0.38, fr: null, m4: null };
+function mhAcik() { try { return MH.on && typeof started !== 'undefined' && started && !EVMODE && S && S.created && S.tut === 'done' && UI.mode === 'cafe' && !(typeof VISIT !== 'undefined' && VISIT.on) && !(typeof k2Up === 'function' && k2Up()) && !$('cine') } catch (e) { return false } }
+function mhGece() { try { return gkLambaK() > 0.55 } catch (e) { return false } }
+function mhKota() { if (MH.kota) return MH.kota; let n = 2; try { n = PERF.q === 'eco' ? 1 : PERF.q === 'high' ? 3 : 2 } catch (e) { } if (mhGece()) n = Math.max(1, n - 1); return n }
+// ---- kaldırım halkası: çevre uzunluğu boyunca s ----
+function mhHalka() { const p = MH.pay; return { x0: LOT.x0 - p, x1: LOT.x1 + p, z0: LOT.z0 - p, z1: LOT.z1 + p } }
+function mhNokta(s) { const H = mhHalka(), W = H.x1 - H.x0, D = H.z1 - H.z0, P = 2 * (W + D); s = ((s % P) + P) % P; if (s < W) return [H.x0 + s, H.z1]; s -= W; if (s < D) return [H.x1, H.z1 - s]; s -= D; if (s < W) return [H.x1 - s, H.z0]; s -= W; return [H.x0, H.z0 + s] }
+function mhCevre() { const H = mhHalka(); return 2 * (H.x1 - H.x0 + H.z1 - H.z0) }
+function mhS(x, z) { const H = mhHalka(), W = H.x1 - H.x0, D = H.z1 - H.z0, d = [Math.abs(z - H.z1), Math.abs(x - H.x1), Math.abs(z - H.z0), Math.abs(x - H.x0)], k = d.indexOf(Math.min(...d)), c = (v, a, b) => Math.max(a, Math.min(b, v));
+  return k === 0 ? c(x, H.x0, H.x1) - H.x0 : k === 1 ? W + (H.z1 - c(z, H.z0, H.z1)) : k === 2 ? W + D + (H.x1 - c(x, H.x0, H.x1)) : 2 * W + D + (c(z, H.z0, H.z1) - H.z0) }
+// s0 → s1 arası (yön: +1 / −1) köşelerden geçen yol noktaları
+function mhYol(s0, s1, yon) { const H = mhHalka(), W = H.x1 - H.x0, D = H.z1 - H.z0, P = 2 * (W + D), K = [0, W, W + D, 2 * W + D], out = []; let uz = yon > 0 ? ((s1 - s0) % P + P) % P : ((s0 - s1) % P + P) % P;
+  const kose = K.map(k => ({ k, d: yon > 0 ? ((k - s0) % P + P) % P : ((s0 - k) % P + P) % P })).filter(o => o.d > 0.05 && o.d < uz - 0.05).sort((a, b) => a.d - b.d);
+  for (const o of kose) out.push(mhNokta(o.k)); out.push(mhNokta(s1)); return out }
+// ---- kur ----
+function mhYeni() { try { custPrepare() } catch (e) { } const kul = new Set(); try { for (const c of customers) kul.add(c.look) } catch (e) { } for (const w of MH.L) kul.add(w.look);
+  const A = LOOKS.filter(l => !kul.has(l)), look = (A.length ? A : LOOKS)[Math.floor(Math.random() * (A.length || LOOKS.length))]; if (!look.tex) look.tex = customerTex(look, LOOKS.indexOf(look));
+  const ch = new Char(cloneLook(look.tex, look), { xs: look.xs, speed: 0.6 + Math.random() * 0.14 }); try { attachAcc(ch.o, (h, n) => look.hat(h, n)) } catch (e) { }
+  ch.o.userData.mahalle = 1; const P = mhCevre(), s = P * (0.52 + Math.random() * 0.4), p = mhNokta(s);   // arka / sol kaldırımda (kesit görünümde duvarların arkası) belirir
+  ch.pos.set(p[0], MH.yKal, p[1]); const w = { ch, look, s, yon: Math.random() < 0.5 ? 1 : -1, plan: [], y: MH.yKal, hiz: ch.speed, bek: 0, is: null, sit: null }; MH.L.push(w); return w }
+// ---- planlar ----
+function mhKafeMerkez() { return [(RM.x0 + RM.x1) / 2, (RM.z0 + RM.z1) / 2] }
+function mhPlanGez(w) { const uz = 7 + Math.random() * 16; if (Math.random() < 0.12) w.yon = -w.yon; const s1 = w.s + w.yon * uz; for (const p of mhYol(w.s, s1, w.yon)) w.plan.push({ t: 'yuru', x: p[0], z: p[1] });
+  w.s = ((s1 % mhCevre()) + mhCevre()) % mhCevre(); const r = Math.random(); if (r < 0.3) { w.plan.push({ t: 'bak' }); w.plan.push({ t: 'bekle', sn: 1.6 + Math.random() * 2, anim: 'IDLE_LOOK' }); if (Math.random() < 0.55) w.plan.push({ t: 'bekle', sn: 1.7, anim: 'Wave_One_Hand' }) }
+  else if (r < 0.4) w.plan.push({ t: 'bekle', sn: 1.5 + Math.random() * 2.5, anim: 'Idle_12' }) }
+// arsadaki çalı / çam / çiçek öbekleri (p99d) : geçilecek çizgi bunlara çarpmasın
+function mhEngel() { const E = []; try { if (CV.g) { const m4 = MH.m4 || (MH.m4 = new THREE.Matrix4()); for (const o of CV.g.children) { if (!o.isInstancedMesh) continue; for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, m4); E.push([m4.elements[12], m4.elements[14]]) } } } } catch (e) { } return E }
+function mhCizgiBos(ax, az, bx, bz, E, r) { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz || 1; for (const [x, z] of E) { let u = ((x - ax) * dx + (z - az) * dz) / L2; u = Math.max(0, Math.min(1, u)); if ((ax + dx * u - x) ** 2 + (az + dz * u - z) ** 2 < r * r) return false } return true }
+function mhDolu() { let x1 = RM.x1 + ((GDN && GDN.r) || 0), z1 = RM.z1 + ((GDN && GDN.f) || 0), cit = false; try { for (const z of fgAlanlar()) { if (z.alan[1] > x1 + 0.1 || z.alan[3] > z1 + 0.1) cit = true; x1 = Math.max(x1, z.alan[1]); z1 = Math.max(z1, z.alan[3]) } } catch (e) { } return { x1, z1, pay: cit ? 0.6 : 1.0 } }
+function mhPlanMerak(w) { const H = mhHalka(), Dl = mhDolu(), E = mhEngel(), Y = (() => { try { return cvYasak() } catch (e) { return [] } })(), [cx, cz] = mhKafeMerkez();
+  for (let k = 0; k < 14; k++) { const sag = Math.random() < 0.5; let px, pz, ex, ez;
+    if (sag) { px = Dl.x1 + Dl.pay; pz = cz + (Math.random() - 0.3) * (RM.z1 - RM.z0) * 0.7; ex = H.x1; ez = pz } else { pz = Dl.z1 + Dl.pay; px = cx + (Math.random() - 0.3) * (RM.x1 - RM.x0) * 0.7; ex = px; ez = H.z1 }
+    if (px > LOT.x1 - 1.2 || pz > LOT.z1 - 1.2) continue; let bos = true; try { bos = cvBos(px, pz, Y, 0.5) } catch (e) { } if (!bos || !mhCizgiBos(ex, ez, px, pz, E, 0.62)) continue;
+    if (k < 9) { try { const q = fgEkran(px, 0.9, pz, camera); if (!q || !q.ok) continue } catch (e) { } }   // önce oyuncunun o an görebildiği bir yer denenir
+    const s1 = mhS(ex, ez), P = mhCevre(), ileri = ((s1 - w.s) % P + P) % P; w.yon = ileri <= P / 2 ? 1 : -1; for (const p of mhYol(w.s, s1, w.yon)) w.plan.push({ t: 'yuru', x: p[0], z: p[1] }); w.s = s1;
+    w.plan.push({ t: 'yuru', x: px, z: pz }, { t: 'bak' }, { t: 'bekle', sn: 2.2 + Math.random() * 1.5, anim: 'IDLE_LOOK' }, { t: 'bekle', sn: 1.7, anim: 'Wave_One_Hand' }, { t: 'bekle', sn: 1.5 + Math.random() * 2, anim: 'Idle_12' }, { t: 'yuru', x: ex, z: ez }); return true }
+  return false }
+function mhBanklar() { const ex = LOT.x1 + 2.15, ez = LOT.z1 + 2.15; return [[3.6, ez - 0.25, 0], [-3.6, ez - 0.25, 0], [ex - 0.25, -3.6, Math.PI / 2], [ex - 0.25, 3.6, Math.PI / 2], [-ex + 0.25, 3.6, -Math.PI / 2], [3.6, -ez + 0.25, Math.PI]] }
+function mhPlanBank(w) { const B = mhBanklar().filter(b => !MH.L.some(q => q.bank === b.join())); if (!B.length) return false; const b = B[Math.floor(Math.random() * Math.min(B.length, 4))], [bx, bz, ry] = b, fx = Math.sin(ry), fz = Math.cos(ry), yan = (Math.random() < 0.5 ? -1 : 1) * 0.36;
+  const O = { x: bx + fx * MH.bankZ + fz * yan, z: bz + fz * MH.bankZ - fx * yan }, A = { x: O.x + fx * 0.12, z: O.z + fz * 0.12 }, seat = { O, A, rootY: MH.yKal + 0.15 + MH.bankY, frame: { yaw: ry }, mahalle: 1 };
+  const s1 = mhS(bx, bz), P = mhCevre(), ileri = ((s1 - w.s) % P + P) % P; w.yon = ileri <= P / 2 ? 1 : -1; for (const p of mhYol(w.s, s1, w.yon)) w.plan.push({ t: 'yuru', x: p[0], z: p[1] }); w.s = s1; w.bank = b.join();
+  const don = mhNokta(s1); w.plan.push({ t: 'yuru', x: A.x, z: A.z }, { t: 'otur', seat, sn: 16 + Math.random() * 22 }, { t: 'kalk' }, { t: 'yuru', x: don[0], z: don[1] }); return true }
+function mhPlan(w) { w.plan.length = 0; const i = MH.L.indexOf(w);
+  if (i === 0 && MH.merakT <= 0 && !mhGece()) { MH.merakT = 55 + Math.random() * 50; if (mhPlanMerak(w)) return }
+  if (i === 1 && MH.bankT <= 0) { MH.bankT = 70 + Math.random() * 60; if (mhPlanBank(w)) return }
+  mhPlanGez(w) }
+// ---- adım ----
+function mhAdim(w, dt) { const ch = w.ch; if (w.is) { if (w.is.t === 'bekle' || w.is.t === 'otur') { w.is.sn -= dt; if (w.is.sn > 0) return; if (w.is.t === 'otur') { w.is = null; return } } else return; w.is = null }
+  if (ch.path.length || ch.trans || ch.turn) return; const a = w.plan.shift(); if (!a) { mhPlan(w); return }
+  if (a.t === 'yuru') { w.is = { t: 'yol' }; ch.walkTo(a.x, a.z, { direct: true }).then(() => { if (w.is && w.is.t === 'yol') w.is = null }) }
+  else if (a.t === 'bak') { const [cx, cz] = mhKafeMerkez(); w.is = { t: 'don' }; ch.faceTo(cx, cz).then(() => { if (w.is && w.is.t === 'don') w.is = null }) }
+  else if (a.t === 'bekle') { w.is = { t: 'bekle', sn: a.sn }; if (a.anim && ch.acts[a.anim]) ch.doFor(a.anim, a.sn) }
+  else if (a.t === 'otur') { const s = a.seat; ch.sitMode = 'calm'; ch.look = 0.3; ch.seat = s; ch.crossTo(CLIPS.SIT_BASE ? 'SIT_BASE' : 'Chair_Sit_Idle_F', SIT_DUR); w.y = 0; ch.trans = { p0: { x: ch.pos.x, z: ch.pos.z }, p1: s.O, y0: ch.pos.y, y1: s.rootY, r0: ch.o.rotation.y, r1: s.frame.yaw, t: 0, done: null }; w.is = { t: 'otur', sn: a.sn } }
+  else if (a.t === 'kalk') { w.is = { t: 'kalk' }; ch.look = 0; ch.standUp().then(() => { w.bank = null; ch.pos.y = MH.yKal; w.y = MH.yKal; if (w.is && w.is.t === 'kalk') w.is = null }) } }
+function mhTick(dt) { if (!mhAcik()) return; MH.kare++; MH.merakT -= dt; MH.bankT -= dt;
+  if (MH.L.length < mhKota()) { MH.kur -= dt; if (MH.kur <= 0) { MH.kur = 5; mhYeni() } }
+  const fr = MH.fr || (MH.fr = new THREE.Frustum()), m4 = MH.m4 || (MH.m4 = new THREE.Matrix4()); fr.setFromProjectionMatrix(m4.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)); const sp = MH.sp || (MH.sp = new THREE.Sphere(new THREE.Vector3(), 2.2));
+  MH.t += dt; const yolVer = MH.t > 0.25; if (yolVer) MH.t = 0; const kota = mhKota();
+  for (let i = 0; i < MH.L.length; i++) { const w = MH.L[i], ch = w.ch; if (!ch.o.parent) continue;
+    // kota düştüyse (gece / kalite) fazlası arka kaldırıma varınca bekler
+    sp.center.set(ch.pos.x, 0.7, ch.pos.z); const gor = fr.intersectsSphere(sp); let d = dt;
+    // kota düştüyse (gece / kalite) fazlası ekran dışına çıkınca dinlenmeye alınır; ekran dışındaki karakter ÇİZİLMEZ (karakter ağları görüş
+    // alanı ayıklamasına girmediği için görünmez yapılır), konumu üç karede bir ilerler
+    if (i >= kota) { if (!w.dinlen && !gor && !ch.seat && !ch.trans) w.dinlen = true } else if (w.dinlen && !gor) w.dinlen = false;
+    if (ch.o.visible !== (gor && !w.dinlen)) ch.o.visible = gor && !w.dinlen; if (w.dinlen) continue; if (!gor) { w.bek += dt; if ((MH.kare + i) % 3) continue; d = w.bek; w.bek = 0 } else w.bek = 0;
+    // müşteriye yol ver
+    if (yolVer && ch.path.length) { let yakin = false; try { for (const c of customers) { const o = c.char; if (!o || o.seat) continue; const dx = o.pos.x - ch.pos.x, dz = o.pos.z - ch.pos.z; if (dx * dx + dz * dz < 0.85) { yakin = true; break } } } catch (e) { } w.dur = yakin ? (w.dur || 0) + 0.25 : 0; ch.speed = yakin && w.dur < 4 ? 0.04 : w.hiz }
+    // zemin: kaldırım kafe zemininden 15 cm aşağıda, arsa aynı hizada
+    if (!ch.seat && !ch.trans) { const ic = ch.pos.x > LOT.x0 && ch.pos.x < LOT.x1 && ch.pos.z > LOT.z0 && ch.pos.z < LOT.z1, hy = ic ? 0 : MH.yKal; ch.pos.y -= w.y; w.y += (hy - w.y) * Math.min(1, d * 5) }
+    mhAdim(w, d); ch.update(Math.min(d, 0.25)); if (!ch.seat && !ch.trans) ch.pos.y += w.y } }
+if (!EVMODE) { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { mhTick(dt) } catch (e) { if (!MH.hata) { MH.hata = 1; console.warn('mahalle', e) } } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
