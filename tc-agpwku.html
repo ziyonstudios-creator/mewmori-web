@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795774263",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795776871",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-1249';
+const OLC_DERLEME = '20261127-1348';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -29966,6 +29966,172 @@ var YK = { on: true, urun: 1.5, tabak: 1.4, sonItem: null };
         const M = g.members.filter(m => m && !m.gone && m.char && m.char.seat); if (M.length < 2) continue; const kon = M[Math.floor((t * 0.22 + gp) % M.length)];
         if (kon === c) { hd.rotation.x += Math.sin(t * 6.5 + ph) * 0.05 * w; const d = M[(M.indexOf(c) + 1) % M.length]; if (d && d !== c) { let a = Math.atan2(d.char.pos.x - ch.pos.x, d.char.pos.z - ch.pos.z) - ch.o.rotation.y; a = Math.atan2(Math.sin(a), Math.cos(a)); hd.rotation.y += Math.max(-0.75, Math.min(0.75, a)) * 0.6 * w } }
         else { let a = Math.atan2(kon.char.pos.x - ch.pos.x, kon.char.pos.z - ch.pos.z) - ch.o.rotation.y; a = Math.atan2(Math.sin(a), Math.cos(a)); hd.rotation.y += Math.max(-0.75, Math.min(0.75, a)) * 0.7 * w } } } catch (e) { if (!YK.hata) { YK.hata = 1; console.warn('yaşayan kafe', e) } } return r } }
+
+// ================= V418 · YAŞAYAN KAFE FAZ 3: GENİŞLETME KİPİ (üstten bakış, üç durum, ilerleme çubukları, önizleme, atlanabilir tadilat) =================
+// Kullanıcı belgesi (27 Kasım 2026, 11:36) madde 7.1–7.6.
+// İnceleme — ZATEN VAR (dokunulmadı): genişletme kipi (p50), alan kartı + malzeme listesi + "Birleştir'e git" (p985, p99u), tadilat sahnesi
+// (p951), "Kafen büyüdü" kartı (p99u), sırası gelmeyen alanların gizlenmesi (p99o), satın almanın tek sefer düşmesi ve yeniden açınca korunması.
+// Bu modül şunları ekler / değiştirir:
+//  7.1 Normal oynanışta yalnız AÇILMAYA HAZIR alanın çipi görünür (kilitli / eksik olanların çipi gizlenir; arsadaki alçak çit ve tabela
+//      sahne süsü olarak kalır). Dekorasyon kipinin çubuğuna "Genişlet" düğmesi. Kip açılınca kamera yumuşakça üstten bakışa geçer
+//      (kafe + alanlar ekrana sığar), kafenin sınırı beyaz çizgiyle belirir; kapanınca eski bakışa döner (p99u).
+//  7.2 Üç durum, renk + simge + kısa yazı: yeşil "Hazır" (＋), turuncu "Eksik: …" (eksik olanın simgesi), soluk "Aşama N" (kilit).
+//      Sol altta küçük açıklama satırı.
+//  7.4 Kartta durum şeridi, altın için ilerleme çubuğu, her malzemenin altında ilerleme çubuğu; eksik malzemeye dokununca Birleştir'e gidip
+//      ilgili malzeme / İnşaat paketi seçilir; "Önizle" düğmesi.
+//  7.5 Önizleme: yalnız seçilen alan parlak yeşil zemin + belirgin sınırla gösterilir, kamera yaklaşır; altta "Geri" / "Genişlet". Hiçbir şey
+//      harcanmaz, kayıt değişmez (yalnız görsel).
+//  7.6 Tadilat sahnesine "Atla ›" (iş bitmiş sayılır, 1 yıldız; kurdele yine kesilir). Kutlama kartının yazısı belgedeki cümle.
+// Kapatmak için GNS.on=false (kip eski görünümüne döner); yalnız atlamayı kapatmak için GNS.atla=false.
+var GNS = { on: true, atla: true, v: null, t0: null, oz: null, og: null, t: 0, sag: null };
+const gnsT = (tr, en) => { try { return kaT(tr, en) } catch (e) { return tr } };
+const gnsF = v => { try { return kaFmt(v) } catch (e) { return String(v) } };
+function gnsDurum(id) { try { let s = null; if (id === 'salon') s = salonState(); else if (/^g[rf]$/.test(id)) s = gardenState(id[1]); else if (id === 'k2') return null; else s = expandState(id);
+    if (!s || s.done) return null; const acik = (S.lvl | 0) >= (s.lv | 0) && !s.kmpSira; let p = null; try { p = insXmProje(id) } catch (e) { }
+    let mn = 0, mk = 0; if (p) { const d = insDl(p); for (const [m, k] of p.req) { mk += k; mn += Math.min(k, d[m] | 0) } }
+    const eksA = Math.max(0, (s.c | 0) - Math.floor(S.coins)), tam = !p || mn >= mk;
+    return { d: !acik ? 'kilit' : (s.ok && tam && !eksA) ? 'hazir' : 'eksik', s, p, eksA, mn, mk, tam, acik } } catch (e) { return null } }
+function gnsAlan(id) { try { const o = xmSides().find(q => q.e.id === id); return o ? { o, a: expArea(o.e) } : null } catch (e) { return null } }
+function gnsYazi(D) { if (!D) return ''; if (D.d === 'hazir') return gnsT('Hazır', 'Ready'); if (D.d === 'kilit') return D.s.kmpSira ? gnsT('Sırada', 'Later') : fdAsama(D.s.lv);
+  return D.eksA && !D.tam ? gnsT('Altın ve malzeme eksik', 'Gold & materials short') : D.eksA ? gnsT(`Eksik: ${gnsF(D.eksA)} altın`, `Short: ${gnsF(D.eksA)} gold`) : gnsT(`Malzeme ${D.mn}/${D.mk}`, `Materials ${D.mn}/${D.mk}`) }
+// ---- üstten bakış ----
+function gnsBakis() { try { let x0 = RM.x0, x1 = RM.x1, z0 = RM.z0, z1 = RM.z1; for (const o of xmSides()) { const a = expArea(o.e); x0 = Math.min(x0, a[0]); x1 = Math.max(x1, a[1]); z0 = Math.min(z0, a[2]); z1 = Math.max(z1, a[3]) }
+    const v0 = camera.position.clone().sub(controls.target), az = Math.atan2(v0.x, v0.z), pol = Math.max(controls.minPolarAngle || 0, 0.5);
+    const R = Math.hypot(x1 - x0, z1 - z0) / 2 + 0.6, f = (camera.fov || 40) * Math.PI / 180; let d = R * 0.92 / Math.tan(f / 2); d = Math.max(controls.minDistance || 0, Math.min(controls.maxDistance || 99, d));
+    GNS.v = new THREE.Vector3(Math.sin(az) * Math.sin(pol), Math.cos(pol), Math.cos(az) * Math.sin(pol)).multiplyScalar(d); GNS.sag = new THREE.Vector3(Math.cos(az), 0, -Math.sin(az));
+    GNS.t0 = new THREE.Vector3((x0 + x1) / 2, (XM.cam ? XM.cam.t.y : controls.target.y), (z0 + z1) / 2); return true } catch (e) { GNS.v = null; return false } }
+function gnsKam(id, yakin, sure) { try { if (!XM.on || !GNS.v) return; let t1 = GNS.t0.clone(), v = GNS.v.clone(); const A = id && gnsAlan(id);
+    if (A) { const cx = (A.a[0] + A.a[1]) / 2, cz = (A.a[2] + A.a[3]) / 2, k = yakin ? 0.42 : 0.35; t1.x += (cx - t1.x) * k; t1.z += (cz - t1.z) * k; if (!yakin) t1.addScaledVector(GNS.sag, gnsPay()); else { v.multiplyScalar(0.86); const h = new THREE.Vector3(GNS.v.x, 0, GNS.v.z).normalize(); t1.addScaledVector(h, 1.2) } }
+    else if (id) t1.addScaledVector(GNS.sag, gnsPay());
+    fgKamGit(t1.clone().add(v), t1, sure || 550) } catch (e) { } }
+function gnsPay() { try { const W = innerWidth, k = Math.min(0.5, 316 * fkOlcek() / W); return Math.max(1.5, Math.min(3.4, k * GNS.v.length() * Math.tan((camera.fov || 40) * Math.PI / 360) * (W / innerHeight) * 0.62)) } catch (e) { return 1.5 } }   // kart sağda ekranın bir kısmını örter: bakış o kadar sola kayar
+fgBak = function (id) { if (!GNS.on || !GNS.v) return; gnsKam(id, false, 550) };
+// ---- kip açılınca ----
+function gnsAc() { const ov = $('expOv'); if (!ov) return; ov.classList.add('gns'); GNS.t = 0; GNS.oz = null;
+  if (!ov.querySelector('.gnsSvg')) { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'gnsSvg'); ov.insertBefore(s, ov.querySelector('.xmHead')) }
+  if (!ov.querySelector('.gnsAck')) { const a = document.createElement('div'); a.className = 'gnsAck'; a.setAttribute('data-dilyok', '1');
+    a.innerHTML = `<span class="h"><i></i>${gnsT('Hazır', 'Ready')}</span><span class="e"><i></i>${gnsT('Kaynak eksik', 'Resources short')}</span><span class="k">${ic('lock')}${gnsT('Aşama gerekli', 'Stage needed')}</span>`; ov.appendChild(a) }
+  if (gnsBakis()) gnsKam(null, false, 620) }
+{ const _o = openExpandMode; openExpandMode = function () { const acikti = XM.on; const r = _o.apply(this, arguments); try { if (GNS.on && XM.on && !acikti) gnsAc() } catch (e) { console.warn('genişletme kipi', e) } return r } }
+{ const _c = closeExpandMode; closeExpandMode = function () { try { gnsOnizSil() } catch (e) { } GNS.oz = null; GNS.v = null; return _c.apply(this, arguments) } }
+// ---- her kare: sınır çizgileri; ~3/sn: durumlar ----
+function gnsTik() { const ov = $('expOv'); if (!ov || !XM.on || !GNS.on) return; const svg = ov.querySelector('.gnsSvg'); if (!svg) return;
+  const r = renderer.domElement.getBoundingClientRect(), L = xmSides(), yol = a => 'M' + [[a[0], a[2]], [a[1], a[2]], [a[1], a[3]], [a[0], a[3]]].map(([x, z]) => { const p = xmProj(x, z, r); return p[0].toFixed(1) + ' ' + p[1].toFixed(1) }).join('L') + 'Z';
+  const simdi = performance.now(), yenile = simdi - GNS.t > 320; if (yenile) { GNS.t = simdi; GNS.D = {}; for (const o of L) GNS.D[o.e.id] = gnsDurum(o.e.id); try { if (ov.querySelector('[data-x="salon"]')) GNS.D.salon = gnsDurum('salon') } catch (e) { } }
+  const D = GNS.D || {}; let h = ''; const ev = yol([RM.x0, RM.x1, RM.z0, RM.z1]);
+  if (!GNS.oz) for (const o of L) { const d = yol(expArea(o.e)), c = (D[o.e.id] || {}).d || 'kilit'; h += `<path class="a" d="${d}"/><path class="${c}" d="${d}"/>` }
+  else { const A = gnsAlan(GNS.oz); if (A) { const d = yol(A.a); h += `<path class="a" d="${d}"/><path class="oz" d="${d}"/>` } }
+  h += `<path class="a" d="${ev}"/><path class="ev" d="${ev}"/>`;
+  if (svg.getAttribute('viewBox') !== `0 0 ${r.width} ${r.height}`) svg.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`); if (GNS.sonH !== h) { GNS.sonH = h; svg.innerHTML = h }
+  if (GNS.og) { const m = GNS.og.userData.zm; if (m) m.material.opacity = 0.58 + 0.12 * Math.sin(simdi / 260) }
+  if (!yenile) return;
+  // düğmeler
+  for (const b of ov.querySelectorAll('.xmBtns [data-x]')) { const id = b.dataset.x, d = D[id]; if (!d) continue; const ad = id === 'salon' ? gnsT('Büyük salon', 'Grand hall') : ((L.find(o => o.e.id === id) || {}).e || {}).name || '';
+    const sim = d.d === 'hazir' ? '' : d.d === 'kilit' ? ic('lock') : (!d.tam ? `<span class="gnsIt">${itemArt('bag_insaat')}</span>` : ic('coin')), imza = [d.d, ad, gnsYazi(d), d.s.c, sim.length].join('|');
+    if (b.dataset.gns === imza && b.querySelector('.gnsAd')) continue; b.dataset.gns = imza; b.classList.add('gnsB'); b.classList.remove('gns-hazir', 'gns-eksik', 'gns-kilit'); b.classList.add('gns-' + d.d); b.classList.toggle('lock', d.d !== 'hazir'); b.setAttribute('data-dilyok', '1');
+    b.innerHTML = `<i class="${d.d === 'hazir' ? 'pl' : ''}">${sim}</i><span><b class="gnsAd">${ad}</b><small>${d.d === 'hazir' ? ic('check') : ''}${gnsYazi(d)}${d.d === 'hazir' ? ` · ${ic('coin')}${gnsF(d.s.c | 0)}` : ''}</small></span>` }
+  // zemin renkleri (p50'nin düzlemleri konumdan eşlenir)
+  try { if (XM.g) { XM.g.visible = !GNS.oz; for (const m of XM.g.children) { if (!m.isMesh || !m.geometry || m.geometry.type !== 'PlaneGeometry') continue; const o = L.find(q => { const a = expArea(q.e); return Math.abs((a[0] + a[1]) / 2 - m.position.x) < 0.05 && Math.abs((a[2] + a[3]) / 2 - m.position.z) < 0.05 }); if (!o) continue;
+        const c = (D[o.e.id] || {}).d; m.material.color.setHex(c === 'hazir' ? 0x6fd36a : c === 'eksik' ? 0xf5b23c : 0xbdb3a2); m.material.opacity = c === 'hazir' ? 0.5 : c === 'eksik' ? 0.45 : 0.3 } } } catch (e) { } }
+{ const _f = xmFrame; xmFrame = function () { const r = _f.apply(this, arguments); try { gnsTik() } catch (e) { if (!GNS.hata) { GNS.hata = 1; console.warn('genişletme kipi', e) } } return r } }
+// ---- kart ----
+function gnsBirlestir(mid) { try { sfx('tap') } catch (e) { } let p = null; try { p = insXmProje(XM.sel) } catch (e) { } closeExpandMode();
+  setTimeout(() => { try { setMode('merge') } catch (e) { } setTimeout(() => { try { if (UI.mode !== 'merge') return; const eks = p ? insEksik(p) : []; const hedef = mid && eks.find(x => x[0] === mid) ? mid : (eks[0] || [])[0]; const it = hedef && ITEMS[hedef]; let i = -1;
+        if (it) { let en = 0; S.board.forEach((v, k) => { const q = v && ITEMS[v]; if (q && q.fam === 'ins' && q.chain === it.chain && q.lv <= it.lv && q.lv > en) { en = q.lv; i = k } }) } if (i < 0) i = S.board.indexOf('bag_insaat');
+        if (i >= 0) { const prev = UI.mgSel; UI.mgSel = i; try { if (prev != null) refreshCell(prev); refreshCell(i); renderInfo() } catch (e) { } }
+        if (it && p) { const d = insDl(p), k = (p.req.find(x => x[0] === hedef) || [])[1] | 0; toast(gnsT(`<b>${insAd(hedef)} lazım: ${Math.min(k, d[hedef] | 0)}/${k}</b><br>İnşaat paketine dokun, çıkanları birleştir, sonra “Teslim et”.`, `<b>${insAd(hedef)} needed: ${Math.min(k, d[hedef] | 0)}/${k}</b><br>Tap the Builder pack, merge what comes out, then “Deliver”.`), `<span class="ic">${itemArt(hedef)}</span>`, 4200) } } catch (e) { console.warn('birleştir kısayolu', e) } }, 420) }, 60) }
+function gnsKart() { const ov = $('expOv'), t = ov && ov.querySelector('.xmTip'); if (!t || t.hidden || !XM.sel || !GNS.on) return; const id = XM.sel, D = gnsDurum(id); if (!D) return; t.querySelectorAll('.gnsEk').forEach(x => x.remove());
+  // durum şeridi
+  const ust = t.querySelector('b'), dur = document.createElement('div'); dur.className = 'fgEk gnsEk gnsDur ' + D.d; dur.setAttribute('data-dilyok', '1');
+  dur.innerHTML = D.d === 'hazir' ? `${ic('check')}${gnsT('Hazır! Hemen açabilirsin.', 'Ready! You can open it now.')}` : D.d === 'kilit' ? `${ic('lock')}${D.s.kmpSira ? (D.s.why || '') : gnsT(`${fdAsama(D.s.lv)} gerekli`, `${fdAsama(D.s.lv)} needed`)}`
+    : `${ic('alert')}${[D.eksA ? gnsT(`${gnsF(D.eksA)} altın`, `${gnsF(D.eksA)} gold`) : '', !D.tam ? gnsT(`${D.mk - D.mn} malzeme`, `${D.mk - D.mn} materials`) : ''].filter(Boolean).join(' + ')} ${gnsT('eksik', 'short')}`;
+  if (ust) ust.insertAdjacentElement('afterend', dur);
+  // altın çubuğu (aşama çipinin yanındaki altın çipinin yerine)
+  const sart = t.querySelector('.fgSart'); if (sart) { const c = D.s.c | 0, var_ = Math.min(c, Math.floor(S.coins)), sp = sart.querySelectorAll(':scope > span')[1]; if (sp) { sp.className = 'gnsBar ' + (D.eksA ? 'no' : 'ok'); sp.innerHTML = `<i style="width:${c ? Math.round(var_ / c * 100) : 100}%"></i><em>${ic('coin')}${gnsF(var_)}/${gnsF(c)}</em>` } }
+  // malzeme çubukları + eksik malzemeye dokununca Birleştir
+  if (D.p) { const d = insDl(D.p); t.querySelectorAll('.insBlok .insM').forEach((m, i) => { const q = D.p.req[i]; if (!q) return; const n = Math.min(q[1], d[q[0]] | 0); if (!m.querySelector('.gnsMb')) { const u = document.createElement('u'); u.className = 'gnsMb'; u.innerHTML = `<i style="width:${Math.round(n / q[1] * 100)}%"></i>`; const sm = m.querySelector('small'); sm ? m.insertBefore(u, sm) : m.appendChild(u) }
+      if (D.acik && n < q[1]) { m.classList.add('gnsGit'); m.onclick = () => gnsBirlestir(q[0]) } }) }
+  const alt = t.querySelector('.fgAlt'); if (alt) { const b1 = alt.querySelector('.fgBir'); if (b1) b1.onclick = () => gnsBirlestir(null);
+    if (gnsAlan(id)) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn light gnsEk gnsOn'; b.textContent = gnsT('Önizle', 'Preview'); b.onclick = () => { try { sfx('tap') } catch (e) { } gnsOniz(id) }; const vz = alt.querySelector('.fgVaz'); vz ? vz.insertAdjacentElement('afterend', b) : alt.prepend(b) }
+    const vz = alt.querySelector('.fgVaz'); if (vz) vz.addEventListener('click', () => setTimeout(() => gnsKam(null, false, 450), 0)) } }
+{ const _x = xmTip; xmTip = function () { const r = _x.apply(this, arguments); try { gnsKart() } catch (e) { console.warn('genişletme kartı', e) } return r } }
+// ---- önizleme (yalnız görsel) ----
+function gnsOnizSil() { if (GNS.og) { scene.remove(GNS.og); GNS.og.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose() }); GNS.og = null } const b = $('gnsBar'); if (b) b.remove(); const ov = $('expOv'); if (ov) ov.classList.remove('gnsOz') }
+function gnsOniz(id) { const A = gnsAlan(id), ov = $('expOv'); if (!A || !ov || !XM.on) return; gnsOnizSil(); GNS.oz = id; GNS.t = 0; ov.classList.add('gnsOz'); const t = ov.querySelector('.xmTip'); if (t) t.hidden = true;
+  const [x0, x1, z0, z1] = A.a, W = x1 - x0, Dp = z1 - z0, G = new THREE.Group(); G.name = 'genisletmeOnizleme';
+  const zm = new THREE.Mesh(new THREE.PlaneGeometry(W, Dp), new THREE.MeshBasicMaterial({ color: 0x4fc63f, transparent: true, opacity: 0.6, depthWrite: false })); zm.rotation.x = -Math.PI / 2; zm.position.set((x0 + x1) / 2, 0.08, (z0 + z1) / 2); zm.renderOrder = 6; G.add(zm); G.userData.zm = zm;
+  const km = new THREE.MeshBasicMaterial({ color: 0xffffff }), ym = new THREE.MeshBasicMaterial({ color: 0x3f9a3a });
+  for (const [cx, cz, w, d] of [[(x0 + x1) / 2, z0, W, 0.1], [(x0 + x1) / 2, z1, W, 0.1], [x0, (z0 + z1) / 2, 0.1, Dp], [x1, (z0 + z1) / 2, 0.1, Dp]]) { const m = new THREE.Mesh(new THREE.BoxGeometry(w + 0.1, 0.06, d), km); m.position.set(cx, 0.11, cz); G.add(m) }
+  for (const [cx, cz] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1]]) { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.55, 10), ym); m.position.set(cx, 0.3, cz); G.add(m) }
+  scene.add(G); GNS.og = G; gnsKam(id, true, 600);
+  const D = gnsDurum(id) || { d: 'kilit', s: {} }, f = v => (kaEN() ? v.toFixed(1) : v.toFixed(1).replace('.', ',')), bahce = !!A.o.e.garden;
+  const bar = document.createElement('div'); bar.id = 'gnsBar'; bar.setAttribute('data-dilyok', '1');
+  bar.innerHTML = `<div class="gnsBm"><small>${gnsT('Önizleme', 'Preview')}</small><b>${A.o.e.name}</b><span>${f(W)} × ${f(Dp)} m · +${Math.round(W * Dp)} m²${bahce ? '' : ` · ${gnsT(`+${EXP_CAP} masa sınırı`, `+${EXP_CAP} table limit`)}`}</span></div>
+    <button type="button" class="btn light" data-g="geri">${gnsT('‹ Geri', '‹ Back')}</button>${D.d === 'hazir' ? `<button type="button" class="btn green" data-g="al">${ic('coin')}${gnsF(D.s.c | 0)} · ${gnsT(bahce ? 'Bahçeyi aç' : 'Genişlet', bahce ? 'Open garden' : 'Expand')}</button>` : `<em class="${D.d}">${ic(D.d === 'kilit' ? 'lock' : 'alert')}${gnsYazi(D)}</em>`}`;
+  ov.appendChild(bar); bar.onclick = e => { const b = e.target.closest('[data-g]'); if (!b) return; try { sfx('tap') } catch (x) { } const al = b.dataset.g === 'al'; gnsOnizSil(); GNS.oz = null; GNS.t = 0; XM.sel = id; try { xmTip() } catch (x) { }
+    if (al) { const buy = ov.querySelector('.xmTip #xmBuy,.xmTip #salBuy'); if (buy) buy.click() } else gnsKam(id, false, 500) } }
+// ---- normal oynanış: yalnız hazır alanın çipi ----
+// ---- Dekorasyon çubuğunda "Genişlet" ----
+{ const _d = drawEditBar; drawEditBar = function () { const r = _d.apply(this, arguments); try { if (!GNS.on) return r; const bt = $('edDone'); if (bt && !$('edGns') && S.tut === 'done' && !(typeof VISIT !== 'undefined' && VISIT.on)) { let var_ = false; try { var_ = xmSides().length > 0 || (typeof salonState === 'function' && !salonState().done) } catch (e) { }
+        if (var_) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn light'; b.id = 'edGns'; b.setAttribute('data-dilyok', '1'); b.innerHTML = `${ic('plus')}${gnsT('Genişlet', 'Expand')}`; b.onclick = () => { try { sfx('tap') } catch (e) { } setMode('cafe'); setTimeout(() => { try { openExpandMode() } catch (e) { } }, 120) }; bt.parentNode.insertBefore(b, bt) } } } catch (e) { console.warn('dekorasyon › genişlet', e) } return r } }
+// ---- tadilat: Atla ----
+{ const _h = tdHud; tdHud = function () { const r = _h.apply(this, arguments); try { if (!GNS.on || !GNS.atla || !TD.on || TD.kurdele) return r; const u = document.querySelector('#tdHud .tdUst'); if (u && !u.querySelector('.gnsAtla')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tdAtla gnsAtla'; b.setAttribute('data-dilyok', '1'); b.textContent = gnsT('Atla ›', 'Skip ›');
+        b.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (x) { } try { tdKurdele(true) } catch (x) { console.warn('tadilat atla', x) } }; u.appendChild(b) } } catch (e) { } return r } }
+// ---- kutlama yazısı ----
+{ const _k = fgKutla; fgKutla = function (ne) { const r = _k.apply(this, arguments); try { if (!GNS.on || ne === 'b') return r; const d = $('fgKut'); if (!d) return r; const s = d.querySelector('small'), p = d.querySelector('p');
+      if (s) s.textContent = gnsT('Kafen büyüyor!', 'Your café is growing!'); if (p) p.textContent = gnsT(`Yeni alanın artık hazır (masa sınırı ${tableCap(S.lvl)}). Hayalindeki kafeyi tasarlamaya devam et!`, `Your new space is ready (table limit ${tableCap(S.lvl)}). Keep designing your dream café!`) } catch (e) { } return r } }
+{ const INK = '#4a2a14', st = document.createElement('style'); st.textContent = `
+#ui .fgCip:not(.hazir){display:none!important}
+#expOv.gns .xmLines{display:none}
+#expOv .gnsSvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#expOv .gnsSvg path{fill:none;stroke-linejoin:round;stroke-linecap:round}
+#expOv .gnsSvg .a{stroke:rgba(60,34,14,.5);stroke-width:6.5}
+#expOv .gnsSvg .ev{stroke:#fff;stroke-width:3}
+#expOv .gnsSvg .hazir{stroke:#7be06b;stroke-width:3.5;stroke-dasharray:10 6}
+#expOv .gnsSvg .eksik{stroke:#ffc04a;stroke-width:3.5;stroke-dasharray:10 6}
+#expOv .gnsSvg .kilit{stroke:#e3dccd;stroke-width:3;stroke-dasharray:4 7;opacity:.85}
+#expOv .gnsSvg .oz{stroke:#8ff07a;stroke-width:4}
+#expOv .xmPlus.gnsB{animation:none}
+#expOv .xmPlus.gnsB span{flex-direction:column;align-items:center;gap:1px;padding:3px 10px 2px;border-radius:12px;line-height:1.05}
+#expOv .xmPlus.gnsB span b{font:900 12px/1.05 var(--font-display,sans-serif);color:${INK};white-space:nowrap}
+#expOv .xmPlus.gnsB span small{display:flex;align-items:center;gap:2px;font:800 10px/1.1 var(--font-display,sans-serif);white-space:nowrap}
+#expOv .xmPlus.gnsB span span,#expOv .xmPlus.gnsB span .ic{display:inline-block;width:11px;height:11px;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+#expOv .xmPlus.gns-hazir{animation:xmBob 1.6s ease-in-out infinite}
+#expOv .xmPlus.gns-hazir span{border-color:#2f6b22;box-shadow:0 2px 0 #2f6b22;background:linear-gradient(#f1fbe2,#d3efaa)}#expOv .xmPlus.gns-hazir small{color:#2f6b22}
+#expOv .xmPlus.gns-eksik i{background:radial-gradient(circle at 40% 35%,#ffe08a,#f2a531);border-color:#8a4a12;box-shadow:0 3px 0 #8a4a12,0 0 0 4px rgba(255,255,255,.75),0 6px 14px rgba(0,0,0,.3)}
+#expOv .xmPlus.gns-eksik i .ic{width:22px;height:22px;opacity:1}#expOv .xmPlus .gnsIt{display:grid;place-items:center;width:28px;height:28px}#expOv .xmPlus .gnsIt>*{width:100%;height:100%}
+#expOv .xmPlus.gns-eksik span{border-color:#8a4a12;box-shadow:0 2px 0 #8a4a12;background:linear-gradient(#fff6dc,#ffe0a0)}#expOv .xmPlus.gns-eksik small{color:#9a4f0e}
+#expOv .xmPlus.gns-kilit{opacity:.82}#expOv .xmPlus.gns-kilit small{color:#7a6a58}
+#expOv .xmPlus.sel span{outline:3px solid #ffd24a}
+#expOv .gnsAck{position:absolute;left:calc(var(--el,16px));bottom:calc(10px + var(--sab,0px));display:flex;gap:5px;pointer-events:none}
+#expOv .gnsAck span{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 9px 0 6px;border:2.5px solid ${INK};border-radius:99px;background:rgba(255,248,234,.95);font:800 10.5px/1 var(--font-display,sans-serif);color:${INK};white-space:nowrap}
+#expOv .gnsAck i{width:11px;height:11px;border-radius:50%;border:2px solid ${INK}}#expOv .gnsAck .h i{background:#7be06b}#expOv .gnsAck .e i{background:#ffc04a}#expOv .gnsAck .k .ic{width:12px;height:12px;opacity:.75}
+#expOv.gnsOz .xmBtns,#expOv.gnsOz .gnsAck,#expOv.gnsOz .xmHead{display:none}
+#expOv .xmTip .gnsDur{display:flex;align-items:center;justify-content:center;gap:4px;margin:3px 0 4px;padding:3px 8px 2px;border-radius:99px;border:2px solid;font:900 11px/1.2 var(--font-display,sans-serif)}
+#expOv .xmTip .gnsDur .ic{width:13px;height:13px;flex:none}
+#expOv .xmTip .gnsDur.hazir{background:#e3f6cc;border-color:#3d6b1e;color:#2f5a17}#expOv .xmTip .gnsDur.eksik{background:#fff0cf;border-color:#b06a12;color:#8a4a0c}#expOv .xmTip .gnsDur.kilit{background:#eee7da;border-color:#9a8a76;color:#6a5a48}
+#expOv .xmTip .fgSart .gnsBar{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:104px;height:19px;padding:0;border-radius:99px;border:2px solid rgba(74,42,20,.45);background:#fff;overflow:hidden}
+#expOv .xmTip .fgSart .gnsBar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#ffe590,#f3bb3a);border-radius:0}
+#expOv .xmTip .fgSart .gnsBar.ok i{background:linear-gradient(#c9eea0,#8fd06a)}
+#expOv .xmTip .fgSart .gnsBar em{position:relative;display:inline-flex;align-items:center;gap:3px;font:900 10.5px/1 var(--font-display,sans-serif);font-style:normal;color:${INK}}#expOv .xmTip .fgSart .gnsBar em .ic{width:11px;height:11px}
+#expOv .xmTip .insM .gnsMb{display:block;width:82%;height:6px;margin:1px 0;border-radius:99px;border:1.5px solid rgba(74,42,20,.45);background:#fff;overflow:hidden;text-decoration:none}
+#expOv .xmTip .insM .gnsMb i{display:block;width:0;height:100%;background:linear-gradient(#ffe590,#f3bb3a)}#expOv .xmTip .insM.ok .gnsMb i{background:#8fd06a}
+#expOv .xmTip .insM.gnsGit{cursor:pointer;box-shadow:inset 0 0 0 2px rgba(176,106,18,.55)}#expOv .xmTip .insM.gnsGit:active{transform:scale(.96)}
+#expOv .xmTip .fgAlt .gnsOn{flex:0 0 auto}
+#expOv.gns .xmTip:has(.fgEk){width:304px;max-height:calc(calc(100*var(--vh)) - 70px - var(--sab,0px))}
+#expOv.gns .xmTip .fgAlt{flex-wrap:nowrap}#expOv.gns .xmTip .fgAlt .btn{padding:0 9px;font-size:12px}
+#expOv.gns .xmTip:has(.gnsGit) .fgZn{display:none}
+#expOv.gns .xmTip .insBlok .insNot:not(.ok){display:none}
+@media (max-height:440px){#expOv.gns .xmTip .fgAc{display:none}}
+@media (max-width:760px){#expOv.gns:has(.xmTip:not([hidden])) .xmHead{display:none}}
+#gnsBar{position:absolute;left:50%;bottom:calc(10px + var(--sab,0px));transform:translateX(-50%);display:flex;align-items:center;gap:8px;max-width:calc(calc(100*var(--vw)) - 24px);box-sizing:border-box;padding:7px 10px 7px 14px;border:3px solid ${INK};border-radius:18px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 4px 0 ${INK},0 8px 16px rgba(40,20,5,.3);pointer-events:auto;font-family:var(--font-display,sans-serif);color:${INK}}
+#gnsBar .gnsBm{display:flex;flex-direction:column;line-height:1.15;min-width:0;padding-right:4px}#gnsBar .gnsBm small{font:900 9.5px/1 var(--font-display,sans-serif);letter-spacing:.06em;text-transform:uppercase;color:#3d8a2a}
+#gnsBar .gnsBm b{font-size:14px;font-weight:900;white-space:nowrap}#gnsBar .gnsBm span{font-size:10.5px;font-weight:800;color:#7a4e2c;white-space:nowrap}
+#gnsBar .btn{min-height:36px;height:36px;width:auto;padding:0 12px;font-size:13px;white-space:nowrap;flex:none}
+#gnsBar em{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;border:2px solid;font:900 11px/1.1 var(--font-display,sans-serif);font-style:normal;white-space:nowrap}#gnsBar em .ic{width:13px;height:13px}
+#gnsBar em.eksik{background:#fff0cf;border-color:#b06a12;color:#8a4a0c}#gnsBar em.kilit{background:#eee7da;border-color:#9a8a76;color:#6a5a48}
+#tdHud .tdUst .gnsAtla{pointer-events:auto;position:absolute;right:6px;top:calc(100% + 7px);box-shadow:0 2px 0 #5a2f12;padding:5px 12px;font-size:12.5px}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
