@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795802358",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795803667",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -4244,7 +4244,7 @@ function guidePages(){const N=S.chars||{waiter:{name:'Pamuk'},barista:{name:'Tar
      <li><span class="n">5</span><span>Müşteri yer, sonra kasaya gider; kasiyerimiz ${c} ödemesini alır. Bazen bahşiş de bırakılır!</span></li></ul><p>Düğmeler yalnızca o adım yapılabildiğinde görünür. Alttaki yazı da her an ne yapman gerektiğini söyler.</p>`},
    {t:'Para, XP ve seviye',art:`${ic('coin')}${ic('xp')}${ic('star')}${ic('gem')}`,body:`<p>Her ödeme ${tagb('coin','altın')} ve XP kazandırır. XP dolunca <b>seviye atlarsın</b>: yeni masa yerleri, tarifler, renkler ve eşyalar açılır, seviye başına ${tagb('gem','3 elmas','l')} da kazanırsın.</p>
      <p>Sol üstteki ${tagb('target','hedef','l')} sana aynı anda üç küçük görev verir (dokununca hepsini görürsün); tamamlayınca ekstra altın, XP ve elmas gelir. Seviye arttıkça müşteriler biraz daha sık uğrar.</p>`},
-   {t:'Kafeni büyüt',art:`${ic('market')}${ic('table')}${ic('chair')}${ic('paint')}${ic('plant')}`,body:`<p>${tagb('market','Market','l')} sekmesinde masa, sandalye, duvar boyası, zemin, dekor ve ekipman var. Kilitli olanlar hangi seviyede açılacağını gösterir.</p>
+   {t:'Kafeni büyüt',art:`${ic('market')}${ic('table')}${ic('chair')}${ic('paint')}${ic('plant')}`,body:`<p>${tagb('market','Market','l')} sekmesinde masa, sandalye, duvar boyası, zemin ve dekor var. Kilitli olanlar hangi seviyede açılacağını gösterir.</p>
      <ul class="gsteps"><li>${ic('move')}<span>Masa ya da dekor alınca kafede <b>sürükleyerek</b> yerleştir, ${tagb('rotate','Döndür','l')} ile çevir. Yeşil = uygun, kırmızı = yol kapanıyor.</span></li>
      <li>${ic('pencil')}<span>Ana ekrandaki <b>Dekorasyon</b> düğmesi kafeyi boşaltır: ekip ve müşteriler görünmez, zemin <b>karelere</b> bölünür. Bitince ekip kapıdan girip yerine geçer.</span></li><li>${ic('move')}<span>Bir eşyaya dokun, <b>Taşı</b>’ya bas: masalar, dekorlar, tezgâh, kasa, kapı ve pencereler taşınır. Her eşya belli sayıda kare kaplar; <b>yeşil</b> karelere konur, <b>kırmızı</b> kareler dolu ya da yolu kapatır. Aynı çubuktan döndürür, sandalye stilini değiştirir ya da depoya kaldırırsın.</span></li><li>${ic('machine')}<span>Yeni ekipmanlar hazırlığı %25 hızlandırır.</span></li></ul>`},
    {t:'Tarif Defteri',art:`${ic('book')}<img src="${productThumb('latte')}" alt=""><img src="${productThumb('pasta')}" alt="">`,body:`<ul class="gsteps"><li><span class="n">1</span><span><b>Keşfet:</b> tarifin malzemesini birleştirme tahtasında yap.</span></li>
@@ -16714,7 +16714,7 @@ function guideTopics(){const N=S.chars||{},w=(N.waiter&&N.waiter.name)||'Garsonu
     li(I('check'),'Menü ekranında solda kategoriyi seç; ürünün yanındaki anahtarla menüye ekle ya da çıkar.'),
     li(I('coin'),'− / + ile fiyatı ayarla. Ucuz fiyat çok misafir getirir; pahalı fiyat kârı artırır ama misafir kalite bekler.')]},
   {t:'Kafeni büyüt',i:'market',art:`${I('table')}${I('chair')}${I('plant')}${I('paint')}`,b:[
-    li(I('market'),'<b>Market</b>’te masa, sandalye, dekor ve ekipman al.'),
+    li(I('market'),'<b>Market</b>’te masa, sandalye ve dekor al.'),
     li(I('pencil'),'<b>Dekorasyon</b> ile eşyaları taşı ve döndür.'),
     li(I('up'),'Seviye atladıkça daha çok masa koyabilir, kafeni genişletebilirsin.')]},
   {t:'Ekip',i:'paw',art:`${I('tray')}${I('chef')}${I('coin')}${I('shirt')}`,b:[
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-1953';
+const OLC_DERLEME = '20261127-2110';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30256,7 +30256,7 @@ if (!EVMODE) { const _et = envTick; envTick = function (dt) { const r = _et.appl
 //    tür ve hedef (masa no / kasa / mutfak) iliştirilir. Koli taşıma gibi oyuncunun dokunmadığı yan işler izlenmez (yine yapılır).
 //  • Sağ altta, eski uzun ipucu yazısının yerinde yatay kuyruk: en çok 5 yuvarlak (aktif dahil). Aktif: altın çerçeve, gerçek duruma bağlı
 //    dairesel ilerleme (yürünen yol, toplanan tabak, hazırlanan sipariş), hafif parıltı. Bitince yeşil onay, sonra kalkar; diğerleri kayar.
-//  • Bekleyen işte küçük × ile iptal (bayraklar geri alınır → ilgili düğme yeniden çıkar, kaynak kaybı yok); basılı tutup sürükleyerek sıra.
+//  • Bekleyen işte küçük × ile iptal (bayraklar geri alınır → ilgili düğme yeniden çıkar, kaynak kaybı yok); (V423: basılı tutup sürükleyerek sıra değiştirme kullanıcı isteğiyle kapatıldı; açmak için IQ.surukle=true).
 //    Simgeye dokununca hedef 1,6 sn vurgulanır (zeminde halka + "Masa 3" etiketi) ve kısa bilgi kartı çıkar. Aktif iş iptal EDİLEMEZ (işler
 //    yürürken kesilmek üzere yazılmamış; yarıda kesmek tepsi / sipariş durumunu bozabilir).
 //  • Sınır: dokunuşla 6. iş eklenmez, kuyruk kısa sallanır + "Sıra dolu" etiketi. Otomatik moddan / kendiliğinden gelen işler engellenmez.
@@ -30265,7 +30265,7 @@ if (!EVMODE) { const _et = envTick; envTick = function (dt) { const r = _et.appl
 //  • Kayıt: kafe içi anlık durum (müşteriler, siparişler, iş sırası) zaten kaydedilmiyor; yeniden açılışta kuyruk boş başlar, tamamlanmış iş
 //    yeniden uygulanmaz.
 // Kapatmak için IQ.on=false (eski ipucu yazısı geri gelir; iş sırası olduğu gibi çalışır).
-var IQ = { on: true, maks: 5, L: [], id: 0, tapT: -1e9, ctx: null, t: 0, cizT: 0, el: null, sur: null, vur: null, kart: null, kartT: 0, tanit: null, dolT: 0, hata: 0 };
+var IQ = { on: true, surukle: false, maks: 5, L: [], id: 0, tapT: -1e9, ctx: null, t: 0, cizT: 0, el: null, sur: null, vur: null, kart: null, kartT: 0, tanit: null, dolT: 0, hata: 0 };
 const iqT = (tr, en) => { try { return kaEN() ? en : tr } catch (e) { return tr } };
 const iqNow = () => performance.now();
 // ---- dokunuş kaynağı: kafe içi eylem düğmesine basılırken oluşan iş "oyuncunun" işidir ----
@@ -30361,7 +30361,7 @@ function iqCiz() { const b = iqKur(), gor = iqGor(); b.hidden = !gor; const bt =
   // görünür sıra: aktifler (başlama sırasıyla), sonra iş dizisindeki sıraya göre bekleyenler, sonra bitiş animasyonundakiler yerinde
   const akt = IQ.L.filter(q => q.durum === 'aktif' && !q.devir).sort((a, c) => a.basT - c.basT), bek = []; for (const j of jobs) if (j.iq && j.iq.durum === 'bekle') bek.push(j.iq);
   const son = IQ.L.filter(q => (q.durum === 'bitti' || q.durum === 'iptal') && !q.sessiz && !q.devir && iqNow() - q.bitT < (q.durum === 'bitti' ? 650 : 200));
-  let sira = [...akt, ...bek]; if (IQ.sur && IQ.sur.q) { const sq = IQ.sur.q, i = sira.indexOf(sq); if (i >= 0) { sira.splice(i, 1); sira.splice(Math.max(akt.length, Math.min(sira.length, IQ.sur.yeni)), 0, sq) } }
+  let sira = [...akt, ...bek]; if (IQ.sur && IQ.sur.q && IQ.sur.on) { const sq = IQ.sur.q, i = sira.indexOf(sq); if (i >= 0) { sira.splice(i, 1); sira.splice(Math.max(akt.length, Math.min(sira.length, IQ.sur.yeni)), 0, sq) } }
   const fazla = Math.max(0, sira.length - IQ.maks); const gos = sira.slice(0, IQ.maks);
   const kap = b.querySelector('.iqDolu'), bos = b.querySelector('.iqBos'); const var_ = gos.length + son.length > 0; bos.hidden = var_; kap.hidden = !var_;
   if (!var_) { const sp = bos.querySelector('span'), tx = S.auto ? iqT('Otomatik', 'Auto') : iqT('Sıra boş', 'Queue empty'); if (sp.textContent !== tx) sp.textContent = tx }
@@ -30384,8 +30384,8 @@ function iqBasla(e) { const n = e.target.closest('.iqS'); if (!n) return; e.stop
   const D = IQ.sur = { q, on: false, x: 0, yeni: 0, id: e.pointerId, t: null, t0: iqNow() }; try { n.setPointerCapture(e.pointerId) } catch (x) { }
   // (yük altında zamanlayıcı geç kalsa da basılı tutma süresi esas alınır: ilk harekette de denetlenir)
   const ac = () => { if (IQ.sur !== D || D.on || q.durum !== 'bekle') return; D.on = true; try { sfx('tap') } catch (x) { } iqKartKapat(); D.x = x0 - kr.left - s / 2; D.yeni = iqSiraNo(q) };
-  if (q.durum === 'bekle') D.t = setTimeout(ac, 280);
-  const hareket = ev => { if (ev.pointerId !== D.id) return; if (!D.on) { if (D.t && iqNow() - D.t0 >= 280) { clearTimeout(D.t); D.t = null; ac() } else { if (Math.abs(ev.clientX - x0) > 10 && D.t) { clearTimeout(D.t); D.t = null } return } if (!D.on) return } const akt = IQ.L.filter(z => z.durum === 'aktif' && !z.devir).length, bek = jobs.filter(j => j.iq && j.iq.durum === 'bekle').length;
+  if (q.durum === 'bekle' && IQ.surukle) D.t = setTimeout(ac, 280);   // (V423) kullanıcı: kuyruk simgeleri sabit kalsın → basılı tutup sürükleme kapalı
+  const hareket = ev => { if (ev.pointerId !== D.id) return; if (!D.on) { if (IQ.surukle && D.t && iqNow() - D.t0 >= 280) { clearTimeout(D.t); D.t = null; ac() } else { if (Math.abs(ev.clientX - x0) > 10 && D.t) { clearTimeout(D.t); D.t = null } return } if (!D.on) return } const akt = IQ.L.filter(z => z.durum === 'aktif' && !z.devir).length, bek = jobs.filter(j => j.iq && j.iq.durum === 'bekle').length;
       D.x = Math.max(akt * adim, Math.min((akt + bek - 1) * adim, ev.clientX - kr.left - s / 2)); D.yeni = Math.round(D.x / adim) };
   const bitir = ev => { if (ev.pointerId !== D.id) return; n.removeEventListener('pointermove', hareket); n.removeEventListener('pointerup', bitir); n.removeEventListener('pointercancel', bitir); if (D.t) clearTimeout(D.t);
     if (D.on) { const akt = IQ.L.filter(z => z.durum === 'aktif' && !z.devir).length, bek = []; for (const j of jobs) if (j.iq && j.iq.durum === 'bekle') bek.push(j.iq); const i = bek.indexOf(q);
@@ -30404,7 +30404,7 @@ function iqVurCiz() { const V = IQ.vur, m = IQ.vurM; const u = (iqNow() - V.t) /
     e.style.left = (r.left + (v.x + 1) / 2 * r.width) + 'px'; e.style.top = (r.top + (1 - v.y) / 2 * r.height) + 'px'; e.style.opacity = u < 0.8 ? 1 : (1 - u) / 0.2 } }
 function iqKartAc(q, n) { iqKartKapat(); const k = document.createElement('div'); k.id = 'iqKart'; k.setAttribute('data-dilyok', '1'); const T = IQ_TUR[q.tip], u = iqUrun(q), sira = iqSiraNo(q);
   const durum = q.durum === 'aktif' ? iqT('Şef şu an bunu yapıyor', 'Your chef is doing this now') : iqT(`Sırada ${sira + 1}.`, `#${sira + 1} in queue`);
-  const ipucu = q.durum === 'bekle' ? (q.oy ? iqT('× iptal · basılı tut: sırayı değiştir', '× cancel · hold: reorder') : iqT('Basılı tut: sırayı değiştir', 'Hold: reorder')) : iqT('Bitince sıradaki başlar', 'The next one starts when done');
+  const ipucu = q.durum === 'bekle' ? (q.oy ? iqT('× ile iptal edebilirsin', 'Tap × to cancel') : iqT('Sırasını bekliyor', 'Waiting its turn')) : iqT('Bitince sıradaki başlar', 'The next one starts when done');
   k.innerHTML = `<b>${iqT(T.ad[0], T.ad[1])}${iqHedefAd(q) ? ' · ' + iqHedefAd(q) : ''}</b>${u ? `<span>${u.name || ''}</span>` : ''}<small>${durum}</small><small class="iqIp">${ipucu}</small>`;
   document.body.appendChild(k); const r = n.getBoundingClientRect(), kr = k.getBoundingClientRect(); k.style.left = Math.max(8, Math.min(innerWidth - kr.width - 8, r.left + r.width / 2 - kr.width / 2)) + 'px'; k.style.top = Math.max(8, r.top - kr.height - 10) + 'px';
   IQ.kart = k; IQ.kartT = iqNow(); clearTimeout(IQ.kartTo); IQ.kartTo = setTimeout(iqKartKapat, 2600) }
@@ -30428,7 +30428,7 @@ function iqTanit() { try { const T0 = IQ.tanit; if (!IQ.on || !S || S.tut !== 'd
       else if (!akt && !IQ.L.some(q => q.durum === 'bekle') && !dug) { iqTanitKapat(); T.faz = 0; return } }
     let k = $('iqTan'); if (!k) { k = document.createElement('div'); k.id = 'iqTan'; k.setAttribute('data-dilyok', '1'); document.body.appendChild(k); k.addEventListener('pointerdown', e => { if (e.target.closest('.iqTx')) { e.stopPropagation(); S.seen = S.seen || {}; S.seen.iqTanit = 1; try { markDirty() } catch (x) { } iqTanitKapat() } }) }
     const n = T.ekl ? Math.min(2, T.ekl.size) : 0;
-    const h = T.faz === 2 ? `<b>${iqT('Harika!', 'Great!')}</b><p>${iqT('Şefin işleri sırayla yapacak. Simgeye dokun: hedefi gösterir. × iptal eder, basılı tutup kaydırınca sıra değişir.', 'Your chef will do them in order. Tap an icon to see its target. × cancels, hold and slide to reorder.')}</p>`
+    const h = T.faz === 2 ? `<b>${iqT('Harika!', 'Great!')}</b><p>${iqT('Şefin işleri sırayla yapacak. Simgeye dokun: hedefi gösterir. × iptal eder.', 'Your chef will do them in order. Tap an icon to see its target. × cancels.')}</p>`
       : `<b>${iqT('Beklemek zorunda değilsin!', 'No need to wait!')}</b><p>${iqT('Diğer işlere dokunarak şefinin sıradaki görevlerini planlayabilirsin.', 'Tap other jobs to plan your chef’s next tasks.')}</p><small>${iqT(`Sıraya ekle: ${n}/2`, `Queue up: ${n}/2`)}</small><button type="button" class="iqTx" aria-label="kapat">×</button>`;
     if (k._h !== h) { k._h = h; k.innerHTML = h } const b = IQ.el; if (b) { const r = b.getBoundingClientRect(); let sag = innerWidth - 8; for (const x of document.querySelectorAll('button')) { if (x.closest('#iqBar') || !x.offsetParent || !/Market|Menü|Tarifler/.test(x.textContent)) continue; const q = x.getBoundingClientRect(); if (q.left > r.left) sag = Math.min(sag, q.left - 8) }
       k.style.maxWidth = Math.max(180, Math.min(250, sag - Math.max(8, r.left - 14))) + 'px'; const kr = k.getBoundingClientRect(); k.style.left = Math.max(8, Math.min(sag - kr.width, r.left - 14)) + 'px'; k.style.top = Math.max(8, r.top - kr.height - 12) + 'px' }
@@ -30439,12 +30439,13 @@ function iqTanitKapat() { const k = $('iqTan'); if (k) k.remove() }
 setInterval(() => { try { if (IQ.el && !IQ.el.hidden && !iqGor()) { iqCiz(); iqTanitKapat() } } catch (e) { } }, 200);
 { const INK = '#4a2a14', st = document.createElement('style'); st.textContent = `
 .iqVar,.iqVar #hint{visibility:hidden!important}
+#ui button.act{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 #iqBar{position:fixed;z-index:6;height:var(--iqs,44px);pointer-events:none;font-family:var(--font-display,sans-serif);color:${INK}}
 #iqBar[hidden]{display:none}
 #iqBar .iqBos{display:inline-flex;align-items:center;gap:5px;height:28px;margin-top:calc((var(--iqs,44px) - 28px)/2);padding:0 11px 0 7px;border:2.5px solid rgba(74,42,20,.55);border-radius:99px;background:rgba(255,250,240,.82);font:800 11.5px/1 var(--font-display,sans-serif);color:#7a5a3c;white-space:nowrap;pointer-events:none}
 #iqBar .iqBos .ic{width:17px;height:17px;opacity:.75}#iqBar .iqBos[hidden],#iqBar .iqDolu[hidden]{display:none}
 #iqBar .iqDolu{position:relative;height:var(--iqs,44px);pointer-events:none}
-#iqBar .iqS{position:absolute;left:0;top:0;width:var(--iqs,44px);height:var(--iqs,44px);border-radius:50%;pointer-events:auto;touch-action:none;transition:transform .32s cubic-bezier(.3,1.3,.5,1),opacity .25s;will-change:transform;cursor:pointer}
+#iqBar .iqS{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;position:absolute;left:0;top:0;width:var(--iqs,44px);height:var(--iqs,44px);border-radius:50%;pointer-events:auto;touch-action:none;transition:transform .32s cubic-bezier(.3,1.3,.5,1),opacity .25s;will-change:transform;cursor:pointer}
 #iqBar .iqS .iqYuz{position:absolute;inset:0;display:grid;place-items:center;border-radius:50%;border:3px solid ${INK};background:radial-gradient(circle at 40% 32%,#fffaf0,#f3e2c2);box-shadow:0 3px 0 ${INK},0 5px 10px rgba(40,20,5,.28);overflow:hidden}
 #iqBar .iqS .iqIc .ic{width:calc(var(--iqs,44px)*.56);height:calc(var(--iqs,44px)*.56)}
 #iqBar .iqS .iqArt{display:grid;place-items:center;width:78%;height:78%}#iqBar .iqS .iqArt>img{width:100%;height:100%;object-fit:contain}
@@ -30475,6 +30476,32 @@ setInterval(() => { try { if (IQ.el && !IQ.el.hidden && !iqGor()) { iqCiz(); iqT
 #iqTan b{display:block;font-size:13px;font-weight:900;color:#b25a10}#iqTan p{margin:2px 0 0;font-size:11.5px;font-weight:800;line-height:1.25}#iqTan small{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:99px;background:#e3f6cc;border:2px solid #3d6b1e;font:900 10.5px/1.1 var(--font-display,sans-serif);color:#2f5a17}
 #iqTan .iqTx{position:absolute;right:4px;top:4px;width:20px;height:20px;padding:0;border:0;background:none;color:#8a6a4c;font:900 16px/1 var(--font-display,sans-serif)}
 `; document.head.appendChild(st) }
+
+// ================= V423 · EKİPMAN YÜKSELTME KALDIRILDI · PAKETTEN ÇIKAN MALZEME PAKETTEN UÇAR =================
+// Kullanıcı (27 Kasım 2026, 21:08): "ekipman yükseltme olayını kaldır oyundan." · "merge tahtasında pakete bastığında çıkan malzeme paketten
+// çıkıyormuş gibi gözüksün farklı bir yerden geliyormuş gibi gözüküyor şuanda".
+// (1) Ekipman yükseltme (p55): tezgâha dokununca çıkan "Yükselt" düğmesi ve Ekipmanlar penceresi kalktı. Daha önce yükseltme yapmış
+//     oyuncunun kademesi ve hız kazancı KORUNUR (ödediği altın boşa gitmesin); yeni yükseltme yapılamaz. Ana görevlerdeki üç "ekipman
+//     yükselt" görevi (dizin korunarak) birleştirme / müdavim görevleriyle değiştirildi: yarıda kalan oyuncu takılmaz.
+// (2) Tahtadaki pakete dokununca çıkan malzeme artık paketin karesinden doğup yay çizerek düştüğü boş kareye uçar (0,34 sn); paket kısa
+//     bir sıkışma yapar. Eskiden malzeme doğrudan hedef karede beliriyordu (paket uzaktaysa başka yerden gelmiş gibi duruyordu).
+//     Kapatmak için PUC.on=false.
+// ---- (1) ekipman yükseltme ----
+{ const yok = () => { try { const e = els.get('eqUp'); if (e) { e.remove(); els.delete('eqUp') } } catch (e) { } }; equipUI = yok; openEquipWin = () => { }; EQB.until = 0 }
+{ const YENI = [{ t: '3 müdavim edin', k: 'regular', n: 3, xp: 30, c: 20 }, { t: '200 kez birleştir', k: 'merges', n: 200, xp: 80, c: 70, g: 2 }, { t: '600 kez birleştir', k: 'merges', n: 600, xp: 150, c: 140, g: 4 }];
+  let k = 0; for (let i = 0; i < OBJECTIVES.length; i++) if (OBJECTIVES[i].k === 'equip' && YENI[k]) { OBJECTIVES[i] = Object.assign({}, YENI[k]); k++ } }
+// ---- (2) paketten uçuş ----
+var PUC = { on: true };
+function pucUc(pi, t) { try { if (!PUC.on || pi == null || t == null || pi === t) return; const pe = board.querySelector(`[data-c="${pi}"]`), te = board.querySelector(`[data-c="${t}"] .it`); if (!pe || !te) return;
+    const a = pe.getBoundingClientRect(), b = te.getBoundingClientRect(); if (!(a.width && b.width)) return;
+    const g = te.cloneNode(true); g.classList.remove('pop'); g.removeAttribute('data-c'); Object.assign(g.style, { position: 'fixed', left: b.left + 'px', top: b.top + 'px', width: b.width + 'px', height: b.height + 'px', margin: '0', zIndex: 60, pointerEvents: 'none', animation: 'none' });
+    document.body.appendChild(g); te.style.visibility = 'hidden';
+    const dx = a.left + a.width / 2 - (b.left + b.width / 2), dy = a.top + a.height / 2 - (b.top + b.height / 2), yay = -Math.max(18, Math.min(60, Math.hypot(dx, dy) * 0.35));
+    const an = g.animate([{ transform: `translate(${dx}px,${dy}px) scale(.35)`, opacity: .4 }, { transform: `translate(${dx * 0.45}px,${dy * 0.45 + yay}px) scale(.95)`, opacity: 1, offset: .55 }, { transform: 'translate(0,0) scale(1)', opacity: 1 }], { duration: 340, easing: 'cubic-bezier(.3,.6,.4,1)' });
+    const bit = () => { g.remove(); te.style.visibility = ''; try { te.animate([{ transform: 'scale(1.18,.86)' }, { transform: 'scale(.94,1.06)' }, { transform: 'scale(1)' }], { duration: 220, easing: 'ease-out' }) } catch (e) { } };
+    an.onfinish = bit; an.oncancel = bit; setTimeout(() => { if (g.isConnected) bit() }, 700);
+    const pk = pe.querySelector('.it'); if (pk) pk.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.14,.86)' }, { transform: 'scale(.95,1.06)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'ease-out' }) } catch (e) { console.warn('paket uçuşu', e) } }
+{ const _tb = tapBag; tapBag = function (i) { const once = S.board.slice(); const r = _tb.apply(this, arguments); try { if (PUC.on && UI.mode === 'merge') { let t = -1; for (let k = 0; k < S.board.length; k++) if (!once[k] && S.board[k]) { t = k; break } if (t >= 0) requestAnimationFrame(() => pucUc(i, t)) } } catch (e) { } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
