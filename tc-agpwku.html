@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795743025",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795746170",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -3320,8 +3320,12 @@ function el(key,cls,html,onTap){let e=els.get(key);if(!e){e=document.createEleme
 const _p=new THREE.Vector3();
 function place(e,wp,dy=0){_p.copy(wp).project(camera);const r=renderer.domElement.getBoundingClientRect();const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;e.style.display=vis?'':'none';
   // ekran kenarına taşmasın: yarı genişlik kadar içeride tut
-  let px=(_p.x+1)/2*r.width;if(vis&&e.offsetWidth){const hw=e.offsetWidth*(window.__U?window.__U.k:1)/2+6;px=Math.min(Math.max(px,hw),r.width-hw)}
-  e.style.transform=`translate(${px.toFixed(1)}px,${((1-_p.y)/2*r.height+dy).toFixed(1)}px) translate(-50%,-100%) scale(var(--u,1))`}   // --u: arayüz ölçeği (p68); kafe içi düğmeler de onunla büyür
+  // (V412) PLB (p99x): ana ekranda üst çubuğun ve yan sütunların ALTINA girmesin (V410'daki yakın kamerada mutfaktaki "Hazırla" düğmesi hedef hapının arkasında kalıyordu);
+  // --bk: kamera uzaklaşınca balonlar biraz küçülür (büyük kafede karakterler küçükken balonlar ekranı kaplamasın)
+  const B=typeof PLB!=='undefined'?PLB:null,yan=B?B.yan:0,kk=(window.__U?window.__U.k:1)*(B?B.bk:1);
+  let px=(_p.x+1)/2*r.width;if(vis&&e.offsetWidth){const hw=e.offsetWidth*kk/2+6;px=r.width-2*yan>2*hw?Math.min(Math.max(px,yan+hw),r.width-yan-hw):Math.min(Math.max(px,hw),r.width-hw)}
+  let py=(1-_p.y)/2*r.height+dy;if(vis&&B&&B.ust>0&&e.offsetHeight){const mn=B.ust+e.offsetHeight*kk;if(py<mn)py=mn}
+  e.style.transform=`translate(${px.toFixed(1)}px,${py.toFixed(1)}px) translate(-50%,-100%) scale(calc(var(--u,1)*var(--bk,1)))`}   // --u: arayüz ölçeği (p68); kafe içi düğmeler de onunla büyür
 function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.className='coin-pop'+(tip?' tip':'');e.innerHTML=`+${n} ${ic('coin')}${tip?' bahşiş':''}`;ui.appendChild(e);const t0=performance.now();
   const f=()=>{const k=(performance.now()-t0)/1300;if(k>=1){e.remove();return}place(e,wp,-k*50);e.style.opacity=String(1-k*k);requestAnimationFrame(f)};f()}
 const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin'),get angry(){return ic('angry')}};
@@ -24613,7 +24617,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-0415';
+const OLC_DERLEME = '20261127-0514';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28948,7 +28952,8 @@ ${G} #nav::before{content:'';position:absolute;left:calc(50% - 116px);bottom:cal
 /* ---- ipucu balonu: alt sırada, Ekibim'in sağında; ayar ve fotoğraf düğmeleri menüde ---- */
 ${G}:not(.hudoff) .bottom${NX}{left:calc(50% + var(--u)*118px)!important;bottom:calc(var(--ebR) + var(--u)*10px)!important;transform:scale(var(--u))!important;transform-origin:0 100%!important;justify-content:flex-start!important}
 ${G}:not(.hudoff) .bottom :is(#setBtn,#cleanBtn)${NX}{display:none!important}
-${G}:not(.hudoff) .bottom .hint${NX}{height:28px!important;line-height:25px!important;font-size:12px!important;max-width:calc(50*var(--vwu) - 196px)!important;padding:0 13px!important;background:rgba(255,250,240,.9)!important}
+${G}:not(.hudoff) .bottom .hint${NX}{height:auto!important;min-height:28px!important;max-height:34px!important;line-height:1.18!important;font-size:12px!important;max-width:calc(50*var(--vwu) - 128px - var(--er,0px))!important;padding:2px 13px!important;background:rgba(255,250,240,.9)!important;white-space:normal!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;-webkit-box-pack:center!important;overflow:hidden!important;box-sizing:border-box!important;text-overflow:clip!important}   /* (V412) ipucu kesilmesin: sağ kenara kadar uzar, sığmazsa iki satır ("Siparişi hazırlamak için “Hazırl…" oluyordu) */
+${G}:not(.hudoff) .bottom .hint:empty${NX}{display:none!important}
 /* ---- Otomatik anahtarı: sağ sütunun altında ---- */
 ${Y} .k3tc${NX}{left:auto!important;right:var(--er)!important;top:calc(var(--et) + 236px)!important;transform:none!important}
 /* ---- "Daha fazla" menüsü ---- */
@@ -29627,6 +29632,26 @@ function ydCarpan(ch, dt) {
 { const _w = Char.prototype.walkTo; Char.prototype.walkTo = function (x, z, o) {
     try { if (YD.on && o && o.direct && x === OUTSIDE.x && z === OUTSIDE.z) { if (this._mus === undefined) this._mus = customers.some(c => c.char === this); if (this._mus) { const n = DOOR_OUTN; x += n.z * YD.serit; z -= n.x * YD.serit } } } catch (e) { }
     return _w.call(this, x, z, o) } }
+
+// ================= V412 · FINAL DENEYİM 10: KAFE İÇİ DÜĞMELER ARAYÜZÜN ALTINDA KALMASIN + BALON ÖLÇEĞİ =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 15: "Sipariş balonlarının karakter ve kamera ölçeğine uygunluğu · Butonların okunabilirliği."
+//  1) [P0, V410'da ben bozdum] Yeni yakın kamerada (p99r) mutfak ekranın üst kenarına yaklaştı; mutfağın üstündeki "Hazırla" düğmesi (ve arka
+//     duvar dibindeki masaların balonları) üst ortadaki hedef hapının ARKASINDA kalıyordu: eğitim bitip hap görününce oyuncu "Hazırla"yı
+//     göremiyor, dokununca hedef paneli açılıyordu. Sınamalarım düğmeye kodla dokunduğu için yakalamamıştı (artık gerçek dokunuşla sınanıyor).
+//     → Kafe ekranında 3B noktaya bağlı her düğme / balon (p11 place) üst çubuğun altında ve yan sütunların arasında tutulur: nokta çubuğun
+//       arkasına düşerse düğme çubuğun hemen altına iner. Rehber sürerken (üst çubuk gizli), fotoğraf modunda ve öteki kiplerde sınır yok.
+//  2) Balon ölçeği: balonlar ekranda sabit boydaydı; tam genişlemiş kafede kamera uzaklaşınca (karakter 21 px) 84×50 px'lik balon karakterin
+//     dört katı görünüyordu. Artık kamera uzaklaştıkça balonlar en çok %20 küçülür (yazı okunur kalsın diye daha fazla değil); yakın kamerada
+//     (küçük kafe, yakın bakış) boyları aynı. Genişleme çipleri (p99u) küçülmez.
+var PLB = { on: true, ust: 0, yan: 0, bk: 1, R0: 0.0262, enAz: 0.8 };   // PLB.on=false: sınır ve ölçek kapalı (eski davranış)
+function plbGuncelle() { let ust = 0, yan = 0, bk = 1;
+  try { const U = window.__U || { k: 1, et: 0 }, de = document.documentElement, g = $('game');
+    const kafe = typeof started !== 'undefined' && started && UI.mode === 'cafe' && de.classList.contains('fd') && !(g && g.classList.contains('hudoff')) && !rh2Act() && !(typeof XM !== 'undefined' && XM.on) && !(typeof TD !== 'undefined' && TD.on);
+    if (kafe && PLB.on) { ust = ((U.et || 0) + 58) * U.k; yan = 72 * U.k }
+    if (PLB.on && typeof started !== 'undefined' && started) { const d = camera.position.distanceTo(controls.target), R = U.k * d / Math.max(200, innerHeight); bk = Math.max(PLB.enAz, Math.min(1, Math.pow(PLB.R0 / Math.max(1e-4, R), 0.6))) } } catch (e) { }
+  PLB.ust = ust; PLB.yan = yan; if (Math.abs(bk - PLB.bk) >= 0.01 || (bk === 1) !== (PLB.bk === 1)) { PLB.bk = bk; try { $('ui').style.setProperty('--bk', bk.toFixed(3)) } catch (e) { } } }
+setInterval(plbGuncelle, 200);
+{ const st = document.createElement('style'); st.textContent = `#ui .fgCip{--bk:1}`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
