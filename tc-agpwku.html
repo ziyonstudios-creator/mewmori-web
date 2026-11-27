@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795746170",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795749394",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -3324,7 +3324,7 @@ function place(e,wp,dy=0){_p.copy(wp).project(camera);const r=renderer.domElemen
   // --bk: kamera uzaklaşınca balonlar biraz küçülür (büyük kafede karakterler küçükken balonlar ekranı kaplamasın)
   const B=typeof PLB!=='undefined'?PLB:null,yan=B?B.yan:0,kk=(window.__U?window.__U.k:1)*(B?B.bk:1);
   let px=(_p.x+1)/2*r.width;if(vis&&e.offsetWidth){const hw=e.offsetWidth*kk/2+6;px=r.width-2*yan>2*hw?Math.min(Math.max(px,yan+hw),r.width-yan-hw):Math.min(Math.max(px,hw),r.width-hw)}
-  let py=(1-_p.y)/2*r.height+dy;if(vis&&B&&B.ust>0&&e.offsetHeight){const mn=B.ust+e.offsetHeight*kk;if(py<mn)py=mn}
+  let py=(1-_p.y)/2*r.height+dy;if(vis&&B&&B.ust>0&&e.offsetHeight){const mn=B.ust+e.offsetHeight*kk;if(py<mn)py=mn;else if(B.alt>0&&py>r.height-B.alt&&Math.abs(px-r.width/2)<B.altX+e.offsetWidth*kk/2)py=Math.max(mn,r.height-B.alt)}   // alt ortadaki düğme sırasının üstünde kalsın
   e.style.transform=`translate(${px.toFixed(1)}px,${py.toFixed(1)}px) translate(-50%,-100%) scale(calc(var(--u,1)*var(--bk,1)))`}   // --u: arayüz ölçeği (p68); kafe içi düğmeler de onunla büyür
 function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.className='coin-pop'+(tip?' tip':'');e.innerHTML=`+${n} ${ic('coin')}${tip?' bahşiş':''}`;ui.appendChild(e);const t0=performance.now();
   const f=()=>{const k=(performance.now()-t0)/1300;if(k>=1){e.remove();return}place(e,wp,-k*50);e.style.opacity=String(1-k*k);requestAnimationFrame(f)};f()}
@@ -3667,12 +3667,12 @@ function bell(f,t,v,dec=0.9,dest=AU.sfx){const g=gainTo(dest,0);g.gain.setValueA
 function blip(f0,f1,t,d,v,type='sine'){const g=gainTo(AU.sfx,0);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v,t+0.008);g.gain.setTargetAtTime(0.0001,t+0.01,d*0.4);const o=osc(type,f0,t,t+d*3,g);o.frequency.exponentialRampToValueAtTime(f1,t+d)}
 function nz(t,d,v,type,f,q=1,att=0.01){const g=gainTo(AU.sfx,0);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v,t+att);g.gain.setTargetAtTime(0.0001,t+Math.max(att,d-0.05),0.05);noiseSrc(t,d+0.3,filt(type,f,q,g));return g}
 const SFX={
-  tap(t){blip(620,900,t,0.05,0.09)},
+  tap(t){blip(620,900,t,0.05,0.12)},   // (V413 ses dengesi) 0,09 → 0,12: en sık duyulan ses müziğin altında kayboluyordu
   pop(t){blip(320,760,t,0.07,0.16);nz(t,0.03,0.05,'bandpass',3000,1)},
   coin(t){blip(1318,1320,t,0.08,0.12,'triangle');blip(1975,1976,t+0.07,0.22,0.12,'triangle');bell(3951,t+0.07,0.03,0.5)},
   tip(t){SFX.coin(t);[2637,3136,3951].forEach((f,i)=>bell(f,t+0.18+i*0.06,0.035,0.5))},
-  ding(t){bell(1568,t,0.16,1.4)},
-  door(t){bell(1318,t,0.09,1.1);bell(1760,t+0.12,0.08,1.1);bell(1568,t+0.24,0.06,1.0)},
+  ding(t){bell(1568,t,0.11,1.4)},   // (V413) 0,16 → 0,11: her hazır siparişte çalar; ortancanın 8 dB üstündeydi
+  door(t){bell(1318,t,0.07,1.1);bell(1760,t+0.12,0.06,1.1);bell(1568,t+0.24,0.045,1.0)},   // (V413) kapı zili biraz daha yumuşak (her gelen grupta çalar)
   order(t){for(let i=0;i<3;i++)nz(t+i*0.09,0.06,0.05,'bandpass',3200+i*300,2);bell(1046,t+0.32,0.07,0.6)},
   chime(t){kalS(84,t,0.1);kalS(88,t+0.09,0.09)},
   clink(t){bell(2490,t,0.06,0.35);bell(3710,t+0.03,0.04,0.3)},
@@ -3680,16 +3680,16 @@ const SFX={
   buy(t){SFX.coin(t);SFX.pop(t+0.12)},
   nope(t){blip(240,170,t,0.16,0.12,'triangle')},
   merge(t){SFX.pop(t);kalS(79,t+0.05,0.1);kalS(84,t+0.11,0.09)},
-  swap(t){blip(500,420,t,0.05,0.06)},
+  swap(t){blip(500,420,t,0.05,0.085)},   // (V413) 0,06 → 0,085
   discover(t){[72,76,79,84,88].forEach((m,i)=>kalS(m,t+i*0.08,0.1));nz(t+0.2,0.6,0.03,'highpass',6000,0.5,0.2)},
-  levelup(t){[60,64,67,72,76,79,84].forEach((m,i)=>kalS(m,t+i*0.07,0.11));[72,76,79].forEach(m=>bell(mtof(m),t+0.55,0.05,1.6))},
+  levelup(t){[60,64,67,72,76,79,84].forEach((m,i)=>kalS(m,t+i*0.07,0.085));[72,76,79].forEach(m=>bell(mtof(m),t+0.55,0.04,1.6))},   // (V413) 51 yerde kullanılıyor; en yüksek sesti (ortancanın 10 dB üstü) → ~2 dB kısıldı
   goal(t){[76,79,84].forEach((m,i)=>kalS(m,t+i*0.1,0.1));bell(2093,t+0.32,0.06,1.0)},
   register(t){nz(t,0.12,0.06,'bandpass',900,1.5);blip(180,90,t+0.12,0.08,0.12);bell(2637,t+0.2,0.08,0.6);bell(3136,t+0.27,0.07,0.6);SFX.coin(t+0.35)},
   meow(t){const ctx=AU.ctx;const out=gainTo(AU.sfx,0);out.gain.setValueAtTime(0.0001,t);out.gain.linearRampToValueAtTime(0.2,t+0.04);out.gain.setValueAtTime(0.2,t+0.22);out.gain.exponentialRampToValueAtTime(0.0001,t+0.42);
     const f1=filt('bandpass',900,4,out),f2=filt('bandpass',2000,5,out);const mix=ctx.createGain();mix.connect(f1);mix.connect(f2);
     const o=osc('sawtooth',520,t,t+0.45,mix);o.frequency.linearRampToValueAtTime(760,t+0.14);o.frequency.linearRampToValueAtTime(470,t+0.4);
     f1.frequency.setValueAtTime(700,t);f1.frequency.linearRampToValueAtTime(1100,t+0.15);f1.frequency.linearRampToValueAtTime(650,t+0.4)},
-  grind(t,d){const g=nz(t,d,0.07,'bandpass',420,1.2,0.08);const l=AU.ctx.createOscillator();l.frequency.value=17;const lg=AU.ctx.createGain();lg.gain.value=0.03;l.connect(lg);lg.connect(g.gain);l.start(t);l.stop(t+d+0.2)},
+  grind(t,d){const g=nz(t,d,0.09,'bandpass',420,1.2,0.08);const l=AU.ctx.createOscillator();l.frequency.value=17;const lg=AU.ctx.createGain();lg.gain.value=0.03;l.connect(lg);lg.connect(g.gain);l.start(t);l.stop(t+d+0.2)},
   steam(t,d){nz(t,d,0.045,'highpass',2600,0.6,Math.min(0.6,d*0.3))},
   kettle(t,d){nz(t,d,0.03,'highpass',3200,0.6,0.4);for(let i=0;i<d*7;i++)blip(180+Math.random()*220,260+Math.random()*260,t+Math.random()*d,0.04,0.03)},
   oven(t,d){const g=gainTo(AU.sfx,0);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.035,t+0.3);g.gain.setValueAtTime(0.035,t+d-0.2);g.gain.linearRampToValueAtTime(0.0001,t+d);osc('sine',118,t,t+d+0.1,g);osc('sine',236,t,t+d+0.1,gainTo(g,0.4));
@@ -24617,7 +24617,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-0514';
+const OLC_DERLEME = '20261127-0547';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28846,6 +28846,7 @@ let KMP_ZOP = null;
 // Kapatmak için: FD.on = false (html.fd sınıfı kalkar, eski yerleşim aynen geri gelir).
 var FD = { on: true, yeni: {}, hub: null };
 const fdT = (tr, en) => { try { return kaT(tr, en) } catch (e) { return tr } };
+const fdAsama = lv => { let n = null; try { n = kaNo(lv) } catch (e) { } return fdT('Aşama ', 'Stage ') + (n == null ? lv : n) };   // (V413) data-dilyok içindeki öğeler için iki dilli aşama etiketi (kaEt ana kafede Türkçe döner)
 const FD_IC = (() => { const K = 'fill="#ffc93c" stroke="#4a2a14" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"', s = b => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" ${K}>${b}</svg>`;
   return { kafem: s(`<path d="M14 30v25h36V30" fill="#fff6e2"/><path d="M6 31L32 9l26 22z" fill="#f2665c"/><path d="M26 55V43a6 6 0 0 1 12 0v12" fill="#ffc93c"/><circle cx="32" cy="24" r="3.4" fill="#fff6e2" stroke-width="3"/>`),
     daha: s(`<rect x="9" y="9" width="19" height="19" rx="6" fill="#fff6e2"/><rect x="36" y="9" width="19" height="19" rx="6"/><rect x="9" y="36" width="19" height="19" rx="6"/><rect x="36" y="36" width="19" height="19" rx="6" fill="#f2665c"/>`),
@@ -28999,7 +29000,7 @@ function fdKafemAc() { let W; try { W = skWin('skKafem', fdT('Kafem', 'My Café'
       const prj = P.slice(0, 2).map(p => { const d = insDl(p), acik = (S.lvl | 0) >= (p.lv | 0), tam = insTamam(p), para = S.coins >= p.c;
         let ad = p.ad; try { if (p.tur === 'e') { const yan = xmSides().map(o => o.e.name); if (yan.length) ad = yan.slice(0, 2).join(' / ') } } catch (e) { }
         const mz = p.req.map(([id, k]) => { const n = Math.min(k, d[id] | 0); return `<span class="fkM${n >= k ? ' ok' : ''}"><i>${itemArt(id)}</i>${n}/${k}</span>` }).join('');
-        const durum = !acik ? `<em class="kilit">${ic('lock')}${kaEt(p.lv)}</em>` : tam && para ? `<em class="hazir">${ic('check')}${fdT('Hazır', 'Ready')}</em>` : !tam ? `<em>${fdT('Malzeme eksik', 'Materials needed')}</em>` : `<em>${fdT('Altın biriktir', 'Save gold')}</em>`;
+        const durum = !acik ? `<em class="kilit">${ic('lock')}${fdAsama(p.lv)}</em>` : tam && para ? `<em class="hazir">${ic('check')}${fdT('Hazır', 'Ready')}</em>` : !tam ? `<em>${fdT('Malzeme eksik', 'Materials needed')}</em>` : `<em>${fdT('Altın biriktir', 'Save gold')}</em>`;
         return `<div class="fkP"><div class="fkPu"><b>${ad}</b>${durum}</div><div class="fkPa"><span class="fkC${para ? ' ok' : ''}">${ic('coin')}${kaFmt(p.c)}</span>${mz}</div>
           <div class="fkPd">${acik && !tam ? `<button type="button" class="skbtn cream" data-git="malzeme">${fdT('Birleştir’e git', 'Go to Merge')}</button>` : ''}<button type="button" class="skbtn ${acik && tam && para ? 'green' : 'cream'}" data-git="genis">${fdT('Alanı gör', 'View area')}</button></div></div>` }).join('');
       h = `<div class="fkH"><div class="fkSol"><div class="fkKim"><span class="fkRes">${res}<u>${a}</u></span><div class="fkAd"><b></b><small>${ev ? '' : `${a}. ${fdT('Aşama', 'Stage')} · ${(() => { try { return kaAd(a) } catch (e) { return '' } })()}`}</small>
@@ -29396,7 +29397,7 @@ function fgEsle() { const L = fgGorunur() ? fgAlanlar() : []; const imza = L.map
 expandUI = function () { try { const simdi = performance.now(); if (!(simdi - (FG.t || 0) < 450)) { FG.t = simdi; FG.L = fgEsle(); FG.dur = {}; for (const z of FG.L) FG.dur[z.id] = { acik: (S.lvl | 0) >= (z.s.lv | 0), hazir: fgHazir(z) } }   // durum saniyede ~2 kez yenilenir; çipler her karede yalnız yerleştirilir
     const L = FG.L || []; if (FG.g) FG.g.visible = L.length > 0; if (!L.length) return; if (rh2Act()) return;
     for (const o of FG.sec) { const z = o.z, D = FG.dur[z.id] || {}, acik = !!D.acik, hazir = !!D.hazir;
-      const html = acik ? `<i class="ar">${ic('plus')}</i><b>${z.ad}</b>` : `<i>${ic('lock')}</i><b>${z.ad}</b><small>${kaEt(z.s.lv)}</small>`;
+      const html = acik ? `<i class="ar">${ic('plus')}</i><b>${z.ad}</b>` : `<i>${ic('lock')}</i><b>${z.ad}</b><small>${fdAsama(z.s.lv)}</small>`;
       const cls = 'fgCip' + (acik ? ' acik' : '') + (hazir ? ' hazir' : ''), e = el('fgc_' + z.id, cls, html, () => fgAc(z.id)); if (e.className !== cls) e.className = cls; e.setAttribute('data-dilyok', '1'); place(e, o.p);
       // arayüz düğmelerinin altına düşen çip gizlenir (dokunulamaz, kalabalık yapar); kamera kayınca yeniden görünür
       const q = fgEkran(o.p.x, o.p.y, o.p.z, camera); if (!q || !q.ok) e.style.display = 'none' } } catch (e) { if (!FG.hata) { FG.hata = 1; console.warn('genişleme çipleri', e) } } };
@@ -29425,12 +29426,14 @@ function fgKart() { const ov = $('expOv'), t = ov && ov.querySelector('.xmTip');
   const s = o ? o.s : (id === 'salon' ? salonState() : null); if (!s) return; const acik = (S.lvl | 0) >= (s.lv | 0), para = Math.floor(S.coins), eksikP = Math.max(0, (s.c | 0) - para), tam = !p || insTamam(p);
   // açıklama + kazanç çipleri (yalnız gerçekten geçerli olanlar)
   const ust = t.querySelector('b'); let kaz = [], acikl = '';
+  // (V413) kart data-dilyok olduğundan asıl kartın Türkçe kalan iki parçası burada çevrilir: "1/1. kademe" ve "Genişlet"
+  try { if (kaEN()) { if (ust) ust.textContent = ust.textContent.replace(/(\d+)\/(\d+)\. kademe/, 'tier $1/$2'); const al0 = t.querySelector('#xmBuy,#salBuy'); if (al0) for (const n of al0.childNodes) if (n.nodeType === 3) n.nodeValue = n.nodeValue.replace('Genişlet', 'Expand').replace('Bahçeyi aç', 'Open garden').replace('Büyüt', 'Enlarge') } } catch (e) { }
   try { if (o && !o.e.garden) { const [x0, x1, z0, z1] = expArea(o.e); acikl = o.e.desc || ''; kaz.push(`+${Math.round((x1 - x0) * (z1 - z0))} m²`); kaz.push(fgT(`+${EXP_CAP} masa sınırı`, `+${EXP_CAP} table limit`)) }
     else if (o && o.e.garden) { const [x0, x1, z0, z1] = expArea(o.e); kaz.push(`+${Math.round((x1 - x0) * (z1 - z0))} m² ${fgT('bahçe', 'garden')}`); acikl = fgT('Açık hava bahçesi: masa ve dekor koyabilirsin. Masalar genel masa sınırına sayılır.', 'An open-air garden: place tables and decor. Tables count toward your table limit.') }
     else if (id === 'salon') { kaz.push(fgT('her yöne +2 m', '+2 m on every side')); kaz.push(fgT('+2 masa sınırı', '+2 table limit')) } } catch (e) { }
   const ek = document.createElement('div'); ek.className = 'fgEk fgUst';
   ek.innerHTML = `${acikl ? `<p class="fgAc">${acikl}</p>` : ''}<div class="fgCipler">${kaz.map(k => `<span class="kz">${k}</span>`).join('')}</div>
-    <div class="fgSart"><span class="${acik ? 'ok' : 'no'}">${ic(acik ? 'check' : 'lock')}${kaEt(s.lv)}</span><span class="${eksikP ? 'no' : 'ok'}">${ic('coin')}${kaFmt(s.c | 0)}${eksikP ? ` · ${fgT('eksik', 'short')} ${kaFmt(eksikP)}` : ''}</span></div>`;
+    <div class="fgSart"><span class="${acik ? 'ok' : 'no'}">${ic(acik ? 'check' : 'lock')}${fdAsama(s.lv)}</span><span class="${eksikP ? 'no' : 'ok'}">${ic('coin')}${kaFmt(s.c | 0)}${eksikP ? ` · ${fgT('eksik', 'short')} ${kaFmt(eksikP)}` : ''}</span></div>`;
   // p50/p51/p109 kartındaki eski özet satırı (+2 m · masa sınırı +2 · kafe W × D m) yerine bu blok
   const eski = ust && ust.nextElementSibling; if (eski && eski.tagName === 'P' && !eski.classList.contains('why') && !eski.classList.contains('insNot')) eski.remove();
   if (ust) ust.insertAdjacentElement('afterend', ek); else t.prepend(ek);
@@ -29510,7 +29513,7 @@ const ktYeniHesap = () => { try { return !!(S.seen && S.seen.egBit) } catch (e) 
 function ktBayrak(k) { S.seen = S.seen || {}; const B = S.seen.kt || (S.seen.kt = {}); if (B[k]) return false; B[k] = 1; try { markDirty() } catch (e) { } return true }
 // ---- kısa şerit (sıraya girer; pencere açıkken bekler) ----
 function ktBanner(ust, ana, simge) { KUT.sira.push({ ust, ana, simge }); ktSira() }
-function ktSira() { if (KUT.mesgul || !KUT.sira.length) return; try { if (UI.modal || document.querySelector('#game .modal:not([hidden]),.tkanim,#fgKut,#gkFx .geIlk')) { setTimeout(ktSira, 900); return } } catch (e) { }
+function ktSira() { if (KUT.mesgul || !KUT.sira.length) return; try { if (UI.mode !== 'cafe' || UI.modal || document.querySelector('#game .modal:not([hidden]),.tkanim,#fgKut,#gkFx .geIlk')) { setTimeout(ktSira, 900); return } } catch (e) { }
   const o = KUT.sira.shift(); KUT.mesgul = true; try { const d = document.createElement('div'); d.className = 'geIlk ktS'; d.setAttribute('aria-hidden', 'true'); d.innerHTML = `<small>${o.ust}</small><b>${o.simge || ''}${o.ana}</b>`;
     gfKat().appendChild(d); try { gfPatla(innerWidth / 2, innerHeight * 0.4, 10, 'yildiz', Math.min(innerWidth, innerHeight) * 0.26, 16) } catch (e) { } try { sfx('goal') } catch (e) { }
     setTimeout(() => d.classList.add('bit'), 2100); setTimeout(() => { d.remove(); KUT.mesgul = false; setTimeout(ktSira, 700) }, 2600) } catch (e) { KUT.mesgul = false } }
@@ -29643,15 +29646,102 @@ function ydCarpan(ch, dt) {
 //  2) Balon ölçeği: balonlar ekranda sabit boydaydı; tam genişlemiş kafede kamera uzaklaşınca (karakter 21 px) 84×50 px'lik balon karakterin
 //     dört katı görünüyordu. Artık kamera uzaklaştıkça balonlar en çok %20 küçülür (yazı okunur kalsın diye daha fazla değil); yakın kamerada
 //     (küçük kafe, yakın bakış) boyları aynı. Genişleme çipleri (p99u) küçülmez.
-var PLB = { on: true, ust: 0, yan: 0, bk: 1, R0: 0.0262, enAz: 0.8 };   // PLB.on=false: sınır ve ölçek kapalı (eski davranış)
-function plbGuncelle() { let ust = 0, yan = 0, bk = 1;
+var PLB = { on: true, ust: 0, yan: 0, alt: 0, altX: 0, bk: 1, R0: 0.0262, enAz: 0.8 };   // PLB.on=false: sınır ve ölçek kapalı (eski davranış)
+function plbGuncelle() { let ust = 0, yan = 0, alt = 0, altX = 0, bk = 1;
   try { const U = window.__U || { k: 1, et: 0 }, de = document.documentElement, g = $('game');
     const kafe = typeof started !== 'undefined' && started && UI.mode === 'cafe' && de.classList.contains('fd') && !(g && g.classList.contains('hudoff')) && !rh2Act() && !(typeof XM !== 'undefined' && XM.on) && !(typeof TD !== 'undefined' && TD.on);
-    if (kafe && PLB.on) { ust = ((U.et || 0) + 58) * U.k; yan = 72 * U.k }
+    if (kafe && PLB.on) { ust = ((U.et || 0) + 58) * U.k; yan = 72 * U.k; alt = ((U.eb || 0) + 80) * U.k; altX = 132 * U.k }   // (V413) alt ortadaki Kafem · Birleştir · Ekibim sırası
     if (PLB.on && typeof started !== 'undefined' && started) { const d = camera.position.distanceTo(controls.target), R = U.k * d / Math.max(200, innerHeight); bk = Math.max(PLB.enAz, Math.min(1, Math.pow(PLB.R0 / Math.max(1e-4, R), 0.6))) } } catch (e) { }
-  PLB.ust = ust; PLB.yan = yan; if (Math.abs(bk - PLB.bk) >= 0.01 || (bk === 1) !== (PLB.bk === 1)) { PLB.bk = bk; try { $('ui').style.setProperty('--bk', bk.toFixed(3)) } catch (e) { } } }
+  PLB.ust = ust; PLB.yan = yan; PLB.alt = alt; PLB.altX = altX; if (Math.abs(bk - PLB.bk) >= 0.01 || (bk === 1) !== (PLB.bk === 1)) { PLB.bk = bk; try { $('ui').style.setProperty('--bk', bk.toFixed(3)) } catch (e) { } } }
 setInterval(plbGuncelle, 200);
 { const st = document.createElement('style'); st.textContent = `#ui .fgCip{--bk:1}`; document.head.appendChild(st) }
+
+// ================= V413 · FINAL DENEYİM 11: GÜN SONU ÖZETİ, AŞAMA KUTLAMASINDA ALAN ADLARI, EKİBİM'DE "ŞU AN SEN YAPIYORSUN", KOLAY SEÇİM =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 4, 13, 14, 15, 19.
+//  14) "Gün sonunda tatmin edici kazanç özeti": var olan "Günün hasılatı" kartına (p27) dört küçük ek — düzen ve sayılar aynı:
+//       • başlığın altında günün havası ("Harika bir gün! Herkes memnun ayrıldı." …; sıcak, suçlamayan dil);
+//       • "Yarının hedefi": o anki sıradaki hedef (p99q hedef hapındaki): oyuncunun ertesi gün dönmek için somut bir nedeni olsun (madde 19);
+//       • net kâr sıfırdan sayarak yükselir, yanında küçük yıldızlar (kâr varsa);
+//       • henüz yorum almamış kafede "Puan" kutusunda 3,6 yerine "Yeni" (V410'daki üst çubukla aynı; iç hesap değişmez).
+//   4) "Aşama yükseltmesi yeni genişletme fırsatlarının kilidini açmalı": yükseltme kutlamasındaki (p982) "N yeni genişletme" satırı artık
+//       açılabilir hâle gelen alanları adıyla söyler ("Yeni alan açılabilir: Yan salon, Ön salon"); yeni hesapta sayı da küçük başlangıç
+//       sırasına göre doğru olur. Alanlar yine altın + malzemeyle, oyuncunun kendisi tarafından açılır.
+//  13) "Çalışan satın almanın faydasını daha anlaşılır göster": Ekibim › Kadro başlığındaki sabit cümle yerine o anki durum:
+//       "Şu an sen yapıyorsun: içecekler · kasa · yemekler · temizlik. İşe aldığın her çalışan bir işi senden alır." Hepsi alınınca
+//       "Ekibin tam: sen yönetime, tariflere ve dekorasyona odaklan."
+//  15) "Dekorasyon modunda nesne seçiminin kolaylığı": eşyaya tam isabet gerekiyordu (ışın eşyanın ağına değmezse hiçbir şey seçilmiyordu;
+//       saksı, sarkıt, sandalye bacağı telefonda zor). Artık dokunuş hiçbir şeye değmediyse 16 px yakınındaki eşya seçilir (birden çoksa
+//       en yakın ve en küçük olan). Tam isabet, tezgâh / kasa / kapı / pencere seçimi ve sürükleme aynı.
+//  15) "Menü geçişlerindeki gecikmeler": ölçümde tek belirgin takılma Ekibim'in İLK açılışıydı (büyük karakter portreleri o an çiziliyor:
+//       sanal tarayıcıda 546 ms, ikinci açılış 14 ms). Portreler artık oyun açıldıktan birkaç saniye sonra, kafe ekranı boştayken birer
+//       birer önceden hazırlanır.
+var SN = { portre: { sira: null, t: 0 }, dokT: 0 };
+const snT = (tr, en) => { try { return kaT(tr, en) } catch (e) { return tr } };
+// ---------------- gün sonu ----------------
+function snHava(srv, lost, net) { if (!srv) return snT('Sakin bir gündü. Yarın yine açığız!', 'A quiet day. We open again tomorrow!');
+  if (!lost && net > 0) return snT('Harika bir gün! Herkes memnun ayrıldı.', 'A wonderful day! Everyone left happy.');
+  if (net > 0 && lost * 3 <= srv) return snT(`Güzel bir gün! ${srv} misafir ağırladın.`, `A good day! You served ${srv} guests.`);
+  if (net > 0) return snT(`Yoğun bir gündü! ${srv} misafir ağırladın.`, `A busy day! You served ${srv} guests.`);
+  return snT('Masraflı bir gündü; yarın daha iyi olacak.', 'A costly day; tomorrow will be better.') }
+function snYarin() { try { let D = null; try { D = hkDurum() } catch (e) { } const A = fhAlt(D); if (A && A.t) return A.t; if (D && D.baslik) return D.baslik } catch (e) { } return '' }
+{ const _sd = showDayReport; showDayReport = function () { const r = _sd.apply(this, arguments);
+    try { const md = $('dayModal'), c = md && md.querySelector('.daycard'); if (!c || c.querySelector('.snHava')) return r; c.setAttribute('data-sn', '1');
+      // sayılar kartın kendi metninden okunur (hesap p27'de; burada yalnız gösterim)
+      const say = sel => { const e = c.querySelector(sel); return e ? parseInt((e.textContent || '').replace(/[^\d−-]/g, '').replace('−', '-'), 10) || 0 : 0 };
+      const kutu = [...c.querySelectorAll('.ftiles.d3 .ft b')].map(b => parseInt(b.textContent.replace(/\D/g, ''), 10) || 0), srv = kutu[0] | 0, lost = kutu[1] | 0;
+      const nb = c.querySelector('.dnet b'), poz = !!c.querySelector('.dnet.pos'), netMut = nb ? parseInt(nb.textContent.replace(/\D/g, ''), 10) || 0 : 0, net = poz ? netMut : -netMut;
+      const hd = c.querySelector('.dhead > div'); if (hd) { const p = document.createElement('p'); p.className = 'snHava'; p.setAttribute('data-dilyok', '1'); p.textContent = snHava(srv, lost, net); hd.appendChild(p);
+        const y = snYarin(); if (y) { const q = document.createElement('p'); q.className = 'snYarin'; q.setAttribute('data-dilyok', '1'); q.innerHTML = `<i>${ic('star')}</i><span><small>${snT('Yarının hedefi', 'Tomorrow’s goal')}</small> <b>${y}</b></span>`; hd.appendChild(q) } }
+      // yeni kafe: puan yerine "Yeni"
+      try { if (typeof fdPuanYok === 'function' && fdPuanYok()) { const pb = [...c.querySelectorAll('.ftiles:not(.d3) .ft')].find(f => /★/.test(f.textContent)); const b = pb && pb.querySelector('b'); if (b) { b.textContent = snT('Yeni', 'New'); b.setAttribute('data-dilyok', '1') } } } catch (e) { }
+      // net kâr sayarak yükselir
+      if (nb && netMut > 0) { const son = nb.innerHTML, isaret = poz ? '+' : '−', simge = nb.querySelector('svg,img'), sm = simge ? simge.outerHTML : '', t0 = performance.now(), sure = Math.min(1100, 500 + netMut * 4);
+        const f = v => Math.round(v).toLocaleString('tr-TR'); const adim = () => { if (!nb.isConnected) return; const u = Math.min(1, (performance.now() - t0) / sure), k = 1 - Math.pow(1 - u, 3); if (u < 1) { nb.innerHTML = `${isaret}${f(netMut * k)} ${sm}`; requestAnimationFrame(adim) } else { nb.innerHTML = son;
+            if (poz) { try { const b = nb.getBoundingClientRect(); gfPatla(b.left + b.width / 2, b.top + b.height / 2, 9, 'yildiz', 46, 14); sfx('coin') } catch (e) { } } } }; nb.innerHTML = `${isaret}0 ${sm}`; requestAnimationFrame(adim) }
+    } catch (e) { console.warn('gün sonu eki', e) } return r } }
+// ---------------- aşama kutlaması: açılabilir alanların adı ----------------
+{ const _ka = kaAcilanlar; kaAcilanlar = function (a) { const L = _ka.apply(this, arguments);
+    try { if (EVMODE) return L; const T = kaTablo(), L0 = T.L[a - 1] || 0, L1 = T.L[a], ad = [];
+      try { for (const o of xmSides()) { const lv = o.s && o.s.lv | 0; if (lv > L0 && lv <= L1 && !o.s.kmpSira) { const n = o.e.name; if (n && !ad.includes(n)) ad.push(n) } } } catch (e) { }
+      if (!ad.length) return L;   // uzak aşamaların önizlemesinde (alan henüz listede yok) eski "N yeni genişletme" satırı kalır
+      let n = ad.length; try { n = EXP_LV.filter(v => v > L0 && v <= L1).length || ad.length } catch (e) { }
+      // bu aşamada açılabilecek alan sayısı addan azsa "ya da" (ör. yeni hesapta 2. aşamada Yan salon YA DA Ön salon; öteki sonraki aşamada)
+      const liste = ad.length > n && ad.length === 2 ? ad.join(snT(' ya da ', ' or ')) : ad.slice(0, 3).join(', ') + (ad.length > 3 ? '…' : '');
+      const i = L.findIndex(x => x && x.ic === ic('move') && /geni[sş]letme|expansion/i.test(x.t || '')), ek = i >= 0 ? ((L[i].t.match(/\s*\([^)]*\)\s*$/) || [''])[0]) : '';   // "(altın + inşaat malzemesi)" notu korunur
+      const t = snT(`Yeni alan açılabilir: ${liste}`, `New area available: ${liste}`) + ek;
+      if (i >= 0) L[i] = { ...L[i], t }; else L.push({ ic: ic('move'), t }) } catch (e) { } return L } }
+// ---------------- Ekibim: şu an sen yapıyorsun ----------------
+const SN_IS = { barista: ['içecekler', 'drinks'], kasiyer: ['kasa', 'the till'], asci: ['yemekler', 'food'], temiz: ['temizlik', 'cleaning'], garson: ['sipariş ve servis', 'orders and serving'] };
+{ const _ek = ekKadroCiz; ekKadroCiz = function () { const r = _ek.apply(this, arguments);
+    try { const s = document.querySelector('#teamList .ekRoller .ekRB small'); if (s) { const eksik = Object.keys(SN_IS).filter(id => !ekVar(id));
+        s.innerHTML = eksik.length ? snT(`<b>Şu an sen yapıyorsun:</b> ${eksik.map(id => SN_IS[id][0]).join(' · ')}. İşe aldığın her çalışan bir işi senden alır.`, `<b>You do these yourself for now:</b> ${eksik.map(id => SN_IS[id][1]).join(' · ')}. Each teammate you hire takes one job off your hands.`)
+          : snT('<b>Ekibin tam:</b> sen yönetime, tariflere ve dekorasyona odaklan.', '<b>Your team is complete:</b> focus on managing, recipes and decorating.'); s.classList.add('snSen') } } catch (e) { } return r } }
+// ---------------- dekorasyon: yakındaki eşyayı seç ----------------
+function snYakinEsya(x, y) { const r = renderer.domElement.getBoundingClientRect(), tol = 16 * fkOlcek(), v = new THREE.Vector3(), bb = new THREE.Box3(); let en = null, enP = 1e9;
+  for (const [uid, R] of FURN) { const g = R && R.group; if (!g || !g.visible || !g.parent) continue; bb.setFromObject(g); if (bb.isEmpty()) continue; let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, on = false;
+    for (let i = 0; i < 8; i++) { v.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).project(camera); if (v.z < 1) on = true; const sx = r.left + (v.x + 1) / 2 * r.width, sy = r.top + (1 - v.y) / 2 * r.height; if (sx < x0) x0 = sx; if (sx > x1) x1 = sx; if (sy < y0) y0 = sy; if (sy > y1) y1 = sy }
+    if (!on) continue; const d = Math.hypot(Math.max(x0 - x, 0, x - x1), Math.max(y0 - y, 0, y - y1)); if (d > tol) continue;
+    const p = d + Math.min(10, (x1 - x0) * (y1 - y0) / 3000); if (p < enP) { enP = p; en = uid } }   // yakınlık + küçük eşyaya hafif öncelik
+  return en }
+{ const _et = editTap; editTap = function (x, y) { const r = _et.apply(this, arguments);
+    try { if (UI.mode === 'edit' && UI.edit == null && !PL && !LAY.on && !MV.b && !CHP.id && !GTM.on && !GTM.sel) { const uid = snYakinEsya(x, y); if (uid != null) { UI.edit = uid; drawEditBar(); try { sfx('tap') } catch (e) { } } } } catch (e) { if (!SN.hata) { SN.hata = 1; console.warn('yakın eşya', e) } }
+    return r } }
+// ---------------- Ekibim portreleri önceden ----------------
+addEventListener('pointerdown', () => { SN.dokT = performance.now() }, { capture: true, passive: true });
+setInterval(() => { try { if (typeof started === 'undefined' || !started || !S || !S.created || EVMODE || UI.mode !== 'cafe' || UI.modal || rh2Act() || document.hidden) return; const P = SN.portre;
+    if (performance.now() - SN.dokT < 1500 || (typeof PL !== 'undefined' && PL)) return;
+    if (!P.sira) { if (!P.t) { P.t = performance.now(); return } if (performance.now() - P.t < 6000) return; const E = Object.values(S.ekip || {}); P.sira = Object.keys(S.chars || {}).filter(k => S.chars[k] && S.chars[k].look && (k === 'waiter' || E.includes(k))) }   // Ekibim'de kartı olanlar: oyuncu + işe alınmışlar
+    const k = P.sira.shift(); if (k == null) return; try { charBig(k) } catch (e) { } } catch (e) { } }, 1400);   // kimse dokunmuyorken, 1,4 sn arayla birer portre
+{ const INK = '#4a2a14'; const st = document.createElement('style'); st.textContent = `
+#dayModal .snHava{margin:3px 0 0;font:800 12px/1.25 var(--font-display,sans-serif);color:#7a5236;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dayModal .snYarin{display:flex;align-items:center;gap:6px;margin:6px 0 0;padding:3px 10px 3px 4px;border:2.5px solid rgba(74,42,20,.3);border-radius:999px;background:rgba(255,255,255,.7);min-width:0}
+#dayModal .snYarin i{flex:none;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:#ffd54a;border:2px solid ${INK}}#dayModal .snYarin i svg{width:11px;height:11px}
+#dayModal .snYarin span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:900 12px/1.3 var(--font-display,sans-serif);color:${INK}}
+#dayModal .snYarin small{display:inline;font:900 9.5px/1 var(--font-display,sans-serif);color:#c07a12;letter-spacing:.4px;text-transform:uppercase;opacity:1;margin-right:3px}
+#dayModal .snYarin b{font:inherit}
+#dayModal [data-sn] .dhead{align-items:flex-start;justify-content:flex-start}#dayModal [data-sn] .dhead>div{flex:1;min-width:0}
+#teamList .ekRoller .ekRB small.snSen b{color:#a8650f}
+`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
