@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795729403",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795743025",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -2516,7 +2516,7 @@ function spawnCustomer(forceSeat,g0,idx=0){
   const vip=g.size===1&&wantVIP();const look2=vip?VIP_LOOK:look;
   const seat=bek?null:forceSeat||t.seats[Math.floor(Math.random()*t.seats.length)];const P=PERSONA[look2.name]||{pref:{drink:1,dessert:1,main:1},eat:1,tip:CONFIG.tipChanceBase,look:0.2};
   const ch=new Char(cloneLook(look2.tex,look2),{xs:look2.xs,speed:0.85});ch.avoidOf=walkersNear;attachAcc(ch.o,(h,n)=>look2.hat(h,n));   // (V315) paket müşterilerinde şapka konumunu sıfırlayan V147 satırı kaldırıldı: V297'nin oturtmasını bozup şapkayı havada bırakıyordu
-  {const n=DOOR_OUTN,j=idx%2?0.25:-0.1;ch.pos.set(OUTSIDE.x+n.x*idx*0.7-n.z*j,0,OUTSIDE.z+n.z*idx*0.7+n.x*j);ch.o.rotation.y=Math.atan2(-n.x,-n.z)}   // grup kaldırımdan arka arkaya, birlikte yürür
+  {const n=DOOR_OUTN,j=idx%2?0.45:0.15;ch.pos.set(OUTSIDE.x+n.x*idx*0.7-n.z*j,0,OUTSIDE.z+n.z*idx*0.7+n.x*j);ch.o.rotation.y=Math.atan2(-n.x,-n.z)}   // grup kaldırımdan arka arkaya, birlikte yürür (V411: girenler çizginin bir yanında, çıkanlar öbür yanında: p99w)
   const c={id:++custSeq,char:ch,look:look2,persona:P,table:t,seat,state:'ENTERING',order:null,vip,group:g};ch.sitMode=g.size>1?'chat':(Math.random()<0.55?'phone':'calm');ch.sitT=2+Math.random()*4;g.members.push(c);if(!g.leader)g.leader=c;
   custTag(c);if(seat)seat.occupant=c;customers.push(c);
   customerLife(c);return c}
@@ -6121,7 +6121,7 @@ function buyExpand(e){if(typeof e==='string')e=expSide(e);const s=expandState(e.
   addCoins(-s.c,'decor');S.exp={...(S.exp||{}),[e.id]:expLvOf(e.id)+1};S.expand=expandN();expPreview(null);setRoom(expRect(e));
   let moved=false;if(nk||nc){const k=nk||KP,c=nc||CP;if(!layoutCheck(k,c,true)){Object.assign(KP,k);Object.assign(CP,c);S.layout={...(S.layout||{}),k:{...KP},c:{...CP},op:JSON.parse(JSON.stringify(OP))};moved=true}}
   refreshWorld();markDirty();saveNow();sfx('levelup');
-  toast(`<b>Kafen büyüdü!</b><br>${e.name} açıldı · masa sınırı ${tableCap(S.lvl)}${moved?'<br>Tezgâh duvarla birlikte kaydırılıyor…':''}`,ic('plus'),3600);try{bump('expand')}catch(err){}
+  if(typeof fgKutla!=='function')toast(`<b>Kafen büyüdü!</b><br>${e.name} açıldı · masa sınırı ${tableCap(S.lvl)}${moved?'<br>Tezgâh duvarla birlikte kaydırılıyor…':''}`,ic('plus'),3600);try{bump('expand')}catch(err){}   // (V411) yerine "Kafen büyüdü!" kartı (p99u)
   if(moved){try{clearTimeout(saveTimer)}catch(err){}saveNow();RESETTING=true;setTimeout(()=>gameReload(),1400)}return true}
 // önizleme: açılacak alan zeminde yarı saydam yeşil, kenarı kesik çizgili
 let EXPV=null;
@@ -8198,7 +8198,7 @@ function gardenState(side){const g=S.garden||{};if(g[side])return {done:true};
 function gardenArea(side){if(side==='r')return [RM.x1,ROOM_MAX.x1,RM.z0,RM.z1+GDN.f];return [RM.x0,RM.x1+GDN.r,RM.z1,ROOM_MAX.z1]}
 function buyGarden(side){const s=gardenState(side);if(!s.ok){sfx('nope');return false}
   addCoins(-s.c,'decor');S.garden={...(S.garden||{}),[side]:1};setRoom({x0:RM.x0,x1:RM.x1,z0:RM.z0,z1:RM.z1});try{refreshWorld()}catch(e){}markDirty();saveNow();sfx('levelup');
-  toast(`<b>${GARDEN[side].name} açıldı!</b><br>Buraya masa ve dekor koyabilirsin.`,ic('plus'),3600);return true}
+  if(typeof fgKutla!=='function')toast(`<b>${GARDEN[side].name} açıldı!</b><br>Buraya masa ve dekor koyabilirsin.`,ic('plus'),3600);return true}
 // ---- görünüm: taş döşemeli çim zemin + beyaz çit + köşede çalı ----
 let GARDEN_TEX=null;
 // V213: bahçe zemini düz çim (önceki kareli taş döşeme kaldırıldı); dıştaki arsa çimiyle aynı desen, biraz daha canlı yeşil
@@ -15563,7 +15563,7 @@ function tkAdvance(id){const T=tkS();for(;;){const I=tkInfo(id);if(!I||I.done)re
   if(I.stage.d.every(([it,n])=>(I.dl[it]|0)>=n)){T.st[id]=I.si+1;T.dl[id]={};if(I.si+1<I.c.st.length){sfx('goal');toast(`<b>${I.r.name}</b><br>Aşama ${I.si+1} tamam: ${I.stage.n}`,ic('check'),2200)}continue}return}}
 function tkUnlock(id){const r=RECIPE[id];if(S.unlocked[id])return;S.recipes[id]=true;S.unlocked[id]=true;S.menu[id]=true;const T=tkS();T.log[id]=Date.now();delete T.dl[id];
   try{addXP(CONFIG.xp.discover)}catch(e){}sfx('levelup');markDirty();saveNow();
-  toast(`<b>Yeni tarif açıldı: ${r.name}!</b><br>Menüne eklendi, müşteriler artık sipariş edebilir`,`<img src="${productThumb(id)}" alt="">`,3800);
+  if(typeof ktTarifKapat!=='function'||(typeof rh2Act==='function'&&rh2Act()))toast(`<b>Yeni tarif açıldı: ${r.name}!</b><br>Menüne eklendi, müşteriler artık sipariş edebilir`,`<img src="${productThumb(id)}" alt="">`,3800);   // (V412) eğitim dışında yerine "Yeni tarif keşfedildi!" kartı ve "Menüme Ekle" (p99v)
   tkUnlockAnim(id);try{checkObj()}catch(e){}try{hudDots()}catch(e){}}
 // Tarif Defteri'ndeki tek düğme (ve öğretici): teslim edilebilen her şeyi teslim et
 function tkDeliverAll(id){let n=0;for(let guard=0;guard<60;guard++){const I=tkInfo(id);if(!I||I.done||!I.ready||!I.stage)break;
@@ -23032,7 +23032,7 @@ salonBuy=function(){const s=salonState();if(!s.ok){try{sfx('nope')}catch(e){}ret
   cnGuvenli(()=>{setRoom({x0:x0-2,x1:x1+2,z0:z0-2,z1:z1+2});Object.assign(KP,k);Object.assign(CP,c);
     for(const f of tasinan)if(!f.stored&&FURN.has(f.uid)){despawnFurn(f.uid);spawnFurn(f)}
     try{refreshWorld()}catch(e){}try{if(typeof k2Sync==='function')k2Sync()}catch(e){}cnBlok();
-    toast('<b>Büyük salon açıldı!</b><br>Kafen her yönden 2 m büyüdü',ic('plus'),3200)},'büyük salon')};
+    if(typeof fgKutla!=='function')toast('<b>Büyük salon açıldı!</b><br>Kafen her yönden 2 m büyüdü',ic('plus'),3200)},'büyük salon')};
 // ---- 3) kapı ve pencere stili ----
 function cnAcikliklar(){try{PKO.door=false;PKO.sur=null}catch(e){}opApplyLive();try{pkDoorApply()}catch(e){}try{pkWindowApply()}catch(e){}try{ENV.hide={back:null,left:null};envWalls()}catch(e){}try{renderer.shadowMap.needsUpdate=true}catch(e){}}
 setOpening=function(key,def,id,label){const c=CAT[id];if(!c)return;if((S[key]||def)===id)return;S[key]=id===def?null:id;markDirty();saveNow();
@@ -24613,7 +24613,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-0038';
+const OLC_DERLEME = '20261127-0415';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -29276,7 +29276,9 @@ setInterval(() => { try { if (typeof S === 'undefined' || !S || !S.created || EV
     if (EG2.egitimde) { EG2.egitimde = false; S.seen = S.seen || {}; if (!S.seen.egBit) { S.seen.egBit = Date.now(); markDirty() } }
     eg2Hedef() } catch (e) { } }, 600);
 // 3) ilk hedef tanıtımı (bir kez; yalnız bu sürümde eğitimi bitirenlere)
-function eg2Hedef() { if (!S.seen || !S.seen.egBit || S.seen.egHedef) return; if (typeof started === 'undefined' || !started || UI.mode !== 'cafe' || UI.modal) return;
+function eg2Hedef() { if (!S.seen || !S.seen.egBit || S.seen.egHedef) return;
+  try { if (typeof ktDekorBekliyor === 'function' && ktDekorBekliyor()) return } catch (e) { }   // önce hediye dekor (p99v)
+  if (typeof started === 'undefined' || !started || UI.mode !== 'cafe' || UI.modal) return;
   const c = $('coach'); if (!c) return; if (!c.hidden && CO.owner !== 'eg2') return; if (document.querySelector('#game .modal:not([hidden])') || (typeof PL !== 'undefined' && PL)) return;
   const hap = document.querySelector('#fdHedef:not([hidden]) .fhHap'); if (!hap) { if (Date.now() - S.seen.egBit > 60000) { S.seen.egHedef = 1; markDirty() } return }
   if (!EG2.hedefT) { EG2.hedefT = performance.now(); return } if (performance.now() - EG2.hedefT < 1400) return;
@@ -29286,6 +29288,345 @@ function eg2Hedef() { if (!S.seen || !S.seen.egBit || S.seen.egHedef) return; if
     target: () => document.querySelector('#fdHedef .fhHap'), place: 'bottom', buttons: [{ label: fdT('Tamam', 'OK'), green: true, onClick: bitir }] }) }
 // 4) son mesaj: Ayarlar artık "Daha fazla" menüsünde
 { const _rs = rh2Show; rh2Show = function (key, opt) { try { if (key === 'mn2' && opt && typeof opt.text === 'string' && document.documentElement.classList.contains('fd')) opt = { ...opt, text: opt.text.replace('<b>Ayarlar › Rehber</b>', '<b>Daha fazla › Ayarlar › Rehber</b>') } } catch (e) { } return _rs.call(this, key, opt) } }
+
+// ================= V411 · FINAL DENEYİM 6: GECE İÇ MEKÂN SICAKLIĞI (lambasız kalite kiplerinde) =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 6: "sıcak iç mekân ışığı… Gece modunda sıcak pencere ışıkları… Dışarısı soğuk, içerisi sıcak
+// hissettirsin."
+// Ölçüm: "Dengeli" ve "Yüksek" kalitede (iPhone/iPad varsayılanı) akşam ve gece kafenin içi V395'teki genel sıcak ışıkla zaten kehribar;
+// dışarısı mavi. Ama nokta ışıkların kapalı olduğu kiplerde ("Pil tasarrufu" ve Android uygulamasındaki "Dengeli": GFX.lamps=false) gece
+// iç mekân soluk kahverengi-mavi kalıyordu (yalnız zemindeki ışık havuzu vardı).
+//  • O kiplerde akşam/gece zemin ve duvar malzemelerine sıcak bir öz ışıma (emissive) verilir; güç lamba eğrisiyle (DAY_KEYS.lamp) birlikte
+//    artar/azalır. Yeni ışık kaynağı yok, gölgelendirici değişmez (aynı malzeme, yalnız iki sayı): performans maliyeti sıfıra yakın.
+//  • Lambaların açık olduğu kiplerde hiçbir şey değişmez (ışıma 0).
+var GI = { son: -1, zemin: 0.22, duvar: 0.17 };
+function giUygula() { let L = 0; try { L = gkLambaK() } catch (e) { } let lamba = true; try { lamba = !!(GFX[PERF.q] || GFX.bal).lamps } catch (e) { }
+  let on = true; try { on = !!GK.on } catch (e) { }
+  const k = (lamba || !on) ? 0 : Math.max(0, Math.min(1, L)); if (Math.abs(k - GI.son) < 0.004) return; GI.son = k;
+  try { if (M.floor && M.floor.emissive) { M.floor.emissive.setHex(0xff8c3c); M.floor.emissiveIntensity = GI.zemin * k }
+    if (M.wall && M.wall.emissive) { M.wall.emissive.setHex(0xffa864); M.wall.emissiveIntensity = GI.duvar * k } } catch (e) { } }
+{ const _dt = dayTick; dayTick = function () { const r = _dt.apply(this, arguments); try { giUygula() } catch (e) { } return r } }
+{ const _ga = gfxApply; gfxApply = function () { const r = _ga.apply(this, arguments); try { GI.son = -1; giUygula() } catch (e) { } return r } }
+setInterval(() => { try { giUygula() } catch (e) { } }, 4000);
+
+// ================= V411 · FINAL DENEYİM 7: GENİŞLEME ALANLARI (kafenin çevresinde görünür, bilgi kartı, yumuşak önizleme, kutlama) =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 3.2–3.5 ve 16.
+//  3.2 "Kafenin çevresinde açılabilecek alanları göster: düşük çit, inşaat tabelası, hafif kararmış alan, saksı ve çalılarla çevrili boş bölüm…
+//       Kilitli alanlar çirkin görünmesin. Sadece mevcut veya bir sonraki aşamada açılabilecek alanları göster."
+//       → Normal kafe görünümünde, sırası gelen her alan (yan/ön salon, kanatlar, bahçeler) arsada işaretlenir: açık bej zemin + kesik çizgi,
+//         dış kenarlarında alçak ahşap çit, dış köşelerde saksı, kenarda küçük tabela. Tabelanın üstünde dokunulabilir çip: "＋ Yan salon" ya da
+//         "🔒 Yan salon · Aşama 2". Çipe dokununca genişletme kipi o alan seçili açılır. Kapının önündeki çit parçası konmaz.
+//  3.3 "Bilgi kartı: alan adı, gerekli aşama, altın, malzemeler, sahip olunan, eksik, kazanılacak alan, gerçek kapasite avantajları… Eksik
+//       malzeme varsa Birleştir ekranına kısa yol ve hedeflenmesi gereken malzeme zincirleri."
+//       → Genişletme kipindeki kart zenginleşti: açıklama, "+12 m² · +2 masa" kazanç çipleri (yalnız gerçekten geçerli olanlar), aşama ve
+//         altın şartı (✓ / eksik miktar), malzeme listesi (V374), eksikse "Birleştir'e git" ve hangi zincirlerden üretileceği, "Vazgeç".
+//  3.4 "Önizleme: kamera yeni alana yumuşak şekilde yönelsin; alan yarı saydam; onay / iptal; önizlemede maliyet düşülmesin."
+//       → Kip açılırken kamera sıçramak yerine 0,5 sn'de geri çekilir; bir alan seçilince bakış o alana yumuşakça kayar; kip kapanınca
+//         (satın alma yoksa) yumuşakça eski yerine döner. Altın yalnız tadilat bitip kurdele kesilince düşer (V317; değişmedi).
+//  3.5 "Genişletme tamamlandığında… 'Kafen büyüyor!' mesajı… Ardından oyuncuya dekorasyon moduna geçme seçeneği sun."
+//       → Tadilat mini oyunu (kullanıcının tasarımı, V316–V319; "Atla" kullanıcı isteğiyle kaldırılmıştı) aynen duruyor. Alan açılınca
+//         ekranda "Kafen büyüdü!" kartı: yeni ölçü, yeni masa sınırı ve "Dekorasyona geç" / "Sonra" düğmeleri (8 sn sonra kendiliğinden kapanır).
+// Ekonomi, fiyatlar, malzemeler, sıra ve tadilat akışı DEĞİŞMEDİ; yalnız gösterim.
+var FG = { g: null, imza: '', sec: [], mat: null, cam: null, n0: null, bahce0: null, salon0: null };
+const fgT = (tr, en) => { try { return kaT(tr, en) } catch (e) { return tr } };
+function fgAlanlar() { try { if (EVMODE || !S || !S.created || S.tut !== 'done') return []; return xmSides().filter(o => kmpYakin(o.s)).map(o => ({ id: o.e.id, ad: o.e.name, e: o.e, s: o.s, alan: expArea(o.e), yon: o.e.garden ? (o.e.garden === 'r' ? 'x1' : 'z1') : o.e.key })) } catch (e) { return [] } }
+function fgGorunur() { try { return typeof started !== 'undefined' && started && UI.mode === 'cafe' && !XM.on && !(typeof TD !== 'undefined' && TD.on) && !(typeof VISIT !== 'undefined' && VISIT.on) && !(typeof k2Up === 'function' && k2Up()) && !(typeof TZ !== 'undefined' && TZ.on) && !(typeof ED !== 'undefined' && ED.busy) && !$('cine') } catch (e) { return false } }
+function fgHazir(z) { try { if (!z.s.ok) return false; const p = insXmProje(z.id); return !p || insTamam(p) } catch (e) { return !!z.s.ok } }
+// ---- sahnede işaretler ----
+function fgMat() { if (FG.mat) return FG.mat; const INK = '#4a2a14';
+  const tabela = kilit => { const c = document.createElement('canvas'); c.width = 160; c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#fff3dc'; x.strokeStyle = INK; x.lineWidth = 9; const r = 18;
+      x.beginPath(); x.moveTo(r + 5, 5); x.arcTo(155, 5, 155, 123, r); x.arcTo(155, 123, 5, 123, r); x.arcTo(5, 123, 5, 5, r); x.arcTo(5, 5, 155, 5, r); x.closePath(); x.fill(); x.stroke();
+      x.beginPath(); x.arc(80, 64, 36, 0, Math.PI * 2); x.fillStyle = kilit ? '#e8d5b0' : '#8fd06a'; x.fill(); x.lineWidth = 7; x.stroke(); x.lineCap = 'round'; x.lineWidth = 11;
+      if (kilit) { x.fillStyle = INK; x.beginPath(); x.rect(64, 60, 32, 24); x.fill(); x.lineWidth = 7; x.beginPath(); x.arc(80, 60, 11, Math.PI, 0); x.stroke() } else { x.strokeStyle = '#fff8ea'; x.beginPath(); x.moveTo(80, 44); x.lineTo(80, 84); x.moveTo(60, 64); x.lineTo(100, 64); x.stroke() }
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t };
+  FG.mat = { zemin: new THREE.MeshBasicMaterial({ color: 0xe6c488, transparent: true, opacity: 0.5, depthWrite: false }), cizgi: new THREE.LineDashedMaterial({ color: 0x8a5a2b, dashSize: 0.28, gapSize: 0.2, transparent: true, opacity: 0.9 }),
+    cit: new THREE.MeshToonMaterial({ color: 0xf6ead0 }), ray: new THREE.MeshToonMaterial({ color: 0xc98f55 }), direk: new THREE.MeshToonMaterial({ color: 0x9a6534 }),
+    acik: new THREE.MeshBasicMaterial({ map: tabela(false) }), kilit: new THREE.MeshBasicMaterial({ map: tabela(true) }),
+    saksi: new THREE.MeshToonMaterial({ color: 0xc9653a }), yaprak: new THREE.MeshToonMaterial({ color: 0x6f9a45 }), kar: new THREE.MeshToonMaterial({ color: 0xffffff }) }; return FG.mat }
+// varsayılan (sığdırılmış) kamerada bir noktanın ekrandaki yeri ve boş bölgede olup olmadığı
+function fgEkran(x, y, z, cam) { try { let c = cam; if (!c) { fkHesap(); c = FK.cam } if (!c) return null; const v = new THREE.Vector3(x, y, z).project(c), W = innerWidth, H = innerHeight, u = fkOlcek(), px = (v.x + 1) / 2 * W, py = (1 - v.y) / 2 * H;
+    return { x: px, y: py, ok: v.z < 1 && px > 84 * u && px < W - 84 * u && py > 70 * u && py < H - 100 * u } } catch (e) { return null } }
+function fgSil() { if (FG.g) { scene.remove(FG.g); FG.g.traverse(o => { if (o.geometry) o.geometry.dispose() }); FG.g = null } FG.sec = [] }
+function fgKur(L) { fgSil(); if (!L.length) return; const Mt = fgMat(), G = new THREE.Group(); G.name = 'genislemeAlanlari'; scene.add(G); FG.g = G;
+  const gP = new THREE.BoxGeometry(0.07, 0.52, 0.07), gB = new THREE.CylinderGeometry(0.2, 0.15, 0.26, 10), gY = new THREE.SphereGeometry(0.27, 10, 8), kis = (() => { try { return !!KIS } catch (e) { return false } })();
+  const kapi = (() => { try { const o = OP.door; return o ? { wall: o.wall, t: o.t } : null } catch (e) { return null } })();
+  const az = (() => { try { return FK.az0 } catch (e) { return 1.2 } })();
+  const direkler = [], raylar = [], saksilar = [];   // bütün alanların çit direği, rayı ve saksısı tek InstancedMesh'te toplanır (az çizim çağrısı)
+  for (const z of L) { const [x0, x1, z0, z1] = z.alan; if (!(x1 - x0 > 0.5 && z1 - z0 > 0.5)) continue;
+    // zemin + kesik çizgi
+    const zm = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z1 - z0), Mt.zemin); zm.rotation.x = -Math.PI / 2; zm.position.set((x0 + x1) / 2, 0.022, (z0 + z1) / 2); zm.renderOrder = 1; G.add(zm);
+    const pts = [[x0, z0], [x1, z0], [x1, z1], [x0, z1], [x0, z0]].map(([x, zz]) => new THREE.Vector3(x, 0.03, zz)), ln = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), Mt.cizgi); ln.computeLineDistances(); G.add(ln);
+    // dış kenarlar (kafeye bakan kenar hariç)
+    const K = { x1: [[x1, z0, x1, z1], [x0, z0, x1, z0], [x0, z1, x1, z1]], x0: [[x0, z0, x0, z1], [x0, z0, x1, z0], [x0, z1, x1, z1]], z1: [[x0, z1, x1, z1], [x0, z0, x0, z1], [x1, z0, x1, z1]], z0: [[x0, z0, x1, z0], [x0, z0, x0, z1], [x1, z0, x1, z1]] }[z.yon] || [];
+    K.forEach(([ax, azz, bx, bz], ki) => { const L2 = Math.hypot(bx - ax, bz - azz); if (L2 < 0.6) return; const n = Math.max(1, Math.round(L2 / 0.95)), yatay = Math.abs(bx - ax) > Math.abs(bz - azz);
+      // kapının önü açık kalır (sol kanat alanında müşteriler buradan girer)
+      const bosluk = t => { if (!kapi) return false; const duvar = yatay ? (Math.abs(azz - RM.z0) < 2.2 ? 'back' : 'front') : (Math.abs(ax - RM.x0) < 2.2 ? 'left' : 'right'); if (kapi.wall !== duvar) return false; const p = yatay ? ax + (bx - ax) * t : azz + (bz - azz) * t; return Math.abs(p - kapi.t) < 1.7 };
+      for (let i = 0; i <= n; i++) { const t = i / n; if (bosluk(t)) continue; direkler.push([ax + (bx - ax) * t, azz + (bz - azz) * t]) }
+      for (let i = 0; i < n; i++) { const t0 = i / n, t1 = (i + 1) / n; if (bosluk(t0) || bosluk(t1)) continue; const sx = ax + (bx - ax) * t0, sz = azz + (bz - azz) * t0, ex = ax + (bx - ax) * t1, ez = azz + (bz - azz) * t1, d = Math.hypot(ex - sx, ez - sz);
+        for (const y of [0.2, 0.4]) raylar.push([(sx + ex) / 2, y, (sz + ez) / 2, d, yatay]) }
+      // tabela: uzak kenarın (ilk kenar) ortasında, alanın içine doğru; kapı boşluğuna denk gelirse kenarın başına kayar
+      if (ki === 0) { let t = 0.5; if (bosluk(0.5)) t = bosluk(0.18) ? 0.82 : 0.18;
+        // varsayılan kamerada tabela alt düğmelerin ya da üst çubuğun altına düşüyorsa kenar boyunca görünür bir yere kayar
+        try { const gor = tt => { if (bosluk(tt)) return false; const q = fgEkran(ax + (bx - ax) * tt, 1.2, azz + (bz - azz) * tt); return !!q && q.ok }; if (!gor(t)) { const c = [0.3, 0.7, 0.15, 0.85, 0.05, 0.95].find(gor); if (c != null) t = c } } catch (e) { }
+        const ice = 0.45; let px = ax + (bx - ax) * t + (z.yon === 'x1' ? -ice : z.yon === 'x0' ? ice : 0), pz = azz + (bz - azz) * t + (z.yon === 'z1' ? -ice : z.yon === 'z0' ? ice : 0);
+        // duvarlı kenarlar (sol, arka): alan duvarın arkasında kalır; tabela alanın kameraya açık ucuna konur (duvarın bittiği yerde görünür)
+        if (z.yon === 'z0') { px = x1 - ice; pz = (z0 + z1) / 2 } else if (z.yon === 'x0') { px = (x0 + x1) / 2; pz = z1 - ice }
+        const dk = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.95, 0.08), Mt.direk); dk.position.set(px, 0.475, pz); G.add(dk);
+        const lv = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.58), fgHazir(z) || z.s.ok || (S.lvl | 0) >= (z.s.lv | 0) ? Mt.acik : Mt.kilit); lv.position.set(px + Math.sin(az) * 0.05, 0.98, pz + Math.cos(az) * 0.05); lv.rotation.y = az; G.add(lv);
+        const ar = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.62, 0.04), Mt.direk); ar.position.set(px, 0.98, pz); ar.rotation.y = az; G.add(ar);
+        FG.sec.push({ z, p: new THREE.Vector3(px, 1.42, pz) }) } });
+    // dış köşelerde saksı
+    const kos = { x1: [[x1, z0], [x1, z1]], x0: [[x0, z0], [x0, z1]], z1: [[x0, z1], [x1, z1]], z0: [[x0, z0], [x1, z0]] }[z.yon] || [];
+    for (const [cx, cz] of kos) saksilar.push([cx + (cx > (x0 + x1) / 2 ? -0.38 : 0.38), cz + (cz > (z0 + z1) / 2 ? -0.38 : 0.38)]) }
+  { const m4 = new THREE.Matrix4(), P = new THREE.Vector3(), Q = new THREE.Quaternion(), Sc = new THREE.Vector3(), Q0 = new THREE.Quaternion(), Q90 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+    const ekle = (geo, mat, n, kur) => { if (!n) return; const im = new THREE.InstancedMesh(geo, mat, n); for (let i = 0; i < n; i++) { kur(i); im.setMatrixAt(i, m4) } im.instanceMatrix.needsUpdate = true; im.frustumCulled = false; G.add(im) };
+    ekle(gP, Mt.cit, direkler.length, i => m4.makeTranslation(direkler[i][0], 0.26, direkler[i][1]));
+    ekle(new THREE.BoxGeometry(1, 0.055, 0.04), Mt.ray, raylar.length, i => { const [x, y, zz, d, yatay] = raylar[i]; m4.compose(P.set(x, y, zz), yatay ? Q0 : Q90, Sc.set(d, 1, 1)) });
+    ekle(gB, Mt.saksi, saksilar.length, i => m4.makeTranslation(saksilar[i][0], 0.13, saksilar[i][1]));
+    ekle(gY, Mt.yaprak, saksilar.length, i => m4.compose(P.set(saksilar[i][0], 0.42, saksilar[i][1]), Q0, Sc.set(1, 0.85, 1)));
+    if (kis) ekle(new THREE.SphereGeometry(0.2, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2), Mt.kar, saksilar.length, i => m4.compose(P.set(saksilar[i][0], 0.5, saksilar[i][1]), Q0, Sc.set(1, 0.5, 1))) }
+  G.traverse(o => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false } }) }
+function fgEsle() { const L = fgGorunur() ? fgAlanlar() : []; const imza = L.map(z => [z.id, z.alan.map(v => v.toFixed(2)).join(','), z.s.ok ? 1 : 0, (S.lvl | 0) >= (z.s.lv | 0) ? 1 : 0, fgHazir(z) ? 1 : 0].join(':')).join('|') + '|' + (() => { try { return OP.door.wall + OP.door.t } catch (e) { return '' } })();
+  if (imza !== FG.imza) { FG.imza = imza; try { fgKur(L) } catch (e) { console.warn('genişleme alanları', e); fgSil() } } return L }
+// çipler (p11 updateUI her karede çağırır; p50'de boşaltılmış expandUI'nin yerine)
+expandUI = function () { try { const simdi = performance.now(); if (!(simdi - (FG.t || 0) < 450)) { FG.t = simdi; FG.L = fgEsle(); FG.dur = {}; for (const z of FG.L) FG.dur[z.id] = { acik: (S.lvl | 0) >= (z.s.lv | 0), hazir: fgHazir(z) } }   // durum saniyede ~2 kez yenilenir; çipler her karede yalnız yerleştirilir
+    const L = FG.L || []; if (FG.g) FG.g.visible = L.length > 0; if (!L.length) return; if (rh2Act()) return;
+    for (const o of FG.sec) { const z = o.z, D = FG.dur[z.id] || {}, acik = !!D.acik, hazir = !!D.hazir;
+      const html = acik ? `<i class="ar">${ic('plus')}</i><b>${z.ad}</b>` : `<i>${ic('lock')}</i><b>${z.ad}</b><small>${kaEt(z.s.lv)}</small>`;
+      const cls = 'fgCip' + (acik ? ' acik' : '') + (hazir ? ' hazir' : ''), e = el('fgc_' + z.id, cls, html, () => fgAc(z.id)); if (e.className !== cls) e.className = cls; e.setAttribute('data-dilyok', '1'); place(e, o.p);
+      // arayüz düğmelerinin altına düşen çip gizlenir (dokunulamaz, kalabalık yapar); kamera kayınca yeniden görünür
+      const q = fgEkran(o.p.x, o.p.y, o.p.z, camera); if (!q || !q.ok) e.style.display = 'none' } } catch (e) { if (!FG.hata) { FG.hata = 1; console.warn('genişleme çipleri', e) } } };
+function fgAc(id) { try { sfx('tap') } catch (e) { } try { openExpandMode(); if (!XM.on) return; XM.sel = id; xmTip(); fgBak(id) } catch (e) { console.warn('alan aç', e) } }
+// ---- kamera: yumuşak geçişler (genişletme kipi) ----
+function fgKamDur() { if (FG.cam) { cancelAnimationFrame(FG.cam.raf); FG.cam = null } }
+function fgKamGit(p1, t1, sure) { fgKamDur(); const p0 = camera.position.clone(), t0 = controls.target.clone(), b = performance.now(), A = FG.cam = { raf: 0 };
+  const adim = () => { if (FG.cam !== A) return; const u0 = Math.min(1, (performance.now() - b) / (sure || 500)), u = 1 - Math.pow(1 - u0, 3); camera.position.lerpVectors(p0, p1, u); controls.target.lerpVectors(t0, t1, u); controls.update(); if (u0 < 1) A.raf = requestAnimationFrame(adim); else FG.cam = null }; adim() }
+try { const cv = renderer.domElement; for (const t of ['pointerdown', 'wheel', 'touchstart']) cv.addEventListener(t, fgKamDur, { passive: true }) } catch (e) { }
+// seçilen alana yumuşakça bak (uzaklık ve açı aynı; bakış noktası alanın ortasına doğru %55 kayar)
+function fgBak(id) { try { if (!XM.on || !XM.cam) return; const o = xmSides().find(q => q.e.id === id); if (!o) return; const [x0, x1, z0, z1] = expArea(o.e), T0 = XM.cam.t, v = XM.cam.p.clone().sub(XM.cam.t).multiplyScalar(1.28);
+    const hx = T0.x + ((x0 + x1) / 2 - T0.x) * 0.55, hz = T0.z + ((z0 + z1) / 2 - T0.z) * 0.55, t1 = new THREE.Vector3(hx, T0.y, hz); fgKamGit(t1.clone().add(v), t1, 550) } catch (e) { } }
+{ const _ox = openExpandMode; openExpandMode = function () { const acikti = XM.on; let p0 = null, t0 = null; try { p0 = camera.position.clone(); t0 = controls.target.clone() } catch (e) { }
+    const r = _ox.apply(this, arguments); try { if (!acikti && XM.on && XM.cam && p0) { const p1 = camera.position.clone(), t1 = controls.target.clone(); camera.position.copy(p0); controls.target.copy(t0); controls.update(); fgKamGit(p1, t1, 480) } } catch (e) { } return r } }
+{ const _cx = closeExpandMode; closeExpandMode = function () { const acikti = XM.on; let p1 = null, t1 = null; try { fgKamDur(); if (acikti) { p1 = camera.position.clone(); t1 = controls.target.clone() } } catch (e) { }
+    const r = _cx.apply(this, arguments);
+    // satın alma başlamadıysa (tadilat sahnesi kendi kamerasını kurar) eski yere yumuşak dönüş
+    try { if (acikti && p1) { const p0 = camera.position.clone(), t0 = controls.target.clone(); setTimeout(() => { try { if (XM.on || (typeof TD !== 'undefined' && TD.on) || RESETTING) return; if (camera.position.distanceTo(p0) > 0.01 || controls.target.distanceTo(t0) > 0.01) return; camera.position.copy(p1); controls.target.copy(t1); controls.update(); fgKamGit(p0, t0, 420) } catch (e) { } }, 0) } } catch (e) { } return r } }
+// balona dokununca da seçilen alana bak
+{ const ov = () => $('expOv'); document.addEventListener('click', ev => { try { if (!XM.on) return; const b = ev.target instanceof Element && ev.target.closest('#expOv .xmPlus[data-x]'); if (b) setTimeout(() => fgBak(b.dataset.x), 0) } catch (e) { } }, true) }
+// ---- bilgi kartı ----
+function fgZincir(p) { try { const ad = []; for (const [id] of insEksik(p)) { const it = ITEMS[id]; if (!it) continue; const zn = INS_ZN.find(q => q.ch === it.chain); const n = zn ? (kaEN() ? zn.en : zn.n) : null; const t = n ? `${n[0]} → ${n[Math.min(n.length, it.lv) - 1]}` : insAd(id); if (!ad.includes(t)) ad.push(t) } return ad } catch (e) { return [] } }
+{ const _xt = xmTip; xmTip = function () { const r = _xt.apply(this, arguments); try { fgKart() } catch (e) { console.warn('alan kartı', e) } return r } }
+function fgKart() { const ov = $('expOv'), t = ov && ov.querySelector('.xmTip'); if (!t || t.hidden || !XM.sel) return; t.querySelectorAll('.fgEk').forEach(x => x.remove()); t.setAttribute('data-dilyok', '1');
+  const id = XM.sel, o = xmSides().find(q => q.e.id === id); let p = null; try { p = insXmProje(id) } catch (e) { }
+  const s = o ? o.s : (id === 'salon' ? salonState() : null); if (!s) return; const acik = (S.lvl | 0) >= (s.lv | 0), para = Math.floor(S.coins), eksikP = Math.max(0, (s.c | 0) - para), tam = !p || insTamam(p);
+  // açıklama + kazanç çipleri (yalnız gerçekten geçerli olanlar)
+  const ust = t.querySelector('b'); let kaz = [], acikl = '';
+  try { if (o && !o.e.garden) { const [x0, x1, z0, z1] = expArea(o.e); acikl = o.e.desc || ''; kaz.push(`+${Math.round((x1 - x0) * (z1 - z0))} m²`); kaz.push(fgT(`+${EXP_CAP} masa sınırı`, `+${EXP_CAP} table limit`)) }
+    else if (o && o.e.garden) { const [x0, x1, z0, z1] = expArea(o.e); kaz.push(`+${Math.round((x1 - x0) * (z1 - z0))} m² ${fgT('bahçe', 'garden')}`); acikl = fgT('Açık hava bahçesi: masa ve dekor koyabilirsin. Masalar genel masa sınırına sayılır.', 'An open-air garden: place tables and decor. Tables count toward your table limit.') }
+    else if (id === 'salon') { kaz.push(fgT('her yöne +2 m', '+2 m on every side')); kaz.push(fgT('+2 masa sınırı', '+2 table limit')) } } catch (e) { }
+  const ek = document.createElement('div'); ek.className = 'fgEk fgUst';
+  ek.innerHTML = `${acikl ? `<p class="fgAc">${acikl}</p>` : ''}<div class="fgCipler">${kaz.map(k => `<span class="kz">${k}</span>`).join('')}</div>
+    <div class="fgSart"><span class="${acik ? 'ok' : 'no'}">${ic(acik ? 'check' : 'lock')}${kaEt(s.lv)}</span><span class="${eksikP ? 'no' : 'ok'}">${ic('coin')}${kaFmt(s.c | 0)}${eksikP ? ` · ${fgT('eksik', 'short')} ${kaFmt(eksikP)}` : ''}</span></div>`;
+  // p50/p51/p109 kartındaki eski özet satırı (+2 m · masa sınırı +2 · kafe W × D m) yerine bu blok
+  const eski = ust && ust.nextElementSibling; if (eski && eski.tagName === 'P' && !eski.classList.contains('why') && !eski.classList.contains('insNot')) eski.remove();
+  if (ust) ust.insertAdjacentElement('afterend', ek); else t.prepend(ek);
+  // eksik malzemede: hangi zincir + Birleştir kısayolu
+  const alt = document.createElement('div'); alt.className = 'fgEk fgAlt'; let h = '';
+  if (p && acik && !tam) { const zn = fgZincir(p); if (zn.length) h += `<p class="fgZn">${fgT('Üret', 'Make')}: ${zn.join(' · ')}</p>` }
+  h += `<button type="button" class="btn light fgVaz">${fgT('Vazgeç', 'Cancel')}</button>`;
+  if (p && acik && !tam) h += `<button type="button" class="btn light fgBir">${ic('merge')}${fgT('Birleştir’e git', 'Go to Merge')}</button>`;
+  alt.innerHTML = h; t.appendChild(alt);
+  // satın alma düğmesi Vazgeç'le aynı sıraya (kart telefonda ekrana sığsın)
+  try { const al = t.querySelector('#xmBuy,#salBuy'); if (al) alt.appendChild(al) } catch (e) { }
+  const b1 = alt.querySelector('.fgBir'); if (b1) b1.onclick = () => { try { sfx('tap') } catch (e) { } closeExpandMode(); setTimeout(() => { try { setMode('merge') } catch (e) { } }, 60) };
+  alt.querySelector('.fgVaz').onclick = () => { try { sfx('tap') } catch (e) { } XM.sel = null; t.hidden = true; XM.last = ''; try { if (XM.cam) { const v = XM.cam.p.clone().sub(XM.cam.t).multiplyScalar(1.28); fgKamGit(XM.cam.t.clone().add(v), XM.cam.t.clone(), 450) } } catch (e) { } } }
+// ---- alan açıldı: "Kafen büyüdü!" + Dekorasyona geç ----
+function fgSayac() { let n = 0, b = 0, sl = 0; try { n = expandN() } catch (e) { } try { b = ((S.garden && S.garden.r) ? 1 : 0) + ((S.garden && S.garden.f) ? 1 : 0) } catch (e) { } try { sl = salonHas() ? 1 : 0 } catch (e) { } return { n, b, sl } }
+function fgKutla(ne) { try { if (!started || EVMODE) return; const old = $('fgKut'); if (old) old.remove(); const W = (RM.x1 - RM.x0), D = (RM.z1 - RM.z0), f = v => (kaEN() ? v.toFixed(1) : v.toFixed(1).replace('.', ','));
+    const d = document.createElement('div'); d.id = 'fgKut'; d.setAttribute('data-dilyok', '1');
+    d.innerHTML = `<div class="fgKk"><small>${ne === 'b' ? fgT('Bahçen açıldı!', 'Your garden is open!') : fgT('Kafen büyüdü!', 'Your café has grown!')}</small><b>${f(W)} × ${f(D)} m</b><p>${ne === 'b' ? fgT('Bahçene masa ve dekor koyabilirsin.', 'You can place tables and decor in your garden.') : fgT(`Masa sınırın artık ${tableCap(S.lvl)}. Yeni alanını dilediğin gibi döşe!`, `Your table limit is now ${tableCap(S.lvl)}. Furnish your new space as you like!`)}</p>
+      <div class="fgKd"><button type="button" class="btn light" data-k="s">${fgT('Sonra', 'Later')}</button><button type="button" class="btn green" data-k="d">${fgT('Dekorasyona geç', 'Decorate now')}</button></div></div>`;
+    $('game').appendChild(d); try { sfx('chime') } catch (e) { }   // konfeti yok: tadilat sahnesi az önce attı (kutlama üst üste binmesin)
+    const kapat = () => { d.classList.add('bit'); setTimeout(() => d.remove(), 300) }; const zt = setTimeout(kapat, 9000);
+    d.addEventListener('click', ev => { const b = ev.target.closest('[data-k]'); if (!b) return; clearTimeout(zt); try { sfx('tap') } catch (e) { } kapat(); if (b.dataset.k === 'd') setTimeout(() => { try { if (UI.mode === 'cafe' && !UI.modal) enterEdit() } catch (e) { console.warn('dekorasyona geç', e) } }, 350) }) } catch (e) { console.warn('alan kutlaması', e) } }
+setInterval(() => { try { if (typeof S === 'undefined' || !S || !S.created || typeof started === 'undefined' || !started) return; const c = fgSayac(); if (!FG.n0) { FG.n0 = c; return }
+    const buyudu = c.n > FG.n0.n || c.sl > FG.n0.sl, bahce = c.b > FG.n0.b; FG.n0 = c; if (!buyudu && !bahce) return;
+    const dene = (k) => { try { if (typeof TD !== 'undefined' && TD.on || UI.modal || UI.mode !== 'cafe' || RESETTING) { if (k < 20) setTimeout(() => dene(k + 1), 600); return } fgKutla(bahce && !buyudu ? 'b' : 'e') } catch (e) { } }; setTimeout(() => dene(0), 1200) } catch (e) { } }, 700);
+{ const INK = '#4a2a14'; const st = document.createElement('style'); st.textContent = `
+#ui .fgCip{all:unset;position:absolute;left:0;top:0;display:inline-flex;align-items:center;gap:5px;height:26px;box-sizing:border-box;padding:1px 10px 0 4px;border:2.5px solid ${INK};border-radius:999px;background:rgba(255,248,234,.94);box-shadow:0 2px 0 ${INK};font:800 11.5px/1 var(--font-display,sans-serif);color:${INK};white-space:nowrap;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;transform-origin:50% 100%}
+#ui .fgCip i{flex:none;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#e8d5b0}#ui .fgCip i svg{width:11px;height:11px}
+#ui .fgCip i.ar{background:#8fd06a;color:#fff}#ui .fgCip small{font:800 9.5px/1 var(--font-display,sans-serif);color:#8a5a2b;padding-left:2px}
+#ui .fgCip.acik{background:linear-gradient(#fffaf0,#fbe6c4)}
+#ui .fgCip.hazir{border-color:#3d6b1e;box-shadow:0 2px 0 #3d6b1e,0 0 0 3px rgba(143,208,106,.45);background:linear-gradient(#eaf7d6,#cdeb9f)}
+html.land #game#game:has(.modal:not([hidden])) #ui .fgCip,html.land #game#game.hudoff #ui .fgCip,html.land #game#game.edmode #ui .fgCip{display:none!important}
+#expOv .xmTip:has(.fgEk){width:272px;max-width:calc(calc(100*var(--vw)) - 24px);max-height:calc(calc(100*var(--vh)) - 16px - var(--sab,0px));overflow-y:auto;box-sizing:border-box;padding:8px 10px 9px}
+#expOv .xmTip:has(.fgZn) .insNot,#expOv .xmTip:has(.fgEk) p.why{display:none!important}
+#expOv .xmTip:has(.fgEk) .insBlok{margin:4px 0 5px;padding:4px 6px 5px}
+#expOv .xmTip .fgAc{margin:2px 0 5px;font:700 11px/1.3 var(--font-display,sans-serif);color:#6b4a2c;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#expOv .xmTip .fgUst{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:4px}#expOv .xmTip .fgUst .fgAc{flex:1 1 100%;margin-bottom:1px}
+#expOv .xmTip .fgCipler,#expOv .xmTip .fgSart{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:0}
+#expOv .xmTip .fgCipler .kz{padding:2px 8px 1px;border-radius:99px;background:#e3f3cc;border:2px solid rgba(61,107,30,.4);font:900 10.5px/1.2 var(--font-display,sans-serif);color:#3d6b1e}
+#expOv .xmTip .fgSart span{display:inline-flex;align-items:center;gap:3px;padding:2px 8px 1px;border-radius:99px;border:2px solid rgba(74,42,20,.3);background:#fff;font:900 10.5px/1.2 var(--font-display,sans-serif);color:${INK}}
+#expOv .xmTip .fgSart span svg{width:11px;height:11px}#expOv .xmTip .fgSart .ok{background:#e9f6d6;border-color:rgba(61,107,30,.45);color:#3d6b1e}#expOv .xmTip .fgSart .no{background:#fbe9e2;border-color:rgba(160,70,50,.4);color:#8a3a26}
+#expOv .xmTip .fgAlt{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:6px}
+#expOv .xmTip .fgAlt .btn{min-height:32px;height:32px;width:auto!important;padding:0 10px;font-size:12.5px;flex:1 1 0;white-space:nowrap}
+#expOv .xmTip .fgAlt .fgVaz{flex:0 0 auto}
+#expOv .xmTip .fgZn{flex:1 1 100%;margin:0;font:800 10.5px/1.25 var(--font-display,sans-serif);color:#8a5a2b;text-align:center}
+#expOv .xmTip p.why{margin-bottom:0}
+html.td-on #game #y2 .ayGun{opacity:0!important;pointer-events:none!important}
+#fgKut{position:absolute;left:0;right:0;top:calc(var(--etR,10px) + var(--u,1)*64px);z-index:14;display:flex;justify-content:center;pointer-events:none;animation:fgKi .4s cubic-bezier(.2,1.4,.4,1)}
+#fgKut.bit{opacity:0;translate:0 -10px;transition:opacity .28s,translate .28s}
+@keyframes fgKi{from{opacity:0;scale:.8}}
+#fgKut .fgKk{pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:250px;max-width:340px;box-sizing:border-box;padding:10px 18px 12px;border:3.5px solid ${INK};border-radius:20px;background:linear-gradient(#fffaf0,#fbe2ba);box-shadow:0 5px 0 ${INK},0 0 0 7px rgba(255,210,74,.4),0 0 34px rgba(255,200,80,.6);transform:scale(var(--u,1));transform-origin:50% 0;color:${INK};text-align:center}
+#fgKut small{font:900 13px/1.2 var(--font-display,sans-serif);color:#c07a12;letter-spacing:.5px;text-transform:uppercase}
+#fgKut b{font:900 26px/1.05 var(--font-display,sans-serif);color:#e8a21c;-webkit-text-stroke:1.6px ${INK};paint-order:stroke fill}
+#fgKut p{margin:2px 0 6px;font:800 12px/1.3 var(--font-display,sans-serif)}
+#fgKut .fgKd{display:flex;gap:8px}#fgKut .fgKd .btn{min-height:34px;height:34px;padding:0 14px;font-size:13px}
+`; document.head.appendChild(st) }
+
+// ================= V412 · FINAL DENEYİM 8: BAŞARI HİSSİ, KARAKTER TEPKİLERİ, HEDİYE DEKOR =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 10, 11, 12.
+//  11) "Yeni tarif keşfedildiğinde büyük 2D yemek veya içecek görseli göster… 'YENİ TARİF KEŞFEDİLDİ! Ballı Süt artık kafende! Menüme Ekle'.
+//       Animasyonlar kısa ve atlanabilir olsun. Kutlama spam'inden kaçın."
+//       → V91'deki küçük "Yeni tarif!" kutusunun yerine büyük görselli kart (ışık huzmeleri, yıldızlar). Eğitimde kendiliğinden kapanır
+//         (rehber menü adımına geçer). Eğitim dışında düğmeli: "Menüme Ekle" ürünü menüye ekler; kartın dışına dokunmak ya da 9 sn beklemek
+//         de ekler (dalgın oyuncu satışı kaçırmasın; davranış eskisiyle aynı: yeni tarif menüye girer).
+//       → İlk çalışan ve ilk dekorasyon için kısa şerit (2,4 sn, dokunmayı engellemez; yalnız bu sürümde eğitimi bitiren hesaplarda, birer kez).
+//         İlk kazanç (V393), aşama yükseltme (V387), genişletme (V411) kutlamaları zaten var; üst üste binmesinler diye şeritler sıraya girer.
+//  10) Karakter tepkileri (var olan animasyon altyapısıyla; yeni model/animasyon yok): ilk kazançta ve yeni çalışan gelince oyuncunun
+//       karakteri sevinir (baş sallama + küçük zıplama, 1,4 sn); memnun müşteri hesabı ödeyip kalkarken başının üstünde küçük bir kalp.
+//       (Servis sevinci, bekleme salınımı, sabır halkası V355/V392'de vardı.)
+//  12) "İlk müşteriyi ağırladıktan sonra oyuncuya küçük bir dekorasyon seçme hakkı ver (üç küçük dekorasyondan birini ücretsiz seçsin),
+//       dilediği yere yerleştirsin. Tek seferlik olsun."
+//       → Eğitim bitince (ve eski hesaplarda bir kez) "Kafen için bir hediye seç" kartı: Çiçek saksısı · Tekir kedi tablosu · Klasik sarkıt.
+//         Seçilen eşya depoya eklenir ve hemen yerleştirme kipi açılır; vazgeçilirse depoda kalır (Dekorasyon › Depo). S.seen.fdDekor.
+var KUT = { sira: [], mesgul: false, sev: new Map(), ekip0: null, hediyeT: 0 };
+const KUT_HEDIYE = ['d_flower', 'p_kedi_tekir', 'l_hang_klasik'];
+const ktYeniHesap = () => { try { return !!(S.seen && S.seen.egBit) } catch (e) { return false } };
+function ktBayrak(k) { S.seen = S.seen || {}; const B = S.seen.kt || (S.seen.kt = {}); if (B[k]) return false; B[k] = 1; try { markDirty() } catch (e) { } return true }
+// ---- kısa şerit (sıraya girer; pencere açıkken bekler) ----
+function ktBanner(ust, ana, simge) { KUT.sira.push({ ust, ana, simge }); ktSira() }
+function ktSira() { if (KUT.mesgul || !KUT.sira.length) return; try { if (UI.modal || document.querySelector('#game .modal:not([hidden]),.tkanim,#fgKut,#gkFx .geIlk')) { setTimeout(ktSira, 900); return } } catch (e) { }
+  const o = KUT.sira.shift(); KUT.mesgul = true; try { const d = document.createElement('div'); d.className = 'geIlk ktS'; d.setAttribute('aria-hidden', 'true'); d.innerHTML = `<small>${o.ust}</small><b>${o.simge || ''}${o.ana}</b>`;
+    gfKat().appendChild(d); try { gfPatla(innerWidth / 2, innerHeight * 0.4, 10, 'yildiz', Math.min(innerWidth, innerHeight) * 0.26, 16) } catch (e) { } try { sfx('goal') } catch (e) { }
+    setTimeout(() => d.classList.add('bit'), 2100); setTimeout(() => { d.remove(); KUT.mesgul = false; setTimeout(ktSira, 700) }, 2600) } catch (e) { KUT.mesgul = false } }
+// ---- sevinç: baş sallama + küçük zıplama (kemik eklemeleri her karede animasyon değerine döndüğü için birikmez; p999 ile aynı yöntem) ----
+function ktSevin(ch, sure) { try { if (ch && ch.o && !ch.seat) KUT.sev.set(ch, { t: sure || 1.4, T: sure || 1.4 }) } catch (e) { } }
+function ktOyuncu() { try { return (WSTAFF[0] && WSTAFF[0].ch) || null } catch (e) { return null } }
+{ const _gm = gcMusteri; gcMusteri = function (dt) { const r = _gm.apply(this, arguments); try { if (KUT.sev.size) for (const [ch, o] of KUT.sev) { o.t -= dt; const bit = o.t <= 0 || !ch.o || !ch.o.visible || ch.seat;
+        if (ch._gcU === GC.kare && !bit) { const u = 1 - o.t / o.T, k = Math.sin(u * Math.PI), hd = ch.head, sp = ch.o.getObjectByName('mixamorigSpine2');
+          if (hd) { hd.rotation.x += Math.sin(u * Math.PI * 6) * 0.15 * k; hd.rotation.z += Math.sin(u * Math.PI * 3) * 0.1 * k } if (sp) sp.rotation.z += Math.sin(u * Math.PI * 4) * 0.06 * k;
+          if (!(ch.path && ch.path.length)) ch.o.position.y = Math.abs(Math.sin(u * Math.PI * 3)) * 0.09 * k }
+        if (bit) { try { if (ch.o && !(ch.path && ch.path.length)) ch.o.position.y = 0 } catch (e) { } KUT.sev.delete(ch) } } } catch (e) { } return r } }
+// ilk kazanç: karakter de sevinir
+{ const _gi = geIlkKazanc; geIlkKazanc = function () { try { ktSevin(ktOyuncu(), 1.6) } catch (e) { } return _gi.apply(this, arguments) } }
+// yeni çalışan: oyuncu karşılar; her rol için bir kez "artık o yapıyor" şeridi (belge madde 13: devretme hissi; ayrıntı V379'daki bildirimde)
+const KUT_DEVIR = { barista: ['İçecekleri artık o hazırlıyor', 'They make the drinks now'], kasiyer: ['Hesapları artık o alıyor', 'They take the payments now'], asci: ['Yemekleri artık o pişiriyor', 'They cook the food now'],
+  temiz: ['Masaları artık o temizliyor', 'They clean the tables now'], garson: ['Siparişleri artık o alıp servis ediyor', 'They take and serve the orders now'], satici: ['Tezgâhta artık o satıyor', 'They sell at the stall now'], guvenlik: ['Kaçanları artık o yakalıyor', 'They catch the runners now'] };
+setInterval(() => { try { if (typeof S === 'undefined' || !S || !S.created || EVMODE || typeof started === 'undefined' || !started) return; const E = S.ekip || {}, L = Object.keys(E).filter(k => !!E[k]);
+    if (!KUT.ekip0) { KUT.ekip0 = new Set(L); return } const yeni = L.filter(k => !KUT.ekip0.has(k)); KUT.ekip0 = new Set(L); if (!yeni.length || S.tut !== 'done') return;
+    setTimeout(() => { try { ktSevin(ktOyuncu(), 1.6) } catch (e) { } }, 1800);
+    for (const id of yeni) { const D = KUT_DEVIR[id]; if (!D || !ktBayrak('is_' + id)) continue; let ad = id; try { const R = EK_ROL.find(r => r.id === id); if (R) ad = ekAd(R) } catch (e) { } setTimeout(() => ktBanner(fdT(`${ad} işbaşında!`, `${ad} on duty!`), fdT(D[0], D[1])), 2400) } } catch (e) { } }, 800);
+// ilk dekorasyon
+{ const _cp = confirmPlacement; confirmPlacement = function () { let rec = null, c = null; try { rec = PL && PL.rec; c = rec && CAT[rec.id] } catch (e) { } const r = _cp.apply(this, arguments);
+    try { if (rec && !PL && !rec.stored && c && (c.kind === 'decor' || c.kind === 'walldecor') && ktYeniHesap() && ktBayrak('dekor')) setTimeout(() => ktBanner(fdT('İlk dekorasyonun!', 'Your first decoration!'), fdT('Kafen artık daha senin', 'Your café feels more like yours')), 500) } catch (e) { } return r } }
+// memnun müşteri kalkarken küçük kalp
+var KUT_D = new WeakMap();
+{ const _gs = gfServisTick; gfServisTick = function () { const r = _gs.apply(this, arguments); try { if (!gfKafede()) return r; for (const c of customers) { const s = c.state, o = KUT_D.get(c); if (o === s) continue; KUT_D.set(c, s);
+        if (s === 'LEAVING' && o && c.ate && !c.angry && !c.kacti && !c.gone) { const h = new THREE.Vector3(); c.char.head.getWorldPosition(h); h.y += 0.3; const p = gfEkran(h); if (!p) continue;
+          gfPar(GF_SV.kalp, p.x, p.y, 'gk-kalp', [{ transform: 'translate(-50%,0) scale(.3)', opacity: 0 }, { transform: 'translate(-50%,-12px) scale(1)', opacity: 1, offset: 0.3 }, { transform: 'translate(-50%,-40px) scale(.75)', opacity: 0 }], 900, { boy: 14 }) } } } catch (e) { } return r } }
+// ---- yeni tarif kartı ----
+function ktTarifKapat(d, id, ekle) { if (!d || d._kapandi) return; d._kapandi = 1; clearTimeout(d._zt); try { if (ekle && id && !S.menu[id]) { S.menu[id] = true; markDirty(); try { saveNow() } catch (e) { }
+      let ad = RECIPE[id].name; try { ad = kaTr(ad) } catch (e) { } toast(fdT(`<b>${ad}</b> menüne eklendi`, `<b>${ad}</b> added to your menu`), `<img src="${productThumb(id)}" alt="">`, 2400); try { if (UI.mode === 'menu') renderMenu() } catch (e) { } } } catch (e) { }
+  d.classList.add('out'); setTimeout(() => { d.remove(); try { renderTk() } catch (e) { } }, 420) }
+tkUnlockAnim = function (id) { try { document.querySelectorAll('.tkanim').forEach(x => x.remove()) } catch (e) { }
+  const r = RECIPE[id]; let ad = r ? r.name : ''; try { ad = kaTr(ad) } catch (e) { } const egitim = (() => { try { return rh2Act() } catch (e) { return false } })();
+  const d = document.createElement('div'); d.className = 'tkanim ktT' + (egitim ? '' : ' ktDok'); d.setAttribute('data-dilyok', '1');
+  d.innerHTML = `<div class="ktKart"><i class="ktIsin"></i><div class="ktRes"><img src="${productThumb(id)}" alt=""></div><small>${fdT('Yeni tarif keşfedildi!', 'New recipe discovered!')}</small><b>${ad}</b><p>${fdT('artık kafende!', 'is now in your café!')}</p>${egitim ? '' : `<button type="button" class="btn green">${ic('menu')}${fdT('Menüme Ekle', 'Add to my menu')}</button>`}</div>`;
+  $('game').appendChild(d); setTimeout(() => d.classList.add('go'), 30);
+  try { setTimeout(() => gfPatla(innerWidth / 2, innerHeight * 0.4, 14, 'yildiz', Math.min(innerWidth, innerHeight) * 0.34, 18), 260) } catch (e) { }
+  if (egitim) { d._zt = setTimeout(() => ktTarifKapat(d, id, false), 2500); return }
+  // eğitim dışında: menüye ekleme oyuncunun dokunuşuyla olur (dokunmazsa kart kapanırken eklenir)
+  try { if (S.menu[id]) { S.menu[id] = false; markDirty() } } catch (e) { }
+  d.addEventListener('click', ev => { ev.stopPropagation(); try { sfx('tap') } catch (e) { } ktTarifKapat(d, id, true) }); d._zt = setTimeout(() => ktTarifKapat(d, id, true), 9000) };
+// ---- hediye dekor (tek seferlik) ----
+function ktDekorBekliyor() { try { return !EVMODE && !!S && !!S.created && S.tut === 'done' && !(S.seen && S.seen.fdDekor) && ((S.stats && S.stats.orders) | 0) >= 1 && KUT_HEDIYE.every(id => CAT[id]) } catch (e) { return false } }
+function ktDekorTik() { try { if (!ktDekorBekliyor() || $('ktDekor')) return; if (typeof started === 'undefined' || !started || UI.mode !== 'cafe' || UI.modal || rh2Act()) { KUT.hediyeT = 0; return }
+    const c = $('coach'); if ((c && !c.hidden) || document.querySelector('#game .modal:not([hidden]),.tkanim,#fgKut') || (typeof PL !== 'undefined' && PL) || (typeof TD !== 'undefined' && TD.on) || (typeof XM !== 'undefined' && XM.on) || (typeof lvQueue !== 'undefined' && lvQueue.length)) { KUT.hediyeT = 0; return }
+    if (!KUT.hediyeT) { KUT.hediyeT = performance.now(); return } if (performance.now() - KUT.hediyeT < 1800) return; ktDekorAc() } catch (e) { } }
+setInterval(ktDekorTik, 600);
+function ktDekorAc() { const yeni = ((S.stats && S.stats.orders) | 0) <= 4; UI.modal = true; const m = document.createElement('div'); m.className = 'modal'; m.id = 'ktDekor'; m.setAttribute('data-dilyok', '1'); let sec = KUT_HEDIYE[0];
+  const ad = id => { try { return kaTr(CAT[id].name) } catch (e) { return CAT[id].name } };
+  m.innerHTML = `<div class="ktHk" role="dialog" aria-label="${fdT('Hediye', 'Gift')}"><small>${yeni ? fdT('İlk misafirini ağırladın!', 'You served your first guest!') : fdT('Kafene küçük bir hediye', 'A little gift for your café')}</small><h3>${fdT('Kafen için bir hediye seç', 'Pick a gift for your café')}</h3>
+    <p>${fdT('Biri senin, ücretsiz. Dilediğin yere koyabilirsin.', 'One is yours, free. Place it wherever you like.')}</p>
+    <div class="ktHs">${KUT_HEDIYE.map((id, i) => `<button type="button" data-h="${id}" aria-pressed="${i === 0}"><span><img src="${itemThumb(id)}" alt=""></span><b>${ad(id)}</b></button>`).join('')}</div>
+    <button type="button" class="btn green" id="ktDekorAl">${ic('gift')}${fdT('Bunu seç ve yerleştir', 'Choose and place')}</button></div>`;
+  $('game').appendChild(m); try { sfx('goal') } catch (e) { }
+  m.addEventListener('click', ev => { const b = ev.target.closest('[data-h]'); if (b) { sec = b.dataset.h; try { sfx('tap') } catch (e) { } m.querySelectorAll('[data-h]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); return }
+    if (ev.target.closest('#ktDekorAl')) { try { sfx('tap') } catch (e) { } m.remove(); UI.modal = false; ktDekorVer(sec) } }) }
+function ktDekorVer(id) { try { const c = CAT[id]; if (!c) return; S.seen = S.seen || {}; S.seen.fdDekor = id; const rec = { uid: ++S.uid, id, x: 0, z: 0, rot: 0, stored: true }; S.furniture.push(rec); markDirty(); try { saveNow() } catch (e) { }
+    const depoda = () => toast(fdT(`<b>${kaTr(c.name)}</b> depona kondu<br>Dekorasyon › Depo’dan dilediğin zaman yerleştir`, `<b>${kaTr(c.name)}</b> is in your storage<br>Place it any time from Decorate › Storage`), `<img src="${itemThumb(id)}" alt="">`, 3600);
+    if (c.kind === 'walldecor') { const s = freeSlot(); if (s < 0) return depoda(); rec.slot = s }
+    // hemen yerleştirme kipi (araya başka pencere girmesin: günlük giriş penceresi boş anı bekliyor olabilir)
+    try { if (UI.mode !== 'cafe' || UI.modal) return depoda(); startPlacement({ rec, isNew: false, price: 0, fromStore: true });
+      toast(fdT('<b>Hediyen hazır!</b><br>Sürükleyip dilediğin yere koy, sonra onayla', '<b>Your gift is ready!</b><br>Drag it where you like, then confirm'), `<img src="${itemThumb(id)}" alt="">`, 3600) } catch (e) { console.warn('hediye dekor', e); depoda() } } catch (e) { console.warn('hediye dekor', e) } }
+{ const INK = '#4a2a14'; const st = document.createElement('style'); st.textContent = `
+#gkFx .geIlk.ktS b{font-size:24px;-webkit-text-stroke:1.4px ${INK};display:flex;align-items:center;gap:6px}
+.tkanim.ktT{z-index:90}.tkanim.ktT.ktDok{pointer-events:auto;cursor:pointer}
+.tkanim.ktT .ktKart{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:250px;max-width:330px;padding:14px 26px 16px;border:4px solid ${INK};border-radius:26px;background:linear-gradient(#fffaf0,#f8dfb4);box-shadow:0 6px 0 ${INK},0 0 0 8px rgba(255,210,74,.45),0 0 50px rgba(255,200,80,.75);transform:scale(.4);opacity:0;transition:transform .5s cubic-bezier(.3,1.6,.5,1),opacity .3s;color:${INK};text-align:center}
+.tkanim.ktT.go .ktKart{transform:scale(var(--u,1));opacity:1}
+.tkanim.ktT .ktIsin{position:absolute;left:50%;top:82px;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:repeating-conic-gradient(rgba(255,214,90,.5) 0 12deg,transparent 12deg 30deg);-webkit-mask:radial-gradient(circle,#000 22%,transparent 68%);mask:radial-gradient(circle,#000 22%,transparent 68%);animation:ktDon 14s linear infinite;pointer-events:none}
+@keyframes ktDon{to{rotate:360deg}}
+.tkanim.ktT .ktRes{position:relative;width:138px;height:138px;display:grid;place-items:center;animation:ktZip .9s .25s cubic-bezier(.3,1.5,.5,1) both}
+.tkanim.ktT .ktRes img{width:138px;height:138px;object-fit:contain;filter:drop-shadow(0 6px 0 rgba(74,42,20,.25))}
+@keyframes ktZip{from{scale:.5;rotate:-12deg}}
+.tkanim.ktT small{position:relative;font:900 13px/1.2 var(--font-display,sans-serif);color:#c07a12;letter-spacing:.6px;text-transform:uppercase}
+.tkanim.ktT b{position:relative;font:900 25px/1.1 var(--font-display,sans-serif);color:${INK}}
+.tkanim.ktT p{position:relative;margin:0 0 6px;font:800 13px/1.2 var(--font-display,sans-serif);color:#7a5236}
+.tkanim.ktT .btn{position:relative;min-height:40px;height:40px;padding:0 20px;font-size:15px}
+#ktDekor .ktHk{display:flex;flex-direction:column;align-items:center;gap:4px;width:min(470px,calc(100% - 24px));box-sizing:border-box;padding:14px 18px 16px;border:3.5px solid ${INK};border-radius:22px;background:linear-gradient(#fffaf0,#fbe6c4);box-shadow:0 5px 0 ${INK},0 12px 26px rgba(40,20,5,.4);color:${INK};text-align:center;animation:fdIn .3s cubic-bezier(.2,1.3,.4,1)}
+#ktDekor small{font:900 12px/1.2 var(--font-display,sans-serif);color:#c07a12;letter-spacing:.5px;text-transform:uppercase}
+#ktDekor h3{margin:0;font:900 20px/1.15 var(--font-display,sans-serif)}
+#ktDekor p{margin:0 0 6px;font:800 12px/1.3 var(--font-display,sans-serif);color:#7a5236}
+#ktDekor .ktHs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-bottom:10px}
+#ktDekor .ktHs button{all:unset;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 7px;border:3px solid rgba(74,42,20,.3);border-radius:16px;background:rgba(255,255,255,.65);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:translate .12s}
+#ktDekor .ktHs button span{width:72px;height:72px;display:grid;place-items:center}#ktDekor .ktHs img{max-width:72px;max-height:72px;object-fit:contain}
+#ktDekor .ktHs b{font:900 11.5px/1.15 var(--font-display,sans-serif)}
+#ktDekor .ktHs button[aria-pressed="true"]{border-color:#3d6b1e;background:#e9f6d6;box-shadow:0 0 0 3px rgba(143,208,106,.5);translate:0 -3px}
+#ktDekor .btn{min-height:40px;height:40px;padding:0 20px;font-size:14px}
+`; document.head.appendChild(st) }
+
+// ================= V411 · FINAL DENEYİM 9: YÜRÜYÜŞ DÜZENİ (müşteriler üst üste binmesin) =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 15: "Karakterlerin üst üste binmesi · Müşteri ve çalışanların sıkışması."
+// Ölçüm (sanal tarayıcı, küçük başlangıç kafesi, 8 oyun dakikası; iki karakterin arası 25 cm'den az kalan süre, "çift-saniye"): kural yokken
+// iki koşuda 12,9 ve 5,2; bunun 11,4'ü kafeden BİRLİKTE ÇIKAN grubun kapıdan kaldırıma iç içe yürümesi, 4,1'i kaldırımda giren ile çıkanın
+// birbirinin içinden geçmesiydi (hepsi aynı çizgide, aynı hızla yürüyordu). Kuralla iki koşuda 7,9 ve 2,7; birlikte çıkanların iç içe
+// yürümesi 0,2'ye indi. Kalanlar kapının hemen içinde/önünde kısa karşılaşmalar (tek kapı). Müşteri akışı rastgele olduğu için koşular arası fark büyük.
+//  1) Sıra kuralı: aynı yöne yürüyen iki müşteriden arkadaki, öndekine 46 cm'den fazla yaklaşınca yavaşlar (en az %15 hız); ara açılınca
+//     normal hızına döner. Öndeki hiç yavaşlamaz → kilitlenme olmaz. Karşılıklı gelenler, duranlar ve oturanlar bu kuralın dışında
+//     (onlar için V84'teki yana adım sürüyor). Güvenlik: bir müşteri 3 sn'den uzun yavaşlatılırsa 2 sn serbest bırakılır.
+//  2) Kaldırımda şerit: çıkan müşteriler kapıdan sonra çizginin bir yanına (40 cm), girenler öbür yanına (15–45 cm) yürür.
+// Yalnız müşteriler; çalışanlar, kurye, tedarikçi ve oyuncunun karakteri etkilenmez. Yol bulma, hızlar, sabır ve ekonomi DEĞİŞMEDİ.
+var YD = { on: true, no: 0, ara: 0.46, ic: 0.2, serit: 0.4, enAz: 0.15 };
+function ydCarpan(ch, dt) {
+  if (ch._ydSer > 0) { ch._ydSer -= dt; return 1 }
+  const t = ch.path[0], dx = t.x - ch.pos.x, dz = t.z - ch.pos.z, d = Math.hypot(dx, dz); if (d < 0.05) { ch._ydT = 0; return 1 }
+  const ux = dx / d, uz = dz / d, no = ch._ydNo || (ch._ydNo = ++YD.no); let f = 1;
+  for (const c of customers) { const o = c.char; if (o === ch || !o.path.length || o.seat || o.trans || !o.o.visible) continue;
+    const ox = o.pos.x - ch.pos.x, oz = o.pos.z - ch.pos.z, od = Math.hypot(ox, oz); if (od > YD.ara) continue;
+    const q = o.path[0], qx = q.x - o.pos.x, qz = q.z - o.pos.z, qd = Math.hypot(qx, qz); if (qd < 0.02) continue;
+    if ((qx * ux + qz * uz) / qd < 0.5) continue;                                   // aynı yöne gitmiyor
+    const on = ox * ux + oz * uz, onde = on > 0.04 || (on >= -0.04 && (o._ydNo || (o._ydNo = ++YD.no)) < no); if (!onde) continue;   // tam üst üsteyse sırası küçük olan önde sayılır
+    f = Math.min(f, Math.max(YD.enAz, (od - YD.ic) / (YD.ara - YD.ic))) }
+  if (f < 1) { ch._ydT = (ch._ydT || 0) + dt; if (ch._ydT > 3) { ch._ydT = 0; ch._ydSer = 2; return 1 } } else ch._ydT = 0;
+  return f }
+{ const _u = Char.prototype.update; Char.prototype.update = function (dt) { let sp = null;
+    try { if (YD.on && this.path.length && !this.trans && !this.seat && !this.canRun) { if (this._mus === undefined) this._mus = customers.some(c => c.char === this);
+        if (this._mus) { const f = ydCarpan(this, dt); if (f < 1) { sp = this.speed; this.speed = sp * f; if (this.vel > this.speed) this.vel = this.speed } } } } catch (e) { if (!YD.hata) { YD.hata = 1; console.warn('yürüyüş düzeni', e) } }
+    const r = _u.apply(this, arguments); if (sp !== null) this.speed = sp; return r } }
+// kaldırımda çıkış şeridi (girenler p10'da öbür yanda doğar)
+{ const _w = Char.prototype.walkTo; Char.prototype.walkTo = function (x, z, o) {
+    try { if (YD.on && o && o.direct && x === OUTSIDE.x && z === OUTSIDE.z) { if (this._mus === undefined) this._mus = customers.some(c => c.char === this); if (this._mus) { const n = DOOR_OUTN; x += n.z * YD.serit; z -= n.x * YD.serit } } } catch (e) { }
+    return _w.call(this, x, z, o) } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
