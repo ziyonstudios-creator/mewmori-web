@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795749394",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795762668",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -3318,13 +3318,17 @@ const ui=$('ui');const els=new Map();
 function el(key,cls,html,onTap){let e=els.get(key);if(!e){e=document.createElement(onTap?'button':'div');e.className=cls;if(onTap){e.type='button';e.addEventListener('pointerdown',ev=>ev.stopPropagation());e.addEventListener('click',ev=>{ev.stopPropagation();if(e.dataset.used)return;e.dataset.used='1';e.remove();els.delete(key);onTap()})}ui.appendChild(e);els.set(key,e)}
   if(e._html!==html){e.innerHTML=html;e._html=html}e._seen=true;return e}
 const _p=new THREE.Vector3();
-function place(e,wp,dy=0){_p.copy(wp).project(camera);const r=renderer.domElement.getBoundingClientRect();const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;e.style.display=vis?'':'none';
+let _plR=null,_plT=-1e9;
+// (V414) Tuvalin ekrandaki yeri kare başına bir kez okunur (eskiden her balon için ayrı okunuyor, her okuma bir önceki balonun yazdığı dönüşüm yüzünden
+// stil/yerleşim hesabını zorluyordu); balonun kendi boyu da içeriği değişmedikçe yeniden ölçülmez (yarım saniyede bir tazelenir).
+function place(e,wp,dy=0){_p.copy(wp).project(camera);const now=performance.now();if(!_plR||now-_plT>24){_plR=renderer.domElement.getBoundingClientRect();_plT=now}const r=_plR;const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;e.style.display=vis?'':'none';
+  let ow=0,oh=0;if(vis){if(!(e._ow>0)||e._boyH!==e._html||e._boyC!==e.className||now-(e._boyT||0)>500){e._ow=e.offsetWidth;e._oh=e.offsetHeight;e._boyH=e._html;e._boyC=e.className;e._boyT=now}ow=e._ow;oh=e._oh}
   // ekran kenarına taşmasın: yarı genişlik kadar içeride tut
   // (V412) PLB (p99x): ana ekranda üst çubuğun ve yan sütunların ALTINA girmesin (V410'daki yakın kamerada mutfaktaki "Hazırla" düğmesi hedef hapının arkasında kalıyordu);
   // --bk: kamera uzaklaşınca balonlar biraz küçülür (büyük kafede karakterler küçükken balonlar ekranı kaplamasın)
   const B=typeof PLB!=='undefined'?PLB:null,yan=B?B.yan:0,kk=(window.__U?window.__U.k:1)*(B?B.bk:1);
-  let px=(_p.x+1)/2*r.width;if(vis&&e.offsetWidth){const hw=e.offsetWidth*kk/2+6;px=r.width-2*yan>2*hw?Math.min(Math.max(px,yan+hw),r.width-yan-hw):Math.min(Math.max(px,hw),r.width-hw)}
-  let py=(1-_p.y)/2*r.height+dy;if(vis&&B&&B.ust>0&&e.offsetHeight){const mn=B.ust+e.offsetHeight*kk;if(py<mn)py=mn;else if(B.alt>0&&py>r.height-B.alt&&Math.abs(px-r.width/2)<B.altX+e.offsetWidth*kk/2)py=Math.max(mn,r.height-B.alt)}   // alt ortadaki düğme sırasının üstünde kalsın
+  let px=(_p.x+1)/2*r.width;if(vis&&ow){const hw=ow*kk/2+6;px=r.width-2*yan>2*hw?Math.min(Math.max(px,yan+hw),r.width-yan-hw):Math.min(Math.max(px,hw),r.width-hw)}
+  let py=(1-_p.y)/2*r.height+dy;if(vis&&B&&B.ust>0&&oh){const mn=B.ust+oh*kk;if(py<mn)py=mn;else if(B.alt>0&&py>r.height-B.alt&&Math.abs(px-r.width/2)<B.altX+ow*kk/2)py=Math.max(mn,r.height-B.alt)}   // alt ortadaki düğme sırasının üstünde kalsın
   e.style.transform=`translate(${px.toFixed(1)}px,${py.toFixed(1)}px) translate(-50%,-100%) scale(calc(var(--u,1)*var(--bk,1)))`}   // --u: arayüz ölçeği (p68); kafe içi düğmeler de onunla büyür
 function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.className='coin-pop'+(tip?' tip':'');e.innerHTML=`+${n} ${ic('coin')}${tip?' bahşiş':''}`;ui.appendChild(e);const t0=performance.now();
   const f=()=>{const k=(performance.now()-t0)/1300;if(k>=1){e.remove();return}place(e,wp,-k*50);e.style.opacity=String(1-k*k);requestAnimationFrame(f)};f()}
@@ -16297,7 +16301,10 @@ function rh2Cafe(){const st=S.tut,N=NMs(),c=customers[0],o=orders[0];if(customer
 
 // ---- 5) başlangıç ürünleri → birleştirme → tarifler → menü ----
 const G_REC='sicak_sut';
-const startNames=()=>Object.keys(TK_CFG).filter(id=>TK_CFG[id].cls===0&&RECIPE[id]&&!RECIPE[id].br).map(id=>`<b>${RECIPE[id].name}</b>`);
+// (V414) Liste o an menüde gerçekten olan ürünlerden kurulur. Eskiden 0. sınıf tariflerdendi: V396'da menüden kaldırılan "Su" hâlâ sayılıyor
+// ("Kafemiz Demli Çay, Omlet, Tost ve Su ile açıldı"), menüdeki Espresso ve Kurabiye ise sayılmıyordu.
+const startNames=()=>{let L=[];try{L=RECIPES.filter(r=>!r.hidden&&!r.br&&S.menu&&S.menu[r.id]).map(r=>r.id)}catch(e){}
+  if(L.length<2)L=Object.keys(TK_CFG).filter(id=>TK_CFG[id].cls===0&&RECIPE[id]&&!RECIPE[id].br&&!RECIPE[id].hidden);return L.slice(0,6).map(id=>`<b>${RECIPE[id].name}</b>`)};
 function rh2Go(mode,fn){return ()=>{RH2.shown='';try{fn&&fn()}catch(e){}setMode(mode)}}
 function rh2Guide(){const st=S.tut,m=UI.mode;RH2.pair=null;
   if(UI.modal&&!document.querySelector('.tkanim')){rh2Hide();return}
@@ -20519,7 +20526,10 @@ const GFX_ELLE='mewmori-grafik-elle',GFX_OTO='mewmori-grafik-oto';
 const FPSM={n:0,auto:false,t0:0,ok:0,sum:0,done:(()=>{try{return localStorage.getItem(GFX_OTO)==='1'||localStorage.getItem(GFX_ELLE)==='1'}catch(e){return true}})()};
 {const _ga=gfxApply;gfxApply=function(q,init){if(!init&&!FPSM.auto){FPSM.done=true;try{localStorage.setItem(GFX_ELLE,'1')}catch(e){}}return _ga.apply(this,arguments)}}
 {const _r=renderer.render.bind(renderer);renderer.render=function(s,c){if(s===scene)FPSM.n++;return _r(s,c)}}
-function fpsOlc(){try{if(FPSM.done||gfxAuto()!=='bal'||PERF.q!=='bal')return;
+function fpsOlc(){try{
+    // (V414) eğitim sırasında yapılan otomatik kalite değişikliğinin bildirimi eğitim bitince gösterilir (ilk adımda rehber elinin üstüne çıkıyordu)
+    if(FPSM.bek&&S&&S.tut==='done'&&UI.mode==='cafe'&&!UI.modal&&!(typeof rh2Act==='function'&&rh2Act())){FPSM.bek=0;try{toast(`<b>Grafik: ${GFX.eco.name}</b><br>Oyun telefonunda daha akıcı çalışsın diye ayarlandı. Ayarlar'dan değiştirebilirsin.`,ic('check'),4200)}catch(e){}}
+    if(FPSM.done||gfxAuto()!=='bal'||PERF.q!=='bal')return;
     if(typeof started==='undefined'||!started||document.hidden||PERF.covered||UI.mode!=='cafe'||UI.modal){FPSM.t0=0;FPSM.ok=0;FPSM.sum=0;return}
     const now=performance.now();if(!FPSM.t0){FPSM.t0=now;FPSM.n=0;return}
     const dt=now-FPSM.t0;if(dt<2000)return;const fps=FPSM.n*1000/dt;FPSM.t0=now;FPSM.n=0;FPSM.ok++;
@@ -20527,7 +20537,7 @@ function fpsOlc(){try{if(FPSM.done||gfxAuto()!=='bal'||PERF.q!=='bal')return;
     FPSM.sum+=fps;if(FPSM.ok<6)return;
     const avg=FPSM.sum/(FPSM.ok-2);FPSM.done=true;try{localStorage.setItem(GFX_OTO,'1')}catch(e){}
     if(avg<38){FPSM.auto=true;try{gfxApply('eco')}finally{FPSM.auto=false}
-      try{toast(`<b>Grafik: ${GFX.eco.name}</b><br>Oyun telefonunda daha akıcı çalışsın diye ayarlandı. Ayarlar'dan değiştirebilirsin.`,ic('check'),4200)}catch(e){}}
+      if(S&&S.tut!=='done')FPSM.bek=1;else try{toast(`<b>Grafik: ${GFX.eco.name}</b><br>Oyun telefonunda daha akıcı çalışsın diye ayarlandı. Ayarlar'dan değiştirebilirsin.`,ic('check'),4200)}catch(e){}}
     console.log('kare hızı ölçümü',Math.round(avg),'fps',avg<38?'→ eco':'')}catch(e){console.warn('fps ölçümü',e)}}
 setInterval(fpsOlc,1000);
 
@@ -24617,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-0547';
+const OLC_DERLEME = '20261127-0957';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28736,14 +28746,19 @@ var KYD = { pay: 4, ipucu: false };
 try { KYD.ipucu = !!(S.seen && S.seen.kaydirIpucu) } catch (e) { }
 function kydAcik() { try { if (UI.mode !== 'cafe' || UI.modal) return false; if (KSC.mod === 'yakin' || KSC.an) return false; if (typeof CAM !== 'undefined' && CAM.on) return false;
     if (typeof K2 !== 'undefined' && K2.view === 2) return false; if (typeof TZ !== 'undefined' && TZ.on) return false; return true } catch (e) { return false } }
-function kydSinir() { try { const T = controls.target, p = KYD.pay; let dx = 0, dz = 0;
+// (V414) HATA DÜZELTMESİ — V408'den beri (benim): üstten kamerada "Kat" düğmesiyle üst kata çıkınca kamera üst kata GİTMİYOR, inince ekran
+// BOŞ kalıyordu. Sebep: kat değiştirme kamerayı 400 m öteye taşır (p107 k2View); o anda aşağıdaki 'change' dinleyicisi bunu kaydırma sanıp
+// odağı arsa sınırına (x ≤ 15) geri çekiyordu (controls.enablePan bir kare sonra kapanıyordu). İnişte de −400 m uygulanınca kamera boşluğa
+// bakıyordu. Artık sınır yalnız kaydırma gerçekten açıkken (kydAcik: üst kat görünümünde kapalı) uygulanır; kat değişimi kaydırma sayılmaz.
+function kydSinir() { try { if (typeof K2 !== 'undefined' && K2.view === 2) return; const T = controls.target, p = KYD.pay; let dx = 0, dz = 0;
     if (T.x < LOT.x0 - p) dx = LOT.x0 - p - T.x; else if (T.x > LOT.x1 + p) dx = LOT.x1 + p - T.x; if (T.z < LOT.z0 - p) dz = LOT.z0 - p - T.z; else if (T.z > LOT.z1 + p) dz = LOT.z1 + p - T.z;
     if (dx || dz) { T.x += dx; T.z += dz; camera.position.x += dx; camera.position.z += dz } } catch (e) { } }
 function kydOrtala() { try { GKK.an = null } catch (e) { } try { camFit() } catch (e) { } }
 function kydTick() { const ac = kydAcik(); if (controls.enablePan !== ac) { controls.enablePan = ac; controls.screenSpacePanning = false; controls.panSpeed = 0.9 } }
 { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { kydTick() } catch (e) { } return r } }
 // kaydırma algısı: OrbitControls 'change' olayında odak yatayda değiştiyse sınırla; ilk kaydırmada ipucu
-{ let son = null; controls.addEventListener('change', () => { try { if (!controls.enablePan) { son = null; return } const T = controls.target;
+{ let son = null, kat = 1; controls.addEventListener('change', () => { try { const k = (typeof K2 !== 'undefined' && K2.view === 2) ? 2 : 1; if (k !== kat) { kat = k; son = null }   // kat değişti: sıçrama kaydırma değildir
+      if (!controls.enablePan || !kydAcik()) { son = null; return } const T = controls.target;
       if (son && (Math.abs(T.x - son.x) > 1e-4 || Math.abs(T.z - son.z) > 1e-4)) { kydSinir(); if (!KYD.ipucu) { KYD.ipucu = true; try { S.seen = S.seen || {}; S.seen.kaydirIpucu = 1; markDirty() } catch (e) { } } }
       son = { x: T.x, z: T.z } } catch (e) { } }) }
 // görünüm değişince ortadan başla
@@ -28883,10 +28898,16 @@ function fdKur() { try { const de = document.documentElement; if (de.classList.c
     const hazir = typeof started !== 'undefined' && started && S.created && S.tut === 'done' && !rh2Act();
     for (const [id, tr, en] of FD_MENU) { const var_ = fdVar(id); if (var_ && fdNokta(id)) nokta = true;
       if (!hazir || id === 'cleanBtn' || id === 'setBtn') continue;
-      if (var_ && !gor[id]) { gor[id] = 1; if (!ilk) { FD.yeni[id] = 1; if (id !== 'evBtn') try { toast(fdT(`<b>Yeni özellik: ${tr}</b><br>“Daha fazla” menüsünde seni bekliyor`, `<b>New feature: ${en}</b><br>Find it in the “More” menu`), ic('star'), 3600) } catch (e) { } } try { markDirty() } catch (e) { } } }
+      if (var_ && !gor[id]) { gor[id] = 1; if (!ilk) { FD.yeni[id] = 1; if (id !== 'evBtn') (FD.bild = FD.bild || []).push([tr, en]) } try { markDirty() } catch (e) { } } }
     if (hazir && ilk) { S.seen.fdIlk = 1; try { markDirty() } catch (e) { } }
     if (Object.keys(FD.yeni).length) nokta = true; if (m) m.classList.toggle('has', nokta);
-    fdPuan() } catch (e) { if (!FD.hata) { FD.hata = 1; console.warn('ana ekran', e) } } }
+    fdBildir(); fdPuan() } catch (e) { if (!FD.hata) { FD.hata = 1; console.warn('ana ekran', e) } } }
+// (V414) "Yeni özellik" bildirimi kafe ekranı boştayken çıkar. Önce açıldığı an çıkıyordu: yeni hesapta eğitim biter bitmez "Keşfet" açıldığı
+// için bildirim tam hediye dekorun yerleştirme kipine denk geliyor ve alttaki "Yerleştir" düğmesini 3,6 sn örtüyordu (V410'dan beri, benim).
+function fdBildir() { const L = FD.bild; if (!L || !L.length) return;
+  try { if (UI.mode !== 'cafe' || UI.modal || (typeof PL !== 'undefined' && PL) || (typeof KUT !== 'undefined' && (KUT.mesgul || KUT.sira.length)) || (typeof ktDekorBekliyor === 'function' && ktDekorBekliyor())
+      || document.querySelector('#game .modal:not([hidden])') || ($('coach') && !$('coach').hidden)) return } catch (e) { return }
+  const [tr, en] = L.shift(); try { toast(fdT(`<b>Yeni özellik: ${tr}</b><br>“Daha fazla” menüsünde seni bekliyor`, `<b>New feature: ${en}</b><br>Find it in the “More” menu`), ic('star'), 3600) } catch (e) { } }
 // ---- "Daha fazla" menüsü ----
 function fdMenuKapat() { const p = $('fdPop'); if (p) p.remove(); document.removeEventListener('pointerdown', fdDis, true) }
 function fdDis(ev) { if (!ev.target.closest('#fdPop') && !ev.target.closest('#fdMore')) fdMenuKapat() }
@@ -28903,7 +28924,10 @@ function fdMenu() { if ($('fdPop')) return fdMenuKapat(); const y = $('y2'); if 
 // pencere / başka ekran açılınca menü kapanır
 setInterval(() => { try { if ($('fdPop') && (UI.mode !== 'cafe' || UI.modal)) fdMenuKapat() } catch (e) { } }, 300);
 // ---- kafe puanı: henüz hiç değerlendirme yokken sayı yerine "Yeni" (belge madde 15; yalnız gösterim, hesap aynı) ----
-function fdPuanYok() { try { return !(S.rep && S.rep.hist && S.rep.hist.length) } catch (e) { return false } }
+// (V414) 5 değerlendirme birikene kadar "Yeni": tek yorumla da başlangıç tohumu (3,6) görünüyordu (iç hesap değişmez)
+const FD_PUAN_MIN = 5;
+function fdPuanSay() { try { return (S.rep && S.rep.hist && S.rep.hist.length) | 0 } catch (e) { return FD_PUAN_MIN } }
+function fdPuanYok() { return fdPuanSay() < FD_PUAN_MIN }
 function fdPuan() { const p = $('repPill'); if (!p) return; const b = p.querySelector('b') || p; const yok = fdPuanYok(); if (p.classList.contains('fdYeni') !== yok) p.classList.toggle('fdYeni', yok);
   if (yok) { const t = fdT('Yeni', 'New'); if (b.textContent !== t) { b.textContent = t; b.setAttribute('data-dilyok', '1') } } }
 // bildirimler (alt orta) alt düğme sırasının üstünde çıkar: eski yer, ipucu balonunun hemen üstüydü; orası artık Kafem · Birleştir · Ekibim
@@ -29016,7 +29040,7 @@ function fdKafemAc() { let W; try { W = skWin('skKafem', fdT('Kafem', 'My Café'
     setTimeout(() => { try { if (a.dataset.ac === 'profil') openProfile(); else if (a.dataset.ac === 'asama') kaPencere(); else if (a.dataset.ac === 'rapor') openFin() } catch (e) { console.warn('kafem', e) } }, 60) } }
 // ---- puan yokken pencerelerde de "Yeni" ----
 { const _or = openRep; openRep = function () { const r = _or.apply(this, arguments); try { const yama = () => { const m = $('repModal'); if (!m) return false; if (!fdPuanYok()) return true; const t = m.querySelector('.rtop'); if (t && !t.classList.contains('fdYok')) { t.classList.add('fdYok'); t.setAttribute('data-dilyok', '1');
-          t.innerHTML = `<b>${fdT('Yeni kafe', 'New café')}</b><span class="rtr eq">${fdT('henüz değerlendirme yok', 'no reviews yet')}</span>`; const n = m.querySelector('.rnote'); if (n) { n.setAttribute('data-dilyok', '1'); n.innerHTML = fdT('İlk misafirlerini ağırladıkça puanın burada görünecek. Hızlı servis, kaliteli ürün ve adil fiyat puanı yükseltir.', 'Your rating will appear here as you serve your first guests. Fast service, quality products and fair prices raise it.') } } return true };
+          const ns = fdPuanSay(); t.innerHTML = `<b>${fdT('Yeni kafe', 'New café')}</b><span class="rtr eq">${ns ? fdT(`${ns} değerlendirme · puan ${FD_PUAN_MIN}. değerlendirmede görünür`, `${ns} review${ns === 1 ? '' : 's'} · the rating appears at ${FD_PUAN_MIN}`) : fdT('henüz değerlendirme yok', 'no reviews yet')}</span>`; const n = m.querySelector('.rnote'); if (n) { n.setAttribute('data-dilyok', '1'); n.innerHTML = fdT('İlk misafirlerini ağırladıkça puanın burada görünecek. Hızlı servis, kaliteli ürün ve adil fiyat puanı yükseltir.', 'Your rating will appear here as you serve your first guests. Fast service, quality products and fair prices raise it.') } } return true };
       yama(); const iv = setInterval(() => { if (!yama()) clearInterval(iv) }, 250) } catch (e) { } return r } }
 { const _op = openProfile; openProfile = function () { const r = _op.apply(this, arguments); try { const yama = () => { const m = $('skProf'); if (!m || m.hidden) return false; if (!fdPuanYok()) return true;
         m.querySelectorAll('.pfS').forEach(s => { const sm = s.querySelector('small'), b = s.querySelector('b'); if (sm && b && /Kafe puanı|Café rating|Cafe rating/i.test(sm.textContent) && !b.dataset.fd) { b.dataset.fd = '1'; b.setAttribute('data-dilyok', '1'); b.textContent = fdT('Yeni', 'New') } }); return true };
@@ -29201,9 +29225,13 @@ try { FK.on = !!GKK.on } catch (e) { FK.on = false }
 try { const v0 = camera.position.clone().sub(controls.target), a0 = Math.atan2(v0.x, v0.z); if (isFinite(a0) && a0 > 0.1 && a0 < 1.61) FK.az0 = a0 } catch (e) { }   // oyunun varsayılan bakış yönü
 try { const v = JSON.parse(localStorage.getItem(FK_KEY) || 'null'); if (v && isFinite(v.o) && isFinite(v.p)) FK.kay = { o: Math.max(0.5, Math.min(2, +v.o)), p: Math.max(-0.4, Math.min(0.4, +v.p)), a: isFinite(v.a) ? Math.max(0.12, Math.min(1.6, +v.a)) : null } } catch (e) { }
 const fkEskiD = () => { let a = 2; try { a = camera.aspect || 2 } catch (e) { } return GKK.d1 * Math.pow(kmK(), 0.9) * Math.max(1, GKK.en / Math.max(0.6, a)) };
-function fkOlcek() { try { const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u')); if (v > 0.3 && v < 3) return v } catch (e) { } return 1 }
+// (V414) arayüz ölçeği p68'in yazdığı window.__U.k'dan okunur (--u ile aynı sayı). Eskiden her çağrıda getComputedStyle ile okunuyordu; kmVars her karede
+// çağrıldığı için bu, V410'dan beri kare başına bir stil hesabı demekti (profil: JS süresinin en büyük kalemi).
+function fkOlcek() { try { const k = window.__U && window.__U.k; if (k > 0.3 && k < 3) return k } catch (e) { } return 1 }
 function fkHesap() { const W = Math.max(200, innerWidth), H = Math.max(120, innerHeight), u = fkOlcek(), yeniHud = document.documentElement.classList.contains('fd');
-  const anah = [RM.x0, RM.x1, RM.z0, RM.z1, W, H, u.toFixed(3), yeniHud ? 1 : 0].join('|'); if (anah === FK.anah) return FK; FK.anah = anah;
+  { const K = FK.k0 || (FK.k0 = []); if (K[0] === RM.x0 && K[1] === RM.x1 && K[2] === RM.z0 && K[3] === RM.z1 && K[4] === W && K[5] === H && Math.abs(K[6] - u) < 5e-4 && K[7] === yeniHud) return FK;   // değişmediyse (her kare) hiçbir şey ayırmadan dön
+    K[0] = RM.x0; K[1] = RM.x1; K[2] = RM.z0; K[3] = RM.z1; K[4] = W; K[5] = H; K[6] = u; K[7] = yeniHud }
+  FK.anah = [RM.x0, RM.x1, RM.z0, RM.z1, W, H, u.toFixed(3), yeniHud ? 1 : 0].join('|');
   const a = W / H, k = kmK(), d0 = fkEskiD();
   const pol = Math.max(0.62, Math.min(0.9, 0.74 + 0.14 * Math.max(0, Math.min(1, (a - 1.5) / 0.6)) - 0.12 * Math.max(0, Math.min(1, k - 1))));
   // boş dikdörtgen (px): üst çubuk, alt düğme sırası, yan sütunlar
@@ -29280,11 +29308,16 @@ document.addEventListener('pointerdown', ev => { try { if (ev.target instanceof 
 // eğitimin bittiği an kaydedilir (yalnız bu sürümde eğitimi bitiren hesaplarda; eski hesaplarda S.seen.egBit yoktur → hiçbir şey ertelenmez)
 setInterval(() => { try { if (typeof S === 'undefined' || !S || !S.created || EVMODE) return; if (S.tut !== 'done') { EG2.egitimde = true; return }
     if (EG2.egitimde) { EG2.egitimde = false; S.seen = S.seen || {}; if (!S.seen.egBit) { S.seen.egBit = Date.now(); markDirty() } }
-    eg2Hedef() } catch (e) { } }, 600);
+    eg2Hedef(); eg2Reklam() } catch (e) { } }, 600);
+// (V414) yeni hesabın ilk dakikaları sakin kalsın: "2× gelir · reklam izle" önerisi (p929; oyun açıldıktan 3 dk sonra çıkar, yani tam eğitim
+// biterken) 6 sipariş tamamlanana ya da eğitimin bitişinden 5 dakika geçene kadar ertelenir. Sonrası aynen eskisi gibi.
+function eg2Reklam() { try { if (typeof BST === 'undefined' || BST.offer || !S.seen || !S.seen.egBit) return; if (((S.stats && S.stats.orders) | 0) >= 6 || Date.now() - S.seen.egBit > 300000) return;
+    const t = nowT() + 20000; if (!(BST.next > t)) BST.next = t } catch (e) { } }
 // 3) ilk hedef tanıtımı (bir kez; yalnız bu sürümde eğitimi bitirenlere)
 function eg2Hedef() { if (!S.seen || !S.seen.egBit || S.seen.egHedef) return;
   try { if (typeof ktDekorBekliyor === 'function' && ktDekorBekliyor()) return } catch (e) { }   // önce hediye dekor (p99v)
   if (typeof started === 'undefined' || !started || UI.mode !== 'cafe' || UI.modal) return;
+  try { if (typeof KUT !== 'undefined' && (KUT.mesgul || KUT.sira.length)) { EG2.hedefT = 0; return } } catch (e) { }   // (V414) "İlk dekorasyonun!" şeridiyle aynı anda çıkmasın: şerit bitsin, sonra
   const c = $('coach'); if (!c) return; if (!c.hidden && CO.owner !== 'eg2') return; if (document.querySelector('#game .modal:not([hidden])') || (typeof PL !== 'undefined' && PL)) return;
   const hap = document.querySelector('#fdHedef:not([hidden]) .fhHap'); if (!hap) { if (Date.now() - S.seen.egBit > 60000) { S.seen.egHedef = 1; markDirty() } return }
   if (!EG2.hedefT) { EG2.hedefT = performance.now(); return } if (performance.now() - EG2.hedefT < 1400) return;
@@ -29292,6 +29325,10 @@ function eg2Hedef() { if (!S.seen || !S.seen.egBit || S.seen.egHedef) return;
   const bitir = () => { S.seen.egHedef = 1; try { coachOff() } catch (e) { } markDirty(); try { saveNow() } catch (e) { } };
   coach({ owner: 'eg2', title: fdT('İlk hedefin burada!', 'Your first goal is here!'), text: fdT('Sıradaki hedefin hep üstte durur. Dokunursan ayrıntıları görür, tek dokunuşla ilgili ekrana gidersin.', 'Your next goal always sits at the top. Tap it to see the details and jump straight to the right screen.'),
     target: () => document.querySelector('#fdHedef .fhHap'), place: 'bottom', buttons: [{ label: fdT('Tamam', 'OK'), green: true, onClick: bitir }] }) }
+// (V414) Eğitimin kasa adımında (k7) ekranda iki düğme birden duruyordu: yönlendirilen "Hesabı al" ve kirli masadaki "Temizle". O adımda
+// yalnız "Hesabı al"a izin verildiği için "Temizle"ye dokunmak hiçbir şey yapmıyordu (yeni oyuncu için kafa karıştırıcı). "Temizle" k7 boyunca
+// gizlenir; ödeme alınınca (k8) kendi yönlendirmesiyle çıkar. Yalnız eğitim; normal oyunda değişiklik yok.
+{ const _f = fxUI; fxUI = function () { const r = _f.apply(this, arguments); try { if (!EVMODE && S && S.tut === 'k7') for (const [k, e] of els) if (k.startsWith('cln') && e.style.display !== 'none') e.style.display = 'none' } catch (e) { } return r } }
 // 4) son mesaj: Ayarlar artık "Daha fazla" menüsünde
 { const _rs = rh2Show; rh2Show = function (key, opt) { try { if (key === 'mn2' && opt && typeof opt.text === 'string' && document.documentElement.classList.contains('fd')) opt = { ...opt, text: opt.text.replace('<b>Ayarlar › Rehber</b>', '<b>Daha fazla › Ayarlar › Rehber</b>') } } catch (e) { } return _rs.call(this, key, opt) } }
 
@@ -29537,6 +29574,10 @@ setInterval(() => { try { if (typeof S === 'undefined' || !S || !S.created || EV
 // ilk dekorasyon
 { const _cp = confirmPlacement; confirmPlacement = function () { let rec = null, c = null; try { rec = PL && PL.rec; c = rec && CAT[rec.id] } catch (e) { } const r = _cp.apply(this, arguments);
     try { if (rec && !PL && !rec.stored && c && (c.kind === 'decor' || c.kind === 'walldecor') && ktYeniHesap() && ktBayrak('dekor')) setTimeout(() => ktBanner(fdT('İlk dekorasyonun!', 'Your first decoration!'), fdT('Kafen artık daha senin', 'Your café feels more like yours')), 500) } catch (e) { } return r } }
+// (V414) etkinlik ödülü (belge madde 11 "Etkinlik ödülleri"): ana kafeye eklenen etkinlik altını yalnız bir bildirimdi → altın patlaması + göstergenin
+// altında "+N" + kafe ekranına dönünce kısa şerit. Tutar ve verilme anı aynı (p35 evClaim).
+{ const _ec = evClaim; evClaim = function () { const n = _ec.apply(this, arguments); try { if (n > 0 && !EVMODE) { try { gfPatla(innerWidth / 2, innerHeight * 0.36, 12, gfCoin(), Math.min(innerWidth, innerHeight) * 0.24, 18) } catch (e) { } try { gfArti(n) } catch (e) { }
+        ktBanner(fdT('Etkinlik ödülü!', 'Event reward!'), `+${kaFmt(n)} ${fdT('altın', 'gold')}`) } } catch (e) { } return n } }
 // memnun müşteri kalkarken küçük kalp
 var KUT_D = new WeakMap();
 { const _gs = gfServisTick; gfServisTick = function () { const r = _gs.apply(this, arguments); try { if (!gfKafede()) return r; for (const c of customers) { const s = c.state, o = KUT_D.get(c); if (o === s) continue; KUT_D.set(c, s);
@@ -29549,9 +29590,10 @@ function ktTarifKapat(d, id, ekle) { if (!d || d._kapandi) return; d._kapandi = 
 tkUnlockAnim = function (id) { try { document.querySelectorAll('.tkanim').forEach(x => x.remove()) } catch (e) { }
   const r = RECIPE[id]; let ad = r ? r.name : ''; try { ad = kaTr(ad) } catch (e) { } const egitim = (() => { try { return rh2Act() } catch (e) { return false } })();
   const d = document.createElement('div'); d.className = 'tkanim ktT' + (egitim ? '' : ' ktDok'); d.setAttribute('data-dilyok', '1');
-  d.innerHTML = `<div class="ktKart"><i class="ktIsin"></i><div class="ktRes"><img src="${productThumb(id)}" alt=""></div><small>${fdT('Yeni tarif keşfedildi!', 'New recipe discovered!')}</small><b>${ad}</b><p>${fdT('artık kafende!', 'is now in your café!')}</p>${egitim ? '' : `<button type="button" class="btn green">${ic('menu')}${fdT('Menüme Ekle', 'Add to my menu')}</button>`}</div>`;
+  d.innerHTML = `<div class="ktKart"><i class="ktIsin"></i><div class="ktRes"><img src="${productThumb(id)}" alt=""></div><small>${fdT('Yeni tarif keşfedildi!', 'New recipe discovered!')}</small><b>${ad}</b><p>${egitim ? fdT('artık kafende!', 'is now in your café!') : fdT('Kafenin menüsüne yeni bir lezzet kat!', 'Add a new flavour to your café’s menu!')}</p>${egitim ? '' : `<button type="button" class="btn green">${ic('menu')}${fdT('Menüme Ekle', 'Add to my menu')}</button>`}</div>`;
   $('game').appendChild(d); setTimeout(() => d.classList.add('go'), 30);
   try { setTimeout(() => gfPatla(innerWidth / 2, innerHeight * 0.4, 14, 'yildiz', Math.min(innerWidth, innerHeight) * 0.34, 18), 260) } catch (e) { }
+  try { ktSevin(ktOyuncu(), 1.6) } catch (e) { }   // (V414) şef de sevinir (kafe ekranındaysa görünür; belge madde 10)
   if (egitim) { d._zt = setTimeout(() => ktTarifKapat(d, id, false), 2500); return }
   // eğitim dışında: menüye ekleme oyuncunun dokunuşuyla olur (dokunmazsa kart kapanırken eklenir)
   try { if (S.menu[id]) { S.menu[id] = false; markDirty() } } catch (e) { }
@@ -29575,8 +29617,8 @@ function ktDekorVer(id) { try { const c = CAT[id]; if (!c) return; S.seen = S.se
     const depoda = () => toast(fdT(`<b>${kaTr(c.name)}</b> depona kondu<br>Dekorasyon › Depo’dan dilediğin zaman yerleştir`, `<b>${kaTr(c.name)}</b> is in your storage<br>Place it any time from Decorate › Storage`), `<img src="${itemThumb(id)}" alt="">`, 3600);
     if (c.kind === 'walldecor') { const s = freeSlot(); if (s < 0) return depoda(); rec.slot = s }
     // hemen yerleştirme kipi (araya başka pencere girmesin: günlük giriş penceresi boş anı bekliyor olabilir)
-    try { if (UI.mode !== 'cafe' || UI.modal) return depoda(); startPlacement({ rec, isNew: false, price: 0, fromStore: true });
-      toast(fdT('<b>Hediyen hazır!</b><br>Sürükleyip dilediğin yere koy, sonra onayla', '<b>Your gift is ready!</b><br>Drag it where you like, then confirm'), `<img src="${itemThumb(id)}" alt="">`, 3600) } catch (e) { console.warn('hediye dekor', e); depoda() } } catch (e) { console.warn('hediye dekor', e) } }
+    // (V414) burada çıkan "Hediyen hazır!" bildirimi yerleştirme çubuğunun düğmelerini 3,6 sn örtüyordu; çubuğun kendi yazısı ("sürükle… / oklarla kaydır") yeterli
+    try { if (UI.mode !== 'cafe' || UI.modal) return depoda(); startPlacement({ rec, isNew: false, price: 0, fromStore: true }) } catch (e) { console.warn('hediye dekor', e); depoda() } } catch (e) { console.warn('hediye dekor', e) } }
 { const INK = '#4a2a14'; const st = document.createElement('style'); st.textContent = `
 #gkFx .geIlk.ktS b{font-size:24px;-webkit-text-stroke:1.4px ${INK};display:flex;align-items:center;gap:6px}
 .tkanim.ktT{z-index:90}.tkanim.ktT.ktDok{pointer-events:auto;cursor:pointer}
@@ -29742,6 +29784,133 @@ setInterval(() => { try { if (typeof started === 'undefined' || !started || !S |
 #dayModal [data-sn] .dhead{align-items:flex-start;justify-content:flex-start}#dayModal [data-sn] .dhead>div{flex:1;min-width:0}
 #teamList .ekRoller .ekRB small.snSen b{color:#a8650f}
 `; document.head.appendChild(st) }
+
+// ================= V414 · FINAL DENEYİM 12: UZUN OTURUMDA BELLEK — GİDENLERİN KAYITLARI VE GEÇİCİ NESNELER =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 17: "Bellek sızıntılarını kontrol et · Uzun süreli oynanışta oluşabilecek performans
+// düşüşlerini incele · Kullanılmayan animasyonları durdur."
+// Ölçüm (sanal tarayıcı, 20 oyun dakikası, 30 sipariş): çizim belleğindeki geometri sayısı 653 → 1.874 (dakikada ~61), doku 41 → 120
+// (dakikada ~4); sahnedeki nesne sayısı ve DOM sabit. Kaynağını izledim (fin/t_sizinti.py). Üçü de bu güncellemeden ESKİ:
+//  1) [en büyüğü, oyunun ilk sürümlerinden beri] Tamamlanan siparişler `orders` dizisinden hiç silinmiyordu; her sipariş müşterisini, müşteri de
+//     karakterinin bütün iskeletini, animasyon karıştırıcısını ve ağlarını bellekte tutuyordu. Ayrıca kare başına yapılan sipariş taramaları
+//     oturum uzadıkça uzuyordu. → Ödenmiş / iptal edilmiş, müşterisi kafeden çıkmış siparişler 10 sn sonra diziden çıkarılır (eğitim bittikten
+//     sonra; eğitim adımları ilk siparişe sıra numarasıyla bakıyor).
+//  2) [V392'den beri, benim] Canlılık sistemi (p999) güncellenen her karakteri bir kümeye ekliyor, gideni çıkarmıyordu (her müşteri sonsuza dek
+//     tutuluyor, üç ayrı döngü hepsini geziyordu). → Sahneden çıkan karakter kümeden çıkarılır (yeniden güncellenirse kendini yine ekler).
+//  3) [ilk sürümlerden beri] Geçici nesnelerin geometrileri sahneden çıkınca serbest bırakılmıyordu: kirli tabak (her biri 10 geometri), menü
+//     kartı, sipariş ürünleri (fincan, tabak, tost…), grup halkası, müşteri aksesuarları (şapka, fular), müşteri iskeletinin kemik dokusu,
+//     solarken kopyalanan malzemeler. → Bu nesneler OLUŞTURULDUKLARI yerde işaretlenir; sahneden 6 sn'den uzun süre kopuk kalanın geometrisi
+//     (ve yalnız kendisine ait malzemesi) serbest bırakılır. Ortak geometriler (kedi gövdesi), ortak malzemeler ve görünüm dokuları
+//     işaretlenmez, dokunulmaz. three.js'te hâlâ kullanılan bir kaynağı bırakmak hata vermez (yeniden yüklenir), yani yanlış bir işaret en kötü
+//     ihtimalle tek karelik bir yeniden yüklemedir.
+// Kapatmak için BSU.on=false. Oynanış, sipariş akışı, kayıt DEĞİŞMEDİ.
+var BSU = { on: true, liste: new Set(), kedi: new Set(), sure: 6000, say: { geo: 0, mat: 0, isk: 0, sip: 0, kar: 0 } };
+function bsuBagli(o) { try { let p = o; for (let i = 0; i < 80 && p.parent; i++) p = p.parent; return !!p.isScene } catch (e) { return true } }
+function bsuEtiket(kok, malz) { try { if (kok && kok.traverse) kok.traverse(o => { if (!o.isMesh || o.isSkinnedMesh || !o.geometry) return; if (!o.userData.gsK) { o.userData.gsK = 1; o.geometry.userData.gsN = (o.geometry.userData.gsN | 0) + 1; BSU.liste.add(o) } if (malz) o.userData.gsM = 1 }) } catch (e) { } return kok }
+// ---- işaretleme: oluşturuldukları yerde ----
+{ const _f = menuCard; menuCard = function () { return bsuEtiket(_f.apply(this, arguments)) } }
+{ const _f = dirtyPlate; dirtyPlate = function () { return bsuEtiket(_f.apply(this, arguments)) } }
+{ const _f = makeProduct; makeProduct = function () { return bsuEtiket(_f.apply(this, arguments)) } }
+{ const _f = groupRing; groupRing = function (g, on) { const r = _f.apply(this, arguments); try { if (on && g && g.ring) bsuEtiket(g.ring, true) } catch (e) { } return r } }
+// solarak kaybolan nesne (sipariş ürünü, kirli tabak): fadeOut her ağın malzemesini kopyalar → o kopya da nesneyle birlikte bırakılır
+{ const _f = fadeOut; fadeOut = function (m) { const r = _f.apply(this, arguments); try { if (m && m.traverse) m.traverse(x => { if (x.isMesh && x.material) { x.userData.gsM = 1; BSU.liste.add(x) } }) } catch (e) { } return r } }
+// müşteri aksesuarları: attachAcc'tan önce olmayan ağlar
+{ const _f = attachAcc; attachAcc = function (root, build) { let once = null; try { once = new Set(); root.traverse(o => { if (o.isMesh) once.add(o) }) } catch (e) { once = null }
+    const r = _f.apply(this, arguments); try { if (once) root.traverse(o => { if (o.isMesh && !o.isSkinnedMesh && o.geometry && !once.has(o) && !o.userData.gsK) { o.userData.gsK = 1; o.geometry.userData.gsN = (o.geometry.userData.gsN | 0) + 1; BSU.liste.add(o) } }) } catch (e) { } return r } }
+// müşteri karakterleri: iskelet (kemik dokusu) ve görünüm kopyasının malzemeleri (p12 cloneLook her ağa malzemenin KOPYASINI verir: o kopyalar
+// 'gsOz' ile işaretlenir; sonradan takılan parçaların ortak malzemelerine dokunulmaz)
+{ const _f = cloneLook; cloneLook = function () { const r = _f.apply(this, arguments); try { if (r && r.traverse) r.traverse(o => { if (o.isMesh && o.material && !Array.isArray(o.material)) o.material.userData.gsOz = 1 }) } catch (e) { } return r } }
+{ const _f = spawnCustomer; spawnCustomer = function () { const c = _f.apply(this, arguments); try { if (c && c.char && c.char.o) BSU.kedi.add(c.char) } catch (e) { } return c } }
+// ---- süpürme ----
+function bsuSupur() { if (!BSU.on) return; try { if ((typeof VISIT !== 'undefined' && VISIT.on) || (typeof RESETTING !== 'undefined' && RESETTING)) return } catch (e) { }   // ziyaret sırasında ana kafe sahneden ayrılabilir: süpürme bekler
+  const now = performance.now();
+  try { for (const o of BSU.liste) { if (bsuBagli(o)) { if (o.userData.gsT) o.userData.gsT = 0; continue } if (!o.userData.gsT) { o.userData.gsT = now; continue } if (now - o.userData.gsT < BSU.sure) continue;
+      try { if (o.userData.gsK && o.geometry) { const g = o.geometry; g.userData.gsN = (g.userData.gsN | 0) - 1; if (g.userData.gsN <= 0) { g.dispose(); BSU.say.geo++ } }
+        if (o.userData.gsM && o.material) { for (const m of (Array.isArray(o.material) ? o.material : [o.material])) if (m && m.dispose) { m.dispose(); BSU.say.mat++ } } } catch (e) { }
+      BSU.liste.delete(o) } } catch (e) { if (!BSU.hata) { BSU.hata = 1; console.warn('bellek süpürücü', e) } }
+  try { for (const ch of BSU.kedi) { const kok = ch.o; if ((kok && bsuBagli(kok)) || customers.some(c => c.char === ch)) { ch._gsT = 0; continue } if (!ch._gsT) { ch._gsT = now; continue } if (now - ch._gsT < BSU.sure) continue;
+      try { const gor = new Set(); if (kok) kok.traverse(o => { if (o.isSkinnedMesh && o.skeleton && !gor.has(o.skeleton)) { gor.add(o.skeleton); o.skeleton.dispose(); BSU.say.isk++ }
+            if (o.isMesh && o.material && !Array.isArray(o.material) && o.material.userData && o.material.userData.gsOz) { o.material.dispose(); BSU.say.mat++ } })
+        try { ch.mixer.stopAllAction(); ch.mixer.uncacheRoot(kok) } catch (e) { } } catch (e) { }
+      BSU.kedi.delete(ch); try { GC.chars.delete(ch) } catch (e) { } try { KUT.sev.delete(ch) } catch (e) { } } } catch (e) { }
+  // canlılık kümesi: sahneden çıkmış her karakter (müşteri olmayanlar da)
+  try { for (const ch of GC.chars) if (!ch.o || !bsuBagli(ch.o)) { GC.chars.delete(ch); BSU.say.kar++ } } catch (e) { }
+  // tamamlanmış siparişler
+  try { if (S && S.tut === 'done' && orders.length) { for (let i = orders.length - 1; i >= 0; i--) { const o = orders[i]; if (!o || (o.state !== 'COMPLETED' && o.state !== 'CANCELLED')) continue; if (o.customer && customers.includes(o.customer)) { o._gsT = 0; continue }
+        if (o.delivery && !o.delivery.paid && o.state !== 'CANCELLED') continue; if (!o._gsT) { o._gsT = now; continue } if (now - o._gsT < 10000) continue; orders.splice(i, 1); BSU.say.sip++ } } } catch (e) { } }
+setInterval(bsuSupur, 3000);
+
+// ================= V414 · FINAL DENEYİM 13: GECE KAFENİN IŞIĞI DIŞARIYA VURUR =================
+// Kullanıcı belgesi (26 Kasım 2026, 21:46) madde 6: "Gece saatlerinde sıcak pencere ışıkları… Dış mekân soğuk, iç mekân sıcak hissettirsin";
+// madde 14: "Pencerelerde sıcak ışık". Kullanıcı (26 Kasım 22:04): "beta sonrası diye ayırma… uygula şu anda".
+// V413'te bunu "oyunun kamerası pencereleri hep içeriden görür" diyerek eklememiştim. Eksik olan şuydu: akşam ve gece içerideki sıcak ışık
+// DIŞARI hiç vurmuyordu; kafenin dibindeki kar / çim de sokağın geri kalanı gibi soğuk maviydi (kafe ışıklı bir kutu gibi duruyordu).
+//  • Görünen duvarlarda (varsayılan kamerada arka ve sol): her pencerenin ve kapının dışında, yerde, duvarın dibinden dışarı doğru sönen
+//    sıcak bir ışık lekesi. Kapı açılınca aralıktan, kamera dönünce duvarın arkasından görünür.
+//  • Kesilip gizlenen duvarlarda (varsayılan kamerada ön ve sağ; kamera dönünce hangisi gizliyse): içerinin ışığı o açık kenardan dışarı
+//    taşar: kenar boyunca yere vuran, ~2,4 m'de sönen sıcak bir ışık eteği. Varsayılan kamerada görünen asıl etki budur.
+//  • Işık kaynağı DEĞİL: saydam düzlemler (toplamalı karışım açık renkli zemini ve karı beyaza boğuyordu → sıcak turuncu, olağan saydam
+//    karışım: zemin ne renk olursa olsun ılık bir tona çekilir), tek malzeme ve tek doku (en çok 4 etek + açıklık başına 1 leke); gölge,
+//    gölgelendirici ve kare süresi etkilenmez. Güç lamba eğrisiyle (p995 gkLambaK) artar / azalır; gündüz hiç çizilmez.
+//  • Komşu binaların pencereleri akşam / gece sıcak ışıkla yanar (yalnız kamera döndürülüp uzaklaşınca görünürler; gündüz eski hâli).
+//  • Oda büyüyünce, kapı / pencere taşınınca, genişleme alanı ya da bahçe değişince kendiliğinden yeniden kurulur. Yalnız ana kafe (etkinlik
+//    kafelerinin çevresi farklı). Kapatmak için GP.on=false.
+var GP = { on: true, g: null, imza: null, mat: null, guc: 0.62, etek: 2.4, L: [], son: -1 };
+function gpKur() {
+  if (GP.g) { scene.remove(GP.g); GP.g.traverse(o => { if (o.geometry) o.geometry.dispose() }); GP.g = null } GP.L = [];
+  if (!GP.mat) GP.mat = new THREE.MeshBasicMaterial({ map: gkDoku((c, W, H) => { const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(255,170,84,0.9)'); g.addColorStop(0.4, 'rgba(255,166,80,0.4)'); g.addColorStop(1, 'rgba(255,160,76,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+      c.globalCompositeOperation = 'destination-in'; const m = c.createLinearGradient(0, 0, W, 0); m.addColorStop(0, 'rgba(0,0,0,0)'); m.addColorStop(0.2, 'rgba(0,0,0,1)'); m.addColorStop(0.8, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = m; c.fillRect(0, 0, W, H) }, 64, 64),
+    transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, fog: false, toneMapped: false });
+  const G = new THREE.Group(); G.name = 'gecePencere'; G.userData.wallKeep = true; G.visible = false;
+  // zeminin yüksekliği: aşağı ışın (arsa, kaldırım, bahçe zemini, genişleme alanının zemini, kar örtüsü fark etmez); çit / çalı / eşik gibi
+  // yüksek şeyler sayılmaz. Birkaç noktadan en alçak geçerli zemin (açıklık lekesi) ya da en yüksek geçerli zemin (etek) alınır.
+  const rc = new THREE.Raycaster(), asagi = new THREE.Vector3(0, -1, 0), bas = new THREE.Vector3(); rc.far = 3;
+  // (ışın yalnız zemin taşıyan birkaç gruba atılır: bütün sahneye değil → kafe ekranına her dönüşte yeniden kurulsa da takılma yapmaz)
+  // Yeni kurulmuş bir grubun (ör. genişleme alanı zemini) dünya matrisi ilk çizime kadar güncel değildir: ışından önce güncellenir.
+  const hedef = []; const ekle = o => { try { if (o && o.isObject3D && o.visible && o.parent) { o.updateMatrixWorld(true); hedef.push(o) } } catch (e) { } };
+  try { ekle(ENV.out) } catch (e) { } try { ekle(ENV.shell) } catch (e) { } try { ekle(GARDEN_G) } catch (e) { } try { ekle(FG.g) } catch (e) { } try { for (const k in OPG) ekle(OPG[k]) } catch (e) { }
+  const zemin = (x, z) => { try { bas.set(x, 1.4, z); rc.set(bas, asagi); const h = rc.intersectObjects(hedef, true).find(q => q.face && q.point.y < 0.07 && q.point.y > -0.7); return h ? h.point.y : null } catch (e) { return null } };
+  const DIS = { back: [0, -1, Math.PI], left: [-1, 0, -Math.PI / 2], front: [0, 1, 0], right: [1, 0, Math.PI / 2] };
+  // düzlem: uçlardaki sönme, kenar ne kadar uzun olursa olsun en çok 1,2 m sürer (dokunun %20'lik uç şeritleri sabit genişlikte kalır)
+  const duz = (w, d, ry, x, y, z, wall, tur) => { const uc = Math.min(1.2, w * 0.3), geo = new THREE.PlaneGeometry(w, d, 3, 1), P = geo.attributes.position, U = geo.attributes.uv, X = [-w / 2, -w / 2 + uc, w / 2 - uc, w / 2], UU = [0, 0.2, 0.8, 1];
+    for (let i = 0; i < P.count; i++) { P.setX(i, X[i % 4]); U.setX(i, UU[i % 4]) } geo.rotateX(-Math.PI / 2);
+    const m = new THREE.Mesh(geo, GP.mat); m.rotation.y = ry; m.position.set(x, y, z); m.renderOrder = 2; m.frustumCulled = false; m.visible = false; G.add(m); GP.L.push({ m, wall, tur }) };
+  // 1) açıklık lekeleri (duvar görünürken)
+  let D = null; try { D = OP_DIM() } catch (e) { }
+  for (const k in OP) { const o = OP[k]; if (!o || !DIS[o.wall]) continue; const kapi = k === 'door', gen = (D && D[k] && D[k].w) || (kapi ? 1.2 : 1.6);
+    const w = gen * 1.5 + 1.1, d = kapi ? 2.9 : 3.5, [dx, dz, ry] = DIS[o.wall], p = wallPt(o.wall, o.t, 0);
+    let y = null; for (const u of [0.7, 1.3, 1.9]) { const q = zemin(p.x + dx * u, p.z + dz * u); if (q != null && (y == null || q < y)) y = q } if (y == null) y = -0.21;
+    duz(w, d, ry, p.x + dx * (d / 2 + 0.28), y + 0.016, p.z + dz * (d / 2 + 0.28), o.wall, 'a') }
+  // 2) ışık etekleri (duvar kesilip gizlenmişken): kenar boyunca
+  const W = RM.x1 - RM.x0, Dp = RM.z1 - RM.z0, cxm = (RM.x0 + RM.x1) / 2, czm = (RM.z0 + RM.z1) / 2, e = GP.etek;
+  for (const wall of ['back', 'left', 'front', 'right']) { const [dx, dz, ry] = DIS[wall], yatay = dz !== 0, boy = yatay ? W : Dp, ex = dx ? (dx > 0 ? RM.x1 : RM.x0) : cxm, ez = dz ? (dz > 0 ? RM.z1 : RM.z0) : czm;
+    let y = null; for (const t of [-0.35, 0, 0.35]) { const q = zemin(ex + dx * 0.9 + (yatay ? t * boy : 0), ez + dz * 0.9 + (yatay ? 0 : t * boy)); if (q != null && (y == null || q > y)) y = q } if (y == null) y = -0.21;
+    duz(boy + 1.6, e, ry, ex + dx * (e / 2 + 0.05), y + 0.016, ez + dz * (e / 2 + 0.05), wall, 'e') }
+  scene.add(G); GP.g = G; GP.son = -1 }
+// duvarlar / açıklıklar (p995 imzası) + genişleme alanı zemini (p99u) + bahçe (p51) değişince yeniden kurulur
+function gpImza() { let s = ''; try { s = GKD.imza || '' } catch (e) { } try { s += '|' + (FG.g ? FG.g.uuid : '-') } catch (e) { } try { s += '|' + (GARDEN_G ? GARDEN_G.uuid : '-') } catch (e) { } return s }
+// 3) komşu binaların pencereleri (p1b bld: her binanın pencereleri tek ağ ve kendi malzemesi, renk 0x4f6f8f): akşam / gece çoğu sıcak
+//    ışıkla yanar (10 binadan 7'si, konuma göre sabit; parlaklıkları biraz farklı), gündüz eski mavi cam. Yalnız malzemenin öz ışıması değişir.
+function gpBinaBul() { GP.bina = []; try { const b = new THREE.Box3(), c = new THREE.Vector3(); scene.traverse(o => { const m = o.material; if (!o.isMesh || !m || !m.isMeshToonMaterial || !m.color || !m.emissive || m.color.getHex() !== 0x4f6f8f) return;
+      b.setFromObject(o); b.getCenter(c); if (Math.max(Math.abs(c.x), Math.abs(c.z)) < 15) return;   // yalnız arsanın dışındaki binalar (kafenin içindeki hiçbir malzemeye dokunulmaz)
+      const s = Math.abs(Math.round(c.x * 7 + c.z * 13)) % 10; GP.bina.push({ m, k: s < 7 ? 0.6 + 0.05 * s : 0 }) }) } catch (e) { } }
+function gpBina(k) { if (!GP.bina) return; for (const e of GP.bina) { try { if (k > 0) e.m.emissive.setHex(0xffc070); e.m.emissiveIntensity = e.k * k } catch (x) { } } }
+function gpTick() { if (EVMODE) return;
+  if (typeof started === 'undefined' || !started) return;
+  let k = 0; try { k = Math.max(0, Math.min(1, gkLambaK())) } catch (e) { } if (!GK.on || !GP.on) k = 0;
+  const gor = k > 0.02;
+  if (gor) { if (!GP.binaGece) { GP.binaGece = true; gpBinaBul(); GP.binaSon = -1 } if (Math.abs(k - GP.binaSon) > 0.004) { GP.binaSon = k; gpBina(k) } }
+  else if (GP.binaGece) { GP.binaGece = false; gpBina(0) }
+  if (!gor) { if (GP.g && GP.g.visible) GP.g.visible = false; return }   // gündüz (ya da kapalıyken): kurulmaz, çizilmez
+  try { if (typeof k2Up === 'function' && k2Up()) { if (GP.g && GP.g.visible) GP.g.visible = false; return } } catch (e) { }   // üst kata bakılırken çevre 400 m öteye kayar (p107): yerdeki ışık kurulmaz, çizilmez
+  const imza = gpImza(); if (!GP.g || GP.imza !== imza) { if (typeof TD !== 'undefined' && TD.on && GP.g) { /* tadilat sürerken eskisi kalır; bitince yeniden kurulur */ } else { GP.imza = imza; gpKur() } }
+  if (!GP.g) return; if (!GP.g.visible) GP.g.visible = true;
+  // hangi duvar şu an gizli (kesilmiş)?
+  const giz = { back: false, left: false, front: true, right: true };
+  try { giz.back = !!(ENV.hide && ENV.hide.back); giz.left = !!(ENV.hide && ENV.hide.left) } catch (e) { }
+  try { giz.front = !(NW.g && NW.g.front && NW.hide.front === false); giz.right = !(NW.g && NW.g.right && NW.hide.right === false) } catch (e) { }
+  for (const o of GP.L) { const v = o.tur === 'e' ? giz[o.wall] : !giz[o.wall]; if (o.m.visible !== v) o.m.visible = v }
+  if (Math.abs(k - GP.son) > 0.004) { GP.son = k; GP.mat.opacity = GP.guc * k } }
+{ const _kt = kdTick; kdTick = function (dt) { const r = _kt.apply(this, arguments); try { gpTick() } catch (e) { if (!GP.hata) { GP.hata = 1; console.warn('gece ışığı', e) } } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
