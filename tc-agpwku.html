@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795781147",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795784742",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -2441,7 +2441,7 @@ async function prepare(b,o){const ch=b.ch,r=o.item,T=r.prep*equipFactor(r)*prepM
     await step(T*0.5,u=>setBuilt(m,u));steamOff(e1);await step(T*0.2,u=>{m.rotation.y=u*Math.PI*2});steamOff(e2)}
   else if(r.station==='tea'){
     await bGo(b,PST.kettle);sfx('kettle',T*0.4);const e1=steamOn(()=>kW3(KIT.bx-0.35+0.1,KIT.backTop+0.22,KIT.bz-0.02),4);await step(T*0.4);steamOff(e1);
-    await bGo(b,PST.teaPour);show(PLATE_SPOT.tea);sfx('clink');sfx('steam',T*0.35);const e2=m.userData.hot?steamOn(()=>cupTop(m),2):null;await step(T*0.6,u=>setBuilt(m,u));e2&&steamOff(e2)}
+    await bGo(b,PST.teaPour);show(PLATE_SPOT.tea);sfx('clink');sfx('steam',T*0.35);sfx('pour',T*0.5);const e2=m.userData.hot?steamOn(()=>cupTop(m),2):null;await step(T*0.6,u=>setBuilt(m,u));e2&&steamOff(e2)}
   else if(r.station==='dessert'){
     await bGo(b,PST.vitrine);await step(T*0.35);await bGo(b,PST.plate);show(PLATE_SPOT.food);sfx('clink');await step(T*0.65,u=>setBuilt(m,u))}
   else{ // main: fırın
@@ -5526,7 +5526,7 @@ function buildBackShelf(bx,bw){const g=new THREE.Group();g.userData.static=true;
   {const cv=document.createElement('canvas');cv.width=512;cv.height=128;const c=cv.getContext('2d');c.fillStyle='#7a4a2c';c.fillRect(0,0,512,128);c.strokeStyle='#f2c46b';c.lineWidth=8;c.strokeRect(10,10,492,108);
     c.fillStyle='#fbf6ec';c.font='800 64px "Baloo 2",Nunito,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(kafeAdiTabela(),256,68,470);const tx=new THREE.CanvasTexture(cv);try{(window.__TABELA=window.__TABELA||[]).push({cv,tx})}catch(e){}   // V341 (madde 25): oyuncunun kafe adı (p965)
     tx.colorSpace=THREE.SRGBColorSpace;
-    add(new THREE.PlaneGeometry(0.8,0.2),new THREE.MeshBasicMaterial({map:tx}),bx,2.52,zw+0.03,{sh:false});
+    add(new THREE.PlaneGeometry(1.16,0.29),new THREE.MeshBasicMaterial({map:tx}),bx,2.57,zw+0.03,{sh:false});   // (V420) 0,8 × 0,2 → 1,16 × 0,29 m: kafe adı okunabilsin
     // ışık zinciri (alt raf kenarında)
     for(let i=0;i<14;i++){const t=i/13,x=bx-bw/2+0.15+t*(bw-0.3),y=levels[0]-0.06-Math.sin(t*Math.PI*3)*0.03;const b=add(new THREE.SphereGeometry(0.016,8,6),new THREE.MeshBasicMaterial({color:[0xffe08a,0xffb38a,0xfff3c4][i%3]}),x,y,zw+0.3,{sh:false})}}
   return g}
@@ -24311,7 +24311,7 @@ const TABELA_KAPI = new Set(['tr_sign', 'tr_sign_kh', 'fr_sign_bistro', 'fr_sign
 { const _it = itTex; itTex = function (key, w, h, draw, rep) { if (!TABELA_KAPI.has(key)) return _it.apply(this, arguments);
     const ciz = (c, W, H) => { const ft = c.fillText; c.fillText = function (t, x, y, mw) { return ft.call(this, kafeAdiTabela(), x, y, Math.min(mw || 1e9, W - 46)) }; try { draw(c, W, H) } finally { c.fillText = ft } };
     const t = _it.call(this, key, w, h, ciz, rep); try { if (!t.userData) t.userData = {}; if (!t.userData.tabela) { t.userData.tabela = 1; (window.__TABELA = window.__TABELA || []).push({ tx: t, yenile: () => { const cv = t.image, c = cv.getContext('2d'); c.clearRect(0, 0, cv.width, cv.height); ciz(c, cv.width, cv.height); t.needsUpdate = true } }) } } catch (e) { } return t } }
-{ let son = null; setInterval(() => { try { const ad = kafeAdiTabela(); if (son === null) { son = ad; return } if (ad === son) return; son = ad;
+{ let son = null; setInterval(() => { try { const ad = kafeAdiTabela(); if (ad === son) return; son = ad;   // (V420) ilk denetimde de çizilir: tabela kayıt yüklenmeden kurulduğu için oyuncunun adı yerine varsayılan ad kalıyordu
     for (const T of (window.__TABELA || [])) { try { if (T.yenile) T.yenile(); else if (T.cv) { const c = T.cv.getContext('2d'); c.fillStyle = '#7a4a2c'; c.fillRect(0, 0, 512, 128); c.strokeStyle = '#f2c46b'; c.lineWidth = 8; c.strokeRect(10, 10, 492, 108);
           c.fillStyle = '#fbf6ec'; c.font = '800 64px "Baloo 2",Nunito,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(ad, 256, 68, 470); T.tx.needsUpdate = true } } catch (e) { } } } catch (e) { } }, 1000) }
 
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-1421';
+const OLC_DERLEME = '20261127-1507';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30076,7 +30076,7 @@ function gnsOniz(id) { const A = gnsAlan(id), ov = $('expOv'); if (!A || !ov || 
         if (var_) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn light'; b.id = 'edGns'; b.setAttribute('data-dilyok', '1'); b.innerHTML = `${ic('plus')}${gnsT('Genişlet', 'Expand')}`; b.onclick = () => { try { sfx('tap') } catch (e) { } setMode('cafe'); setTimeout(() => { try { openExpandMode() } catch (e) { } }, 120) }; bt.parentNode.insertBefore(b, bt) } } } catch (e) { console.warn('dekorasyon › genişlet', e) } return r } }
 // ---- tadilat: Atla ----
 { const _h = tdHud; tdHud = function () { const r = _h.apply(this, arguments); try { if (!GNS.on || !GNS.atla || !TD.on || TD.kurdele) return r; const u = document.querySelector('#tdHud .tdUst'); if (u && !u.querySelector('.gnsAtla')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tdAtla gnsAtla'; b.setAttribute('data-dilyok', '1'); b.textContent = gnsT('Atla ›', 'Skip ›');
-        b.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (x) { } try { tdKurdele(true) } catch (x) { console.warn('tadilat atla', x) } }; u.appendChild(b) } } catch (e) { } return r } }
+        b.onclick = e => { e.stopPropagation(); try { sfx('tap') } catch (x) { } try { tdKurdele(true) } catch (x) { console.warn('tadilat atla', x) } try { sfx('tok', 0.001, 0.05); sfx('tok', 0.001, 0.22); sfx('tok', 0.001, 0.39) } catch (x) { } }; u.appendChild(b) } } catch (e) { } return r } }
 // ---- kutlama yazısı ----
 { const _k = fgKutla; fgKutla = function (ne) { const r = _k.apply(this, arguments); try { if (!GNS.on || ne === 'b') return r; const d = $('fgKut'); if (!d) return r; const s = d.querySelector('small'), p = d.querySelector('p');
       if (s) s.textContent = gnsT('Kafen büyüyor!', 'Your café is growing!'); if (p) p.textContent = gnsT(`Yeni alanın artık hazır (masa sınırı ${tableCap(S.lvl)}). Hayalindeki kafeyi tasarlamaya devam et!`, `Your new space is ready (table limit ${tableCap(S.lvl)}). Keep designing your dream café!`) } catch (e) { } return r } }
@@ -30219,6 +30219,30 @@ function mhTick(dt) { if (!mhAcik()) return; MH.kare++; MH.merakT -= dt; MH.bank
     if (!ch.seat && !ch.trans) { const ic = ch.pos.x > LOT.x0 && ch.pos.x < LOT.x1 && ch.pos.z > LOT.z0 && ch.pos.z < LOT.z1, hy = ic ? 0 : MH.yKal; ch.pos.y -= w.y; w.y += (hy - w.y) * Math.min(1, d * 5) }
     mhAdim(w, d); ch.update(Math.min(d, 0.25)); if (!ch.seat && !ch.trans) ch.pos.y += w.y } }
 if (!EVMODE) { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { mhTick(dt) } catch (e) { if (!MH.hata) { MH.hata = 1; console.warn('mahalle', e) } } return r } }
+
+// ================= V420 · YAŞAYAN KAFE FAZ 5: MAHALLE ORTAM SESLERİ + ÇAY DOLDURMA SESİ =================
+// Kullanıcı belgesi (27 Kasım 2026, 11:36) madde 11. İnceleme — ZATEN VAR (dokunulmadı): kapı zili (door), kahve değirmeni + buhar (grind,
+// steam), çaydanlık (kettle), fırın (oven), sipariş hazır (ding), altın (coin), bahşiş (tip), kasa (register), yeni tarif (discover + sevinçli
+// miyav), aşama / tadilat bitişi (levelup), fon müziği; aynı efekt 50 ms içinde yinelenmez; müzik ve efekt ayarları ayrı. Hepsi oyunda
+// WebAudio ile ÜRETİLİYOR (ses dosyası yok → telif sorunu yok); fon müziği oyuncunun kendi gönderdiği parça.
+// Eksik olanlar eklendi:
+//  • Hafif mahalle ortam sesi (yalnız kafe ekranında, efekt sesi açıkken): gündüz ara sıra kuş cıvıltısı (9–24 sn'de bir, 2–4 kısa ötüş),
+//    ara sıra hafif esinti (22–45 sn'de bir, 3–4 sn); akşam / gece kuş yerine (kış değilse) cırcır böceği. Çok kısık (efektlerin ~1/5'i);
+//    sürekli döngü yok, üst üste binmez. Kapatmak için OS.on=false.
+//  • Çay bardağa dolarken kısa dolum sesi (pour) — p10'daki çay adımına eklendi.
+//  • Tadilat atlanınca üç kısa çekiç tok sesi (kurdele sesi aynı).
+var OS = { on: true, t: 0, kus: 6, esinti: 14, bocek: 9 };
+SFX.pour = function (t, d) { d = Math.max(0.35, Math.min(2.2, d || 0.8)); nz(t, d, 0.05, 'bandpass', 900, 2.2, 0.06);
+  for (let i = 0; i < d * 9; i++) blip(520 + Math.random() * 380 + i * 22, 760 + Math.random() * 420 + i * 26, t + 0.03 + Math.random() * (d - 0.06), 0.035, 0.018) };
+SFX.tok = function (t) { blip(190, 95, t, 0.07, 0.16, 'triangle'); nz(t, 0.035, 0.07, 'bandpass', 1400, 1.4) };
+function osGece() { try { return gkLambaK() > 0.55 } catch (e) { return false } }
+function osTick(dt) { if (!OS.on || !AU.ctx || !SET.sfx || AU.ctx.state !== 'running' || document.hidden) return; if (typeof started === 'undefined' || !started || UI.mode !== 'cafe' || !S.created || S.tut !== 'done') return;
+  const now = AU.ctx.currentTime + 0.02, gece = osGece(), kis = typeof KIS !== 'undefined' && !!KIS; OS.kus -= dt; OS.esinti -= dt; OS.bocek -= dt;
+  if (!gece && OS.kus <= 0) { OS.kus = (kis ? 16 : 9) + Math.random() * 15; const n = 2 + Math.floor(Math.random() * 3), f = 2700 + Math.random() * 1500, yuk = Math.random() < 0.5;
+    for (let i = 0; i < n; i++) blip(f * (1 + (Math.random() - 0.5) * 0.08), f * (yuk ? 1.22 : 0.82), now + i * (0.1 + Math.random() * 0.05), 0.04, 0.02) }
+  if (OS.esinti <= 0) { OS.esinti = 22 + Math.random() * 23; nz(now, 3 + Math.random(), kis ? 0.022 : 0.015, 'lowpass', kis ? 520 : 420, 0.7, 1.3) }
+  if (gece && !kis && OS.bocek <= 0) { OS.bocek = 7 + Math.random() * 9; const f = 4100 + Math.random() * 500; for (let i = 0; i < 9; i++) blip(f, f, now + i * 0.065, 0.028, 0.007) } }
+if (!EVMODE) { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { osTick(dt) } catch (e) { if (!OS.hata) { OS.hata = 1; console.warn('ortam sesi', e) } } return r } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
