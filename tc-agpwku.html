@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795762668",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795766870",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-0957';
+const OLC_DERLEME = '20261127-1105';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28742,9 +28742,12 @@ addEventListener('online', () => { try { const p = $('worldP'); if (p && !p.hidd
 //    farede sağ tuş ya da Shift/Ctrl + sol tuş. Kaydırma zemine paralel (yükseklik değişmez).
 //  · Odak arsanın 4 m dışına çıkamaz (kafe gözden kaybolmasın). Yakın bakışta, rehber kamerası çalışırken ve 2. kat görünümünde kapalı.
 //  · Kamera menüsüne "Ortala" eklendi; görünüm değiştirirken de kamera kafenin ortasına döner. İlk kez kaydırınca kısa bir ipucu bir kez.
-var KYD = { pay: 4, ipucu: false };
+// (V415) Kullanıcı (27 Kasım 11:04): "normal kamerada sağa sola olayını kaldırır mısın" → kaydırma kapatıldı (KYD.on=false). Yakınlaştırma ve
+// döndürme aynı. Kamera menüsündeki "Ortala" ve "İki parmakla kaydır" yazısı da
+// kaldırıldı. Geri açmak için KYD.on=true.
+var KYD = { on: false, pay: 4, ipucu: false };
 try { KYD.ipucu = !!(S.seen && S.seen.kaydirIpucu) } catch (e) { }
-function kydAcik() { try { if (UI.mode !== 'cafe' || UI.modal) return false; if (KSC.mod === 'yakin' || KSC.an) return false; if (typeof CAM !== 'undefined' && CAM.on) return false;
+function kydAcik() { try { if (!KYD.on) return false; if (UI.mode !== 'cafe' || UI.modal) return false; if (KSC.mod === 'yakin' || KSC.an) return false; if (typeof CAM !== 'undefined' && CAM.on) return false;
     if (typeof K2 !== 'undefined' && K2.view === 2) return false; if (typeof TZ !== 'undefined' && TZ.on) return false; return true } catch (e) { return false } }
 // (V414) HATA DÜZELTMESİ — V408'den beri (benim): üstten kamerada "Kat" düğmesiyle üst kata çıkınca kamera üst kata GİTMİYOR, inince ekran
 // BOŞ kalıyordu. Sebep: kat değiştirme kamerayı 400 m öteye taşır (p107 k2View); o anda aşağıdaki 'change' dinleyicisi bunu kaydırma sanıp
@@ -28754,7 +28757,7 @@ function kydSinir() { try { if (typeof K2 !== 'undefined' && K2.view === 2) retu
     if (T.x < LOT.x0 - p) dx = LOT.x0 - p - T.x; else if (T.x > LOT.x1 + p) dx = LOT.x1 + p - T.x; if (T.z < LOT.z0 - p) dz = LOT.z0 - p - T.z; else if (T.z > LOT.z1 + p) dz = LOT.z1 + p - T.z;
     if (dx || dz) { T.x += dx; T.z += dz; camera.position.x += dx; camera.position.z += dz } } catch (e) { } }
 function kydOrtala() { try { GKK.an = null } catch (e) { } try { camFit() } catch (e) { } }
-function kydTick() { const ac = kydAcik(); if (controls.enablePan !== ac) { controls.enablePan = ac; controls.screenSpacePanning = false; controls.panSpeed = 0.9 } }
+function kydTick() { if (!KYD.on) { try { if (controls.enablePan && !ksSerbest()) controls.enablePan = false } catch (e) { } return } const ac = kydAcik(); if (controls.enablePan !== ac) { controls.enablePan = ac; controls.screenSpacePanning = false; controls.panSpeed = 0.9 } }
 { const _et = envTick; envTick = function (dt) { const r = _et.apply(this, arguments); try { kydTick() } catch (e) { } return r } }
 // kaydırma algısı: OrbitControls 'change' olayında odak yatayda değiştiyse sınırla; ilk kaydırmada ipucu
 { let son = null, kat = 1; controls.addEventListener('change', () => { try { const k = (typeof K2 !== 'undefined' && K2.view === 2) ? 2 : 1; if (k !== kat) { kat = k; son = null }   // kat değişti: sıçrama kaydırma değildir
@@ -28764,7 +28767,7 @@ function kydTick() { const ac = kydAcik(); if (controls.enablePan !== ac) { cont
 // görünüm değişince ortadan başla
 { const _ks = ksSec; ksSec = function (m) { try { if ((m === 'yakin') !== (KSC.mod === 'yakin')) kydOrtala() } catch (e) { } return _ks.apply(this, arguments) } }
 // Kamera menüsü: "Ortala"
-{ const _km = ksMenu; ksMenu = function () { const r = _km.apply(this, arguments); try { const m = $('kamMenu'); if (m && !m.querySelector('[data-kort]')) {
+{ const _km = ksMenu; ksMenu = function () { const r = _km.apply(this, arguments); try { if (!KYD.on) return r; const m = $('kamMenu'); if (m && !m.querySelector('[data-kort]')) {
       m.insertAdjacentHTML('beforeend', `<button type="button" role="menuitem" data-kort="1" class="ksOrt"><span class="ksIc"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="13" fill="#fff6e6" stroke="#4a2a14" stroke-width="3"/><circle cx="24" cy="24" r="4.5" fill="#d9822f" stroke="#4a2a14" stroke-width="2.5"/><path d="M24 4v8M24 36v8M4 24h8M36 24h8" stroke="#4a2a14" stroke-width="3" stroke-linecap="round"/></svg></span><span class="ksTx"><b>${kaT('Ortala', 'Recenter')}</b><small>${kaT('Kamerayı kafenin ortasına al', 'Move the camera back to the café')}</small></span></button>`);
       const b = m.querySelector('[data-kort]'); b.onclick = ev => { ev.stopPropagation(); try { sfx('tap') } catch (e) { } kydOrtala(); ksMenuKapat() };
       const ust = m.querySelector('[data-km="ust"] small'); if (ust && KSC.mod !== 'yakin') ust.textContent = kaT('İki parmakla kaydır', 'Drag with two fingers') } } catch (e) { } return r } }
