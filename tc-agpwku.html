@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795807697",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795808446",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24627,7 +24627,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261127-2217';
+const OLC_DERLEME = '20261127-2229';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -29223,7 +29223,7 @@ ${Y} #fdHedef[hidden]{display:none}
 //  • Yalnız ana kafede, "Üstten" görünümde (p995'in otomatik kamerası hangi durumda çalışıyorsa). Etkinlik kafesi, yakın bakış, tadilat,
 //    genişletme kipi vb. etkilenmez.
 const FK_KEY = 'tabbychef-kamera-ust';
-var FK = { on: true, anah: '', d: 12.6, pol: 0.74, ox: 0.25, oz: 0.75, cam: null, az0: 1.35, ilk: false, kay: null };
+var FK = { on: true, yakin: 0.92, anah: '', d: 12.6, pol: 0.74, ox: 0.25, oz: 0.75, cam: null, az0: 1.35, ilk: false, kay: null };
 try { FK.on = !!GKK.on } catch (e) { FK.on = false }
 try { const v0 = camera.position.clone().sub(controls.target), a0 = Math.atan2(v0.x, v0.z); if (isFinite(a0) && a0 > 0.1 && a0 < 1.61) FK.az0 = a0 } catch (e) { }   // oyunun varsayılan bakış yönü
 try { const v = JSON.parse(localStorage.getItem(FK_KEY) || 'null'); if (v && isFinite(v.o) && isFinite(v.p)) FK.kay = { o: Math.max(0.5, Math.min(2, +v.o)), p: Math.max(-0.4, Math.min(0.4, +v.p)), a: isFinite(v.a) ? Math.max(0.12, Math.min(1.6, +v.a)) : null } } catch (e) { }
@@ -29249,7 +29249,7 @@ function fkHesap() { const W = Math.max(200, innerWidth), H = Math.max(120, inne
   const kutu = () => { cam.position.set(tx + d * sP * sA, ty + d * cP, tz + d * sP * cA); cam.lookAt(tx, ty, tz); cam.updateMatrixWorld(true); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
     for (const p of P) { v.copy(p).project(cam); const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y } return { x0, x1, y0, y1 } };
   const tanF = Math.tan(cam.fov * Math.PI / 360);
-  for (let i = 0; i < 6; i++) { let b = kutu(); const s = Math.max((b.x1 - b.x0) / fw, (b.y1 - b.y0) / fh); d = Math.max(d0 * 0.72, Math.min(d0, d * s * 1.02)); b = kutu();   // eski varsayılandan uzak olmaz: kafe ekranda küçülmez
+  for (let i = 0; i < 6; i++) { let b = kutu(); const s = Math.max((b.x1 - b.x0) / fw, (b.y1 - b.y0) / fh); d = Math.max(d0 * 0.66, Math.min(d0, d * s * 1.02 * (FK.yakin || 1))); b = kutu();   // eski varsayılandan uzak olmaz: kafe ekranda küçülmez
     const wpp = 2 * d * tanF / H, sx = fcx - (b.x0 + b.x1) / 2, sy = fcy - (b.y0 + b.y1) / 2, dR = -sx * wpp, dF = sy * wpp / Math.max(0.35, cP);
     tx += dR * cA + dF * (-sA); tz += dR * (-sA) + dF * (-cA) }
   // bakış noktası kafenin çok dışına kaymasın
@@ -30405,9 +30405,11 @@ function iqVurCiz() { const V = IQ.vur, m = IQ.vurM; const u = (iqNow() - V.t) /
 function iqKartAc(q, n) { iqKartKapat(); const k = document.createElement('div'); k.id = 'iqKart'; k.setAttribute('data-dilyok', '1'); const T = IQ_TUR[q.tip], u = iqUrun(q), sira = iqSiraNo(q);
   const durum = q.durum === 'aktif' ? iqT('Şef şu an bunu yapıyor', 'Your chef is doing this now') : iqT(`Sırada ${sira + 1}.`, `#${sira + 1} in queue`);
   const ipucu = q.durum === 'bekle' ? (q.oy ? iqT('× ile iptal edebilirsin', 'Tap × to cancel') : iqT('Sırasını bekliyor', 'Waiting its turn')) : iqT('Bitince sıradaki başlar', 'The next one starts when done');
-  k.innerHTML = `<b>${iqT(T.ad[0], T.ad[1])}${iqHedefAd(q) ? ' · ' + iqHedefAd(q) : ''}</b>${u ? `<span>${u.name || ''}</span>` : ''}<small>${durum}</small><small class="iqIp">${ipucu}</small>`;
+  k.innerHTML = `<b>${iqT(T.ad[0], T.ad[1])}${iqHedefAd(q) ? ' · ' + iqHedefAd(q) : ''}</b>${u ? `<span>${u.name || ''}</span>` : ''}<small>${durum}</small><small class="iqIp">${ipucu}</small>${q.durum === 'bekle' && sira > IQ.L.filter(z => z.durum === 'aktif' && !z.devir).length ? `<button type="button" class="iqOne">${iqT('Öne al', 'Move up')}</button>` : ''}`;
+  // (V426) Final Polish: sıra değiştirme sürüklemeyle değil (simgeler sabit), karttaki "Öne al" ile: iş bekleyenlerin başına geçer
+  { const ob = k.querySelector('.iqOne'); if (ob) ob.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); const bek = []; for (const j of jobs) if (j.iq && j.iq.durum === 'bekle') bek.push(j.iq); const i = bek.indexOf(q); if (i > 0) { bek.splice(i, 1); bek.unshift(q); iqSirala(bek); try { sfx('tap') } catch (x) { } } iqKartKapat() }) }
   document.body.appendChild(k); const r = n.getBoundingClientRect(), kr = k.getBoundingClientRect(); k.style.left = Math.max(8, Math.min(innerWidth - kr.width - 8, r.left + r.width / 2 - kr.width / 2)) + 'px'; k.style.top = Math.max(8, r.top - kr.height - 10) + 'px';
-  IQ.kart = k; IQ.kartT = iqNow(); clearTimeout(IQ.kartTo); IQ.kartTo = setTimeout(iqKartKapat, 2600) }
+  IQ.kart = k; IQ.kartT = iqNow(); clearTimeout(IQ.kartTo); IQ.kartTo = setTimeout(iqKartKapat, k.querySelector('.iqOne') ? 3600 : 2600) }
 function iqKartKapat() { const k = $('iqKart'); if (k) k.remove(); IQ.kart = null }
 // ---- denetim + bitenlerin temizliği ----
 function iqDenet() { for (const q of IQ.L) if (q.durum === 'bekle' && !iqGecerli(q)) { iqCikar(q.j); iqGeriAl(q); q.durum = 'iptal'; q.bitT = iqNow(); q.sessiz = 1 }
@@ -30469,6 +30471,7 @@ setInterval(() => { try { if (IQ.el && !IQ.el.hidden && !iqGor()) { iqCiz(); iqT
 @keyframes iqSal{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}}
 #iqBar .iqEt{position:absolute;left:0;bottom:calc(100% + 8px);padding:4px 10px;border:2.5px solid ${INK};border-radius:99px;background:#fff0cf;font:900 11px/1.1 var(--font-display,sans-serif);color:#8a4a0c;white-space:nowrap;box-shadow:0 2px 0 ${INK}}
 #iqVurEt{position:fixed;z-index:6;transform:translate(-50%,-100%);padding:3px 9px;border:2.5px solid ${INK};border-radius:99px;background:#ffcf3a;color:${INK};font:900 12px/1.1 var(--font-display,sans-serif);white-space:nowrap;pointer-events:none;box-shadow:0 2px 0 ${INK}}
+#iqKart .iqOne{pointer-events:auto;align-self:flex-start;margin-top:4px;padding:4px 12px;border:2.5px solid #4a2a14;border-radius:99px;background:linear-gradient(#ffe590,#f3bb3a);box-shadow:0 2px 0 #4a2a14;font:900 12px/1.1 var(--font-display,sans-serif);color:#4a2a14;touch-action:manipulation}
 #iqKart{position:fixed;z-index:30;display:flex;flex-direction:column;gap:2px;max-width:230px;padding:7px 12px 8px;border:3px solid ${INK};border-radius:14px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 3px 0 ${INK},0 6px 14px rgba(40,20,5,.3);font-family:var(--font-display,sans-serif);color:${INK};pointer-events:none}
 #iqKart b{font-size:13px;font-weight:900;white-space:nowrap}#iqKart span{font-size:11.5px;font-weight:800;color:#7a4e2c}#iqKart small{font-size:10.5px;font-weight:800;color:#3d6b1e}#iqKart .iqIp{color:#8a6a4c;font-weight:700}
 #iqTan{position:fixed;z-index:29;max-width:250px;padding:8px 26px 9px 12px;border:3px solid ${INK};border-radius:14px;background:linear-gradient(#fffaf0,#f7e7cd);box-shadow:0 3px 0 ${INK},0 8px 16px rgba(40,20,5,.3);font-family:var(--font-display,sans-serif);color:${INK};pointer-events:auto}
@@ -30562,6 +30565,14 @@ var EGB = { on: true, ilk: true };
 { const _rs = readSave; readSave = function () { const d = _rs.apply(this, arguments); try { const ilk = EGB.ilk; EGB.ilk = false;
       if (EGB.on && ilk && d && typeof d === 'object' && !EVMODE && typeof d.tut === 'string' && d.tut !== 'done' && !/^b_/.test(d.tut)) {
         console.info('eğitim yarıda kalmış (' + d.tut + '): oyun baştan başlıyor'); try { localStorage.removeItem(SAVE_KEY) } catch (e) { } return null } } catch (e) { } return d } }
+// ---- (9) V426 Final Polish madde 2: müşteri balonları ve kafe içi eylem düğmeleri küçük ve sade (karakterleri / kafeyi daha az örter).
+//      Balonlar %80; eylem düğmeleri 44 → 38 px yükseklik, 15 → 13,5 px yazı (dokunma alanı yine ≥ 38 px). İlk müşteri eğitiminde eski boy
+//      (rehber düğmeleri adıyla gösteriyor). Kapatmak için BKS.on=false.
+var BKS = { on: true };
+setInterval(() => { try { const on = BKS.on && S && S.tut === 'done'; document.documentElement.classList.toggle('bks', !!on) } catch (e) { } }, 500);
+{ const st = document.createElement('style'); st.textContent = `html.bks #ui .bubble{scale:.8;transform-origin:50% 100%}
+html.bks #game #ui .act{height:38px!important;font-size:13.5px!important;padding:1px 12px 0 7px!important;gap:4px!important;border-width:2.5px!important}
+html.bks #game #ui .act .ic{width:22px!important;height:22px!important}html.bks #game #ui .act img{width:20px!important;height:20px!important}`; document.head.appendChild(st) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
