@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795892639",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795892971",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -18866,11 +18866,11 @@ html.land #game#game #skGift#skGift#skGift.skmodal .skscroll{overflow:hidden!imp
 // açıkken oyuna uygulanır. AŞAMA 2 (gerçek AdMob): sayaç ve sandık hakkı sunucuda tutulmalı (ad_claims tablosundan sayılır, sandık için
 // ayrı bir sunucu işlevi); o yapılana dek mobil uygulamada sandıklar kapalı gösterilir.
 const AD_MS=[{n:5,gems:15,coins:500,name:'Gümüş sandık'},{n:10,gems:40,coins:1500,name:'Altın sandık'}];
-const AD_MAX=()=>AD_ORDER.reduce((s,k)=>s+AdService.limit(k),0);
+const AD_MAX=()=>10;   // (V442) kullanıcı 28 Kasım 22:05: "reklam izleme 10 adet gözüksün" → çubuk 10 reklamlık (son sandık sonda); kategorilerin günlük hakları aynı
 const adToday=()=>AD_ORDER.reduce((s,k)=>s+AdService.used(k),0);
 function adMsTaken(i){const m=AdService.mode();if(m!=='simulation')return false;const L=AdSim.load();return !!(L.m&&L.m[i])}
 function adMsTake(i){const L=AdSim.load();L.m=L.m||{};L.m[i]=1;AdSim.save(L)}
-function adMsHTML(){const m=AdService.mode(),n=adToday(),max=AD_MAX(),pct=Math.min(100,n/max*100);
+function adMsHTML(){const m=AdService.mode(),max=AD_MAX(),n=Math.min(adToday(),max),pct=Math.min(100,n/max*100);
   const chest=(M,i)=>{const got=n>=M.n,taken=adMsTaken(i),left=(m==='simulation'&&got&&!taken);
     return `<div class="amC${got?' got':''}${taken?' taken':''}" style="left:${M.n/max*100}%">
       ${left?`<button type="button" class="amBox amTap" data-ams="${i}" aria-label="${M.name}">${amChestSVG(i,taken)}</button>`:`<div class="amBox">${amChestSVG(i,taken)}</div>`}
@@ -18904,7 +18904,7 @@ function adMsOpen(i){const M=AD_MS[i];if(!M||adMsTaken(i)||adToday()<M.n||AdServ
 #adMs .amC.got:not(.taken) .amBox{animation:amWob 1.1s ease-in-out infinite}
 @keyframes amWob{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(7deg)}60%{transform:rotate(-4deg)}}
 #adMs .amL{position:absolute;top:30px;left:50%;transform:translateX(-50%);white-space:nowrap;line-height:1}
-#adMs .amL b{font-size:10.5px;font-weight:900}#adMs .amC.taken .amL b{color:#3f7d1e}
+#adMs .amL b{font-size:10.5px;font-weight:900}#adMs .amC:last-child .amL{left:auto;right:-4px;transform:none}#adMs .amC.taken .amL b{color:#3f7d1e}
 #adMs .amTap{appearance:none;padding:0;border:0;background:none;cursor:pointer}#adMs .amOpen{color:#3f7d1e}
 #adMs .amGoX{position:absolute;left:36px;top:2px;appearance:none;padding:2px 11px;border:2.5px solid #5a2f12;border-radius:999px;background:linear-gradient(#cdea80,#93c957);font:900 11.5px var(--font-display);color:#2f4a12;cursor:pointer;box-shadow:0 2px 0 #5a2f12;white-space:nowrap}
 #adMs.off .amBar>i{width:0!important}
@@ -24644,7 +24644,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-2155';
+const OLC_DERLEME = '20261128-2208';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
