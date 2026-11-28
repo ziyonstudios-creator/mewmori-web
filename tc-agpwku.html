@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795868999",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795875568",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24628,7 +24628,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-1529';
+const OLC_DERLEME = '20261128-1715';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -25568,7 +25568,7 @@ try { pkHavuzGuncelle() } catch (e) { }
 const SP_ON = !EVMODE;
 const SPR = { yer: 3, cdMin: 150, cdMax: 300, zor: [{ n: 'Kolay', c: [1, 2], top: [2, 4] }, { n: 'Orta', c: [2, 4], top: [4, 8] }, { n: 'Zor', c: [3, 8], top: [8, 16] }] };
 function spS() { const O = S.sp && typeof S.sp === 'object' ? S.sp : (S.sp = {}); if (!Array.isArray(O.o)) O.o = []; while (O.o.length < SPR.yer) O.o.push(null); O.cd = O.cd || {}; O.n = O.n | 0; return O }
-const spAcik = () => { try { return SP_ON && !!S && !!S.created && !zrOgretici() && (S.lvl | 0) >= 2 } catch (e) { return false } };
+const spAcik = () => { try { return SP_ON && !!S && !!S.created && !zrOgretici() && ((S.lvl | 0) >= 2 || spErken()) } catch (e) { return false } };   // (V434) spErken: p99zh — 1. aşamada öğreticiden sonra 3. servisle
 // oyuncunun şu an yapabileceği ürün: bütün ham maddeleri açık paketlerden, paketin seviyesine uygun çıkıyor
 function spYapilir(id) { try { const it = ITEMS[id]; if (!it || !it.chain || it.gone || !HOW[id] || it.fam === 'bag') return false; const raw = howRaw(id, 1);
     for (const x in raw) { const h = HOW[x]; if (!h || h.k !== 'raw') return false; if (!(S.pk && S.pk.on && S.pk.on[h.pk]) && !pkVar(h.pk)) return false; if (PK_HAVUZ[h.pk] && pkMinLv(x) > pkSv(h.pk)) return false }
@@ -30708,6 +30708,59 @@ const ISI = { t0: 0, n: 0, dus: 0, indi: false };
       if (!aktif || document.hidden) { ISI.t0 = 0; return } if (!ISI.t0) { ISI.t0 = now; ISI.n = 0; return } ISI.n++;
       if (now - ISI.t0 >= 2000) { const fps = ISI.n * 1000 / (now - ISI.t0); ISI.dus = fps < 40 ? ISI.dus + 1 : 0; ISI.t0 = now; ISI.n = 0;
         if (ISI.dus >= 4) { ISI.indi = true; renderer.setPixelRatio(1); try { resize() } catch (e) { } console.log('ısı koruması: çözünürlük 1,0') } } } catch (e) { } } }
+
+// ================= V434 · İLK 30 DAKİKA: ERKEN AŞAMA · SİPARİŞLER 1. AŞAMADA · KASALI TAHTA =================
+// Kullanıcı (28 Kasım 2026, 16:29): "önerilerini en güzel ve kısa şekilde yapabilir misin oyunumuza yani tutan oyunları araştır ve bizim oyun
+// konseptimize göre yeni şekilde entegre yap". Ölçüm (yeni hesap, 30 oyun dakikası, V433): 44 sipariş, 154 dokunuş, ~235 altın; oyuncu aşama
+// atlayamıyor (2. aşama 300 altın ≈ 40–50. dk), tahtada yalnız 20 birleştirme, 48 karenin 4'ü dolu, enerji hep tam, komşu siparişleri 2. aşamada.
+// Örnek alınanlar: Gossip Harbor (ilk oturumlarda cömert enerji ve kolay siparişler, iki oturumda 10. seviye; tahtanın yalnız %20–25'i boş),
+// Travel Town (her an açık siparişler), Merge Mansion / Love & Pies (kapalı kareler), Cat Snack Bar (yardımcı ilk gün).
+//  1) ERKEN AŞAMA: 2. aşama 300 → 60 altın, 3. aşama 700 → 300; Barista 200 → 100, Kasiyer 400 → 250 (sonraki aşamalar ve çalışanlar aynı).
+//     Aşama atlayınca enerji dolar (önizleme ve kutlama listesinde de yazar).
+//  2) KOMŞU SİPARİŞLERİ 1. aşamada, öğreticiden sonraki 3. servisle açılır (p978 spAcik → spErken).
+//     HATA DÜZELTMESİ: sipariş yalnız o aşamada paketlerden çıkabilen ham maddelerle yapılabilen ürünlerden seçilir. p984'ün aşama süzgeci
+//     siparişlerde hesaba katılmıyordu: 2. aşamada 71 adayın 41'i, 3. aşamada 34'ü, 5. aşamada 15'i YAPILAMAZDI (sipariş yeri kilitleniyordu).
+//     Yapılamayan eski siparişler beklemeden yenilenir.
+//  3) HOŞ GELDİN SEPETİ: tahta boş başlamasın diye kilitli kare (tozlu kasa; kullanıcı V368'de kaldırttı) yerine hediye malzeme — aşağıda.
+const I30 = { ham: null, hamT: 0, hamL: -1 };
+const i30Kar = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] } return a };
+// ---- 1) erken aşama ----
+try { const T = kaTablo(); T.altin[2] = 60; T.altin[3] = 300 } catch (e) { console.warn('ilk30 aşama', e) }
+try { for (const R of EK_ROL) { if (R.id === 'barista') R.c = 100; else if (R.id === 'kasiyer') R.c = 250 } } catch (e) { console.warn('ilk30 ekip', e) }
+function i30Enerji() { try { const E = S.energy, M = energyMax(); if (E && E.v < M) { E.v = M; E.ts = nowT(); markDirty() } } catch (e) { } }
+{ const _ky = kaYukselt; kaYukselt = function (ne, W) { let a0 = 99; try { a0 = kaAsama() } catch (e) { } const r = _ky.apply(this, arguments); try { if (kaAsama() > a0) i30Enerji() } catch (e) { } return r } }
+{ const _ka = kaAcilanlar; kaAcilanlar = function (a) { const L = _ka.apply(this, arguments) || []; try { L.push({ ic: ic('bolt'), t: kaT('Enerjin dolar', 'Your energy refills') }) } catch (e) { } return L } }
+// ---- 2) komşu siparişleri ----
+function spErken() { try { return !EVMODE && S.tut === 'done' && (S.stats.orders | 0) >= 3 } catch (e) { return false } }
+// bu aşamada, oyuncunun paketlerinden çıkabilen ham maddeler (p984 süzgeciyle)
+function i30Ham() { const now = Date.now(); if (I30.ham && now - I30.hamT < 2000 && I30.hamL === (S.lvl | 0)) return I30.ham; const s = new Set();
+  try { for (const k in PK_HAVUZ) { if (!((S.pk && S.pk.on && S.pk.on[k]) || pkVar(k))) continue; const h = pkHavuz(k) || []; for (const [id] of h) s.add(id) } } catch (e) { }
+  I30.ham = s; I30.hamT = now; I30.hamL = S.lvl | 0; return s }
+{ const _sy = spYapilir; spYapilir = function (id) { if (!_sy.apply(this, arguments)) return false;
+    try { const H = i30Ham(); if (!H.size) return true; const raw = howRaw(id, 1); for (const x in raw) if (!H.has(x)) return false } catch (e) { } return true } }
+setInterval(() => { try { if (typeof started === 'undefined' || !started || !spAcik()) return; const O = spS(); let ch = false;
+    for (let i = 0; i < O.o.length; i++) { const o = O.o[i]; if (o && !o.d.every(([x]) => spYapilir(x) || spSay(x) > 0)) { O.o[i] = null; delete O.cd[i]; ch = true } }
+    if (ch) { markDirty(); spTick() } } catch (e) { } }, 4000);
+// ---- 3) komşulardan hoş geldin sepeti ----
+// Tozlu kasalar kullanıcı isteğiyle kaldırılmıştı (V368, 25 Kasım); geri getirilmedi. Tahtanın boş başlamaması ve ilk siparişlerin hemen
+// tamamlanabilmesi için kilitli kare yerine HEDİYE: siparişler 1. aşamada ilk açıldığında komşular tahtaya 12 malzeme bırakır (6 çeşit × 2,
+// o aşamada paketlerden çıkan ham maddeler; en az 16 kare boş kalır). Bir kerelik (S.seen.i30Sepet). Sipariş bildirimiyle tek bildirimde.
+function i30Sepet() { try { if (EVMODE || !S || !S.created || !Array.isArray(S.board)) return 0; S.seen = S.seen || {}; if (S.seen.i30Sepet) return 0; S.seen.i30Sepet = 1; markDirty();
+    if (kaAsama() > 1) return 0; const H = i30Kar([...i30Ham()].filter(id => ITEMS[id] && ITEMS[id].next)); if (!H.length) return 0;
+    const bos = i30Kar(S.board.map((v, i) => v ? -1 : i).filter(i => i >= 0)), n = Math.max(0, Math.min(12, bos.length - 16)); if (n < 2) return 0;
+    let k = 0; for (; k + 1 < n; k += 2) { const id = H[(k / 2) % H.length]; S.board[bos[k]] = id; S.board[bos[k + 1]] = id; try { if (typeof discoverItem === 'function') discoverItem(id) } catch (e) { } }
+    try { saveNow() } catch (e) { } try { if (UI.mode === 'merge') renderMerge() } catch (e) { } return k } catch (e) { console.warn('ilk30 sepet', e); return 0 } }
+{ const _st = spTick; spTick = function () { try { if (spAcik() && !(S.seen && S.seen.i30Sepet) && S.tut === 'done') { const O = spS(), n = i30Sepet();
+        if (n > 0 && !O.ilk) { O.ilk = 1; markDirty(); setTimeout(() => { try { toast(kaT(`<b>Komşulardan hoş geldin sepeti!</b><br>Tahtana ${n} malzeme bıraktılar ve ilk siparişlerini verdiler · Birleştir › Sipariş`, `<b>A welcome basket from the neighbours!</b><br>They left ${n} ingredients on your board and placed their first orders · Merge › Orders`), ic('bell'), 6200); sfx('chime') } catch (e) { } }, 700) } } } catch (e) { console.warn('ilk30 sepet', e) }
+    return _st.apply(this, arguments) } }
+// ---- 4) siparişler tahtaya bakar ----
+// Ölçüm (V434 ilk koşu): 24. dakikada tahta 45/48 doluydu — paketler rastgele verir, siparişler ise tahtadakinden bağımsız seçiliyordu.
+// Yeni sipariş seçilirken 6 aday üretilir; ham maddesi (aynı zincirden, kademe ağırlığıyla) tahtada en çok bulunan seçilir. Tahtada hiçbir şey
+// yoksa seçim eskisi gibi rastgeledir. Komşular "tezgâhta ne varsa onu" ister: birikmiş malzeme işe yarar, tahta kendiliğinden boşalır.
+function i30Skor(o) { try { const var_ = {}; for (const v of S.board) { const it = v && ITEMS[v]; if (it && it.chain && it.fam !== 'bag') var_[it.chain] = (var_[it.chain] || 0) + 2 ** ((it.lv | 0) - 1) }
+    let ist = 0, kar = 0; for (const [id, n] of o.d) { const raw = howRaw(id, n); for (const x in raw) { const ch = ITEMS[x] && ITEMS[x].chain, g = raw[x]; ist += g; if (ch && var_[ch]) { const k = Math.min(g, var_[ch]); kar += k; var_[ch] -= k } } }
+    return ist ? kar / ist : 0 } catch (e) { return 0 } }
+{ const _su = spUret; spUret = function (yer) { let en = null, es = -1; for (let k = 0; k < 6; k++) { const o = _su.apply(this, arguments); if (!o) continue; const s = i30Skor(o) + Math.random() * 0.05; if (s > es) { es = s; en = o } } return en } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
