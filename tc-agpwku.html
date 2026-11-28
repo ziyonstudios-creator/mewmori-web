@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795854988",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795868648",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -3321,15 +3321,16 @@ const _p=new THREE.Vector3();
 let _plR=null,_plT=-1e9;
 // (V414) Tuvalin ekrandaki yeri kare başına bir kez okunur (eskiden her balon için ayrı okunuyor, her okuma bir önceki balonun yazdığı dönüşüm yüzünden
 // stil/yerleşim hesabını zorluyordu); balonun kendi boyu da içeriği değişmedikçe yeniden ölçülmez (yarım saniyede bir tazelenir).
-function place(e,wp,dy=0){_p.copy(wp).project(camera);const now=performance.now();if(!_plR||now-_plT>24){_plR=renderer.domElement.getBoundingClientRect();_plT=now}const r=_plR;const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;e.style.display=vis?'':'none';
-  let ow=0,oh=0;if(vis){if(!(e._ow>0)||e._boyH!==e._html||e._boyC!==e.className||now-(e._boyT||0)>500){e._ow=e.offsetWidth;e._oh=e.offsetHeight;e._boyH=e._html;e._boyC=e.className;e._boyT=now}ow=e._ow;oh=e._oh}
+addEventListener('resize',()=>{_plR=null});addEventListener('orientationchange',()=>{_plR=null});
+function place(e,wp,dy=0){_p.copy(wp).project(camera);const now=performance.now();if(!_plR||now-_plT>1000){_plR=renderer.domElement.getBoundingClientRect();_plT=now}const r=_plR;const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;{const d=vis?'':'none';if(e.style.display!==d)e.style.display=d}   // (V432) tuval dikdörtgeni saniyede bir (boyut değişince hemen) okunur; değişmeyen stil yazılmaz → her karede zorunlu yerleşim hesabı yok
+  let ow=0,oh=0;if(vis){const bk=e.className+'|'+e.textContent.length+'|'+e.childElementCount;if(e._ow==null||e._boyH!==bk||now-(e._boyT||0)>1500){e._ow=e.offsetWidth;e._oh=e.offsetHeight;e._boyH=bk;e._boyT=now}ow=e._ow;oh=e._oh}   // (V432) boyut anahtarı: sınıf + yazı uzunluğu + çocuk sayısı (bekleme halkası her karede değişse de boyut değişmez; CSS ile gizli öğenin 0 ölçüsü de saklanır → her karede zorunlu yerleşim yok)
   // ekran kenarına taşmasın: yarı genişlik kadar içeride tut
   // (V412) PLB (p99x): ana ekranda üst çubuğun ve yan sütunların ALTINA girmesin (V410'daki yakın kamerada mutfaktaki "Hazırla" düğmesi hedef hapının arkasında kalıyordu);
   // --bk: kamera uzaklaşınca balonlar biraz küçülür (büyük kafede karakterler küçükken balonlar ekranı kaplamasın)
   const B=typeof PLB!=='undefined'?PLB:null,yan=B?B.yan:0,kk=(window.__U?window.__U.k:1)*(B?B.bk:1);
   let px=(_p.x+1)/2*r.width;if(vis&&ow){const hw=ow*kk/2+6;px=r.width-2*yan>2*hw?Math.min(Math.max(px,yan+hw),r.width-yan-hw):Math.min(Math.max(px,hw),r.width-hw)}
   let py=(1-_p.y)/2*r.height+dy;if(vis&&B&&B.ust>0&&oh){const mn=B.ust+oh*kk;if(py<mn)py=mn;else if(B.alt>0&&py>r.height-B.alt&&Math.abs(px-r.width/2)<B.altX+ow*kk/2)py=Math.max(mn,r.height-B.alt)}   // alt ortadaki düğme sırasının üstünde kalsın
-  e.style.transform=`translate(${px.toFixed(1)}px,${py.toFixed(1)}px) translate(-50%,-100%) scale(calc(var(--u,1)*var(--bk,1)))`}   // --u: arayüz ölçeği (p68); kafe içi düğmeler de onunla büyür
+  const tf=`translate(${px.toFixed(1)}px,${py.toFixed(1)}px) translate(-50%,-100%) scale(calc(var(--u,1)*var(--bk,1)))`;if(e._tf!==tf||e.style.transform!==e._tfW){e.style.transform=tf;e._tf=tf;e._tfW=e.style.transform}}   // --u: arayüz ölçeği (p68); kafe içi düğmeler de onunla büyür
 function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.className='coin-pop'+(tip?' tip':'');e.innerHTML=`+${n} ${ic('coin')}${tip?' bahşiş':''}`;ui.appendChild(e);const t0=performance.now();
   const f=()=>{const k=(performance.now()-t0)/1300;if(k>=1){e.remove();return}place(e,wp,-k*50);e.style.opacity=String(1-k*k);requestAnimationFrame(f)};f()}
 const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin'),get angry(){return ic('angry')}};
@@ -24627,7 +24628,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-1134';
+const OLC_DERLEME = '20261128-1507';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30645,6 +30646,50 @@ const GRS_INS = ['instug1', 'instug2', 'instug3', 'insboy1', 'insboy2', 'insboy3
   try { const _kc = kaliteCiz; kaliteCiz = function (L) { const r = _kc.apply(this, arguments);
       try { L.querySelectorAll('.klc[data-sp]').forEach(b => { const a = b.querySelector('.klArt'); if (a && !a.querySelector('.supImg')) a.innerHTML = `<img class="supImg" src="img/items/sup_${b.dataset.sp}.webp" alt="" draggable="false">` }) } catch (e) { } return r } } catch (e) { console.warn('toptancı görseli', e) }
   const st = document.createElement('style'); st.textContent = `.klArt .supImg{width:100%;height:100%;display:block;object-fit:contain;pointer-events:none}`; document.head.appendChild(st) }
+
+// ================= V432 · İLK MALZEME KOLİSİ HEDİYE =================
+// Oyuncu testi (28 Kasım): 1. aşamada 90 dk'lık kazancın büyük kısmını ilk otomatik koli (~135 altın) götürüyordu ve oyuncu bunu beklemiyordu.
+// Hiç koli almamış oyuncunun ilk otomatik kolisi ücretsiz gelir (toptancının hoş geldin hediyesi); sonrakiler her zamanki gibi.
+{ const _pao = placeAutoOrder; placeAutoOrder = function (sp, n, tot, credit) {
+    try { if (!EVMODE && S && !(S.stats && S.stats.buys > 0) && !(S.seen && S.seen.ilkKoli) && tot > 0) { S.seen = S.seen || {}; S.seen.ilkKoli = 1;
+        const T = stockS(); bump('buys', 1); T.pend.push({ id: ++T.seq, sup: sp.id, n, unit: 0, q: sp.q, total: 0, eta: nowT() + sp.eta * 1000 }); markDirty(); saveNow(); sfxSafe('coin');
+        toast(kaT(`<b>İlk koli hediye!</b><br>${sp.name} hoş geldin hediyesi olarak ${n} malzeme yolladı · ${fmtT(sp.eta)} sonra kapıda. Sonraki koliler kasadan ödenir.`,
+          `<b>First crate is free!</b><br>${sp.name} sent ${n} ingredients as a welcome gift · arrives in ${fmtT(sp.eta)}. Later crates are paid from the till.`), ic('box'), 4200);
+        if (UI.mode === 'menu' && menuTab === 'stock') renderMenu(); return true } } catch (e) { console.warn('ilk koli', e) }
+    return _pao.apply(this, arguments) } }
+
+// ================= V432 · ÇİZİM YÜKÜ: SOKAK SÜSLERİNİ BİRLEŞTİR · KÜÇÜK PARÇALARIN GÖLGESİ =================
+// Oyuncu testi ölçümü (28 Kasım): küçük kafede ~454 çizim çağrısı, 390 gölge atan parça (126'sı 12 cm'den küçük). Sokak lambası direkleri,
+// lamba başlıkları ve saksı ağaçları sahneye tek tek eklenmiş ~70 parça (p1b lamp/planterTree) → aynı malzemeliler tek parçada birleştirilir
+// (ışık küreleri ENV.glows ayrı kalır; gece rengi onlarla değişir). 12 cm'den küçük parçalar gölge atmaz (görsel farkı yok, gölge haritası hafifler).
+// Kafe içindeki eşyalar, karakterler ve hareketli nesneler dokunulmaz.
+const CZ = { n: 0, g: 0 };
+function czSokak() { try { if (typeof EVMODE !== 'undefined' && EVMODE) return 0; const glow = new Set(ENV.glows || []), L = [];
+    for (const o of scene.children) { if (!o.isMesh || o.name || glow.has(o) || o.material.transparent || Array.isArray(o.material) || !o.material.isMeshToonMaterial) continue;
+      if (!/^(Cylinder|Sphere|Cone|Box)Geometry$/.test(o.geometry.type)) continue; if (Math.max(Math.abs(o.position.x), Math.abs(o.position.z)) < 11.5) continue; L.push(o) }
+    if (L.length < 8) return 0; const G = new THREE.Group(); G.name = 'czSokak'; scene.add(G); for (const o of L) G.attach(o);
+    const n = mergeStatic(G); G.userData.merged = true; CZ.n += n; return n } catch (e) { console.warn('sokak birleştirme', e); return 0 } }
+function czGolge(kok) { let n = 0; const v = new THREE.Vector3(); try { (kok || scene).traverse(o => { if (!o.isMesh || !o.castShadow || o.isSkinnedMesh) return;
+      if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); o.getWorldScale(v); if (o.geometry.boundingSphere.radius * Math.max(v.x, v.y, v.z) < 0.12) { o.castShadow = false; n++ } });
+    if (n) renderer.shadowMap.needsUpdate = true } catch (e) { } CZ.g += n; return n }
+setTimeout(() => { czSokak(); czGolge() }, 3200);
+{ const _sf = spawnFurn; spawnFurn = function (rec) { const r = _sf.apply(this, arguments); try { const R = FURN.get(rec.uid); if (R && R.group) czGolge(R.group) } catch (e) { } return r } }
+
+// ================= V432 · İLK DAKİKALARDA "BOŞ MASA YOKTU" KAYBI · BAŞLANGIÇ MALZEME KALİTESİ =================
+// Oyuncu testi ölçümü (28 Kasım): 1. aşamanın ilk 15 dk'sında kaybedilen müşterilerin hepsi "Boş masa yoktu" (2 masalı başlangıç kafesi);
+// her kayıp 1 yıldızlık yorum. Yorumlarda lezzet hep 3,0 (başlangıç deposu 3 kaliteli, varsayılan toptancı Taze 3,5) → puan ~3,0–3,7.
+//  • En çok 3 masa varken ayakta en çok 1 grup bekler ve sabrı ×1,6 (yeni gelen boşuna gelip kızmasın; masa dolunca gelen kesilir).
+//  • Ayakta ilk grup belirince (parası masaya yetiyorsa) bir kez "Market'ten masa al" ipucu.
+//  • Yeni hesabın başlangıç deposu varsayılan toptancının kalitesiyle (3,5) gelir.
+try { CONFIG.stock.startQ = (SUP(SUP_DEF) || {}).q || CONFIG.stock.startQ } catch (e) { }
+const AZM = () => { try { return !EVMODE && TABLES.length <= 3 } catch (e) { return false } };
+{ const _so = standOk; standOk = function () { const r = _so.apply(this, arguments); if (!r) return r; try { if (AZM() && bekleyenGruplar().length >= 1) return false } catch (e) { } return r } }
+{ let t = 0; const _st = simStep; simStep = function (dt) { _st(dt); t += dt; if (t < 1) return; t = 0;
+    try { if (!S.created || S.tut !== 'done' || EVMODE) return; const G = bekleyenGruplar(); if (!G.length) return;
+      if (AZM()) for (const g of G) if (g.pat && g.pat.sMax && !g.pat.azm) { g.pat.sMax *= 1.6; g.pat.azm = 1 }
+      S.seen = S.seen || {}; if (!S.seen.masaIpucu && UI.mode === 'cafe' && !UI.modal) { const C = Object.values(CAT).filter(c => c.kind === 'table' && S.lvl >= (c.lvl | 0) && c.price > 0).sort((a, b) => a.price - b.price)[0];
+        if (C && S.coins >= C.price && placedTables() < tableCap(S.lvl)) { S.seen.masaIpucu = 1; markDirty();
+          toast(kaT(`<b>Masalar doldu!</b><br>Market'ten yeni masa alırsan (${C.price} altın) bekleyen müşteri kalmaz, daha çok kazanırsın`, `<b>All tables are full!</b><br>Buy another table in the Market (${C.price} gold) so guests don't wait`), ic('table'), 4600) } } } catch (e) { } } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
