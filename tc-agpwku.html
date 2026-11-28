@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795883902",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795884626",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24628,7 +24628,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-1929';
+const OLC_DERLEME = '20261128-1948';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30870,9 +30870,9 @@ html.land #game#game #skMudavim .skscroll{display:block!important;overflow:hidde
 //     Dikkat: acele rozetli düğmede (.act.acel) ::before rozetin kendisi (sağ üst köşe, p981) → pay orada simge öğesinin sözde öğesiyle verilir;
 //     yoksa rozet sol köşeye kayıyordu (inset 'left' değerini de verdiği için).
 //  3) KEDİ BAŞLARI: telefonda kediler ekran yüksekliğinin ~%10'u, yüzleri okunmuyor. Baş kemiği ölçeği (GR.bas) model kurulurken uygulanır
-//     (cloneLook / buildCat / applyLook: müşteri, ekip, kurye, editör). V436'da kapalıydı (onay bekliyordu); V437'de kullanıcı üç seçenekli
-//     görselden %40'ı seçti → varsayılan 1,4. Deneme için localStorage 'tc-bas' (1–1,6).
-const GR = { bas: (() => { try { const v = parseFloat(localStorage.getItem('tc-bas')); return v >= 1 && v <= 1.6 ? v : 1.4 } catch (e) { return 1.4 } })() };   // V437: kullanıcı onayı (28 Kasım 19:09 "bu yeni modeli sevdim uygulayabilirsin", 19:12 "%40 büyük olsun")
+//     (cloneLook / buildCat / applyLook: müşteri, ekip, kurye, editör). V436'da kapalıydı; V437'de kullanıcı %40'ı seçti (1,4); oyunda görünce
+//     V438'de eski haline döndürülmesini istedi → varsayılan yeniden 1 (KAPALI). Deneme için localStorage 'tc-bas' (1–1,6).
+const GR = { bas: (() => { try { const v = parseFloat(localStorage.getItem('tc-bas')); return v >= 1 && v <= 1.6 ? v : 1 } catch (e) { return 1 } })() };   // V438: kullanıcı (28 Kasım 19:48) "kafa boylarını eski haline getirir misin" → yeniden 1 (V437'de 19:12 isteğiyle 1,4 yapılmıştı). Altyapı duruyor; deneme: localStorage 'tc-bas'
 function grBas(m) { try { if (!m || GR.bas === 1 || !m.getObjectByName) return m; const h = m.getObjectByName('mixamorigHead'); if (h && !h.userData.grBas) { h.scale.multiplyScalar(GR.bas); h.userData.grBas = GR.bas } } catch (e) { } return m }   // işaret baş kemiğinde: kopyalanan modelde de taşınır, iki kez büyümez
 { const _cl = cloneLook; cloneLook = function () { return grBas(_cl.apply(this, arguments)) } }
 { const _bc = buildCat; buildCat = function () { return grBas(_bc.apply(this, arguments)) } }
