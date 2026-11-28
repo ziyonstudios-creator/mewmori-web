@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795891648",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795892639",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -22733,10 +22733,15 @@ html.land #game#game #skDaily .skscroll>.grs{flex:1 1 0!important;min-height:0!i
 //  • İlkbahar ve yaz şimdiki görünümdür. Sonbahar teması henüz yok (Eylül 2027'den önce yapılacak).
 const MEVSIM_AD={kis:'Kış',ilkbahar:'İlkbahar',yaz:'Yaz',sonbahar:'Sonbahar'};
 function mevsimSimdi(d=new Date(Date.now()+3*36e5)){const y=d.getUTCFullYear(),m=d.getUTCMonth()+1,g=d.getUTCDate();
-  if(y===2026&&m===11&&g>=22)return 'kis';
   return m===12||m<=2?'kis':m<=5?'ilkbahar':m<=8?'yaz':'sonbahar'}
 const MEVSIM=(()=>{try{const q=new URLSearchParams(location.search).get('mevsim');if(q&&MEVSIM_AD[q])return q}catch(e){}return mevsimSimdi()})();
-const KIS=MEVSIM==='kis';   // (V321) etkinlik kafesinde de ana kafenin mevsimi
+// (V441) Kullanıcı (28 Kasım 2026, 21:49): "kar sezonu şuan kaldır yılbaşına doğru ekleyeceğim. müşterilerde havaya göre kıyafet giysinler."
+// → Kar teması (karlı zemin, kar yağışı, kardan adam, karlı ağaçlar) KAPALI; takvim Aralık'a girse de kendiliğinden açılmaz.
+//   Açmak için KAR_TEMA=true (kullanıcı yılbaşına doğru isteyecek). Deneme: ?mevsim=kis yine kar temasını açar.
+//   Müşteri kıyafeti kar temasından ayrıldı: GIYIM = takvimdeki gerçek mevsim (p950).
+const KAR_TEMA=false;
+const KIS=(()=>{try{if(new URLSearchParams(location.search).get('mevsim')==='kis')return true}catch(e){}return KAR_TEMA&&MEVSIM==='kis'})();   // (V321) etkinlik kafesinde de ana kafenin mevsimi
+const GIYIM=(()=>{try{const q=new URLSearchParams(location.search).get('giyim');if(q&&MEVSIM_AD[q])return q}catch(e){}return KIS?'kis':MEVSIM})();
 const KAR={on:false,pts:null,N:0,t:0,bit:0,sonraki:0,op:0,ilk:true,duyuru:false};
 const KAR_BEYAZ=0xf6fafd;
 function kisRenk(mat,hedef,k){try{if(mat&&mat.color)mat.color.lerp(new THREE.Color(hedef),k)}catch(e){}}
@@ -23007,20 +23012,27 @@ attachAcc=function(root,build){const h=root.getObjectByName('mixamorigHead'),n=r
     else gh.userData.sapka=0}   // süs: yazıldığı yerde kalır (kafaya doğru itmek bazılarını kafanın içine gömüyordu)
   if(gn.parent)seatAcc(root,gn,new THREE.Vector3(0,0,-1));
   return [gh,gn]};
-// ---- kış kıyafeti ----
-if(typeof KIS!=='undefined'&&KIS){
-  {const _dg=dressGarments;dressGarments=function(root,sm,wear){if(wear&&wear.cust){wear={...wear};if(wear.top)wear.top={...wear.top,sleeve:KIS_KOL,kis:1};if(wear.bottom)wear.bottom={...wear.bottom,len:'long'}}return _dg.call(this,root,sm,wear)}}
-  // örgü dokusu: ince dikey ilmek çizgileri (kumaşın kendi rengi biraz koyulaşıp açılır)
+// ---- mevsime (havaya) göre kıyafet (V441: kar temasından ayrıldı; p948 GIYIM = takvimdeki gerçek mevsim) ----
+//  kış (Ara–Şub): örgü kazak, uzun pantolon, boşsa atkı, çoğuna bere · sonbahar (Eyl–Kas): uzun kollu (yarısı örgü), uzun pantolon, üçte birine atkı
+//  ilkbahar (Mar–May): yarısı uzun kollu, çoğu uzun pantolon · yaz: tişört, şort (değişiklik yok). VIP ve ustalar kendi kıyafetinde.
+const GY_KUR={kis:{kol:1,knit:1,pant:1,atki:1,bere:2/3},sonbahar:{kol:1,knit:0.5,pant:1,atki:1/3,bere:0},ilkbahar:{kol:0.5,knit:0,pant:0.7,atki:0,bere:0}};
+const GY=(typeof GIYIM!=='undefined'&&GY_KUR[GIYIM])||null,GY_ST={lk:null};
+if(GY){
+  const kisSira=ad=>{let s=0;for(const ch of String(ad||''))s=(s*31+ch.charCodeAt(0))%9973;return s};
+  const pay=(i,k,p)=>((i*k)%100)/100<p;   // isme bağlı, her ziyarette aynı
+  {const _dg=dressGarments;dressGarments=function(root,sm,wear){const lk=GY_ST.lk;if(wear&&wear.cust&&!(lk&&(lk.vip||lk.usta))){const i=kisSira(lk&&lk.name);wear={...wear};
+      if(wear.top&&pay(i,37,GY.kol))wear.top={...wear.top,sleeve:KIS_KOL,kis:pay(i,53,GY.knit)?1:0};
+      if(wear.bottom&&pay(i,71,GY.pant))wear.bottom={...wear.bottom,len:'long'}}return _dg.call(this,root,sm,wear)}}
   {const _tc=topColor;topColor=function(t,x,y,z,o){_tc(t,x,y,z,o);if(t&&t.kis){const k=0.86+0.14*Math.abs(Math.sin((x*0.8+z*0.6)*230))*(0.85+0.15*Math.abs(Math.sin(y*520)));o[0]*=k;o[1]*=k;o[2]*=k}}}
   const KIS_RENK=[[0xd9534f,0xfff4e0],[0x3f6fb5,0xffffff],[0x5f8a3a,0xf2d06b],[0xf2b134,0x8a5a2b],[0x8e5bb0,0xf6c9e0],[0x2e8a8a,0xf4efe6],[0xc8783a,0xfff0d8],[0x4a4a58,0xe86a6a]];
-  const kisSira=ad=>{let s=0;for(const ch of String(ad||''))s=(s*31+ch.charCodeAt(0))%9973;return s};
-  {const _cl=cloneLook;cloneLook=function(tex,lk){const r=_cl.apply(this,arguments);try{if(lk&&r)r.userData.kisLk=lk}catch(e){}return r}}
-  {const _aa=attachAcc;attachAcc=function(root,build){const lk=root&&root.userData&&root.userData.kisLk;if(!lk||lk.vip||lk.usta)return _aa.apply(this,arguments);
+  {const _cl=cloneLook;cloneLook=function(tex,lk){const o=GY_ST.lk;GY_ST.lk=lk||null;let r;try{r=_cl.apply(this,arguments)}finally{GY_ST.lk=o}try{if(lk&&r)r.userData.kisLk=lk}catch(e){}return r}}
+  if(GY.atki||GY.bere){const _aa=attachAcc;attachAcc=function(root,build){const lk=root&&root.userData&&root.userData.kisLk;if(!lk||lk.vip||lk.usta)return _aa.apply(this,arguments);
     const i=kisSira(lk.name),R=KIS_RENK[i%KIS_RENK.length];
     return _aa.call(this,root,(h,n)=>{build(h,n);
-      if(!n.children.length)ACC_BUILD.scarf(n,h,{c:R[0],c2:R[1]});                       // boynu boş olana atkı
-      if(!h.children.length&&i%3!==0)ACC_BUILD.beanie(n,h,{c:KIS_RENK[(i+3)%KIS_RENK.length][0]})})}}   // başı boş olanların çoğuna bere
+      if(!n.children.length&&pay(i,29,GY.atki))ACC_BUILD.scarf(n,h,{c:R[0],c2:R[1]});
+      if(!h.children.length&&pay(i,43,GY.bere))ACC_BUILD.beanie(n,h,{c:KIS_RENK[(i+3)%KIS_RENK.length][0]})})}}
 }
+
 
 // ================= YENİLEMESİZ DEĞİŞİKLİK: genişletme, büyük salon, kapı, pencere, tezgâh teması, blok taşıma (V318) =================
 // Kullanıcı isteği (22 Kasım 2026, 18:33): "tadilatlardan sonra pencere, kapı vesaire oyun yenilenmesini kaldır."
@@ -24632,7 +24644,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-2138';
+const OLC_DERLEME = '20261128-2155';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -31035,6 +31047,7 @@ function esMdGiris() { try { if (fdAcik()) return; const m = $('repModal'); if (
 { const st = document.createElement('style'); st.textContent = `
 #repModal .esMd{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:42px;margin:4px 0 10px;padding:6px 14px;border:2.5px solid #4a2a14;border-radius:14px;background:#fffaf0;box-shadow:0 3px 0 #4a2a14;font:800 14px/1.1 var(--font-display,sans-serif);color:#4a2a14;cursor:pointer}
 #repModal .esMd .ic{width:20px;height:20px;flex:none}#repModal .esMd.var{background:#fff1c9;border-color:#c98a1e}#repModal .esMd i{font:800 11px/1 var(--font-display,sans-serif);font-style:normal;color:#fff;background:#e2574c;border-radius:99px;padding:3px 7px}
+html:not(.fd) #hkKart{display:none!important}   /* (V441) kullanıcı 21:50: "arayüzde sıradaki hedef yazan yeri kaldır"; altın yetince gelen bildirim sürüyor */
 #iqTan{pointer-events:none!important}#iqTan .iqTx{pointer-events:auto!important}
 html:not(.fd) #repPill.mdVar::after{content:'';position:absolute;inset:auto;top:-3px;right:-3px;left:auto;bottom:auto;width:11px;height:11px;border-radius:50%;background:#e2574c;border:2px solid #fffaf0}`; document.head.appendChild(st) }
 // Hedef kartının bölgesi (PLB.kart): kafe içi düğmeler kartın arkasına düşmesin (p11 place). Kart gizliyken / yeni düzende bölge yok.
