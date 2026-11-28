@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795877280",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795882014",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -3335,7 +3335,7 @@ function floatCoin(n,wp,tip=false){const e=document.createElement('div');e.class
   const f=()=>{const k=(performance.now()-t0)/1300;if(k>=1){e.remove();return}place(e,wp,-k*50);e.style.opacity=String(1-k*k);requestAnimationFrame(f)};f()}
 const BUB={heart:ic('heart'),yum:ic('yum'),think:ic('menu'),sorry:ic('coin'),get angry(){return ic('angry')}};
 function updateUI(){for(const e of els.values())e._seen=false;
-  for(const c of customers){const head=new THREE.Vector3();c.char.head.getWorldPosition(head);head.y+=0.42;
+  for(const c of customers){const head=new THREE.Vector3();c.char.head.getWorldPosition(head);head.y+=0.42+(GR.bas-1)*0.3;
     if(c.group&&c===c.group.leader&&groupReady(c.group)){const e=el('take'+c.id,'act',`${ic('menu')}Sipariş al${c.group.size>1?` · ${c.group.size}`:''}`,()=>takeOrder(c));patBtn(e,c.group);place(e,new THREE.Vector3(c.table.center.x,1.05,c.table.center.z))}
     // sipariş verildi: ürün görseli yerine bekleme simgesi; grupta masa başına tek balon (servis edilen / toplam)
     const g=c.group,multi=g&&g.size>1,waitSt=st=>st==='ORDER_TAKEN'||st==='WAITING_FOR_FOOD';
@@ -24628,7 +24628,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-1724';
+const OLC_DERLEME = '20261128-1850';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -28199,7 +28199,7 @@ try { const v = JSON.parse(localStorage.getItem(HK_KEY) || 'null'); if (v) HK.ay
 function hkKaydet() { try { localStorage.setItem(HK_KEY, JSON.stringify(HK.ayar)) } catch (e) { } }
 // (V400) portre: 256 px kedi modeli bir kez çizilir, doku ve malzemeleri hemen bırakılır (bellek); resim cihazda saklanır, sonraki açılışta model kurulmaz
 var HKP = {};
-function hkPortreUrl(k) { const cfg = S.chars[k], anah = 'tabbychef-portre-' + k, imza = JSON.stringify([cfg.look, cfg.wear]); if (HKP[k] && HKP[k].i === imza) return HKP[k].u;
+function hkPortreUrl(k) { const cfg = S.chars[k], anah = 'tabbychef-portre-' + k, imza = JSON.stringify([cfg.look, cfg.wear]) + (() => { try { return GR.bas !== 1 ? '|b' + GR.bas : '' } catch (e) { return '' } })(); if (HKP[k] && HKP[k].i === imza) return HKP[k].u;
   try { const v = JSON.parse(localStorage.getItem(anah) || 'null'); if (v && v.i === imza) { HKP[k] = v; return v.u } } catch (e) { }
   const m = buildCat(cfg, 256); let u = ''; try { const mx = new THREE.AnimationMixer(m); mx.clipAction(CLIPS.Idle_12).play(); mx.update(0.6); poseFix(poseRig(m), 0); u = renderThumb(m, { dir: [0.35, 0.15, 1], pad: 0.95 }) } finally {
     m.traverse(o => { if (!o.isMesh) return; for (const mt of [].concat(o.material)) { if (!mt) continue; for (const key in mt) { const v = mt[key]; if (v && v.isTexture) v.dispose() } mt.dispose() } }) }
@@ -30855,6 +30855,60 @@ html.land #game#game #skMudavim .skscroll{display:block!important;overflow:hidde
 #skKafem .fkKisa{flex-wrap:wrap}#skKafem .fkKisa .mdGir{flex:1 1 100%}#skKafem .fkKisa .mdGir.var{background:#fff1c9;border-color:#f2b134}
 #fdKafem.mdVar{position:relative}#fdKafem.mdVar::after{content:'';position:absolute;top:0;right:2px;width:12px;height:12px;border-radius:50%;background:#e2574c;border:2px solid #fffaf0}
 .coin-pop.mdHizli{font-size:14px;color:#ffe9a8;white-space:nowrap}`; document.head.appendChild(st) }
+
+// ================= V436 · GÖRÜNÜM: OKUNABİLİRLİK · DOKUNMA ALANLARI · KEDİ BAŞLARI (ONAYA BAĞLI) =================
+// Kullanıcı (28 Kasım 2026, 16:29): önerilerin uygulanması. 15:32 raporundaki ölçüm (852×393 pt telefon): ana ekrandaki 23 yazının 14'ü
+// 11 puntonun altında (en küçüğü 8); Menü'de 15 düğmenin 14'ü 44 puntodan kısa; fiyat −/+ düğmeleri 26×26.
+//  1) YAZILAR: ana ekran düğme etiketleri 9,5 → 11; AŞAMA / GÜN başlıkları 8 → 9,5; "Sıradaki hedef" başlığı 8 → 10; paket sayacı 9 → 11;
+//     Menü, Ekip ve Birleştir'deki 10–10,5'lik açıklamalar 11–11,5.
+//     Büyüyen etiket ekran kenarından taşarsa (sol sütunda "Dekorasyon") grEtiket onu içeri alır: önce yan boşluğu daraltır, yetmezse kaydırır.
+//  2) DOKUNMA ALANLARI: görünüm değişmeden, düğmenin çevresinde görünmez dokunma payı (sözde öğe; pay = inset − kenarlık).
+//     Kafe içi "Sipariş al" vb. 38 → 48, altın/elmas + 26 → 44, fiyat −/+ 26 → 44, menü anahtarı 24 → 44, menü sekmeleri 34 → 44,
+//     menü grupları 37 → 41 (araları 4,6 px: daha fazlası komşuya taşar), Ekip + 28 → 56×32 (satır aralığı 33), Hedef/Sipariş sekmeleri 21 → 45,
+//     "Başka tarif seç" 20 → 34, rehber 34 → 44, ekip okları 36 → 44. "Hedefle" düğmesi 32 → 40 (görünür).
+//     Komşu düğmenin GÖRÜNEN alanına taşan pay yok (t_v436.py kenar ortası denetimi).
+//     Dikkat: acele rozetli düğmede (.act.acel) ::before rozetin kendisi (sağ üst köşe, p981) → pay orada simge öğesinin sözde öğesiyle verilir;
+//     yoksa rozet sol köşeye kayıyordu (inset 'left' değerini de verdiği için).
+//  3) KEDİ BAŞLARI: telefonda kediler ekran yüksekliğinin ~%10'u, yüzleri okunmuyor. Baş kemiği ölçeği (GR.bas) model kurulurken uygulanır
+//     (cloneLook / buildCat: müşteri, ekip, editör, portreler hepsi aynı). KULLANICI ONAYINA BAĞLI: varsayılan 1 (kapalı);
+//     deneme için localStorage 'tc-bas' (1–1,6). Onaylanınca varsayılan değiştirilecek.
+const GR = { bas: (() => { try { const v = parseFloat(localStorage.getItem('tc-bas')); return v >= 1 && v <= 1.6 ? v : 1 } catch (e) { return 1 } })() };
+function grBas(m) { try { if (!m || GR.bas === 1 || !m.getObjectByName) return m; const h = m.getObjectByName('mixamorigHead'); if (h && !h.userData.grBas) { h.scale.multiplyScalar(GR.bas); h.userData.grBas = GR.bas } } catch (e) { } return m }   // işaret baş kemiğinde: kopyalanan modelde de taşınır, iki kez büyümez
+{ const _cl = cloneLook; cloneLook = function () { return grBas(_cl.apply(this, arguments)) } }
+{ const _bc = buildCat; buildCat = function () { return grBas(_bc.apply(this, arguments)) } }
+{ const _al = applyLook; applyLook = function (r) { const x = _al.apply(this, arguments); grBas(r); return x } }   // ekip, kurye, toptancı: modeli doğrudan applyLook ile giydirir
+// yalnız başı gösteren portreler (konuşma balonu, müdavim defteri, rezervasyon): kadraj baş kemiğine göre sabit → ölçeksiz modelle çizilir, bugünküyle aynı kalır
+{ const _rp = rezPortre; rezPortre = function () { const e = GR.bas; GR.bas = 1; try { return _rp.apply(this, arguments) } finally { GR.bas = e } } }
+{ const _tp = tbPortre; tbPortre = function () { const e = GR.bas; GR.bas = 1; try { return _tp.apply(this, arguments) } finally { GR.bas = e } } }
+{ const P = 'html body #game#game#game', st = document.createElement('style'); st.id = 'grStil'; st.textContent = `
+${P} #y2 .y2prof .por #lvlBadge em.kaG{font-size:9.5px!important;letter-spacing:.03em!important}
+${P} #ayGun em{font-size:9.5px!important}
+${P} #fdHedef .fhHap .fhT small{font-size:10px!important}
+${P} #y2 .k3b .k3t,${P} #y2 .k3mini:not(#_a#_b#_c#_d) .k3t,${P} #nav button span{font-size:11px!important}
+${P} #y2 .k3t.grDar{padding-left:4px!important;padding-right:4px!important}
+${P} #board .cell .it .cnt{font-size:11px!important}
+${P} #merge .thalt{font-size:11.5px!important}
+${P} #menuScr .mside button small,${P} #menuScr .mlist h4 small,${P} #menuScr .mrw .nm small,${P} #menuScr .mfoot2{font-size:11px!important}
+${P} #team .ekRol .ekRt small{font-size:11px!important}
+#ui button.act:not(.acel)::before,#ui button.act.acel>.ic:first-child::before{content:'';position:absolute;inset:-7px -4px}
+.pill .plus::after{content:'';position:absolute;inset:-11px}
+#repPill{position:relative}#repPill::after{content:'';position:absolute;inset:-5px 0}
+${P} #merge .thgo{min-height:40px!important}
+#merge .thalt{position:relative;z-index:1}#merge .thalt::after{content:'';position:absolute;inset:-5px -14px -9px}
+#merge .spTabs button::after{content:'';position:absolute;inset:-12px 0}
+#merge .thGuide::after{content:'';position:absolute;inset:-7px}
+#menuScr .mtabs button{position:relative}#menuScr .mtabs button::after{content:'';position:absolute;inset:-7px 0}
+#menuScr .mside button{position:relative}#menuScr .mside button::after{content:'';position:absolute;inset:-4px 0}
+#menuScr .mst button{position:relative}#menuScr .mst button::after{content:'';position:absolute;inset:-11px -5px -11px -17px}
+#menuScr .msw::before{content:'';position:absolute;inset:-12px -3px}
+#team .ekplus{position:relative}#team .ekplus::after{content:'';position:absolute;inset:-4px -16px}
+.hxa::before{content:'';position:absolute;inset:-7px}`; document.head.appendChild(st) }
+// büyüyen etiket ekran kenarını aşmasın (yalnız metin ya da ekran boyutu değişince yeniden ölçer)
+function grEtiket() { try { if (UI.mode !== 'cafe' || document.hidden) return; const W = innerWidth, H = innerHeight;
+    for (const t of document.querySelectorAll('#y2 .k3t')) { if (!t.offsetWidth) continue; const k = t.textContent + '|' + W + '|' + H; if (t._grA === k) continue; t._grA = k;
+      t.classList.remove('grDar'); t.style.translate = ''; let r = t.getBoundingClientRect(); if (r.left >= 2 && r.right <= W - 2) continue;
+      t.classList.add('grDar'); r = t.getBoundingClientRect(); const d = r.left < 2 ? 2 - r.left : r.right > W - 2 ? W - 2 - r.right : 0; if (d) t.style.translate = d.toFixed(1) + 'px 0' } } catch (e) { } }
+setInterval(grEtiket, 2500); setTimeout(grEtiket, 600); addEventListener('resize', () => setTimeout(grEtiket, 250));
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
