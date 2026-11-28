@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795892971",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795895089",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -7850,7 +7850,7 @@ function openProfile(){const W=skWin('skProf','Profil','cat_peek');let edit=fals
     W.body.innerHTML=`<div class="pf"><div class="pfL${lxp?' pfLx':''}"><div class="pfLogo">${logoSVG('still')}</div>${lxp}</div>
       <div><div class="pfName">${edit?`<input id="pfIn" maxlength="24" value="${cafeName().replace(/"/g,'&quot;')}"><button class="skbtn green" style="width:auto;padding:0 12px;height:34px;background-image:none" type="button" id="pfOk">Kaydet</button>`:`<b id="pfNm"></b><button type="button" id="pfEd" aria-label="Kafe adını değiştir"></button>`}</div>
         <div class="pfStats">${stat('i_coins',today,'Bugünkü gelir')}${stat('h_cal',S.dayN|0,'Oynanan gün')}${stat('i_team',served,'Ağırlanan müşteri')}
-          ${stat('i_star',rate,'Kafe puanı')}${xpAcik()?stat('h_star',S.lvl|0,'Seviye'):stat('h_star',kaAsama(),'Kafe aşaması')+stat('i_star',S.dayN|0,'Gün')}${stat('i_book',rec,'Açılan tarif')}</div></div></div>`;
+          ${stat('i_star',rate,'Kafe puanı')}${xpAcik()?stat('h_star',S.lvl|0,'Seviye'):stat('h_star',kaAsama(),'Kafe aşaması')+stat('i_star',S.dayN|0,'Gün')}</div></div></div>`;   /* (V443) kullanıcı 28 Kasım 22:17: "profilde açılan tarifi kaldır aşağıya kaydırma olmasın" */
     const nm=$('pfNm');if(nm)nm.textContent=cafeName();
     const lxb=$('pfLux');if(lxb)lxb.onclick=()=>{try{sfx('tap')}catch(e){}luksPencere()};   // (V313) lüks puanı açıklaması
     const ed=$('pfEd');if(ed)ed.onclick=()=>{edit=true;draw();const i=$('pfIn');if(i){i.focus();i.select()}};
@@ -18878,7 +18878,8 @@ function adMsHTML(){const m=AdService.mode(),max=AD_MAX(),n=Math.min(adToday(),m
       </div>`};
   return `<div class="amHead"><b>Günlük reklam ödülü</b><span>Bugün <em>${n}</em> / ${max} reklam</span></div>
     <div class="amBar"><i style="width:${pct}%"></i>${AD_MS.map(chest).join('')}</div>`}
-function amChestSVG(i,open){const c=i?['#ffd34d','#e0a21a']:['#e4ecf2','#a9b8c4'];
+function amChestSVG(i,open){return `<img src="img/items/chest_${i?'g':'s'}${open?1:0}.webp" alt="" draggable="false">`}   // (V443) kullanıcının çizdiği sandıklar: gümüş (5.) / altın (10.), kapalı / açık
+function amChestSVG_eski(i,open){const c=i?['#ffd34d','#e0a21a']:['#e4ecf2','#a9b8c4'];
   return `<svg viewBox="0 0 48 44" aria-hidden="true"><rect x="5" y="${open?20:17}" width="38" height="22" rx="4" fill="${c[0]}" stroke="#5a2f12" stroke-width="3"/>
   ${open?`<path d="M6 18 L10 6 H40 L42 18 Z" fill="${c[1]}" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/>`:`<path d="M5 17 Q5 6 16 6 H32 Q43 6 43 17 Z" fill="${c[1]}" stroke="#5a2f12" stroke-width="3" stroke-linejoin="round"/>`}
   <rect x="20" y="${open?24:14}" width="8" height="10" rx="2" fill="#fff8ec" stroke="#5a2f12" stroke-width="2.5"/></svg>`}
@@ -18896,14 +18897,14 @@ function adMsOpen(i){const M=AD_MS[i];if(!M||adMsTaken(i)||adToday()<M.n||AdServ
 #adMs{margin:0 4px 8px;padding:5px 14px 4px;border:3px solid #5a2f12;border-radius:14px;background:linear-gradient(#fff6df,#fbe6bf);box-shadow:0 3px 0 #5a2f12;font-family:var(--font-display);color:#4a2a14}
 #adMs .amHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;line-height:1.1}
 #adMs .amHead b{font-size:13.5px;font-weight:900}#adMs .amHead span{font-size:12px;font-weight:800}#adMs .amHead em{font-style:normal;font-size:15px;font-weight:900;color:#3f7d1e}
-#adMs .amBar{position:relative;height:10px;margin:12px 4px 22px;border:2.5px solid #5a2f12;border-radius:999px;background:#fff}
+#adMs .amBar{position:relative;height:10px;margin:18px 22px 28px 4px;border:2.5px solid #5a2f12;border-radius:999px;background:#fff}
 #adMs .amBar>i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(#b5e07f,#7cc35a)}
 #adMs .amC{position:absolute;top:-13px;transform:translateX(-50%)}
-#adMs .amBox{width:32px;height:29px}#adMs .amBox svg{width:100%;height:100%;display:block}
+#adMs .amBox{width:40px;height:40px;margin-top:-6px}#adMs .amBox svg,#adMs .amBox img{width:100%;height:100%;display:block;object-fit:contain;filter:drop-shadow(0 2px 0 rgba(74,42,20,.35))}#adMs .amC:last-child .amBox{width:46px;height:46px;margin-top:-9px}
 #adMs .amC:not(.got) .amBox{filter:grayscale(.55) opacity(.8)}
 #adMs .amC.got:not(.taken) .amBox{animation:amWob 1.1s ease-in-out infinite}
 @keyframes amWob{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(7deg)}60%{transform:rotate(-4deg)}}
-#adMs .amL{position:absolute;top:30px;left:50%;transform:translateX(-50%);white-space:nowrap;line-height:1}
+#adMs .amL{position:absolute;top:36px;left:50%;transform:translateX(-50%);white-space:nowrap;line-height:1}
 #adMs .amL b{font-size:10.5px;font-weight:900}#adMs .amC:last-child .amL{left:auto;right:-4px;transform:none}#adMs .amC.taken .amL b{color:#3f7d1e}
 #adMs .amTap{appearance:none;padding:0;border:0;background:none;cursor:pointer}#adMs .amOpen{color:#3f7d1e}
 #adMs .amGoX{position:absolute;left:36px;top:2px;appearance:none;padding:2px 11px;border:2.5px solid #5a2f12;border-radius:999px;background:linear-gradient(#cdea80,#93c957);font:900 11.5px var(--font-display);color:#2f4a12;cursor:pointer;box-shadow:0 2px 0 #5a2f12;white-space:nowrap}
@@ -24644,7 +24645,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-2208';
+const OLC_DERLEME = '20261128-2236';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -31047,6 +31048,9 @@ function esMdGiris() { try { if (fdAcik()) return; const m = $('repModal'); if (
 { const st = document.createElement('style'); st.textContent = `
 #repModal .esMd{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:42px;margin:4px 0 10px;padding:6px 14px;border:2.5px solid #4a2a14;border-radius:14px;background:#fffaf0;box-shadow:0 3px 0 #4a2a14;font:800 14px/1.1 var(--font-display,sans-serif);color:#4a2a14;cursor:pointer}
 #repModal .esMd .ic{width:20px;height:20px;flex:none}#repModal .esMd.var{background:#fff1c9;border-color:#c98a1e}#repModal .esMd i{font:800 11px/1 var(--font-display,sans-serif);font-style:normal;color:#fff;background:#e2574c;border-radius:99px;padding:3px 7px}
+/* (V443) genişletme kartında inşaat sandığı ve malzeme görselleri SVG kuralına uymuyordu (V431 resimleri 256 px'lik doğal boyutta çıkıyordu) */
+.xmTip .insBas img{width:20px;height:20px;flex:none}.kaSat .insKaIc img{width:100%;height:100%;object-fit:contain}.xmTip .insL img{width:100%;height:100%;object-fit:contain;max-width:34px;max-height:34px}
+html.land #game #skProf .skscroll{overflow:hidden!important;touch-action:none}   /* (V443) profil kaymasın */
 html:not(.fd) #hkKart{display:none!important}   /* (V441) kullanıcı 21:50: "arayüzde sıradaki hedef yazan yeri kaldır"; altın yetince gelen bildirim sürüyor */
 #iqTan{pointer-events:none!important}#iqTan .iqTx{pointer-events:auto!important}
 html:not(.fd) #repPill.mdVar::after{content:'';position:absolute;inset:auto;top:-3px;right:-3px;left:auto;bottom:auto;width:11px;height:11px;border-radius:50%;background:#e2574c;border:2px solid #fffaf0}`; document.head.appendChild(st) }
@@ -31054,6 +31058,33 @@ html:not(.fd) #repPill.mdVar::after{content:'';position:absolute;inset:auto;top:
 function esKart() { try { const k = HK.el; if (fdAcik() || !k || k.hidden) { PLB.kart = null; PLB.kK = ''; return } const key = k.className + '|' + innerWidth + '|' + innerHeight + '|' + k.style.cssText.length + '|' + (k.textContent.length >> 2) + '|' + hudAnah(); if (PLB.kK === key && PLB.kart) return; PLB.kK = key;
     const q = k.getBoundingClientRect(); PLB.kart = q.width > 4 && q.height > 4 ? { x0: q.left - 8, x1: q.right + 8, y: q.bottom + 6 } : null } catch (e) { PLB.kart = null } }
 { const _h = hkCiz; hkCiz = function () { const r = _h.apply(this, arguments); esKart(); return r } }
+
+// ================= V443 · EKİP: BARİSTA + AŞÇI = ŞEF · GÜVENLİK KALDIRILDI =================
+// Kullanıcı (28 Kasım 2026, 22:15): "ekipten; 1- barista aşçı bir olsun ayrı ayrı olmasın yani sadece şef olabilir. 2- güvenliği kaldır".
+//  • Kadroda tek "Şef" (Aşama 2, 150 altın): içecek, yemek ve tatlı fişlerinin hepsi ona gider. İçeride eski iki görev anahtarı (barista, asci)
+//    korunur ve aynı karaktere bağlanır (S.ekip.sef = barista = asci); mutfak, tek başına modu, verim hesabı bunlara bakıyor.
+//    Eski oyuncu: barista ya da aşçısı varsa o kedi şef olur. İkisi ayrı kediyse ikincisi de mutfakta yardım etmeyi sürdürür.
+//  • Güvenlik kadrodan kalktı (Aşama 8). İşe alınmışsa o kedi temizlikçiye yardım eder. Ödemeden kaçan müşteriyi oyuncu yine "Yakala"yla durdurur.
+//  • Aşama hedefleri: Aşama 2 "Şef’i işe al"; Aşama 4'teki "Aşçı’yı işe al" kalktı.
+{ const i = EK_ROL.findIndex(R => R.id === 'barista'); if (i >= 0) EK_ROL.splice(i, 1, { id: 'sef', a: 2, c: 150, eng: 'barista', ad: ['Şef', 'Chef'],
+    is: ['Mutfağın hepsi onda: içecek, yemek ve tatlı siparişleri doğrudan ona gider.', 'Runs the whole kitchen: drink, food and dessert orders go straight to them.'], ic: 'chef' });
+  for (const id of ['asci', 'guvenlik']) { const j = EK_ROL.findIndex(R => R.id === id); if (j >= 0) EK_ROL.splice(j, 1) } }
+try { AH[2] = AH[2].map(g => g[0] === 'ise' && g[1] === 'barista' ? ['ise', 'sef'] : g); AH[4] = AH[4].filter(g => !(g[0] === 'ise' && g[1] === 'asci')); AH_ISE.sef = ['Şef’i işe al', 'Hire a Chef', 'Şef', 'Chef'] } catch (e) { console.warn('şef hedefi', e) }
+function ekSefSenk() { try { if (!ekipAcik() || !S.ekip) return; const E = S.ekip, k = E.sef || E.barista || E.asci; let d = false;
+    if (k) { if (E.sef !== k) { E.sef = k; d = true } if (E.barista !== k) { E.barista = k; d = true } if (E.asci !== k) { E.asci = k; d = true } if (S.chars[k] && S.chars[k].gorev !== 'sef') { S.chars[k].gorev = 'sef'; d = true } }
+    if (E.guvenlik) { const g = E.guvenlik; delete E.guvenlik; if (S.chars[g]) S.chars[g].gorev = 'temiz'; d = true }
+    if (d) markDirty() } catch (e) { console.warn('şef eşitleme', e) } }
+{ const _ek = ekKur; ekKur = function () { const r = _ek.apply(this, arguments); ekSefSenk(); return r } }
+{ const _ss = spawnStaff; spawnStaff = function () { const r = _ss.apply(this, arguments); ekSefSenk(); return r } }
+{ const _rd = tutRoleDone; tutRoleDone = function () { const r = _rd.apply(this, arguments); ekSefSenk(); return r } }
+// "siparişlere yetişemiyorum" anı artık şefi önerir
+tbOlay = function (tur, c) { try { if (!ekipAcik() || S.tut !== 'done' || TB.olay) return; const id = tur === 'kasa' ? 'kasiyer' : (tur === 'siparis' || tur === 'yemek' || tur === 'masa') ? 'sef' : null;
+    if (!id || ekVar(id)) return; S.seen = S.seen || {}; const k = 'ekYol_' + id; if (S.seen[k]) return; S.seen[k] = 1; markDirty();
+    TB.olay = { rol: id, neden: tur, ad: (c && c.look && c.look.name) || '' }; TB.olayT = Date.now() } catch (e) { } };
+// hoş geldin kartı: şefin metni
+{ const _hg = ekHosgeldin; ekHosgeldin = function (id, key) { if (id !== 'sef') return _hg.apply(this, arguments); const R = ekR('sef'), c = S.chars[key]; if (!R || !c) return; try { sfx('chime') } catch (e) { }
+    coach({ owner: 'ek', title: kaT(`Aramıza hoş geldin, ${c.name}!`, `Welcome aboard, ${c.name}!`), dim: true, center: true, text: `<b>${ekAd(R)}</b> · ${kaT('İçecek, yemek ve tatlı siparişleri artık doğrudan ona gidiyor; sen misafirlerle ilgilen.', 'Drink, food and dessert orders now go straight to them; you look after the guests.')}`,
+      buttons: [{ label: kaT('Harika!', 'Great!'), green: true, icon: 'paw', onClick: () => coachOff() }] }); try { tbKonusan(key) } catch (e) { } } }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
