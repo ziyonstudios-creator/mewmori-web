@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795884626",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795887818",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -3322,7 +3322,7 @@ let _plR=null,_plT=-1e9;
 // (V414) Tuvalin ekrandaki yeri kare başına bir kez okunur (eskiden her balon için ayrı okunuyor, her okuma bir önceki balonun yazdığı dönüşüm yüzünden
 // stil/yerleşim hesabını zorluyordu); balonun kendi boyu da içeriği değişmedikçe yeniden ölçülmez (yarım saniyede bir tazelenir).
 addEventListener('resize',()=>{_plR=null});addEventListener('orientationchange',()=>{_plR=null});
-function place(e,wp,dy=0){_p.copy(wp).project(camera);const now=performance.now();if(!_plR||now-_plT>1000){_plR=renderer.domElement.getBoundingClientRect();_plT=now}const r=_plR;const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;{const d=vis?'':'none';if(e.style.display!==d)e.style.display=d}   // (V432) tuval dikdörtgeni saniyede bir (boyut değişince hemen) okunur; değişmeyen stil yazılmaz → her karede zorunlu yerleşim hesabı yok
+function place(e,wp,dy=0){_p.copy(wp).project(camera);const now=performance.now();if(!_plR||now-_plT>10000){_plR=renderer.domElement.getBoundingClientRect();_plT=now}const r=_plR;const vis=_p.z<1&&_p.x>-1.1&&_p.x<1.1&&_p.y>-1.1&&_p.y<1.1;{const d=vis?'':'none';if(e.style.display!==d)e.style.display=d}   // (V432) tuval dikdörtgeni saniyede bir (boyut değişince hemen) okunur; değişmeyen stil yazılmaz → her karede zorunlu yerleşim hesabı yok
   let ow=0,oh=0;if(vis){const bk=e.className+'|'+e.textContent.length+'|'+e.childElementCount;if(e._ow==null||e._boyH!==bk||now-(e._boyT||0)>1500){e._ow=e.offsetWidth;e._oh=e.offsetHeight;e._boyH=bk;e._boyT=now}ow=e._ow;oh=e._oh}   // (V432) boyut anahtarı: sınıf + yazı uzunluğu + çocuk sayısı (bekleme halkası her karede değişse de boyut değişmez; CSS ile gizli öğenin 0 ölçüsü de saklanır → her karede zorunlu yerleşim yok)
   // ekran kenarına taşmasın: yarı genişlik kadar içeride tut
   // (V412) PLB (p99x): ana ekranda üst çubuğun ve yan sütunların ALTINA girmesin (V410'daki yakın kamerada mutfaktaki "Hazırla" düğmesi hedef hapının arkasında kalıyordu);
@@ -3364,7 +3364,9 @@ function updateUI(){for(const e of els.values())e._seen=false;
   else if(customers.some(c=>c.group&&c===c.group.leader&&groupReady(c.group)))hint='Masadaki “Sipariş al”a dokun';else if(customers.some(c=>c.state==='WAITING_TO_ORDER'&&!c.orderQueued))hint='Grup yerleşiyor…';else if(customers.some(c=>c.state==='ENTERING'||c.state==='WALKING_TO_TABLE'))hint='Yeni bir müşteri geldi';
   if(S.auto&&(ready.length||taken.length||customers.some(c=>c.state==='WAITING_TO_ORDER')))hint=WSTAFF.length>1?'Otomatik mod: garsonlar işleri kendileri yapıyor':`Otomatik mod: ${NM.waiter.name} işleri kendisi yapıyor`;
   else if(baristaQ.length||BSTAFF.some(b=>b.job))hint=BSTAFF.length>1?'Şefler hazırlıyor…':`${NM.barista.name} hazırlıyor…`;else if(customers.some(c=>c.state==='WALKING_TO_PAY'||c.state==='PAYING'))hint=`${CSTAFF.length>1?'Müşteri kasada ödüyor':'Müşteri kasada ödüyor · kasiyer '+NM.cashier.name}`;else if(!customers.length)hint=WSTAFF.length>1?'Garsonlar müşteri bekliyor…':`${NM.waiter.name} müşteri bekliyor…`;
-  $('hint').textContent=hint}
+  {const hE=$('hint');let hv=hint;try{const u=hintUst();if(u!=null)hv=u}catch(e){}if(hE&&hE.textContent!==hv)hE.textContent=hv}}   // (V439) her karede aynı metni yeniden yazmak :empty/:has stil hesabını tetikliyordu
+function hintUst(){return null}
+function hudAnah(){try{return document.documentElement.className+'|'+$('game').className}catch(e){return ''}}   // (V439) zamanlayıcılar hesaplanmış stili yalnız bu anahtar değişince (ya da seyrek) okur   // başka modül ipucunu ezecekse bunu yeniden tanımlar (p974)
 
 // ================= YAPI PAZARI =================
 const placedTables=()=>S.furniture.filter(f=>CAT[f.id].kind==='table'&&!f.stored).length;
@@ -4940,7 +4942,7 @@ function dlvUI(){const hp=new THREE.Vector3();
   else if(d&&d.state==='PACK')h=`${ic('box')}<span>Paketleniyor</span>`;
   else if(d&&d.state==='TRIP')h=`${UI_IC.bike?`<span class="ic">${UI_IC.bike}</span>`:ic('paw')}<span>Kurye yolda · ${d.who}</span><em>${fmtT(Math.max(0,d.tripT||0))}</em>`;
   else if(d&&d.state==='BACK')h=`${ic('coin')}<span>Kurye dönüyor</span>`;
-  e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',!!DLV.call)}
+  if(e.hidden!==!h)e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',!!DLV.call)}
 UI_IC.bell=SV(`<path d="M32 10c-9 0-15 7-15 16v10l-5 8h40l-5-8V26c0-9-6-16-15-16z" fill="#f6c453"/><circle cx="32" cy="50" r="5" fill="#d9534f"/>`);
 UI_IC.box=SV(`<path d="M12 22 32 12l20 10v22L32 54 12 44z" fill="#c9a06a"/><path d="M12 22l20 10 20-10M32 32v22" fill="none"/><path d="M22 17l20 10v8" fill="none" stroke="#d9534f" stroke-width="4"/>`);
 UI_IC.bike=SV(`<circle cx="18" cy="42" r="10" fill="none"/><circle cx="46" cy="42" r="10" fill="none"/><path d="M18 42l10-16h12l6 16M28 26l6 16h12M24 20h8" fill="none"/><rect x="36" y="14" width="14" height="10" rx="2" fill="#c9a06a"/>`);
@@ -5418,7 +5420,7 @@ function stockUI(){const e=$('stkChip');if(!e||!S.created)return;const T=stockS(
   else if(T.pend.length){const p=T.pend.reduce((a,b)=>a.eta<b.eta?a:b);h=`${ic('box')}<span>${n<1?'<b>Malzeme bitti</b> · ':''}Toptancı yolda${n<1?'':' · '+SUP(p.sup).name.split(' ')[0]}</span><em>${fmtT(Math.max(0,Math.ceil((p.eta-nowT())/1000)))}</em>`}
   else if(n<1)h=`${ic('box')}<span><b>Malzeme bitti</b></span><em>${S.coins<packPrice(SUP(T.sup),CONFIG.stock.minPack)?'Altın yetmiyor':'Koli isteniyor'}</em>`;
   else if(n<=CONFIG.stock.low)h=`${ic('box')}<span>Malzeme azaldı · ${n} kaldı</span>`;
-  e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',T.arr.length>0||n<1)}
+  if(e.hidden!==!h)e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('ring',T.arr.length>0||n<1)}
 
 {const st=document.createElement('style');st.textContent=`
 .mtabs .mdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e2574c;border:2px solid var(--ink);margin-left:4px;vertical-align:middle}
@@ -9431,6 +9433,7 @@ ${G}:has(.modal:not([hidden])) :is(#y2,#nav,.bottom) *${NX},${G}:has(.screen:not
  }catch(e){console.warn('konsept ana ekran',e)}}
  // üst orta grup: profil tabelası ile para arasındaki boşluğun ortasına; dar kalırsa önce gün simgesi gizlenir (t1), sonra "Otomatik" → "Oto" (t2)
  function fitTop(){try{const y=$('y2'),tc=y&&y.querySelector('.k3tc'),mn=y&&y.querySelector('.y2money'),U=window.__U;if(!tc||!mn||!U)return;
+   {const fk=U.VW+'|'+U.el+'|'+U.er+'|'+U.k+'|'+mn.textContent+'|'+tc.childElementCount+'|'+tc.textContent.length+'|'+tc.querySelectorAll(':scope>[hidden]').length+'|'+de.className;if(fitTop._k===fk)return;fitTop._k=fk}   // (V439) girdiler değişmediyse sınıfı sıfırlayıp yeniden ölçme (0,7 sn'de bir üç zorunlu yerleşim hesabı yapıyordu)
    const free=U.VW-U.el-240-U.er-mn.offsetWidth;let c=tc.className.replace(/ t[12]/g,'');tc.className=c;
    if(tc.offsetWidth+20>free){tc.className=c+' t1';if(tc.offsetWidth+20>free)tc.className=c+' t1 t2'}
    const L=(U.el+240+free/2).toFixed(1)+'px';if(tc.style.left!==L)tc.style.left=L;
@@ -9685,7 +9688,7 @@ function hxAttach(el){if(!el||el._hx)return;el._hx=1;el.classList.add('hx');
   const mk=d=>{const b=document.createElement('button');b.type='button';b.className='hxa hxa-'+d;b.hidden=true;b.setAttribute('aria-label',d==='l'?'Sola kaydır':'Sağa kaydır');b.innerHTML=HX_ARROW(d);
     b.onclick=ev=>{ev.stopPropagation();try{sfx('tap')}catch(e){}const step=(d==='l'?-1:1)*Math.max(120,el.clientWidth*0.8);try{el.scrollBy({left:step,behavior:'smooth'})}catch(e){el.scrollLeft+=step}};return b};
   el._hxL=mk('l');el._hxR=mk('r');el.after(el._hxL,el._hxR);el.addEventListener('scroll',()=>hxUpd(el),{passive:true});hxUpd(el)}
-function hxScan(){try{for(const s of HX_SEL)document.querySelectorAll(s).forEach(el=>{if(!el._hx)hxAttach(el);if(el.offsetParent!==null||el.clientWidth)hxUpd(el)})}catch(e){}}
+function hxScan(){try{if(UI.mode==='cafe'&&!UI.modal)return;for(const s of HX_SEL)document.querySelectorAll(s).forEach(el=>{if(!el._hx)hxAttach(el);if(el.offsetParent!==null||el.clientWidth)hxUpd(el)})}catch(e){}}
 setInterval(hxScan,500);
 // ================= DOKUNUŞ GÜVENLİK AĞI (V151) =================
 // Dokunuş bir düğmenin ekrandaki alanına geldiği hâlde tarayıcı o düğmeyi hedef almadıysa düğmeye biz basarız. Neden: gün sonu raporunda
@@ -10466,7 +10469,7 @@ const ED_ICON=(()=>{const b=`<rect x="6" y="18" width="40" height="40" rx="7" fi
 function duzFix(){try{const y=$('y2'),k=$('kesBtn');if(!y)return;let b=$('duzBtn');
     if(!b){b=document.createElement('button');b.type='button';b.id='duzBtn';b.className='k3b';b.setAttribute('aria-label','Düzenle');b.innerHTML=`<span class="k3c">${ED_ICON}</span><span class="k3t">Düzenle</span>`;
       b.onclick=()=>{if(UI.mode!=='cafe'||UI.modal||ED.busy)return;try{sfx('tap')}catch(e){}enterEdit()};y.appendChild(b)}
-    const show=edCan();if(b.hidden===show)b.hidden=!show;b.classList.toggle('solo',!k||k.hidden||getComputedStyle(k).display==='none')}catch(e){}}
+    const show=edCan();if(b.hidden===show)b.hidden=!show;{const dk=hudAnah()+'|'+(k?(k.hidden?'h':'g'):'-');if(duzFix._k!==dk||(duzFix._n=(duzFix._n|0)+1)%8===0){duzFix._k=dk;b.classList.toggle('solo',!k||k.hidden||getComputedStyle(k).display==='none')}}}catch(e){}}
 duzFix();setInterval(duzFix,900);
 {const Y='html.land #game#game #y2',G='html.land #game#game',INK='#4a2a14',NX=':not(#_a#_b#_c)';const st=document.createElement('style');st.textContent=`
 ${Y} #duzBtn{position:absolute!important;left:calc(var(--el) + 62px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important;transition:opacity .22s}
@@ -17203,7 +17206,7 @@ function k2Btn(){try{const y=$('y2');if(!y)return;let b=$('katBtn');
     if(!b){b=document.createElement('button');b.type='button';b.id='katBtn';b.className='k3b';b.innerHTML=`<span class="k3c">${K2_ICON}</span><span class="k3t"></span>`;b.onclick=()=>k2Toggle();y.appendChild(b)}
     const show=!!K2.on&&edCan()&&!(typeof XM!=='undefined'&&XM.on);if(b.hidden===show)b.hidden=!show;
     const t=b.querySelector('.k3t'),lab=K2.view===2?'2. Kat':'1. Kat';if(t.textContent!==lab){t.textContent=lab;b.setAttribute('aria-label','Kat değiştir (şimdi '+lab+')')}
-    let n=0;for(const id of ['kesBtn','duzBtn']){const e=$(id);if(e&&!e.hidden&&getComputedStyle(e).display!=='none')n++}b.style.setProperty('--k2i',n)}catch(e){}}
+    {const kk=hudAnah()+'|'+['kesBtn','duzBtn'].map(id=>{const e=$(id);return e?(e.hidden?'h':'g'):'-'}).join('');if(k2Btn._k!==kk||(k2Btn._n=(k2Btn._n|0)+1)%8===0){k2Btn._k=kk;let n=0;for(const id of ['kesBtn','duzBtn']){const e=$(id);if(e&&!e.hidden&&getComputedStyle(e).display!=='none')n++}b.style.setProperty('--k2i',n)}}}catch(e){}}
 {const Y='html.land #game#game #y2',G='html.land #game#game',NX=':not(#_a#_b#_c)';const st=document.createElement('style');st.textContent=`
 ${Y} #katBtn{position:absolute!important;left:calc(var(--el) + var(--k2i,2)*62px)!important;right:auto!important;top:auto!important;bottom:calc(var(--eb) + 6px)!important;width:56px!important;height:56px!important;transition:opacity .22s}
 ${Y} #katBtn .k3c{left:4px;top:0;width:48px;height:48px;padding-top:4.5px}
@@ -20498,7 +20501,7 @@ function boostDraw(){const e=$('boostChip');if(!e)return;let h='',cls='';const n
   const vis=!EVMODE&&typeof started!=='undefined'&&started&&S.tut==='done'&&UI.mode==='cafe';
   if(vis&&boostOn()){h=`${ic('coin')}<span><b>2× gelir aktif!</b></span><em>${fmtT(boostLeft())}</em>`;cls='on'}
   else if(vis&&BST.offer>now){h=`${BOOST_PLAY}<span><b>2× gelir</b> ${BOOST_SEC/60} dk · reklam izle</span><em>${BST.busy?'…':fmtT((BST.offer-now)/1000)}</em>`;cls='offer'}
-  e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('on',cls==='on');e.classList.toggle('offer',cls==='offer')}
+  if(e.hidden!==!h)e.hidden=!h;if(h&&e._h!==h){e.innerHTML=h;e._h=h}e.classList.toggle('on',cls==='on');e.classList.toggle('offer',cls==='offer')}
 function boostTick(){try{if(EVMODE||typeof started==='undefined'||!started||!S)return;const now=nowT();
   const on=boostOn();if(BST.was&&!on){toast('<b>2× gelir bitti</b><br>Bir sonraki fırsat birkaç dakika sonra',ic('coin'),2200)}BST.was=on;
   if(!BST.next)BST.next=now+BOOST_FIRST*1000;
@@ -24628,7 +24631,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-1948';
+const OLC_DERLEME = '20261128-2038';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -24963,7 +24966,7 @@ function tbIpucu() { const nm = tbAd(), gOf = o => o.customer && o.customer.grou
   if (tbSefYok() && orders.some(o => o.state === 'TAKEN' && o.submitQueued)) return tbT(`${nm} mutfağa geçiyor…`, `${nm} is heading into the kitchen…`);
   if (tbKasaYok() && customers.some(c => c.state === 'WALKING_TO_PAY' || c.state === 'PAYING')) return tbT('Müşteri kasaya geliyor…', 'A guest is heading to the till…');
   return null }
-{ const _uu = updateUI; updateUI = function () { const r = _uu.apply(this, arguments); try { if (soloOn()) { const h = tbIpucu(), e = $('hint'); if (h != null && e && e.textContent !== h) e.textContent = h } } catch (e) { } return r } }
+hintUst = function () { try { return soloOn() ? tbIpucu() : null } catch (e) { return null } };   // (V439) eskiden updateUI sarılıp ipucu her karede ikinci kez yazılıyordu (temel işlev boşaltıyor, burası yeniden yazıyordu)
 
 // ---- ilk müşteri öğreticisi (k1…k8): metinler tek başına çalışmaya göre; k8: masayı temizle ----
 { const _rs = rh2Show; rh2Show = function (key, opt) { try { if (soloOn()) { const nm = tbAd(), W = () => WSTAFF[0] && rhPosOf(WSTAFF[0].ch);
@@ -28896,7 +28899,8 @@ function fdKur() { try { const de = document.documentElement; if (de.classList.c
     const dl = $('dailyBtn'); if (dl) ad(dl.querySelector('.k3t'), fdT('Hedefler', 'Goals'));
     try { const h = document.querySelector('#skDaily:not([hidden]) .skplaque h2'); if (h && /^(Görevler|Tasks|Quests)$/.test(h.textContent.trim())) ad(h, fdT('Hedefler', 'Goals')) } catch (e) { }
     // sol alt sıra: Kamera, Mutfak, Kat (hangisi varsa, sırayla)
-    let i = 0; for (const id of ['kamBtn', 'sefBtn', 'katBtn']) { const b = $(id); if (!b) continue; const gor = !b.hidden && getComputedStyle(b).display !== 'none'; if (gor) { const v = String(i++); if (b.style.getPropertyValue('--fdi') !== v) b.style.setProperty('--fdi', v) } }
+    { const sk = hudAnah() + '|' + ['kamBtn', 'sefBtn', 'katBtn'].map(id => { const b = $(id); return b ? (b.hidden ? 'h' : 'g') : '-' }).join(''); if (FD.solK !== sk || (FD.solN = ((FD.solN | 0) + 1) % 8) === 0) { FD.solK = sk;
+    let i = 0; for (const id of ['kamBtn', 'sefBtn', 'katBtn']) { const b = $(id); if (!b) continue; const gor = !b.hidden && getComputedStyle(b).display !== 'none'; if (gor) { const v = String(i++); if (b.style.getPropertyValue('--fdi') !== v) b.style.setProperty('--fdi', v) } } } }
     // Daha fazla: toplam nokta + yeni açılan özellik bildirimi
     const m = $('fdMore'); let nokta = false; S.seen = S.seen || {}; const gor = S.seen.fdGor || (S.seen.fdGor = {}); let ilk = !S.seen.fdIlk;
     const hazir = typeof started !== 'undefined' && started && S.created && S.tut === 'done' && !rh2Act();
@@ -29142,7 +29146,7 @@ function fhCiz() { try { if (HK.el) HK.el.hidden = true } catch (e) { }
       if (ne === 'git') { const kk = b.dataset.k, ek = b.dataset.ek; if (b.classList.contains('ok')) return; fhKapat(); fdGit(kk, ek ? +ek : undefined) } }) }
   FH.anah = anah; const para = Math.floor(S.coins); let O = null; try { O = D && D.O ? D.O : ahOzet(kaAsama()) } catch (e) { }
   const imza = [anah, A.k, A.t, A.s, (A.p * 100) | 0, !!A.hazir, FH.acik, D && D.tur, D ? Math.min(para, D.gerek) : 0, O ? O.G.map(g => (g.done ? 1 : 0) + ':' + ((g.p * 20) | 0)).join(',') : '', kaEN()].join('|');
-  try { const m = y.querySelector('.y2money'); if (m) { const w = Math.round(m.offsetWidth + 10) + 'px'; if (k.style.getPropertyValue('--fdm') !== w) k.style.setProperty('--fdm', w) } } catch (e) { }
+  try { const m = y.querySelector('.y2money'); if (m) { const mk = m.textContent + '|' + innerWidth + '|' + innerHeight + '|' + hudAnah(); if (FH.mk !== mk || (FH.mkN = ((FH.mkN | 0) + 1) % 20) === 0) { FH.mk = mk; const w = Math.round(m.offsetWidth + 10) + 'px'; if (k.style.getPropertyValue('--fdm') !== w) k.style.setProperty('--fdm', w) } } } catch (e) { }
   if (imza !== FH.imza) { FH.imza = imza; k.className = (A.hazir ? 'hazir' : '') + (FH.acik ? ' acik' : '');
     let pan = '';
     if (FH.acik) { const bp = D ? Math.max(0, Math.min(1, para / Math.max(1, D.gerek))) : 0;
@@ -29459,9 +29463,9 @@ expandUI = function () { try { const simdi = performance.now(); if (!(simdi - (F
     const L = FG.L || []; if (FG.g) FG.g.visible = L.length > 0; if (!L.length) return; if (rh2Act()) return;
     for (const o of FG.sec) { const z = o.z, D = FG.dur[z.id] || {}, acik = !!D.acik, hazir = !!D.hazir;
       const html = acik ? `<i class="ar">${ic('plus')}</i><b>${z.ad}</b>` : `<i>${ic('lock')}</i><b>${z.ad}</b><small>${fdAsama(z.s.lv)}</small>`;
-      const cls = 'fgCip' + (acik ? ' acik' : '') + (hazir ? ' hazir' : ''), e = el('fgc_' + z.id, cls, html, () => fgAc(z.id)); if (e.className !== cls) e.className = cls; e.setAttribute('data-dilyok', '1'); place(e, o.p);
+      const cls = 'fgCip' + (acik ? ' acik' : '') + (hazir ? ' hazir' : ''), e = el('fgc_' + z.id, cls, html, () => fgAc(z.id)); if (e.className !== cls) e.className = cls; if (!e._dy) { e._dy = 1; e.setAttribute('data-dilyok', '1') }
       // arayüz düğmelerinin altına düşen çip gizlenir (dokunulamaz, kalabalık yapar); kamera kayınca yeniden görünür
-      const q = fgEkran(o.p.x, o.p.y, o.p.z, camera); if (!q || !q.ok) e.style.display = 'none' } } catch (e) { if (!FG.hata) { FG.hata = 1; console.warn('genişleme çipleri', e) } } };
+      const q = fgEkran(o.p.x, o.p.y, o.p.z, camera); if (!q || !q.ok) { if (e.style.display !== 'none') e.style.display = 'none' } else place(e, o.p) /* (V439) eskiden her karede place() gösterip burası yeniden gizliyordu */ } } catch (e) { if (!FG.hata) { FG.hata = 1; console.warn('genişleme çipleri', e) } } };
 function fgAc(id) { try { sfx('tap') } catch (e) { } try { openExpandMode(); if (!XM.on) return; XM.sel = id; xmTip(); fgBak(id) } catch (e) { console.warn('alan aç', e) } }
 // ---- kamera: yumuşak geçişler (genişletme kipi) ----
 function fgKamDur() { if (FG.cam) { cancelAnimationFrame(FG.cam.raf); FG.cam = null } }
@@ -30350,21 +30354,21 @@ function iqIlerle(q) { if (q.durum !== 'aktif' || !q.w) return q.p; const ch = q
 function iqSim(q) { const u = iqUrun(q), T = IQ_TUR[q.tip]; return u && (q.tip === 'hazirla' || q.tip === 'servis') ? `<span class="iqArt"><img src="${productThumb(u.id)}" alt=""></span><span class="iqMini">${ic(T.ic)}</span>` : `<span class="iqIc">${ic(T.ic)}</span>` }
 function iqKur() { if (IQ.el && IQ.el.isConnected) return IQ.el; const b = document.createElement('div'); b.id = 'iqBar'; b.setAttribute('data-dilyok', '1'); b.innerHTML = `<div class="iqBos">${ic('chef')}<span></span></div><div class="iqDolu"></div>`; document.body.appendChild(b); IQ.el = b;
   b.addEventListener('pointerdown', iqBasla); return b }
-function iqAltAcik() { if (iqNow() - (IQ.aT || 0) < 300) return IQ.aV; IQ.aT = iqNow(); const h = $('hint'), p = h && h.parentElement; if (!p) return IQ.aV = false; const a = getComputedStyle(p), b = getComputedStyle(h); return IQ.aV = a.display !== 'none' && b.display !== 'none' && p.getBoundingClientRect().width > 0 }   // ilk müşteri eğitiminde alt şerit / alt düğmeler gizli: kuyruk da çıkmaz
+function iqAltAcik() { if (iqNow() - (IQ.aT || 0) < 1000) return IQ.aV; IQ.aT = iqNow(); const h = $('hint'), p = h && h.parentElement; if (!p) return IQ.aV = false; const a = getComputedStyle(p), b = getComputedStyle(h); return IQ.aV = a.display !== 'none' && b.display !== 'none' && p.getBoundingClientRect().width > 0 }   // ilk müşteri eğitiminde alt şerit / alt düğmeler gizli: kuyruk da çıkmaz
 function iqGor() { try { return IQ.on && typeof started !== 'undefined' && started && !EVMODE && S && S.created && S.tut === 'done' && UI.mode === 'cafe' && !(typeof XM !== 'undefined' && XM.on) && iqAltAcik() && !(typeof VISIT !== 'undefined' && VISIT.on) && !$('cine') && !(typeof TD !== 'undefined' && TD.on) } catch (e) { return false } }
 const iqAlt = () => { const h = $('hint'); return h && h.parentElement };
 function iqYerlestir(b) { const bt = iqAlt(); if (!bt) return; const r = bt.getBoundingClientRect(); const sag = Math.max(14, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sar')) || 0) + 10;
   let k = 0; try { k = Math.max(0, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0) } catch (e) { }
   const bos = innerWidth - r.left - sag, gap = 6, s = Math.max(34, Math.min(46, Math.floor((bos - 4 * gap) / 5))); b.style.setProperty('--iqs', s + 'px'); b.style.left = Math.round(r.left) + 'px'; b.style.bottom = Math.round(innerHeight - r.bottom - Math.max(0, (s - r.height) / 2) + 2) + 'px' }
-function iqCiz() { const b = iqKur(), gor = iqGor(); b.hidden = !gor; const bt = iqAlt(); if (bt) bt.classList.toggle('iqVar', gor); if (!gor) { iqKartKapat(); return }
-  if (iqNow() - IQ.cizT > 400) { IQ.cizT = iqNow(); iqYerlestir(b) }
+function iqCiz() { const b = iqKur(), gor = iqGor(), acildi = gor && b.hidden; if (b.hidden !== !gor) b.hidden = !gor; const bt = iqAlt(); if (bt) bt.classList.toggle('iqVar', gor); if (!gor) { iqKartKapat(); return }
+  { const yk = innerWidth + 'x' + innerHeight; if (acildi || yk !== IQ.yK || iqNow() - IQ.cizT > 3000) { IQ.yK = yk; IQ.cizT = iqNow(); iqYerlestir(b) } }   // (V439) yer ölçümü (zorunlu yerleşim hesabı) 0,4 sn'de bir değil: açılınca, ekran boyutu değişince, yoksa 3 sn'de bir
   const s = parseFloat(b.style.getPropertyValue('--iqs')) || 44, adim = s + 6;
   // görünür sıra: aktifler (başlama sırasıyla), sonra iş dizisindeki sıraya göre bekleyenler, sonra bitiş animasyonundakiler yerinde
   const akt = IQ.L.filter(q => q.durum === 'aktif' && !q.devir).sort((a, c) => a.basT - c.basT), bek = []; for (const j of jobs) if (j.iq && j.iq.durum === 'bekle') bek.push(j.iq);
   const son = IQ.L.filter(q => (q.durum === 'bitti' || q.durum === 'iptal') && !q.sessiz && !q.devir && iqNow() - q.bitT < (q.durum === 'bitti' ? 650 : 200));
   let sira = [...akt, ...bek]; if (IQ.sur && IQ.sur.q && IQ.sur.on) { const sq = IQ.sur.q, i = sira.indexOf(sq); if (i >= 0) { sira.splice(i, 1); sira.splice(Math.max(akt.length, Math.min(sira.length, IQ.sur.yeni)), 0, sq) } }
   const fazla = Math.max(0, sira.length - IQ.maks); const gos = sira.slice(0, IQ.maks);
-  const kap = b.querySelector('.iqDolu'), bos = b.querySelector('.iqBos'); const var_ = gos.length + son.length > 0; bos.hidden = var_; kap.hidden = !var_;
+  const kap = b.querySelector('.iqDolu'), bos = b.querySelector('.iqBos'); const var_ = gos.length + son.length > 0; if (bos.hidden !== var_) bos.hidden = var_; if (kap.hidden !== !var_) kap.hidden = !var_;
   if (!var_) { const sp = bos.querySelector('span'), tx = S.auto ? iqT('Otomatik', 'Auto') : iqT('Sıra boş', 'Queue empty'); if (sp.textContent !== tx) sp.textContent = tx }
   const dolu = iqNow() - IQ.dolT < 1300; b.classList.toggle('iqSal', iqNow() - IQ.dolT < 420); let et = b.querySelector('.iqEt'); if (dolu && !et) { et = document.createElement('div'); et.className = 'iqEt'; b.appendChild(et) } if (et) { if (dolu) et.textContent = iqT(`Sıra dolu (${IQ.maks}/${IQ.maks})`, `Queue full (${IQ.maks}/${IQ.maks})`); else et.remove() }
   const canli = new Set(); kap.style.width = (Math.max(1, gos.length) * adim - 6) + 'px';
@@ -30910,7 +30914,9 @@ function grEtiket() { try { if (UI.mode !== 'cafe' || document.hidden) return; c
     for (const t of document.querySelectorAll('#y2 .k3t')) { if (!t.offsetWidth) continue; const k = t.textContent + '|' + W + '|' + H; if (t._grA === k) continue; t._grA = k;
       t.classList.remove('grDar'); t.style.translate = ''; let r = t.getBoundingClientRect(); if (r.left >= 2 && r.right <= W - 2) continue;
       t.classList.add('grDar'); r = t.getBoundingClientRect(); const d = r.left < 2 ? 2 - r.left : r.right > W - 2 ? W - 2 - r.right : 0; if (d) t.style.translate = d.toFixed(1) + 'px 0' } } catch (e) { } }
-setInterval(grEtiket, 2500); setTimeout(grEtiket, 600); addEventListener('resize', () => setTimeout(grEtiket, 250));
+// (V439) 2,5 sn'de bir yoklama yerine: açılışta birkaç kez, ekran boyutu değişince, kafeye dönünce; yedek olarak 20 sn'de bir (her yoklama gizli etiketler için yerleşim hesabı zorluyordu)
+for (const ms of [600, 2000, 6000, 15000]) setTimeout(grEtiket, ms); setInterval(grEtiket, 20000); addEventListener('resize', () => setTimeout(grEtiket, 250));
+{ const _sm = setMode; setMode = function (m) { const r = _sm.apply(this, arguments); try { if (m === 'cafe') setTimeout(grEtiket, 350) } catch (e) { } return r } }
 
 // ================= V437 · AKICILIK: SABİT 60 KARE · DOĞRU KARE SINIRI · YANLIŞ "PİL TASARRUFU" KİLİDİ =================
 // Kullanıcı (28 Kasım 2026, 19:09): "hala telefonum kasıyor 17 pro max kullanmama rağmen bu sorunu çözmelisin".
@@ -30947,6 +30953,71 @@ perfGate = function (now, ts) { const t = ts > 0 ? ts : now; akRaf(t); const G =
 try { Object.defineProperty(GFX.bal, 'idle', { value: 60, writable: true, configurable: true, enumerable: true }) } catch (e) { console.warn('akıcılık idle', e) }
 try { if (localStorage.getItem('tc-ak437') !== '1') { localStorage.setItem('tc-ak437', '1');
     if (localStorage.getItem(GFX_KEY) === 'eco' && localStorage.getItem(GFX_ELLE) !== '1') { localStorage.removeItem(GFX_OTO); FPSM.done = false; FPSM.t0 = 0; FPSM.ok = 0; FPSM.sum = 0; FPSM.auto = true; try { gfxApply('bal', true) } finally { FPSM.auto = false } console.log('akıcılık: otomatik Pil tasarrufu → Dengeli, ölçüm yenilenecek') } } } catch (e) { console.warn('akıcılık geçiş', e) }
+
+// ----- V439 · her karede / saniyede birkaç kez yinelenen gereksiz DOM yazıları ve zorunlu stil-yerleşim okumaları -----
+// Ölçüm (t_iz.py, t_iz2.py; Chromium izi, canlı kafe): her karede html ve #game üstündeki :has(.modal:not([hidden])) çapaları geçersiz kalıyor,
+// ~300 arayüz öğesinin stili yeniden hesaplanıyordu; üstüne her karede 2–3, zamanlayıcılarda saniyede ~8 kez "oku" (getBoundingClientRect,
+// getComputedStyle, elementFromPoint, offsetWidth) bu hesabı kare ortasında yeniden yaptırıyordu. Nedenlerin çoğu aynı kalıp: temel işlev bir
+// değer yazıyor, sonradan eklenen sarmalayıcı başka değer yazıyor → her çağrıda iki gerçek değişiklik. Düzeltmeler burada ve kaynakta
+// (p11 ipucu, p974, p99u çip, p99zf kuyruk, p21/p24/p929 çipler, p73 hxScan, p75 duzFix, p68 fitTop, p99zj etiket).
+//  A) autoBtnVis: p18 düğmeyi açıyor, p9xx sarmalayıcıları yeniden gizliyordu (kare başına iki öznitelik değişimi) → son durum bir kez hesaplanır.
+autoBtnVis = function () { const b = $('autoBtn'); if (!b) return; let gor = !!S.created && !/^cafe[1-6]$/.test(S.tut || '') && S.tut !== 'create';
+  if (gor) { try { if (otoKilitli()) gor = false } catch (e) { } } if (gor) { try { if (ekipAcik()) gor = false } catch (e) { } } if (b.hidden === gor) b.hidden = !gor };
+//  C) ayBildirimYeri: temel işlev #game üstünde --ayTsB'yi ölçüp yazıyor, ana ekran sarmalayıcısı sabit değeri geri yazıyordu (0,5 sn'de bir iki
+//     değişiklik; özel özellik kalıtıldığı için bütün #game alt ağacı yeniden hesaplanır) → sabit değerin geçerli olduğu durumda ölçüm hiç yapılmaz.
+{ const _ay = ayBildirimYeri; ayBildirimYeri = function () { try { const g = $('game'); if (g && fdAcik() && UI.mode === 'cafe' && !document.querySelector('#tzOv:not([hidden]) .tzPanel')) {
+      const v = 'calc(var(--ebR) + var(--u)*90px)'; if (g.style.getPropertyValue('--ayTsB') !== v) g.style.setProperty('--ayTsB', v); return } } catch (e) { } return _ay.apply(this, arguments) } }
+//  F) perfCovered: 0,3 sn'de bir iki elementFromPoint (stil + yerleşim + isabet sınaması). Düz kafede (pencere yok) ekran örtülü olamaz → sınama yapılmaz.
+{ const _pc = perfCovered; perfCovered = function () { try { if (!document.hidden && UI.mode === 'cafe' && !UI.modal && !(typeof INTRO !== 'undefined' && INTRO.el && !INTRO.ready) && !document.querySelector('#game .modal:not([hidden]),#game .screen:not([hidden])')) return false } catch (e) { } return _pc.apply(this, arguments) } }
+
+// ----- V439 · ÇİZİM ÇAĞRILARI: renk pişirerek birleştirme -----
+// Kullanıcı (28 Kasım 20:01, 60 kareye dönüldükten sonra): "telefon çok ısınıyor oyundayken". Ölçüm (t_ciz*.py): küçük kafede kare başına 543 çizim
+// çağrısı + gölge haritası yenilenirken ~187 daha; ~5.000 GL çağrısı. iOS'ta WebGL komutları ayrı GPU sürecine aktarılır: çağrı sayısı = işlemci
+// yükü = ısı. Dağılım: mutfak 186 (77 gevşek kutu/silindir + ekipman grupları + raf), kapı 44, kasa 35, dış zemin 34, sahil 34–60, her müşteri 17
+// (gövde + 2 giysi + 14 küçük aksesuar parçası; hepsi gölge de atıyor).
+// Yöntem: mergeStatic yalnız AYNI malzemeyi (renk dahil) birleştirir. Burada dokusuz, yalnız rengi farklı malzemeler tek ağda toplanır; renk köşe
+// rengine yazılır (malzeme rengi beyaz + vertexColors; three r160, renk yönetimi açık: ikisi de doğrusal uzayda, sonuç aynı).
+// Dokunulmayanlar: hareketli/başvurulan parçalar (öğütücü kolu, fırın parıltısı, tezgâh lambası, yazar kasa çekmecesi), saydamlar, iskeletli ağlar,
+// oda kabuğu (duvarlar kameraya göre tek tek gizleniyor), mobilya grupları (düzenleme kipi), kapı kanatları.
+const AKB = { say: 0, hata: 0, kapali: (() => { try { return localStorage.getItem('tc-akb') === '0' } catch (e) { return false } })() };   // deneme: localStorage 'tc-akb'='0' birleştirmeyi kapatır (önce/sonra karşılaştırması)
+function akImza(m) { const c = x => x && x.getHexString ? x.getHexString() : ''; return [m.type, c(m.emissive), m.emissiveIntensity, m.gradientMap ? m.gradientMap.uuid : '', m.opacity, m.side, m.roughness, m.metalness, m.flatShading, m.alphaTest, m.depthWrite, m.depthTest, m.toneMapped, m.polygonOffset, m.fog, m.visible].join(',') }
+function akUygun(o) { const m = o.material; try { if (m === M.wall || m === M.floor) return false } catch (e) { } return !!(o.isMesh && !o.isSkinnedMesh && !o.isInstancedMesh && o.visible && m && !Array.isArray(m) && !m.transparent && !o.renderOrder && o.onBeforeRender === THREE.Object3D.prototype.onBeforeRender && !o.userData.akTut && o.geometry && o.geometry.attributes && o.geometry.attributes.position && !Object.keys(o.geometry.morphAttributes || {}).length) }
+function akPisebilir(m) { return !m.map && !m.vertexColors && !m.alphaMap && !m.normalMap && !m.emissiveMap && !m.aoMap && !m.lightMap && !m.bumpMap && !m.envMap && !!m.color && (m.isMeshToonMaterial || m.isMeshStandardMaterial || m.isMeshLambertMaterial || m.isMeshPhongMaterial || m.isMeshBasicMaterial) }
+// L: G'nin alt ağacındaki birleştirilecek ağlar. Sonuç ağları doğrudan G'ye eklenir; birleşenler ağaçtan çıkar. Dönen: azalan ağ sayısı.
+function akBirlestir(G, L) { if (AKB.kapali) return 0; G.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(G.matrixWorld).invert(), by = new Map(), M4 = new THREE.Matrix4(); let azalan = 0;
+  for (const o of L) { if (!akUygun(o)) continue; let p = o.parent, gor = true; while (p && p !== G) { if (!p.visible) gor = false; p = p.parent } if (!gor || !p) continue;
+    M4.multiplyMatrices(inv, o.matrixWorld); if (M4.determinant() < 0) continue;   // aynalanmış parça: üçgen yönü ters döner, olduğu gibi kalır
+    const m = o.material, pis = akPisebilir(m), k = (pis ? 'P|' + akImza(m) : 'M|' + matSig(m)) + '|' + o.castShadow + '|' + o.receiveShadow; let e = by.get(k); if (!e) by.set(k, e = { pis, list: [] }); e.list.push(o) }
+  for (const { pis, list } of by.values()) { if (list.length < 2) continue; const geos = [];
+    for (const m of list) { let g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone(); const eski = g.attributes.color; for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(a)) g.deleteAttribute(a);
+      if (!g.attributes.normal) g.computeVertexNormals(); if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+      if (pis) { const n = g.attributes.position.count, c = new Float32Array(n * 3), col = m.material.color; for (let i = 0; i < n; i++) { c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b } g.setAttribute('color', new THREE.BufferAttribute(c, 3)) }
+      g.morphAttributes = {}; g.clearGroups(); M4.multiplyMatrices(inv, m.matrixWorld); g.applyMatrix4(M4); geos.push(g) }
+    let mg = null; try { mg = BufferGeometryUtils.mergeGeometries(geos, false) } catch (e) { mg = null } geos.forEach(g => g.dispose()); if (!mg) continue;
+    let mat = list[0].material; if (pis) { mat = mat.clone(); mat.color.setRGB(1, 1, 1); mat.vertexColors = true; mat.needsUpdate = true }
+    const nm = new THREE.Mesh(mg, mat); nm.castShadow = list[0].castShadow; nm.receiveShadow = list[0].receiveShadow; nm.userData.akB = list.length; G.add(nm);
+    for (const m of list) { const tek = !!m.userData.akB; m.parent.remove(m); if (tek) { try { m.geometry.dispose() } catch (e) { } } } azalan += list.length - 1 }
+  AKB.say += azalan; return azalan }
+function akGrup(G) { try { if (!G) return 0; const L = []; G.traverse(o => { if (o.isMesh) L.push(o) }); return L.length > 1 ? akBirlestir(G, L) : 0 } catch (e) { if (!AKB.hata) { AKB.hata = 1; console.warn('birleştirme', e) } return 0 } }
+// MUTFAK: gevşek ağlar + ekipman grupları + raf. Öğütücü (kolu döner), fırın parıltısı, tezgâh lambası (adıyla değiştiriliyor) hariç.
+function akMutfak() { try { if (!KGI || KGI.userData.akOk) return; KGI.userData.akOk = 1; const L = KGI.children.filter(o => o.isMesh && o !== STATION.ovenGlow); if (L.length > 3) akBirlestir(KGI, L);
+    for (const c of KGI.children.slice()) { if (!c.isGroup || c === STATION.grinder || c.name === 'tezgahLamba' || c.userData.akOk) continue; c.userData.akOk = 1; akGrup(c) } } catch (e) { console.warn('mutfak birleştirme', e) } }
+{ const _se = setEquip; setEquip = function (kind) { const r = _se.apply(this, arguments); try { const g = EQUIP_GRP[kind]; if (g && g.isGroup && !g.userData.akOk) { g.userData.akOk = 1; akGrup(g) } } catch (e) { } return r } }
+{ const _bk = buildKitchen; buildKitchen = function () { const r = _bk.apply(this, arguments); akMutfak(); return r } }
+// KASA: yalnız gövdenin gevşek ağları (yazar kasa grupları: çekmece ödemede oynuyor → dokunulmaz)
+function akKasa() { try { if (!CGI || CGI.userData.akOk) return; CGI.userData.akOk = 1; const L = CGI.children.filter(o => o.isMesh); if (L.length > 3) akBirlestir(CGI, L) } catch (e) { console.warn('kasa birleştirme', e) } }
+{ const _bc = buildCash; buildCash = function () { const r = _bc.apply(this, arguments); akKasa(); return r } }
+// MÜŞTERİ AKSESUARLARI (şapka, atkı, süs: kemiğe bağlı düz ağlar; müşteri başına ~14 parça): takıldıktan sonra kendi grubunda birleştirilir
+{ const _aa = attachAcc; attachAcc = function (root) { const r = _aa.apply(this, arguments); try { const G = []; root.traverse(o => { if (o.userData && o.userData.cacc && !o.userData.akOk) G.push(o) }); for (const g of G) { g.userData.akOk = 1; akGrup(g) } } catch (e) { } return r } }
+// DIŞ ZEMİN, SAHİL, UZAK MAHALLE, SOKAK: dünya kurulduktan (ve p36'nın malzemeye göre birleştirmesinden) sonra bir kez. Gölge ayarına dokunulmaz.
+function akDunya() { try { if (AKB.dunya) return; AKB.dunya = 1; let n = 0;
+    for (const o of scene.children.slice()) { if (!o.isGroup || o.userData.isChar || o.userData.uid || o.userData.akOk) continue; const ad = o.name;
+      if (!(o.userData.merged || ad === 'seaside' || ad === 'outdoor' || ad === 'czSokak') || ad === 'kitchen' || ad === 'cash' || ad === 'roomShell') continue; if ((typeof ENV !== 'undefined' && (ENV.gulls || []).some(q => q.g === o))) continue;
+      o.userData.akOk = 1; n += akGrup(o) }
+    try { renderer.shadowMap.needsUpdate = true } catch (e) { } if (n) console.log('akıcılık: dünya birleştirme', n) } catch (e) { console.warn('dünya birleştirme', e) } }
+setTimeout(akDunya, 3400); setTimeout(() => { try { akMutfak(); akKasa() } catch (e) { } }, 1200);
+// Gölge haritası telefonda (Dengeli) üç karede bir yenilenir (60 karede saniyede 20 kez; V433'te iki karede birdi). Kedilerin altındaki temas gölgesi her karede çizilmeye devam eder.
+try { if (gfxAuto() === 'bal') GFX.bal.shEvery = 3 } catch (e) { }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
