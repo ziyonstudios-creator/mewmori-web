@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795882014",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><script>try{localStorage.setItem("tc-oyun","1")}catch(e){}(function(){var V="1795883902",G="tc-agpwku";function chk(){fetch(G+".surum?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){t=(t||"").trim();if(/^\d+$/.test(t)&&t!==V&&+t>+V){try{if(typeof saveNow==="function")saveNow()}catch(e){}location.replace(location.pathname+"?v="+t+location.hash)}}).catch(function(){})}setTimeout(chk,3000);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2b1a10"><style>[hidden]{display:none!important}html,body{margin:0;height:100%}</style></head><body>
 <title>TabbyChef</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Nunito:wght@700;800&display=swap">
@@ -24628,7 +24628,7 @@ const enerjiKediImg = h => `<img class="enKedi" src="${ENERJI_KEDI[h]}" alt="" d
 // KAPATMA: Ayarlar › "Anonim kullanım verisi" (cihaz başına; 'tabbychef-olcum-kapali'); uzaktan: app_flags 'olcum'=false.
 //   Otomatik testlerde (navigator.webdriver) ve file:// sayfada hiç çalışmaz.
 // GÖNDERİM: kuyruk 60 sn'de bir, 40 olayda bir ve uygulama arka plana geçince (keepalive) sunucuya gider (RPC olay_kaydet, sunucu/v347_anonim_olcum.sql).
-const OLC_DERLEME = '20261128-1850';
+const OLC_DERLEME = '20261128-1929';
 const OLC = { kuyruk: [], kur: null, otr: null, t0: Date.now(), gizT: 0, bayrak: null, ek: {}, hata: 0, uyari: 0, son: { tut: undefined, lvl: undefined, gun: undefined, obj: undefined } };
 function olcKapali() { try { return localStorage.getItem('tabbychef-olcum-kapali') === '1' } catch (e) { return false } }
 function olcUuid() { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) { } const a = new Uint8Array(16); crypto.getRandomValues(a); a[6] = a[6] & 15 | 64; a[8] = a[8] & 63 | 128;
@@ -30870,13 +30870,15 @@ html.land #game#game #skMudavim .skscroll{display:block!important;overflow:hidde
 //     Dikkat: acele rozetli düğmede (.act.acel) ::before rozetin kendisi (sağ üst köşe, p981) → pay orada simge öğesinin sözde öğesiyle verilir;
 //     yoksa rozet sol köşeye kayıyordu (inset 'left' değerini de verdiği için).
 //  3) KEDİ BAŞLARI: telefonda kediler ekran yüksekliğinin ~%10'u, yüzleri okunmuyor. Baş kemiği ölçeği (GR.bas) model kurulurken uygulanır
-//     (cloneLook / buildCat: müşteri, ekip, editör, portreler hepsi aynı). KULLANICI ONAYINA BAĞLI: varsayılan 1 (kapalı);
-//     deneme için localStorage 'tc-bas' (1–1,6). Onaylanınca varsayılan değiştirilecek.
-const GR = { bas: (() => { try { const v = parseFloat(localStorage.getItem('tc-bas')); return v >= 1 && v <= 1.6 ? v : 1 } catch (e) { return 1 } })() };
+//     (cloneLook / buildCat / applyLook: müşteri, ekip, kurye, editör). V436'da kapalıydı (onay bekliyordu); V437'de kullanıcı üç seçenekli
+//     görselden %40'ı seçti → varsayılan 1,4. Deneme için localStorage 'tc-bas' (1–1,6).
+const GR = { bas: (() => { try { const v = parseFloat(localStorage.getItem('tc-bas')); return v >= 1 && v <= 1.6 ? v : 1.4 } catch (e) { return 1.4 } })() };   // V437: kullanıcı onayı (28 Kasım 19:09 "bu yeni modeli sevdim uygulayabilirsin", 19:12 "%40 büyük olsun")
 function grBas(m) { try { if (!m || GR.bas === 1 || !m.getObjectByName) return m; const h = m.getObjectByName('mixamorigHead'); if (h && !h.userData.grBas) { h.scale.multiplyScalar(GR.bas); h.userData.grBas = GR.bas } } catch (e) { } return m }   // işaret baş kemiğinde: kopyalanan modelde de taşınır, iki kez büyümez
 { const _cl = cloneLook; cloneLook = function () { return grBas(_cl.apply(this, arguments)) } }
 { const _bc = buildCat; buildCat = function () { return grBas(_bc.apply(this, arguments)) } }
 { const _al = applyLook; applyLook = function (r) { const x = _al.apply(this, arguments); grBas(r); return x } }   // ekip, kurye, toptancı: modeli doğrudan applyLook ile giydirir
+// düzenleyici önizlemesi: baş büyüyünce kulaklar kadrajın üstünden taşıyordu → kamera ölçekle orantılı geri çekilir ve yükselir
+{ const _pr = pvResize; pvResize = function () { _pr.apply(this, arguments); try { if (GR.bas > 1 && PV.host) { const k = GR.bas - 1; PV.cam.position.set(0, 0.78 + k * 0.2, 2.75 + k * 0.65); PV.cam.lookAt(0, 0.62 + k * 0.2, 0) } } catch (e) { } } }
 // yalnız başı gösteren portreler (konuşma balonu, müdavim defteri, rezervasyon): kadraj baş kemiğine göre sabit → ölçeksiz modelle çizilir, bugünküyle aynı kalır
 { const _rp = rezPortre; rezPortre = function () { const e = GR.bas; GR.bas = 1; try { return _rp.apply(this, arguments) } finally { GR.bas = e } } }
 { const _tp = tbPortre; tbPortre = function () { const e = GR.bas; GR.bas = 1; try { return _tp.apply(this, arguments) } finally { GR.bas = e } } }
@@ -30909,6 +30911,42 @@ function grEtiket() { try { if (UI.mode !== 'cafe' || document.hidden) return; c
       t.classList.remove('grDar'); t.style.translate = ''; let r = t.getBoundingClientRect(); if (r.left >= 2 && r.right <= W - 2) continue;
       t.classList.add('grDar'); r = t.getBoundingClientRect(); const d = r.left < 2 ? 2 - r.left : r.right > W - 2 ? W - 2 - r.right : 0; if (d) t.style.translate = d.toFixed(1) + 'px 0' } } catch (e) { } }
 setInterval(grEtiket, 2500); setTimeout(grEtiket, 600); addEventListener('resize', () => setTimeout(grEtiket, 250));
+
+// ================= V437 · AKICILIK: SABİT 60 KARE · DOĞRU KARE SINIRI · YANLIŞ "PİL TASARRUFU" KİLİDİ =================
+// Kullanıcı (28 Kasım 2026, 19:09): "hala telefonum kasıyor 17 pro max kullanmama rağmen bu sorunu çözmelisin".
+// Kod okumasıyla bulunan nedenler (gerçek cihazda ölçülemedi):
+//  1) V433: dokunmatik cihazda ekrana 2,5 sn dokunulmayınca kare hızı 30'a iniyordu (GFX.bal.idle). 120 Hz ekranda 30 kare ve 60↔30 geçişi
+//     doğrudan takılma olarak görünür. → boşta da 60. V433'ün öteki tasarrufları (çözünürlük ≤1,3 · sert gölge · gölge iki karede bir · nokta
+//     ışıkları kapalı) duruyor: ısıyı kare atlamadan azaltırlar.
+//  2) p930'un tek seferlik kare hızı ölçümü (ortalama < 38 → "Pil tasarrufu": 30 kare, çözünürlük 1,0) KALICIYDI. Ölçüm, telefon kare hızını
+//     kendisi 30'a sınırlarken yapıldıysa (iPhone Düşük Güç Modu) güçlü telefon da kalıcı 30 kareye kilitleniyordu.
+//     → oyuncunun elle seçmediği "Pil tasarrufu" bir kez "Dengeli"ye döner, ölçüm yenilenir. Sistem kare hızını 30'a sınırlarken (ham rAF düzenli
+//     ~30, kare başına iş küçük) ölçüm ve ısı koruması işlemez: ayar düşürmek orada hiçbir şeyi hızlandırmaz. iPhone'da bir kez ipucu gösterilir.
+//  3) Kare sınırı yalnız 60'ın altındaki hedeflerde çalışıyordu: tarayıcı 120 Hz veriyorsa oyun 120 kare çiziyordu (iki kat iş, ısı).
+//     Artık her hedefte çalışır ve rAF'ın kendi zaman damgasını kullanır (performance.now() ile, geciken bir geri çağrının ardından gelen kare
+//     "erken" sayılıp atlanabiliyordu).
+// Performans göstergesi (Rehber › Grafik kalitesi) artık ham rAF hızını, kare başına iş süresini, son saniyedeki en uzun kare aralığını gösterir.
+const AK = { son: 0, n: 0, t0: 0, hz: 0, is: 0, kare: 0, isOrt: 0, kisikN: 0, kisik: false, sonKare: 0, boslukMax: 0, uzun: 0, ipucu: 0 };
+const AK_IOS = (() => { try { return /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) } catch (e) { return false } })();
+function akIpucu() { try { if (AK.ipucu || !AK_IOS || !started || S.tut !== 'done' || UI.mode !== 'cafe' || UI.modal) return; const now = performance.now(); if (!(PERF.touchT > 0) || now - PERF.touchT > 20000) return;
+    AK.ipucu = 1; if (localStorage.getItem('tc-lpm') === '1') return; localStorage.setItem('tc-lpm', '1');
+    toast(kaT('<b>Telefon kare hızını 30\'a sınırlıyor</b><br>Düşük Güç Modu açıksa kapatınca oyun daha akıcı olur.', '<b>Your phone is limiting the frame rate to 30</b><br>If Low Power Mode is on, turning it off makes the game smoother.'), ic('bolt'), 6500) } catch (e) { } }
+// ham rAF hızı: kapıdan ÖNCE her geri çağrı sayılır (2 sn'lik pencereler)
+function akRaf(t) { if (!AK.t0 || t < AK.t0) { AK.t0 = t; AK.n = 0; AK.is = 0; AK.kare = 0; return } AK.n++; const d = t - AK.t0; if (d < 2000) return;
+  AK.hz = AK.n * 1000 / d; AK.isOrt = AK.kare ? AK.is / AK.kare : 0; AK.n = 0; AK.t0 = t; AK.is = 0; AK.kare = 0;
+  const sinirli = !document.hidden && d < 2600 && AK.hz > 27.5 && AK.hz < 32.5 && AK.isOrt < 10;
+  AK.kisikN = sinirli ? AK.kisikN + 1 : 0; AK.kisik = AK.kisikN >= 2;
+  if (AK.kisik) { try { FPSM.t0 = 0; FPSM.ok = 0; FPSM.sum = 0 } catch (e) { } try { ISI.t0 = 0; ISI.dus = 0 } catch (e) { } akIpucu() } }
+perfGate = function (now, ts) { const t = ts > 0 ? ts : now; akRaf(t); const G = GFX[PERF.q] || GFX.bal;
+  if (now - PERF.coverT > 300) { PERF.coverT = now; PERF.covered = perfCovered() }
+  const active = now - PERF.touchT < 2500, fps = PERF.covered ? 10 : active ? G.fps : G.idle;
+  if (t - AK.son < (fps >= 60 ? 10 : 1000 / fps - 4) && t >= AK.son) return false;   // 60 hedefinde eşik 10 ms: 120/144 Hz'de kare atlanır (60/72), 90 Hz'de atlanmaz (45'e düşmesin)
+  if (AK.sonKare && !PERF.covered) { const g = t - AK.sonKare; if (g > AK.boslukMax) AK.boslukMax = g; if (g > 50) AK.uzun++ } AK.sonKare = t; AK.son = t; PERF.lastF = now; return true };
+{ const _pt = perfTick; perfTick = function (now) { try { AK.is += performance.now() - now; AK.kare++ } catch (e) { } const t0 = PERF.t0; _pt.apply(this, arguments);
+    try { if (PERF.show && PERF.t0 !== t0 && PERF.box) { PERF.box.textContent += ` · ham ${Math.round(AK.hz)} Hz · iş ${AK.isOrt.toFixed(1)} ms · en uzun ${Math.round(AK.boslukMax)} ms${AK.kisik ? ' · SİSTEM 30' : ''}`; AK.boslukMax = 0 } } catch (e) { } } }
+try { Object.defineProperty(GFX.bal, 'idle', { value: 60, writable: true, configurable: true, enumerable: true }) } catch (e) { console.warn('akıcılık idle', e) }
+try { if (localStorage.getItem('tc-ak437') !== '1') { localStorage.setItem('tc-ak437', '1');
+    if (localStorage.getItem(GFX_KEY) === 'eco' && localStorage.getItem(GFX_ELLE) !== '1') { localStorage.removeItem(GFX_OTO); FPSM.done = false; FPSM.t0 = 0; FPSM.ok = 0; FPSM.sum = 0; FPSM.auto = true; try { gfxApply('bal', true) } finally { FPSM.auto = false } console.log('akıcılık: otomatik Pil tasarrufu → Dengeli, ölçüm yenilenecek') } } } catch (e) { console.warn('akıcılık geçiş', e) }
 
 // ================= BAŞLAT =================
 function applyState(){try{expandMigrate()}catch(e){}if(S.room)setRoom({x0:S.room.x0??RM.x0,x1:S.room.x1??RM.x1,z0:S.room.z0??RM.z0,z1:S.room.z1??RM.z1});   // genişletilmiş kafe: eşyalardan önce oda kurulur
@@ -30989,7 +31027,7 @@ function simStep(dt){lastDt=dt;gameT+=dt;
     for(const L of [WSTAFF,BSTAFF,CSTAFF])for(const k of L)tk('staff',()=>k.ch.update(dt));for(const c of customers)tk('cust',()=>c.char.update(dt));if(COURIER)tk('courier',()=>COURIER.ch.update(dt));if(SCOOT.rider)tk('scoot',()=>scootRider());
     tk('cash',()=>cashLayoutTick());
     tk('steam',()=>steamUpdate(dt))}
-function loop(){requestAnimationFrame(loop);const now=performance.now();if(!perfGate(now))return;const raw=Math.min(clock.getDelta(),0.1);
+function loop(ts){requestAnimationFrame(loop);const now=performance.now();if(!perfGate(now,ts))return;const raw=Math.min(clock.getDelta(),0.1);
   if(started&&!paused()){simStep(raw);updateUI()}
   else lastDt=0;
   envTick(raw);
